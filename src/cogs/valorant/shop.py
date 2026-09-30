@@ -98,6 +98,35 @@ def add_skin_selector(
         )
 
 
+async def add_account_selector(
+    controls: discord.ui.View,
+    owner_id: int,
+    mode: str,
+    current: str,
+    *,
+    hide_ign: bool = False,
+) -> None:
+    """Add a private account selector when the owner has multiple accounts."""
+    accounts = await list_accounts(owner_id)
+    if len(accounts) > 1:
+        controls.add_item(
+            OwnedSelect(
+                "shop_account",
+                owner_id,
+                mode,
+                placeholder="Switch account",
+                options=[
+                    discord.SelectOption(
+                        label=(f"Account {index}" if hide_ign else item.username)[:100],
+                        value=item.puuid,
+                        default=item.puuid == current,
+                    )
+                    for index, item in enumerate(accounts[:25], start=1)
+                ],
+            )
+        )
+
+
 class ShopCog(commands.Cog):
     """Show the caller's daily shop and handle its account and mode controls."""
 
@@ -178,7 +207,9 @@ class ShopCog(commands.Cog):
         add_skin_selector(
             controls, owner_id, data.offers, data.expires, self.bot.emoji_service
         )
-        await self._add_accounts(controls, owner_id, "daily", puuid, hide_ign=hide_ign)
+        await add_account_selector(
+            controls, owner_id, "daily", puuid, hide_ign=hide_ign
+        )
         if data.night_market:
             controls.add_item(
                 OwnedActionButton(
@@ -212,7 +243,11 @@ class ShopCog(commands.Cog):
         """Render the selected daily, Night Market, or accessory shop mode."""
         await interaction.response.defer()
         mode, separator, puuid = payload.partition(",")
-        if not separator or mode not in {"daily", "night", "accessory"} or not puuid:
+        if (
+            not separator
+            or mode not in {"daily", "night", "nightmarket", "accessory"}
+            or not puuid
+        ):
             await error(interaction, "That shop control is invalid.")
             return
         account = await account_for_user(interaction.user.id, puuid)
@@ -235,7 +270,7 @@ class ShopCog(commands.Cog):
                 puuid,
                 hide_ign=hide_ign,
             )
-        elif mode == "night":
+        elif mode in {"night", "nightmarket"}:
             vp = await self.bot.emoji_service.currency("vp") or "VP"
             embeds = offer_cards(
                 f"Night Market for **{username}** (ends {timestamp(data.night_market_expires or data.expires)})",
@@ -252,21 +287,22 @@ class ShopCog(commands.Cog):
                 data.night_market_expires or data.expires,
                 self.bot.emoji_service,
             )
-            await self._add_accounts(
+            await add_account_selector(
                 controls,
                 interaction.user.id,
-                "night",
+                mode,
                 puuid,
                 hide_ign=hide_ign,
             )
-            controls.add_item(
-                OwnedActionButton(
-                    "shop_mode",
-                    interaction.user.id,
-                    f"daily,{puuid}",
-                    label="Skin shop",
+            if mode == "night":
+                controls.add_item(
+                    OwnedActionButton(
+                        "shop_mode",
+                        interaction.user.id,
+                        f"daily,{puuid}",
+                        label="Skin shop",
+                    )
                 )
-            )
         else:
             kc = await self.bot.emoji_service.currency("kc") or "KC"
             embeds = [
@@ -289,7 +325,7 @@ class ShopCog(commands.Cog):
             if len(embeds) == 1:
                 embeds[0].description += "\n\nYou've already got all the swagger!"
             controls = view()
-            await self._add_accounts(
+            await add_account_selector(
                 controls,
                 interaction.user.id,
                 "accessory",
@@ -452,43 +488,16 @@ class ShopCog(commands.Cog):
             f"[{linked_name}]({item['streamedVideo']})", ephemeral=True
         )
 
-    async def _add_accounts(
-        self,
-        controls: discord.ui.View,
-        owner_id: int,
-        mode: str,
-        current: str,
-        *,
-        hide_ign: bool = False,
-    ) -> None:
-        """Add a private account selector when the owner has multiple accounts."""
-        accounts = await list_accounts(owner_id)
-        if len(accounts) > 1:
-            controls.add_item(
-                OwnedSelect(
-                    "shop_account",
-                    owner_id,
-                    mode,
-                    placeholder="Switch account",
-                    options=[
-                        discord.SelectOption(
-                            label=(f"Account {index}" if hide_ign else item.username)[
-                                :100
-                            ],
-                            value=item.puuid,
-                            default=item.puuid == current,
-                        )
-                        for index, item in enumerate(accounts[:25], start=1)
-                    ],
-                )
-            )
-
     async def shop_account(
         self, interaction: discord.Interaction, payload: str
     ) -> None:
         """Validate the selected account and reopen the corresponding shop mode."""
         mode, separator, puuid = payload.rpartition("|")
-        if not separator or mode not in {"daily", "night", "accessory"} or not puuid:
+        if (
+            not separator
+            or mode not in {"daily", "night", "nightmarket", "accessory"}
+            or not puuid
+        ):
             await interaction.response.defer()
             await error(interaction, "That account selection is invalid.")
             return
@@ -550,6 +559,13 @@ class NightMarketCog(commands.Cog):
             data.night_market,
             data.night_market_expires or data.expires,
             self.bot.emoji_service,
+        )
+        await add_account_selector(
+            controls,
+            interaction.user.id,
+            "nightmarket",
+            account.puuid,
+            hide_ign=hide_ign,
         )
         await interaction.followup.send(
             embeds=cards, view=controls if controls.children else None

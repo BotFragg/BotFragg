@@ -527,13 +527,14 @@ async def test_shop_video_selector_rejects_forged_and_mismatched_values() -> Non
 
 
 @pytest.mark.asyncio
-async def test_nightmarket_command_includes_skin_video_menu(
+async def test_nightmarket_command_includes_skin_and_account_menus(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Verify Night Market slash-command offers receive their selector."""
+    """Verify Night Market slash-command offers receive both selectors."""
     skin = Skin("skin", "offer", "Prime Vandal", None, None)
     data = ShopData([], [], [Offer(skin, 1775, 1, 1000, 44)], 4_000_000_000, None)
     account = SimpleNamespace(puuid="account", username="Player#NA")
+    other_account = SimpleNamespace(puuid="other", username="Other#NA")
 
     async def selected_account(_owner_id: int) -> SimpleNamespace:
         """Return the account fixture for the Night Market command."""
@@ -543,8 +544,18 @@ async def test_nightmarket_command_includes_skin_video_menu(
         """Report default visibility preferences for the fixture user."""
         return None
 
+    async def list_accounts(_owner_id: int) -> list[SimpleNamespace]:
+        """Return two accounts so the selector is visible."""
+        return [account, other_account]
+
+    async def account_for_user(_owner_id: int, puuid: str) -> SimpleNamespace | None:
+        """Return the account selected from the Night Market menu."""
+        return other_account if puuid == "other" else None
+
     monkeypatch.setattr("src.cogs.valorant.shop.selected_account", selected_account)
     monkeypatch.setattr("src.cogs.valorant.shop.get_user", get_user)
+    monkeypatch.setattr("src.cogs.valorant.shop.list_accounts", list_accounts)
+    monkeypatch.setattr("src.cogs.valorant.shop.account_for_user", account_for_user)
 
     class EmojiService:
         """Provide stable currency and tier emoji values for embeds."""
@@ -589,6 +600,7 @@ async def test_nightmarket_command_includes_skin_video_menu(
     bot = SimpleNamespace(
         shop=Shop(),
         emoji_service=EmojiService(),
+        config=SimpleNamespace(link_item_image=False),
         register_component=lambda *_args: None,
     )
     interaction = SimpleNamespace(
@@ -600,12 +612,43 @@ async def test_nightmarket_command_includes_skin_video_menu(
     await NightMarketCog.nightmarket.callback(NightMarketCog(bot), interaction)
 
     controls = interaction.followup.message["view"]
-    selector = next(
-        child
-        for child in controls.children
-        if child.item.custom_id.startswith("botfragg_select:shop_skin:")
+    assert [child.item.custom_id.split(":")[1] for child in controls.children] == [
+        "shop_skin",
+        "shop_account",
+    ]
+    skin_selector, account_selector = [child.item for child in controls.children]
+    assert [option.value for option in skin_selector.options] == ["skin"]
+    assert account_selector.custom_id.endswith(":nightmarket")
+    assert [option.value for option in account_selector.options] == [
+        "account",
+        "other",
+    ]
+    assert account_selector.options[0].default
+
+    class SwitchResponse:
+        """Accept the defer used while switching to another account."""
+
+        async def defer(self) -> None:
+            """Record the component interaction defer."""
+
+    switched: dict[str, object] = {}
+
+    async def edit_original_response(**kwargs: object) -> None:
+        """Capture the Night Market view rendered after account switching."""
+        switched.update(kwargs)
+
+    switch_interaction = SimpleNamespace(
+        user=SimpleNamespace(id=123),
+        response=SwitchResponse(),
+        edit_original_response=edit_original_response,
     )
-    assert [option.value for option in selector.item.options] == ["skin"]
+    await ShopCog(bot).shop_account(switch_interaction, "nightmarket|other")
+
+    switched_controls = switched["view"]
+    assert [
+        child.item.custom_id.split(":")[1] for child in switched_controls.children
+    ] == ["shop_skin", "shop_account"]
+    assert switched_controls.children[1].item.custom_id.endswith(":nightmarket")
 
 
 @pytest.mark.asyncio
@@ -675,9 +718,8 @@ async def test_shop_account_selector_hides_names_when_requested(
         return accounts
 
     monkeypatch.setattr("src.cogs.valorant.shop.list_accounts", list_accounts)
-    cog = ShopCog(SimpleNamespace(register_component=lambda *_: None))
     controls = discord.ui.View(timeout=None)
-    await cog._add_accounts(controls, 123, "daily", "one", hide_ign=True)
+    await shop_module.add_account_selector(controls, 123, "daily", "one", hide_ign=True)
 
     selector = controls.children[0]
     assert [option.label for option in selector.item.options] == [
