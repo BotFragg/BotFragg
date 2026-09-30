@@ -221,6 +221,7 @@ class GameplayService:
                 "type": kind,
                 "xp": levels[level].get("xp", 0),
                 "icon": skin.icon,
+                "tier_uuid": skin.tier_uuid,
             }
         types = {
             "EquippableCharmLevel": "dd3bf334-87f3-40bd-b043-682a57a8dc3a",

@@ -125,8 +125,14 @@ class TasksCog(commands.Cog):
 
     async def _send_alert(self, user_id: int, alert: Alert, offer: Offer) -> None:
         """DM a matching skin alert with a control owned by the recipient."""
+        format_name = getattr(self.bot.emoji_service, "skin_name", None)
+        skin_name = (
+            format_name(offer.skin.name, getattr(offer.skin, "tier_uuid", None))
+            if format_name
+            else offer.skin.name
+        )
         card = embed(
-            f"The **{offer.skin.name}** is in **{alert.account.username}**'s daily shop.\nIt will be gone {timestamp(offer.expires)}.",
+            f"The **{skin_name}** is in **{alert.account.username}**'s daily shop.\nIt will be gone {timestamp(offer.expires)}.",
         )
         if offer.skin.icon:
             card.set_thumbnail(url=offer.skin.icon)
@@ -156,6 +162,7 @@ class TasksCog(commands.Cog):
             shop.offers,
             vp,
             link_item_image=self.bot.config.link_item_image,
+            emoji_service=self.bot.emoji_service,
         )
         try:
             target = self.bot.get_user(user.id) or await self.bot.fetch_user(user.id)

@@ -9,6 +9,7 @@ from discord.ext import commands
 from ...bot import BotfraggBot
 from ...services.accounts import get_user, selected_account
 from ...services.auth import AuthenticationRequired
+from ...services.emojis import ApplicationEmojiService
 from ...services.gameplay import GameplayUnavailable
 from ...views import timestamp
 from ._ui import _account_display_name, embed, error
@@ -40,7 +41,11 @@ class BattlepassCog(commands.Cog):
             account.username, hide_ign=bool(user and user.hide_ign)
         )
         card = self._battlepass_card(
-            username, data, filled_bar or "█", empty_bar or "░"
+            username,
+            data,
+            filled_bar or "█",
+            empty_bar or "░",
+            emoji_service=self.bot.emoji_service,
         )
         await interaction.followup.send(embed=card)
 
@@ -123,7 +128,12 @@ class BattlepassCog(commands.Cog):
 
     @staticmethod
     def _battlepass_card(
-        player: str, data: dict, filled_bar: str = "█", empty_bar: str = "░"
+        player: str,
+        data: dict,
+        filled_bar: str = "█",
+        empty_bar: str = "░",
+        *,
+        emoji_service: ApplicationEmojiService | None = None,
     ) -> discord.Embed:
         """Render the active act, current tier, next reward, and XP progress bar."""
         progress = min(10, int(data["progress"] / max(1, data["next_level_xp"]) * 10))
@@ -134,7 +144,10 @@ class BattlepassCog(commands.Cog):
             title=player,
         )
         card.add_field(name="Current Tier", value=str(data["level"]), inline=False)
-        card.add_field(name="Next Reward", value=reward["name"], inline=False)
+        reward_name = reward["name"]
+        if (tier_uuid := reward.get("tier_uuid")) and emoji_service:
+            reward_name = emoji_service.skin_name(reward_name, tier_uuid)
+        card.add_field(name="Next Reward", value=reward_name, inline=False)
         card.add_field(name="Type", value=reward["type"], inline=False)
         card.add_field(
             name="XP",

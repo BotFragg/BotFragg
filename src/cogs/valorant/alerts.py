@@ -61,7 +61,10 @@ class AlertsCog(commands.Cog):
         skin_uuid = UUID(item.uuid)
         alert, created = await create_alert(interaction.user.id, account, skin_uuid)
         if not created:
-            await error(interaction, f"**{item.name}** is already in your alert list.")
+            await error(
+                interaction,
+                f"**{self._skin_display_name(item)}** is already in your alert list.",
+            )
             return
         card = self._created_embed(item)
         controls = view(
@@ -90,11 +93,33 @@ class AlertsCog(commands.Cog):
 
     def _created_embed(self, skin: Skin) -> discord.Embed:
         """Build the confirmation card for a newly created skin alert."""
-        card = embed(f"Successfully set an alert for the {skin.name}")
+        card = embed(
+            f"Successfully set an alert for the {self._skin_display_name(skin)}"
+        )
         if skin.icon:
             card.url = skin.icon
             card.set_thumbnail(url=skin.icon)
         return card
+
+    def _skin_display_name(self, skin: Skin | None) -> str:
+        """Return a skin name with its tier emoji when the emoji service is available."""
+        if skin is None:
+            return "Unknown skin"
+        emoji_service = getattr(self.bot, "emoji_service", None)
+        format_name = getattr(emoji_service, "skin_name", None)
+        if format_name:
+            return format_name(skin.name, getattr(skin, "tier_uuid", None))
+        return skin.name
+
+    def _skin_emoji(self, skin: Skin | None) -> str | None:
+        """Return a button emoji for a skin tier when one is available."""
+        if skin is None:
+            return None
+        emoji_service = getattr(self.bot, "emoji_service", None)
+        get_emoji = getattr(emoji_service, "skin_emoji", None)
+        if get_emoji:
+            return get_emoji(getattr(skin, "tier_uuid", None)) or None
+        return None
 
     async def manager_view(
         self, user_id: int, page: int
@@ -114,7 +139,7 @@ class AlertsCog(commands.Cog):
             visible, page_data.page * page_data.page_size + 1
         ):
             skin = self.bot.catalog.get_skin(str(alert.skin_uuid))
-            name = skin.name if skin else "Unknown skin"
+            name = self._skin_display_name(skin)
             lines.append(f"**{number}.** **{name}**")
         card = embed("\n".join(lines), title="Your Alerts")
         if (
@@ -132,6 +157,7 @@ class AlertsCog(commands.Cog):
                     user_id,
                     f"{alert.id},{page_data.page}",
                     label=(skin.name if skin else "Unknown skin")[:80],
+                    emoji=self._skin_emoji(skin),
                     style=discord.ButtonStyle.danger,
                 )
             )
@@ -172,7 +198,7 @@ class AlertsCog(commands.Cog):
         await interaction.edit_original_response(view=None)
         await interaction.followup.send(
             embed=embed(
-                f"Removed {skin.name if skin else 'that skin'} from your alerts",
+                f"Removed {self._skin_display_name(skin) if skin else 'that skin'} from your alerts",
             ),
             ephemeral=True,
         )
@@ -217,7 +243,7 @@ class AlertsCog(commands.Cog):
                 await error(interaction, "That alert skin is no longer in the catalog.")
                 return
             card = embed(
-                f"The **{skin.name}** is in **{alert.account.username}**'s daily shop.\nIt will be gone {timestamp(shop.expires)}.",
+                f"The **{self._skin_display_name(skin)}** is in **{alert.account.username}**'s daily shop.\nIt will be gone {timestamp(shop.expires)}.",
             )
             if skin.icon:
                 card.set_thumbnail(url=skin.icon)

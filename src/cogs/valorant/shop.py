@@ -14,6 +14,7 @@ from ...services.accounts import (
     selected_account,
 )
 from ...services.auth import AuthenticationRequired
+from ...services.emojis import ApplicationEmojiService
 from ...services.shop import Offer, ShopData, ShopUnavailable
 from ...views import OwnedActionButton, OwnedSelect, timestamp
 from ._ui import _account_display_name, embed, error, view
@@ -28,14 +29,23 @@ TIER_COLOURS = {
 
 
 def offer_cards(
-    header: str, offers: list[Offer], currency: str, *, link_item_image: bool
+    header: str,
+    offers: list[Offer],
+    currency: str,
+    *,
+    link_item_image: bool,
+    emoji_service: ApplicationEmojiService | None = None,
 ) -> list[discord.Embed]:
     """Render a heading and one tier-coloured embed for each skin offer."""
     result = [embed(header, colour=0x202225)]
     for offer in offers:
         item = embed(
             f"{currency} **{offer.price:,}**",
-            title=offer.skin.name,
+            title=(
+                emoji_service.skin_name(offer.skin.name, offer.skin.tier_uuid)
+                if emoji_service
+                else offer.skin.name
+            ),
             colour=TIER_COLOURS.get(offer.skin.tier_uuid, 0),
         )
         if offer.skin.icon:
@@ -88,6 +98,7 @@ class ShopCog(commands.Cog):
                     data.offers,
                     await self.bot.emoji_service.currency("vp") or "VP",
                     link_item_image=self.bot.config.link_item_image,
+                    emoji_service=self.bot.emoji_service,
                 )
             )
             return
@@ -135,6 +146,7 @@ class ShopCog(commands.Cog):
                 data.offers,
                 vp,
                 link_item_image=self.bot.config.link_item_image,
+                emoji_service=self.bot.emoji_service,
             ),
             controls,
         )
@@ -173,6 +185,7 @@ class ShopCog(commands.Cog):
                 data.night_market,
                 vp,
                 link_item_image=self.bot.config.link_item_image,
+                emoji_service=self.bot.emoji_service,
             )
             controls = view(
                 OwnedActionButton(
@@ -310,7 +323,9 @@ class NightMarketCog(commands.Cog):
         for offer in data.night_market:
             card = embed(
                 f"{vp} **{offer.discount_price or offer.price:,}**\n{vp} ~~{offer.price:,}~~ (-{offer.discount_percent or 0}%)",
-                title=offer.skin.name,
+                title=self.bot.emoji_service.skin_name(
+                    offer.skin.name, offer.skin.tier_uuid
+                ),
                 colour=TIER_COLOURS.get(offer.skin.tier_uuid, 0),
             )
             if offer.skin.icon:

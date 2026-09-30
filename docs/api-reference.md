@@ -518,7 +518,7 @@ DM a matching skin alert with a control owned by the recipient.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L149)
+[Source](../src/cogs/tasks.py#L155)
 
 DM the selected account's daily shop as a set of offer embeds.
 
@@ -526,7 +526,7 @@ DM the selected account's daily shop as a set of offer embeds.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L166)
+[Source](../src/cogs/tasks.py#L173)
 
 Tell a user privately when their Riot login must be renewed.
 
@@ -534,7 +534,7 @@ Tell a user privately when their Riot login must be renewed.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L177)
+[Source](../src/cogs/tasks.py#L184)
 
 Refresh the Riot client version used in authenticated API requests.
 
@@ -542,7 +542,7 @@ Refresh the Riot client version used in authenticated API requests.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L183)
+[Source](../src/cogs/tasks.py#L190)
 
 Wait for Discord readiness before the first version refresh.
 
@@ -550,7 +550,7 @@ Wait for Discord readiness before the first version refresh.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L188)
+[Source](../src/cogs/tasks.py#L195)
 
 Refresh the VALORANT catalog when its upstream version changes.
 
@@ -558,7 +558,7 @@ Refresh the VALORANT catalog when its upstream version changes.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L194)
+[Source](../src/cogs/tasks.py#L201)
 
 Wait for Discord readiness before the first catalog refresh.
 
@@ -566,7 +566,7 @@ Wait for Discord readiness before the first catalog refresh.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L199)
+[Source](../src/cogs/tasks.py#L206)
 
 Send buffered log lines to Discord and requeue them after HTTP failures.
 
@@ -574,7 +574,7 @@ Send buffered log lines to Discord and requeue them after HTTP failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L227)
+[Source](../src/cogs/tasks.py#L234)
 
 Wait for Discord readiness before sending buffered logs.
 
@@ -582,7 +582,7 @@ Wait for Discord readiness before sending buffered logs.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L232)
+[Source](../src/cogs/tasks.py#L239)
 
 Register the background-task cog with the bot.
 
@@ -742,7 +742,7 @@ Create a skin alert for the caller's active account and show a remove control.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L79)
+[Source](../src/cogs/valorant/alerts.py#L82)
 
 Show the caller's paginated alerts and owner-bound management controls.
 
@@ -750,15 +750,31 @@ Show the caller's paginated alerts and owner-bound management controls.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L91)
+[Source](../src/cogs/valorant/alerts.py#L94)
 
 Build the confirmation card for a newly created skin alert.
+
+### `def _skin_display_name(self, skin: Skin | None) -> str`
+
+**Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
+
+[Source](../src/cogs/valorant/alerts.py#L104)
+
+Return a skin name with its tier emoji when the emoji service is available.
+
+### `def _skin_emoji(self, skin: Skin | None) -> str | None`
+
+**Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
+
+[Source](../src/cogs/valorant/alerts.py#L114)
+
+Return a button emoji for a skin tier when one is available.
 
 ### `async def manager_view(self, user_id: int, page: int) -> tuple[discord.Embed, discord.ui.View | None]`
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L99)
+[Source](../src/cogs/valorant/alerts.py#L124)
 
 Render one alert page with per-alert removal and optional page controls.
 
@@ -766,7 +782,7 @@ Render one alert page with per-alert removal and optional page controls.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L151)
+[Source](../src/cogs/valorant/alerts.py#L177)
 
 Remove the selected owner-scoped alert and refresh or dismiss its controls.
 
@@ -774,7 +790,7 @@ Remove the selected owner-scoped alert and refresh or dismiss its controls.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L180)
+[Source](../src/cogs/valorant/alerts.py#L206)
 
 Validate a page payload and update the alert-management message.
 
@@ -782,7 +798,7 @@ Validate a page payload and update the alert-management message.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L194)
+[Source](../src/cogs/valorant/alerts.py#L220)
 
 Check login and shop availability, then send the caller a test alert DM.
 
@@ -790,7 +806,7 @@ Check login and shop availability, then send the caller a test alert DM.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `module`
 
-[Source](../src/cogs/valorant/alerts.py#L257)
+[Source](../src/cogs/valorant/alerts.py#L283)
 
 Register the skin-alert commands and their persistent handlers.
 
@@ -802,7 +818,7 @@ Commands and embed builders for VALORANT battlepass and mission progress.
 
 **Scope:** `src/cogs/valorant/battlepass.py` · `module`
 
-[Source](../src/cogs/valorant/battlepass.py#L17)
+[Source](../src/cogs/valorant/battlepass.py#L18)
 
 Display the caller's current battlepass level and mission progress.
 
@@ -810,7 +826,7 @@ Display the caller's current battlepass level and mission progress.
 
 **Scope:** `src/cogs/valorant/battlepass.py` · `BattlepassCog`
 
-[Source](../src/cogs/valorant/battlepass.py#L20)
+[Source](../src/cogs/valorant/battlepass.py#L21)
 
 Bind the bot's gameplay, account, and emoji services.
 
@@ -818,7 +834,7 @@ Bind the bot's gameplay, account, and emoji services.
 
 **Scope:** `src/cogs/valorant/battlepass.py` · `BattlepassCog`
 
-[Source](../src/cogs/valorant/battlepass.py#L25)
+[Source](../src/cogs/valorant/battlepass.py#L26)
 
 Fetch and display the active battlepass for the caller's selected account.
 
@@ -826,7 +842,7 @@ Fetch and display the active battlepass for the caller's selected account.
 
 **Scope:** `src/cogs/valorant/battlepass.py` · `BattlepassCog`
 
-[Source](../src/cogs/valorant/battlepass.py#L50)
+[Source](../src/cogs/valorant/battlepass.py#L55)
 
 Show the selected account's daily and weekly mission progress privately.
 
@@ -834,15 +850,15 @@ Show the selected account's daily and weekly mission progress privately.
 
 **Scope:** `src/cogs/valorant/battlepass.py` · `BattlepassCog`
 
-[Source](../src/cogs/valorant/battlepass.py#L69)
+[Source](../src/cogs/valorant/battlepass.py#L74)
 
 Group mission entries by type and expiry and render progress bars.
 
-### `def _battlepass_card(player: str, data: dict, filled_bar: str = '█', empty_bar: str = '░') -> discord.Embed`
+### `def _battlepass_card(player: str, data: dict, filled_bar: str = '█', empty_bar: str = '░', *, emoji_service: ApplicationEmojiService | None = None) -> discord.Embed`
 
 **Scope:** `src/cogs/valorant/battlepass.py` · `BattlepassCog`
 
-[Source](../src/cogs/valorant/battlepass.py#L125)
+[Source](../src/cogs/valorant/battlepass.py#L130)
 
 Render the active act, current tier, next reward, and XP progress bar.
 
@@ -850,7 +866,7 @@ Render the active act, current tier, next reward, and XP progress bar.
 
 **Scope:** `src/cogs/valorant/battlepass.py` · `module`
 
-[Source](../src/cogs/valorant/battlepass.py#L152)
+[Source](../src/cogs/valorant/battlepass.py#L165)
 
 Register the battlepass and mission commands.
 
@@ -1030,11 +1046,11 @@ Register the user preference commands and selection handler.
 
 Commands for daily, accessory, and Night Market shops and wallet balances.
 
-### `def offer_cards(header: str, offers: list[Offer], currency: str, *, link_item_image: bool) -> list[discord.Embed]`
+### `def offer_cards(header: str, offers: list[Offer], currency: str, *, link_item_image: bool, emoji_service: ApplicationEmojiService | None = None) -> list[discord.Embed]`
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L30)
+[Source](../src/cogs/valorant/shop.py#L31)
 
 Render a heading and one tier-coloured embed for each skin offer.
 
@@ -1042,7 +1058,7 @@ Render a heading and one tier-coloured embed for each skin offer.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L49)
+[Source](../src/cogs/valorant/shop.py#L59)
 
 Show the caller's daily shop and handle its account and mode controls.
 
@@ -1050,7 +1066,7 @@ Show the caller's daily shop and handle its account and mode controls.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L52)
+[Source](../src/cogs/valorant/shop.py#L62)
 
 Bind the bot and register persistent shop-mode and account actions.
 
@@ -1058,7 +1074,7 @@ Bind the bot and register persistent shop-mode and account actions.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L59)
+[Source](../src/cogs/valorant/shop.py#L69)
 
 Show the caller's shop or a shop another user has chosen to share.
 
@@ -1066,7 +1082,7 @@ Show the caller's shop or a shop another user has chosen to share.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L103)
+[Source](../src/cogs/valorant/shop.py#L114)
 
 Build the daily shop embeds and controls for accessories and other accounts.
 
@@ -1074,7 +1090,7 @@ Build the daily shop embeds and controls for accessories and other accounts.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L142)
+[Source](../src/cogs/valorant/shop.py#L154)
 
 Render the selected daily, Night Market, or accessory shop mode.
 
@@ -1082,7 +1098,7 @@ Render the selected daily, Night Market, or accessory shop mode.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L230)
+[Source](../src/cogs/valorant/shop.py#L243)
 
 Add a private account selector when the owner has multiple accounts.
 
@@ -1090,7 +1106,7 @@ Add a private account selector when the owner has multiple accounts.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L261)
+[Source](../src/cogs/valorant/shop.py#L274)
 
 Validate the selected account and reopen the corresponding shop mode.
 
@@ -1098,7 +1114,7 @@ Validate the selected account and reopen the corresponding shop mode.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L273)
+[Source](../src/cogs/valorant/shop.py#L286)
 
 Display discounted Night Market offers for the selected Riot account.
 
@@ -1106,7 +1122,7 @@ Display discounted Night Market offers for the selected Riot account.
 
 **Scope:** `src/cogs/valorant/shop.py` · `NightMarketCog`
 
-[Source](../src/cogs/valorant/shop.py#L276)
+[Source](../src/cogs/valorant/shop.py#L289)
 
 Bind the shared shop, account, and emoji services.
 
@@ -1114,7 +1130,7 @@ Bind the shared shop, account, and emoji services.
 
 **Scope:** `src/cogs/valorant/shop.py` · `NightMarketCog`
 
-[Source](../src/cogs/valorant/shop.py#L283)
+[Source](../src/cogs/valorant/shop.py#L296)
 
 Fetch and render Night Market offers or report that none are active.
 
@@ -1122,7 +1138,7 @@ Fetch and render Night Market offers or report that none are active.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L322)
+[Source](../src/cogs/valorant/shop.py#L337)
 
 Display the selected account's three VALORANT wallet balances.
 
@@ -1130,7 +1146,7 @@ Display the selected account's three VALORANT wallet balances.
 
 **Scope:** `src/cogs/valorant/shop.py` · `BalanceCog`
 
-[Source](../src/cogs/valorant/shop.py#L325)
+[Source](../src/cogs/valorant/shop.py#L340)
 
 Bind the shared shop and user-preference services.
 
@@ -1138,7 +1154,7 @@ Bind the shared shop and user-preference services.
 
 **Scope:** `src/cogs/valorant/shop.py` · `BalanceCog`
 
-[Source](../src/cogs/valorant/shop.py#L333)
+[Source](../src/cogs/valorant/shop.py#L348)
 
 Fetch and display VP, Radianite, and Kingdom Credit balances.
 
@@ -1146,7 +1162,7 @@ Fetch and display VP, Radianite, and Kingdom Credit balances.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L362)
+[Source](../src/cogs/valorant/shop.py#L377)
 
 Register the shop, Night Market, and wallet-balance cogs.
 
@@ -2175,7 +2191,7 @@ Cache Discord application emojis and create them from bundled image assets.
 
 **Scope:** `src/services/emojis.py` · `module`
 
-[Source](../src/services/emojis.py#L16)
+[Source](../src/services/emojis.py#L24)
 
 Application emoji cache with safe text fallbacks.
 
@@ -2183,7 +2199,7 @@ Application emoji cache with safe text fallbacks.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L19)
+[Source](../src/services/emojis.py#L27)
 
 Bind the Discord client and initialize the serialized emoji cache.
 
@@ -2191,7 +2207,7 @@ Bind the Discord client and initialize the serialized emoji cache.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L25)
+[Source](../src/services/emojis.py#L33)
 
 Load existing application emojis and create any bundled assets that are missing.
 
@@ -2199,7 +2215,7 @@ Load existing application emojis and create any bundled assets that are missing.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L43)
+[Source](../src/services/emojis.py#L52)
 
 Return the emoji for VP, Radianite, or Kingdom Credits, if available.
 
@@ -2207,15 +2223,31 @@ Return the emoji for VP, Radianite, or Kingdom Credits, if available.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L53)
+[Source](../src/services/emojis.py#L62)
 
 Return the filled and empty battlepass progress-bar emoji strings.
+
+### `def skin_emoji(self, tier_uuid: str | None) -> str`
+
+**Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
+
+[Source](../src/services/emojis.py#L69)
+
+Return a cached application emoji for a skin tier, if available.
+
+### `def skin_name(self, name: str, tier_uuid: str | None) -> str`
+
+**Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
+
+[Source](../src/services/emojis.py#L77)
+
+Prefix a skin name with its cached tier emoji when available.
 
 ### `async def _get_or_create(self, name: str, source: Path) -> str`
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L60)
+[Source](../src/services/emojis.py#L82)
 
 Resolve or create one application emoji, returning empty text on failure.
 
@@ -2275,7 +2307,7 @@ Resolve the next battlepass reward to display data, including its icon.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L246)
+[Source](../src/services/gameplay.py#L247)
 
 Return a validated API response's data list or an empty list.
 
@@ -2283,7 +2315,7 @@ Return a validated API response's data list or an empty list.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L255)
+[Source](../src/services/gameplay.py#L256)
 
 Riot did not return usable battlepass data.
 
@@ -2291,7 +2323,7 @@ Riot did not return usable battlepass data.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L259)
+[Source](../src/services/gameplay.py#L260)
 
 Convert a non-Boolean value to a nonnegative integer when possible.
 
@@ -2299,7 +2331,7 @@ Convert a non-Boolean value to a nonnegative integer when possible.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L270)
+[Source](../src/services/gameplay.py#L271)
 
 Convert a value to a positive integer or return ``None``.
 
@@ -2307,7 +2339,7 @@ Convert a value to a positive integer or return ``None``.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L276)
+[Source](../src/services/gameplay.py#L277)
 
 Parse an ISO timestamp and attach UTC when the input has no timezone.
 
