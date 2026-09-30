@@ -1,0 +1,1 @@
+"""Botfragg bot package."""

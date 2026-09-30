@@ -1,0 +1,11 @@
+services:
+  bot:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    command: ["sh", "-c", "uv run --frozen --no-dev tortoise -c src.database.TORTOISE_CONFIG migrate && exec uv run --frozen --no-dev botfragg"]
+    volumes:
+      - bot-data:/app/data
+
+volumes:
+  bot-data:
