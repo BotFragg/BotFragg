@@ -42,8 +42,14 @@ def offer_cards(
     """Render a heading and one tier-coloured embed for each skin offer."""
     result = [embed(header, colour=0x202225)]
     for offer in offers:
+        price = (
+            f"{currency} **{offer.discount_price:,}**\n"
+            f"{currency} ~~{offer.price:,}~~ (-{offer.discount_percent or 0}%)"
+            if offer.discount_price
+            else f"{currency} **{offer.price:,}**"
+        )
         item = embed(
-            f"{currency} **{offer.price:,}**",
+            price,
             title=(
                 emoji_service.skin_name(offer.skin.name, offer.skin.tier_uuid)
                 if emoji_service

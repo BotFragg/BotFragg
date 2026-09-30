@@ -256,8 +256,8 @@ def test_glitchtip_groups_subcommands_separately() -> None:
     )
 
 
-def test_shop_offer_layout_uses_tier_colour() -> None:
-    """Verify that shop offer layout uses tier colour."""
+def test_shop_offer_layout_uses_tier_colour_and_discount_price() -> None:
+    """Verify tier colour and Night Market discount formatting."""
     skin = Skin(
         "skin",
         "offer",
@@ -273,6 +273,10 @@ def test_shop_offer_layout_uses_tier_colour() -> None:
         0x009984,
         "https://example.com/prime.png",
     )
+    discounted = offer_cards(
+        "Night Market", [Offer(skin, 1775, 1, 1000, 44)], "VP", link_item_image=False
+    )
+    assert discounted[1].description == "VP **1,000**\nVP ~~1,775~~ (-44%)"
 
 
 @pytest.mark.asyncio

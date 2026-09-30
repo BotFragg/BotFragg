@@ -1058,7 +1058,7 @@ Render a heading and one tier-coloured embed for each skin offer.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L62)
+[Source](../src/cogs/valorant/shop.py#L68)
 
 Add a menu containing only the skin offers rendered beside it.
 
@@ -1066,7 +1066,7 @@ Add a menu containing only the skin offers rendered beside it.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L95)
+[Source](../src/cogs/valorant/shop.py#L101)
 
 Show the caller's daily shop and handle its account and mode controls.
 
@@ -1074,7 +1074,7 @@ Show the caller's daily shop and handle its account and mode controls.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L98)
+[Source](../src/cogs/valorant/shop.py#L104)
 
 Bind the bot and register persistent shop-mode and account actions.
 
@@ -1082,7 +1082,7 @@ Bind the bot and register persistent shop-mode and account actions.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L107)
+[Source](../src/cogs/valorant/shop.py#L113)
 
 Show the caller's shop or a shop another user has chosen to share.
 
@@ -1090,7 +1090,7 @@ Show the caller's shop or a shop another user has chosen to share.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L161)
+[Source](../src/cogs/valorant/shop.py#L167)
 
 Build the daily shop embeds and controls for accessories and other accounts.
 
@@ -1098,7 +1098,7 @@ Build the daily shop embeds and controls for accessories and other accounts.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L205)
+[Source](../src/cogs/valorant/shop.py#L211)
 
 Render the selected daily, Night Market, or accessory shop mode.
 
@@ -1106,7 +1106,7 @@ Render the selected daily, Night Market, or accessory shop mode.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L304)
+[Source](../src/cogs/valorant/shop.py#L310)
 
 Read the values actually offered by this message's matching select menu.
 
@@ -1114,7 +1114,7 @@ Read the values actually offered by this message's matching select menu.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L319)
+[Source](../src/cogs/valorant/shop.py#L325)
 
 List playable levels and chromas within Discord's select-menu limit.
 
@@ -1122,7 +1122,7 @@ List playable levels and chromas within Discord's select-menu limit.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L343)
+[Source](../src/cogs/valorant/shop.py#L349)
 
 Open a private level/chroma menu for a skin offered in this message.
 
@@ -1130,7 +1130,7 @@ Open a private level/chroma menu for a skin offered in this message.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L392)
+[Source](../src/cogs/valorant/shop.py#L398)
 
 Privately return a selected video only when it belongs to that skin.
 
@@ -1138,7 +1138,7 @@ Privately return a selected video only when it belongs to that skin.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L449)
+[Source](../src/cogs/valorant/shop.py#L455)
 
 Add a private account selector when the owner has multiple accounts.
 
@@ -1146,7 +1146,7 @@ Add a private account selector when the owner has multiple accounts.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L480)
+[Source](../src/cogs/valorant/shop.py#L486)
 
 Validate the selected account and reopen the corresponding shop mode.
 
@@ -1154,7 +1154,7 @@ Validate the selected account and reopen the corresponding shop mode.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L492)
+[Source](../src/cogs/valorant/shop.py#L498)
 
 Display discounted Night Market offers for the selected Riot account.
 
@@ -1162,7 +1162,7 @@ Display discounted Night Market offers for the selected Riot account.
 
 **Scope:** `src/cogs/valorant/shop.py` · `NightMarketCog`
 
-[Source](../src/cogs/valorant/shop.py#L495)
+[Source](../src/cogs/valorant/shop.py#L501)
 
 Bind the shared shop, account, and emoji services.
 
@@ -1170,7 +1170,7 @@ Bind the shared shop, account, and emoji services.
 
 **Scope:** `src/cogs/valorant/shop.py` · `NightMarketCog`
 
-[Source](../src/cogs/valorant/shop.py#L502)
+[Source](../src/cogs/valorant/shop.py#L508)
 
 Fetch and render Night Market offers or report that none are active.
 
@@ -1178,7 +1178,7 @@ Fetch and render Night Market offers or report that none are active.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L553)
+[Source](../src/cogs/valorant/shop.py#L559)
 
 Display the selected account's three VALORANT wallet balances.
 
@@ -1186,7 +1186,7 @@ Display the selected account's three VALORANT wallet balances.
 
 **Scope:** `src/cogs/valorant/shop.py` · `BalanceCog`
 
-[Source](../src/cogs/valorant/shop.py#L556)
+[Source](../src/cogs/valorant/shop.py#L562)
 
 Bind the shared shop and user-preference services.
 
@@ -1194,7 +1194,7 @@ Bind the shared shop and user-preference services.
 
 **Scope:** `src/cogs/valorant/shop.py` · `BalanceCog`
 
-[Source](../src/cogs/valorant/shop.py#L564)
+[Source](../src/cogs/valorant/shop.py#L570)
 
 Fetch and display VP, Radianite, and Kingdom Credit balances.
 
@@ -1202,7 +1202,7 @@ Fetch and display VP, Radianite, and Kingdom Credit balances.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L593)
+[Source](../src/cogs/valorant/shop.py#L599)
 
 Register the shop, Night Market, and wallet-balance cogs.
 
@@ -4577,19 +4577,19 @@ Record edits to the fake interaction's original response.
 
 Verify that GlitchTip groups subcommands separately.
 
-### `def test_shop_offer_layout_uses_tier_colour() -> None`
+### `def test_shop_offer_layout_uses_tier_colour_and_discount_price() -> None`
 
 **Scope:** `tests/test_views_commands.py` · `module`
 
 [Source](../tests/test_views_commands.py#L259)
 
-Verify that shop offer layout uses tier colour.
+Verify tier colour and Night Market discount formatting.
 
 ### `async def test_shop_skin_menu_selects_tiered_skin_and_returns_private_video() -> None`
 
 **Scope:** `tests/test_views_commands.py` · `module`
 
-[Source](../tests/test_views_commands.py#L279)
+[Source](../tests/test_views_commands.py#L283)
 
 Verify tier emoji options and private level/chroma video delivery.
 
@@ -4597,7 +4597,7 @@ Verify tier emoji options and private level/chroma video delivery.
 
 **Scope:** `tests/test_views_commands.py` · `test_shop_skin_menu_selects_tiered_skin_and_returns_private_video`
 
-[Source](../tests/test_views_commands.py#L304)
+[Source](../tests/test_views_commands.py#L308)
 
 Return stable tier emoji labels for the shop selector test.
 
@@ -4605,7 +4605,7 @@ Return stable tier emoji labels for the shop selector test.
 
 **Scope:** `tests/test_views_commands.py` · `test_shop_skin_menu_selects_tiered_skin_and_returns_private_video.EmojiService`
 
-[Source](../tests/test_views_commands.py#L307)
+[Source](../tests/test_views_commands.py#L311)
 
 Return the fixture's tier emoji.
 
@@ -4613,7 +4613,7 @@ Return the fixture's tier emoji.
 
 **Scope:** `tests/test_views_commands.py` · `test_shop_skin_menu_selects_tiered_skin_and_returns_private_video.EmojiService`
 
-[Source](../tests/test_views_commands.py#L311)
+[Source](../tests/test_views_commands.py#L315)
 
 Prefix the fixture's tier emoji to a displayed name.
 
@@ -4621,7 +4621,7 @@ Prefix the fixture's tier emoji to a displayed name.
 
 **Scope:** `tests/test_views_commands.py` · `test_shop_skin_menu_selects_tiered_skin_and_returns_private_video`
 
-[Source](../tests/test_views_commands.py#L315)
+[Source](../tests/test_views_commands.py#L319)
 
 Capture private interaction replies for response assertions.
 
@@ -4629,7 +4629,7 @@ Capture private interaction replies for response assertions.
 
 **Scope:** `tests/test_views_commands.py` · `test_shop_skin_menu_selects_tiered_skin_and_returns_private_video.Response`
 
-[Source](../tests/test_views_commands.py#L318)
+[Source](../tests/test_views_commands.py#L322)
 
 Initialize the captured response list.
 
@@ -4637,7 +4637,7 @@ Initialize the captured response list.
 
 **Scope:** `tests/test_views_commands.py` · `test_shop_skin_menu_selects_tiered_skin_and_returns_private_video.Response`
 
-[Source](../tests/test_views_commands.py#L322)
+[Source](../tests/test_views_commands.py#L326)
 
 Record a response's content and keyword arguments.
 
@@ -4645,7 +4645,7 @@ Record a response's content and keyword arguments.
 
 **Scope:** `tests/test_views_commands.py` · `module`
 
-[Source](../tests/test_views_commands.py#L374)
+[Source](../tests/test_views_commands.py#L378)
 
 Verify the standard daily shop view exposes its current offer choices.
 
@@ -4653,7 +4653,7 @@ Verify the standard daily shop view exposes its current offer choices.
 
 **Scope:** `tests/test_views_commands.py` · `test_daily_shop_view_includes_only_its_offers_in_skin_menu`
 
-[Source](../tests/test_views_commands.py#L380)
+[Source](../tests/test_views_commands.py#L384)
 
 Return two accounts so selector ordering is visible in the view.
 
@@ -4661,7 +4661,7 @@ Return two accounts so selector ordering is visible in the view.
 
 **Scope:** `tests/test_views_commands.py` · `test_daily_shop_view_includes_only_its_offers_in_skin_menu`
 
-[Source](../tests/test_views_commands.py#L387)
+[Source](../tests/test_views_commands.py#L391)
 
 Return stable currency and tier emoji markers for shop cards.
 
@@ -4669,7 +4669,7 @@ Return stable currency and tier emoji markers for shop cards.
 
 **Scope:** `tests/test_views_commands.py` · `test_daily_shop_view_includes_only_its_offers_in_skin_menu.EmojiService`
 
-[Source](../tests/test_views_commands.py#L390)
+[Source](../tests/test_views_commands.py#L394)
 
 Return the fixture currency marker.
 
@@ -4677,7 +4677,7 @@ Return the fixture currency marker.
 
 **Scope:** `tests/test_views_commands.py` · `test_daily_shop_view_includes_only_its_offers_in_skin_menu.EmojiService`
 
-[Source](../tests/test_views_commands.py#L394)
+[Source](../tests/test_views_commands.py#L398)
 
 Return skin names without a tier prefix for this fixture.
 
@@ -4685,7 +4685,7 @@ Return skin names without a tier prefix for this fixture.
 
 **Scope:** `tests/test_views_commands.py` · `test_daily_shop_view_includes_only_its_offers_in_skin_menu.EmojiService`
 
-[Source](../tests/test_views_commands.py#L398)
+[Source](../tests/test_views_commands.py#L402)
 
 Report that no custom tier emoji is available.
 
@@ -4693,7 +4693,7 @@ Report that no custom tier emoji is available.
 
 **Scope:** `tests/test_views_commands.py` · `module`
 
-[Source](../tests/test_views_commands.py#L438)
+[Source](../tests/test_views_commands.py#L442)
 
 Verify menu values and cached skin ownership gate video delivery.
 
@@ -4701,7 +4701,7 @@ Verify menu values and cached skin ownership gate video delivery.
 
 **Scope:** `tests/test_views_commands.py` · `test_shop_video_selector_rejects_forged_and_mismatched_values`
 
-[Source](../tests/test_views_commands.py#L457)
+[Source](../tests/test_views_commands.py#L461)
 
 Capture invalid selector messages for assertions.
 
@@ -4709,7 +4709,7 @@ Capture invalid selector messages for assertions.
 
 **Scope:** `tests/test_views_commands.py` · `test_shop_video_selector_rejects_forged_and_mismatched_values.Response`
 
-[Source](../tests/test_views_commands.py#L460)
+[Source](../tests/test_views_commands.py#L464)
 
 Initialize the response history.
 
@@ -4717,7 +4717,7 @@ Initialize the response history.
 
 **Scope:** `tests/test_views_commands.py` · `test_shop_video_selector_rejects_forged_and_mismatched_values.Response`
 
-[Source](../tests/test_views_commands.py#L464)
+[Source](../tests/test_views_commands.py#L468)
 
 Record a message and its response options.
 
@@ -4725,7 +4725,7 @@ Record a message and its response options.
 
 **Scope:** `tests/test_views_commands.py` · `module`
 
-[Source](../tests/test_views_commands.py#L526)
+[Source](../tests/test_views_commands.py#L530)
 
 Verify Night Market slash-command offers receive their selector.
 
@@ -4733,7 +4733,7 @@ Verify Night Market slash-command offers receive their selector.
 
 **Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_video_menu`
 
-[Source](../tests/test_views_commands.py#L534)
+[Source](../tests/test_views_commands.py#L538)
 
 Return the account fixture for the Night Market command.
 
@@ -4741,7 +4741,7 @@ Return the account fixture for the Night Market command.
 
 **Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_video_menu`
 
-[Source](../tests/test_views_commands.py#L538)
+[Source](../tests/test_views_commands.py#L542)
 
 Report default visibility preferences for the fixture user.
 
@@ -4749,7 +4749,7 @@ Report default visibility preferences for the fixture user.
 
 **Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_video_menu`
 
-[Source](../tests/test_views_commands.py#L545)
+[Source](../tests/test_views_commands.py#L549)
 
 Provide stable currency and tier emoji values for embeds.
 
@@ -4757,7 +4757,7 @@ Provide stable currency and tier emoji values for embeds.
 
 **Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_video_menu.EmojiService`
 
-[Source](../tests/test_views_commands.py#L548)
+[Source](../tests/test_views_commands.py#L552)
 
 Return the fixture's VP marker.
 
@@ -4765,7 +4765,7 @@ Return the fixture's VP marker.
 
 **Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_video_menu.EmojiService`
 
-[Source](../tests/test_views_commands.py#L552)
+[Source](../tests/test_views_commands.py#L556)
 
 Return a skin name without a tier marker.
 
@@ -4773,7 +4773,7 @@ Return a skin name without a tier marker.
 
 **Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_video_menu.EmojiService`
 
-[Source](../tests/test_views_commands.py#L556)
+[Source](../tests/test_views_commands.py#L560)
 
 Report no custom tier emoji for the fixture skin.
 
@@ -4781,7 +4781,7 @@ Report no custom tier emoji for the fixture skin.
 
 **Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_video_menu`
 
-[Source](../tests/test_views_commands.py#L560)
+[Source](../tests/test_views_commands.py#L564)
 
 Return the fixture storefront for command rendering.
 
@@ -4789,7 +4789,7 @@ Return the fixture storefront for command rendering.
 
 **Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_video_menu.Shop`
 
-[Source](../tests/test_views_commands.py#L563)
+[Source](../tests/test_views_commands.py#L567)
 
 Return the configured Night Market data.
 
@@ -4797,7 +4797,7 @@ Return the configured Night Market data.
 
 **Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_video_menu`
 
-[Source](../tests/test_views_commands.py#L567)
+[Source](../tests/test_views_commands.py#L571)
 
 Verify the command defers before sending its follow-up.
 
@@ -4805,7 +4805,7 @@ Verify the command defers before sending its follow-up.
 
 **Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_video_menu.Response`
 
-[Source](../tests/test_views_commands.py#L570)
+[Source](../tests/test_views_commands.py#L574)
 
 Assert that the command uses a thinking response.
 
@@ -4813,7 +4813,7 @@ Assert that the command uses a thinking response.
 
 **Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_video_menu`
 
-[Source](../tests/test_views_commands.py#L574)
+[Source](../tests/test_views_commands.py#L578)
 
 Capture the Night Market message and its controls.
 
@@ -4821,7 +4821,7 @@ Capture the Night Market message and its controls.
 
 **Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_video_menu.Followup`
 
-[Source](../tests/test_views_commands.py#L577)
+[Source](../tests/test_views_commands.py#L581)
 
 Initialize the captured follow-up payload.
 
@@ -4829,7 +4829,7 @@ Initialize the captured follow-up payload.
 
 **Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_video_menu.Followup`
 
-[Source](../tests/test_views_commands.py#L581)
+[Source](../tests/test_views_commands.py#L585)
 
 Store the follow-up message arguments.
 
@@ -4837,7 +4837,7 @@ Store the follow-up message arguments.
 
 **Scope:** `tests/test_views_commands.py` · `module`
 
-[Source](../tests/test_views_commands.py#L608)
+[Source](../tests/test_views_commands.py#L612)
 
 Verify daily-shop notification DMs include the shared skin selector.
 
@@ -4845,7 +4845,7 @@ Verify daily-shop notification DMs include the shared skin selector.
 
 **Scope:** `tests/test_views_commands.py` · `test_daily_shop_dm_includes_skin_video_menu`
 
-[Source](../tests/test_views_commands.py#L613)
+[Source](../tests/test_views_commands.py#L617)
 
 Capture the daily-shop DM sent by the task notification.
 
@@ -4853,7 +4853,7 @@ Capture the daily-shop DM sent by the task notification.
 
 **Scope:** `tests/test_views_commands.py` · `test_daily_shop_dm_includes_skin_video_menu.Target`
 
-[Source](../tests/test_views_commands.py#L616)
+[Source](../tests/test_views_commands.py#L620)
 
 Store the DM arguments.
 
@@ -4861,7 +4861,7 @@ Store the DM arguments.
 
 **Scope:** `tests/test_views_commands.py` · `test_daily_shop_dm_includes_skin_video_menu`
 
-[Source](../tests/test_views_commands.py#L620)
+[Source](../tests/test_views_commands.py#L624)
 
 Provide stable currency and tier emoji values for the DM.
 
@@ -4869,7 +4869,7 @@ Provide stable currency and tier emoji values for the DM.
 
 **Scope:** `tests/test_views_commands.py` · `test_daily_shop_dm_includes_skin_video_menu.EmojiService`
 
-[Source](../tests/test_views_commands.py#L623)
+[Source](../tests/test_views_commands.py#L627)
 
 Return the fixture's VP marker.
 
@@ -4877,7 +4877,7 @@ Return the fixture's VP marker.
 
 **Scope:** `tests/test_views_commands.py` · `test_daily_shop_dm_includes_skin_video_menu.EmojiService`
 
-[Source](../tests/test_views_commands.py#L627)
+[Source](../tests/test_views_commands.py#L631)
 
 Return a skin name without a tier marker.
 
@@ -4885,7 +4885,7 @@ Return a skin name without a tier marker.
 
 **Scope:** `tests/test_views_commands.py` · `test_daily_shop_dm_includes_skin_video_menu.EmojiService`
 
-[Source](../tests/test_views_commands.py#L631)
+[Source](../tests/test_views_commands.py#L635)
 
 Report no custom tier emoji for the fixture skin.
 
@@ -4893,7 +4893,7 @@ Report no custom tier emoji for the fixture skin.
 
 **Scope:** `tests/test_views_commands.py` · `module`
 
-[Source](../tests/test_views_commands.py#L660)
+[Source](../tests/test_views_commands.py#L664)
 
 Verify that shop account selector hides names when requested.
 
@@ -4901,7 +4901,7 @@ Verify that shop account selector hides names when requested.
 
 **Scope:** `tests/test_views_commands.py` · `test_shop_account_selector_hides_names_when_requested`
 
-[Source](../tests/test_views_commands.py#L669)
+[Source](../tests/test_views_commands.py#L673)
 
 Return the configured accounts for the requested Discord user.
 
@@ -4909,7 +4909,7 @@ Return the configured accounts for the requested Discord user.
 
 **Scope:** `tests/test_views_commands.py` · `module`
 
-[Source](../tests/test_views_commands.py#L686)
+[Source](../tests/test_views_commands.py#L690)
 
 Verify that shop hides full in game name when preference enabled.
 
@@ -4917,7 +4917,7 @@ Verify that shop hides full in game name when preference enabled.
 
 **Scope:** `tests/test_views_commands.py` · `test_shop_hides_full_in_game_name_when_preference_enabled`
 
-[Source](../tests/test_views_commands.py#L692)
+[Source](../tests/test_views_commands.py#L696)
 
 Return the configured user fixture for the requested Discord ID.
 
@@ -4925,7 +4925,7 @@ Return the configured user fixture for the requested Discord ID.
 
 **Scope:** `tests/test_views_commands.py` · `test_shop_hides_full_in_game_name_when_preference_enabled`
 
-[Source](../tests/test_views_commands.py#L696)
+[Source](../tests/test_views_commands.py#L700)
 
 Return the configured active account for the command under test.
 
@@ -4933,7 +4933,7 @@ Return the configured active account for the command under test.
 
 **Scope:** `tests/test_views_commands.py` · `test_shop_hides_full_in_game_name_when_preference_enabled`
 
-[Source](../tests/test_views_commands.py#L700)
+[Source](../tests/test_views_commands.py#L704)
 
 Capture whether an interaction was deferred and whether its initial response was private.
 
@@ -4941,7 +4941,7 @@ Capture whether an interaction was deferred and whether its initial response was
 
 **Scope:** `tests/test_views_commands.py` · `test_shop_hides_full_in_game_name_when_preference_enabled.Response`
 
-[Source](../tests/test_views_commands.py#L703)
+[Source](../tests/test_views_commands.py#L707)
 
 Record that the fake interaction response was deferred.
 
@@ -4949,7 +4949,7 @@ Record that the fake interaction response was deferred.
 
 **Scope:** `tests/test_views_commands.py` · `test_shop_hides_full_in_game_name_when_preference_enabled`
 
-[Source](../tests/test_views_commands.py#L707)
+[Source](../tests/test_views_commands.py#L711)
 
 Capture outgoing embeds and privacy flags sent after an interaction's initial response.
 
@@ -4957,7 +4957,7 @@ Capture outgoing embeds and privacy flags sent after an interaction's initial re
 
 **Scope:** `tests/test_views_commands.py` · `test_shop_hides_full_in_game_name_when_preference_enabled.Followup`
 
-[Source](../tests/test_views_commands.py#L710)
+[Source](../tests/test_views_commands.py#L714)
 
 Record the follow-up message sent through the fake interaction.
 
@@ -4965,7 +4965,7 @@ Record the follow-up message sent through the fake interaction.
 
 **Scope:** `tests/test_views_commands.py` · `test_shop_hides_full_in_game_name_when_preference_enabled`
 
-[Source](../tests/test_views_commands.py#L714)
+[Source](../tests/test_views_commands.py#L718)
 
 Return deterministic storefront data and record account lookups for alert and command assertions.
 
@@ -4973,7 +4973,7 @@ Return deterministic storefront data and record account lookups for alert and co
 
 **Scope:** `tests/test_views_commands.py` · `test_shop_hides_full_in_game_name_when_preference_enabled.Shop`
 
-[Source](../tests/test_views_commands.py#L717)
+[Source](../tests/test_views_commands.py#L721)
 
 Return the configured storefront fixture for the requested account.
 
@@ -4981,7 +4981,7 @@ Return the configured storefront fixture for the requested account.
 
 **Scope:** `tests/test_views_commands.py` · `test_shop_hides_full_in_game_name_when_preference_enabled`
 
-[Source](../tests/test_views_commands.py#L730)
+[Source](../tests/test_views_commands.py#L734)
 
 Return the expected shop embeds and interactive controls.
 
@@ -4989,7 +4989,7 @@ Return the expected shop embeds and interactive controls.
 
 **Scope:** `tests/test_views_commands.py` · `module`
 
-[Source](../tests/test_views_commands.py#L749)
+[Source](../tests/test_views_commands.py#L753)
 
 Verify that account switch hides name when preference enabled.
 
@@ -4997,7 +4997,7 @@ Verify that account switch hides name when preference enabled.
 
 **Scope:** `tests/test_views_commands.py` · `test_account_switch_hides_name_when_preference_enabled`
 
-[Source](../tests/test_views_commands.py#L757)
+[Source](../tests/test_views_commands.py#L761)
 
 Return the configured accounts for the requested Discord user.
 
@@ -5005,7 +5005,7 @@ Return the configured accounts for the requested Discord user.
 
 **Scope:** `tests/test_views_commands.py` · `test_account_switch_hides_name_when_preference_enabled`
 
-[Source](../tests/test_views_commands.py#L761)
+[Source](../tests/test_views_commands.py#L765)
 
 Resolve the requested account from the fixture list.
 
@@ -5013,7 +5013,7 @@ Resolve the requested account from the fixture list.
 
 **Scope:** `tests/test_views_commands.py` · `test_account_switch_hides_name_when_preference_enabled`
 
-[Source](../tests/test_views_commands.py#L765)
+[Source](../tests/test_views_commands.py#L769)
 
 Return the configured user fixture for the requested Discord ID.
 
@@ -5021,7 +5021,7 @@ Return the configured user fixture for the requested Discord ID.
 
 **Scope:** `tests/test_views_commands.py` · `test_account_switch_hides_name_when_preference_enabled`
 
-[Source](../tests/test_views_commands.py#L769)
+[Source](../tests/test_views_commands.py#L773)
 
 Record the account selected by the command under test.
 
@@ -5029,7 +5029,7 @@ Record the account selected by the command under test.
 
 **Scope:** `tests/test_views_commands.py` · `test_account_switch_hides_name_when_preference_enabled`
 
-[Source](../tests/test_views_commands.py#L773)
+[Source](../tests/test_views_commands.py#L777)
 
 Capture whether an interaction was deferred and whether its initial response was private.
 
@@ -5037,7 +5037,7 @@ Capture whether an interaction was deferred and whether its initial response was
 
 **Scope:** `tests/test_views_commands.py` · `test_account_switch_hides_name_when_preference_enabled.Response`
 
-[Source](../tests/test_views_commands.py#L776)
+[Source](../tests/test_views_commands.py#L780)
 
 Record that the fake interaction response was deferred.
 
@@ -5045,7 +5045,7 @@ Record that the fake interaction response was deferred.
 
 **Scope:** `tests/test_views_commands.py` · `test_account_switch_hides_name_when_preference_enabled`
 
-[Source](../tests/test_views_commands.py#L780)
+[Source](../tests/test_views_commands.py#L784)
 
 Capture outgoing embeds and privacy flags sent after an interaction's initial response.
 
@@ -5053,7 +5053,7 @@ Capture outgoing embeds and privacy flags sent after an interaction's initial re
 
 **Scope:** `tests/test_views_commands.py` · `test_account_switch_hides_name_when_preference_enabled.Followup`
 
-[Source](../tests/test_views_commands.py#L783)
+[Source](../tests/test_views_commands.py#L787)
 
 Record the follow-up message sent through the fake interaction.
 
@@ -5061,7 +5061,7 @@ Record the follow-up message sent through the fake interaction.
 
 **Scope:** `tests/test_views_commands.py` · `module`
 
-[Source](../tests/test_views_commands.py#L803)
+[Source](../tests/test_views_commands.py#L807)
 
 Verify that battlepass hides name when preference enabled.
 
@@ -5069,7 +5069,7 @@ Verify that battlepass hides name when preference enabled.
 
 **Scope:** `tests/test_views_commands.py` · `test_battlepass_hides_name_when_preference_enabled`
 
-[Source](../tests/test_views_commands.py#L818)
+[Source](../tests/test_views_commands.py#L822)
 
 Return the configured active account for the command under test.
 
@@ -5077,7 +5077,7 @@ Return the configured active account for the command under test.
 
 **Scope:** `tests/test_views_commands.py` · `test_battlepass_hides_name_when_preference_enabled`
 
-[Source](../tests/test_views_commands.py#L822)
+[Source](../tests/test_views_commands.py#L826)
 
 Return the configured user fixture for the requested Discord ID.
 
@@ -5085,7 +5085,7 @@ Return the configured user fixture for the requested Discord ID.
 
 **Scope:** `tests/test_views_commands.py` · `test_battlepass_hides_name_when_preference_enabled`
 
-[Source](../tests/test_views_commands.py#L826)
+[Source](../tests/test_views_commands.py#L830)
 
 Capture whether an interaction was deferred and whether its initial response was private.
 
@@ -5093,7 +5093,7 @@ Capture whether an interaction was deferred and whether its initial response was
 
 **Scope:** `tests/test_views_commands.py` · `test_battlepass_hides_name_when_preference_enabled.Response`
 
-[Source](../tests/test_views_commands.py#L829)
+[Source](../tests/test_views_commands.py#L833)
 
 Record that the fake interaction response was deferred.
 
@@ -5101,7 +5101,7 @@ Record that the fake interaction response was deferred.
 
 **Scope:** `tests/test_views_commands.py` · `test_battlepass_hides_name_when_preference_enabled`
 
-[Source](../tests/test_views_commands.py#L833)
+[Source](../tests/test_views_commands.py#L837)
 
 Capture outgoing embeds and privacy flags sent after an interaction's initial response.
 
@@ -5109,7 +5109,7 @@ Capture outgoing embeds and privacy flags sent after an interaction's initial re
 
 **Scope:** `tests/test_views_commands.py` · `test_battlepass_hides_name_when_preference_enabled.Followup`
 
-[Source](../tests/test_views_commands.py#L836)
+[Source](../tests/test_views_commands.py#L840)
 
 Record the follow-up message sent through the fake interaction.
 
@@ -5117,7 +5117,7 @@ Record the follow-up message sent through the fake interaction.
 
 **Scope:** `tests/test_views_commands.py` · `test_battlepass_hides_name_when_preference_enabled`
 
-[Source](../tests/test_views_commands.py#L840)
+[Source](../tests/test_views_commands.py#L844)
 
 Return controlled battlepass or mission data without making Riot requests.
 
@@ -5125,7 +5125,7 @@ Return controlled battlepass or mission data without making Riot requests.
 
 **Scope:** `tests/test_views_commands.py` · `test_battlepass_hides_name_when_preference_enabled.Gameplay`
 
-[Source](../tests/test_views_commands.py#L843)
+[Source](../tests/test_views_commands.py#L847)
 
 Return the configured battlepass progression fixture.
 
@@ -5133,7 +5133,7 @@ Return the configured battlepass progression fixture.
 
 **Scope:** `tests/test_views_commands.py` · `test_battlepass_hides_name_when_preference_enabled`
 
-[Source](../tests/test_views_commands.py#L847)
+[Source](../tests/test_views_commands.py#L851)
 
 Return deterministic currency and progress markers for embed assertions.
 
@@ -5141,7 +5141,7 @@ Return deterministic currency and progress markers for embed assertions.
 
 **Scope:** `tests/test_views_commands.py` · `test_battlepass_hides_name_when_preference_enabled.EmojiService`
 
-[Source](../tests/test_views_commands.py#L850)
+[Source](../tests/test_views_commands.py#L854)
 
 Return progress-bar markers used by embed assertions.
 
@@ -5149,7 +5149,7 @@ Return progress-bar markers used by embed assertions.
 
 **Scope:** `tests/test_views_commands.py` · `module`
 
-[Source](../tests/test_views_commands.py#L874)
+[Source](../tests/test_views_commands.py#L878)
 
 Verify that missions command shows weekly progress privately.
 
@@ -5157,7 +5157,7 @@ Verify that missions command shows weekly progress privately.
 
 **Scope:** `tests/test_views_commands.py` · `test_missions_command_shows_weekly_progress_privately`
 
-[Source](../tests/test_views_commands.py#L881)
+[Source](../tests/test_views_commands.py#L885)
 
 Return the configured active account for the command under test.
 
@@ -5165,7 +5165,7 @@ Return the configured active account for the command under test.
 
 **Scope:** `tests/test_views_commands.py` · `test_missions_command_shows_weekly_progress_privately`
 
-[Source](../tests/test_views_commands.py#L885)
+[Source](../tests/test_views_commands.py#L889)
 
 Capture whether an interaction was deferred and whether its initial response was private.
 
@@ -5173,7 +5173,7 @@ Capture whether an interaction was deferred and whether its initial response was
 
 **Scope:** `tests/test_views_commands.py` · `test_missions_command_shows_weekly_progress_privately.Response`
 
-[Source](../tests/test_views_commands.py#L888)
+[Source](../tests/test_views_commands.py#L892)
 
 Record that the fake interaction response was deferred.
 
@@ -5181,7 +5181,7 @@ Record that the fake interaction response was deferred.
 
 **Scope:** `tests/test_views_commands.py` · `test_missions_command_shows_weekly_progress_privately`
 
-[Source](../tests/test_views_commands.py#L892)
+[Source](../tests/test_views_commands.py#L896)
 
 Capture outgoing embeds and privacy flags sent after an interaction's initial response.
 
@@ -5189,7 +5189,7 @@ Capture outgoing embeds and privacy flags sent after an interaction's initial re
 
 **Scope:** `tests/test_views_commands.py` · `test_missions_command_shows_weekly_progress_privately.Followup`
 
-[Source](../tests/test_views_commands.py#L895)
+[Source](../tests/test_views_commands.py#L899)
 
 Record the follow-up message sent through the fake interaction.
 
@@ -5197,7 +5197,7 @@ Record the follow-up message sent through the fake interaction.
 
 **Scope:** `tests/test_views_commands.py` · `test_missions_command_shows_weekly_progress_privately`
 
-[Source](../tests/test_views_commands.py#L899)
+[Source](../tests/test_views_commands.py#L903)
 
 Return controlled battlepass or mission data without making Riot requests.
 
@@ -5205,7 +5205,7 @@ Return controlled battlepass or mission data without making Riot requests.
 
 **Scope:** `tests/test_views_commands.py` · `test_missions_command_shows_weekly_progress_privately.Gameplay`
 
-[Source](../tests/test_views_commands.py#L902)
+[Source](../tests/test_views_commands.py#L906)
 
 Return the configured mission-progress fixture.
 
@@ -5213,7 +5213,7 @@ Return the configured mission-progress fixture.
 
 **Scope:** `tests/test_views_commands.py` · `test_missions_command_shows_weekly_progress_privately`
 
-[Source](../tests/test_views_commands.py#L958)
+[Source](../tests/test_views_commands.py#L962)
 
 Return deterministic currency and progress markers for embed assertions.
 
@@ -5221,7 +5221,7 @@ Return deterministic currency and progress markers for embed assertions.
 
 **Scope:** `tests/test_views_commands.py` · `test_missions_command_shows_weekly_progress_privately.EmojiService`
 
-[Source](../tests/test_views_commands.py#L961)
+[Source](../tests/test_views_commands.py#L965)
 
 Return progress-bar markers used by embed assertions.
 
@@ -5229,7 +5229,7 @@ Return progress-bar markers used by embed assertions.
 
 **Scope:** `tests/test_views_commands.py` · `module`
 
-[Source](../tests/test_views_commands.py#L1001)
+[Source](../tests/test_views_commands.py#L1005)
 
 Verify that testalerts reports temporary auth failure.
 
@@ -5237,7 +5237,7 @@ Verify that testalerts reports temporary auth failure.
 
 **Scope:** `tests/test_views_commands.py` · `test_testalerts_reports_temporary_auth_failure`
 
-[Source](../tests/test_views_commands.py#L1009)
+[Source](../tests/test_views_commands.py#L1013)
 
 Return the configured active account for the command under test.
 
@@ -5245,7 +5245,7 @@ Return the configured active account for the command under test.
 
 **Scope:** `tests/test_views_commands.py` · `test_testalerts_reports_temporary_auth_failure`
 
-[Source](../tests/test_views_commands.py#L1013)
+[Source](../tests/test_views_commands.py#L1017)
 
 Return the alert fixture used by the command under test.
 
@@ -5253,7 +5253,7 @@ Return the alert fixture used by the command under test.
 
 **Scope:** `tests/test_views_commands.py` · `test_testalerts_reports_temporary_auth_failure`
 
-[Source](../tests/test_views_commands.py#L1017)
+[Source](../tests/test_views_commands.py#L1021)
 
 Capture whether an interaction was deferred and whether its initial response was private.
 
@@ -5261,7 +5261,7 @@ Capture whether an interaction was deferred and whether its initial response was
 
 **Scope:** `tests/test_views_commands.py` · `test_testalerts_reports_temporary_auth_failure.Response`
 
-[Source](../tests/test_views_commands.py#L1020)
+[Source](../tests/test_views_commands.py#L1024)
 
 Record that the fake interaction response was deferred.
 
@@ -5269,7 +5269,7 @@ Record that the fake interaction response was deferred.
 
 **Scope:** `tests/test_views_commands.py` · `test_testalerts_reports_temporary_auth_failure.Response`
 
-[Source](../tests/test_views_commands.py#L1024)
+[Source](../tests/test_views_commands.py#L1028)
 
 Report whether the fake interaction response has been sent.
 
@@ -5277,7 +5277,7 @@ Report whether the fake interaction response has been sent.
 
 **Scope:** `tests/test_views_commands.py` · `test_testalerts_reports_temporary_auth_failure`
 
-[Source](../tests/test_views_commands.py#L1028)
+[Source](../tests/test_views_commands.py#L1032)
 
 Capture outgoing embeds and privacy flags sent after an interaction's initial response.
 
@@ -5285,7 +5285,7 @@ Capture outgoing embeds and privacy flags sent after an interaction's initial re
 
 **Scope:** `tests/test_views_commands.py` · `test_testalerts_reports_temporary_auth_failure.Followup`
 
-[Source](../tests/test_views_commands.py#L1031)
+[Source](../tests/test_views_commands.py#L1035)
 
 Record the follow-up message sent through the fake interaction.
 
@@ -5293,7 +5293,7 @@ Record the follow-up message sent through the fake interaction.
 
 **Scope:** `tests/test_views_commands.py` · `test_testalerts_reports_temporary_auth_failure`
 
-[Source](../tests/test_views_commands.py#L1036)
+[Source](../tests/test_views_commands.py#L1040)
 
 Stub authentication with controlled Riot credentials and login outcomes for service tests.
 
@@ -5301,7 +5301,7 @@ Stub authentication with controlled Riot credentials and login outcomes for serv
 
 **Scope:** `tests/test_views_commands.py` · `test_testalerts_reports_temporary_auth_failure.Auth`
 
-[Source](../tests/test_views_commands.py#L1039)
+[Source](../tests/test_views_commands.py#L1043)
 
 Return the configured fake authentication result.
 
@@ -5309,7 +5309,7 @@ Return the configured fake authentication result.
 
 **Scope:** `tests/test_views_commands.py` · `module`
 
-[Source](../tests/test_views_commands.py#L1057)
+[Source](../tests/test_views_commands.py#L1061)
 
 Verify that accounts layout marks selected account.
 
@@ -5317,7 +5317,7 @@ Verify that accounts layout marks selected account.
 
 **Scope:** `tests/test_views_commands.py` · `module`
 
-[Source](../tests/test_views_commands.py#L1065)
+[Source](../tests/test_views_commands.py#L1069)
 
 Verify that accounts paginate after Discord embed field limit.
 
@@ -5325,7 +5325,7 @@ Verify that accounts paginate after Discord embed field limit.
 
 **Scope:** `tests/test_views_commands.py` · `module`
 
-[Source](../tests/test_views_commands.py#L1081)
+[Source](../tests/test_views_commands.py#L1085)
 
 Verify that battlepass uses Qotix progress hierarchy.
 
@@ -5333,7 +5333,7 @@ Verify that battlepass uses Qotix progress hierarchy.
 
 **Scope:** `tests/test_views_commands.py` · `module`
 
-[Source](../tests/test_views_commands.py#L1110)
+[Source](../tests/test_views_commands.py#L1114)
 
 Verify that alert keeps Qotix direct skin input.
 
@@ -5341,7 +5341,7 @@ Verify that alert keeps Qotix direct skin input.
 
 **Scope:** `tests/test_views_commands.py` · `module`
 
-[Source](../tests/test_views_commands.py#L1116)
+[Source](../tests/test_views_commands.py#L1120)
 
 Verify that alert removal control fits a persistent DM.
 
@@ -5349,7 +5349,7 @@ Verify that alert removal control fits a persistent DM.
 
 **Scope:** `tests/test_views_commands.py` · `module`
 
-[Source](../tests/test_views_commands.py#L1122)
+[Source](../tests/test_views_commands.py#L1126)
 
 Verify that bot preserves Discord HTTP client.
 
@@ -5357,7 +5357,7 @@ Verify that bot preserves Discord HTTP client.
 
 **Scope:** `tests/test_views_commands.py` · `module`
 
-[Source](../tests/test_views_commands.py#L1133)
+[Source](../tests/test_views_commands.py#L1137)
 
 Verify that bot stops extensions before closing shared resources.
 
@@ -5365,7 +5365,7 @@ Verify that bot stops extensions before closing shared resources.
 
 **Scope:** `tests/test_views_commands.py` · `test_bot_stops_extensions_before_closing_shared_resources`
 
-[Source](../tests/test_views_commands.py#L1142)
+[Source](../tests/test_views_commands.py#L1146)
 
 Stub the shared Riot client so request handling and shutdown can be observed.
 
@@ -5373,7 +5373,7 @@ Stub the shared Riot client so request handling and shutdown can be observed.
 
 **Scope:** `tests/test_views_commands.py` · `test_bot_stops_extensions_before_closing_shared_resources.HTTP`
 
-[Source](../tests/test_views_commands.py#L1145)
+[Source](../tests/test_views_commands.py#L1149)
 
 Record that the fake client or database connection was closed.
 
@@ -5381,7 +5381,7 @@ Record that the fake client or database connection was closed.
 
 **Scope:** `tests/test_views_commands.py` · `test_bot_stops_extensions_before_closing_shared_resources`
 
-[Source](../tests/test_views_commands.py#L1151)
+[Source](../tests/test_views_commands.py#L1155)
 
 Record database shutdown during bot cleanup.
 
@@ -5389,7 +5389,7 @@ Record database shutdown during bot cleanup.
 
 **Scope:** `tests/test_views_commands.py` · `test_bot_stops_extensions_before_closing_shared_resources`
 
-[Source](../tests/test_views_commands.py#L1155)
+[Source](../tests/test_views_commands.py#L1159)
 
 Record Discord client shutdown during bot cleanup.
 
@@ -5397,7 +5397,7 @@ Record Discord client shutdown during bot cleanup.
 
 **Scope:** `tests/test_views_commands.py` · `module`
 
-[Source](../tests/test_views_commands.py#L1169)
+[Source](../tests/test_views_commands.py#L1173)
 
 Verify that deletedata clears cached shops after database delete.
 
@@ -5405,7 +5405,7 @@ Verify that deletedata clears cached shops after database delete.
 
 **Scope:** `tests/test_views_commands.py` · `test_deletedata_clears_cached_shops_after_database_delete`
 
-[Source](../tests/test_views_commands.py#L1176)
+[Source](../tests/test_views_commands.py#L1180)
 
 Return the configured accounts for the requested Discord user.
 
@@ -5413,7 +5413,7 @@ Return the configured accounts for the requested Discord user.
 
 **Scope:** `tests/test_views_commands.py` · `test_deletedata_clears_cached_shops_after_database_delete`
 
-[Source](../tests/test_views_commands.py#L1181)
+[Source](../tests/test_views_commands.py#L1185)
 
 Record deletion of the user's stored data.
 
@@ -5421,7 +5421,7 @@ Record deletion of the user's stored data.
 
 **Scope:** `tests/test_views_commands.py` · `test_deletedata_clears_cached_shops_after_database_delete`
 
-[Source](../tests/test_views_commands.py#L1186)
+[Source](../tests/test_views_commands.py#L1190)
 
 Return deterministic storefront data and record account lookups for alert and command assertions.
 
@@ -5429,7 +5429,7 @@ Return deterministic storefront data and record account lookups for alert and co
 
 **Scope:** `tests/test_views_commands.py` · `test_deletedata_clears_cached_shops_after_database_delete.Shop`
 
-[Source](../tests/test_views_commands.py#L1189)
+[Source](../tests/test_views_commands.py#L1193)
 
 Record removal of the account's cached storefront.
 
@@ -5437,7 +5437,7 @@ Record removal of the account's cached storefront.
 
 **Scope:** `tests/test_views_commands.py` · `test_deletedata_clears_cached_shops_after_database_delete`
 
-[Source](../tests/test_views_commands.py#L1193)
+[Source](../tests/test_views_commands.py#L1197)
 
 Capture whether an interaction was deferred and whether its initial response was private.
 
@@ -5445,7 +5445,7 @@ Capture whether an interaction was deferred and whether its initial response was
 
 **Scope:** `tests/test_views_commands.py` · `test_deletedata_clears_cached_shops_after_database_delete.Response`
 
-[Source](../tests/test_views_commands.py#L1196)
+[Source](../tests/test_views_commands.py#L1200)
 
 Record that the fake interaction response was deferred.
 
@@ -5453,7 +5453,7 @@ Record that the fake interaction response was deferred.
 
 **Scope:** `tests/test_views_commands.py` · `test_deletedata_clears_cached_shops_after_database_delete`
 
-[Source](../tests/test_views_commands.py#L1200)
+[Source](../tests/test_views_commands.py#L1204)
 
 Capture outgoing embeds and privacy flags sent after an interaction's initial response.
 
@@ -5461,7 +5461,7 @@ Capture outgoing embeds and privacy flags sent after an interaction's initial re
 
 **Scope:** `tests/test_views_commands.py` · `test_deletedata_clears_cached_shops_after_database_delete.Followup`
 
-[Source](../tests/test_views_commands.py#L1203)
+[Source](../tests/test_views_commands.py#L1207)
 
 Record the follow-up message sent through the fake interaction.
 
@@ -5469,7 +5469,7 @@ Record the follow-up message sent through the fake interaction.
 
 **Scope:** `tests/test_views_commands.py` · `module`
 
-[Source](../tests/test_views_commands.py#L1226)
+[Source](../tests/test_views_commands.py#L1230)
 
 Verify that shop deletion cleanup waits for storefront headers in flight.
 
@@ -5477,7 +5477,7 @@ Verify that shop deletion cleanup waits for storefront headers in flight.
 
 **Scope:** `tests/test_views_commands.py` · `test_shop_deletion_cleanup_waits_for_storefront_headers_in_flight`
 
-[Source](../tests/test_views_commands.py#L1231)
+[Source](../tests/test_views_commands.py#L1235)
 
 Stub authentication with controlled Riot credentials and login outcomes for service tests.
 
@@ -5485,7 +5485,7 @@ Stub authentication with controlled Riot credentials and login outcomes for serv
 
 **Scope:** `tests/test_views_commands.py` · `test_shop_deletion_cleanup_waits_for_storefront_headers_in_flight.Auth`
 
-[Source](../tests/test_views_commands.py#L1234)
+[Source](../tests/test_views_commands.py#L1238)
 
 Return the test authorization headers for the fake account.
 
@@ -5493,7 +5493,7 @@ Return the test authorization headers for the fake account.
 
 **Scope:** `tests/test_views_commands.py` · `test_shop_deletion_cleanup_waits_for_storefront_headers_in_flight`
 
-[Source](../tests/test_views_commands.py#L1244)
+[Source](../tests/test_views_commands.py#L1248)
 
 Return the configured result from the fake query or HTTP client.
 
@@ -5501,7 +5501,7 @@ Return the configured result from the fake query or HTTP client.
 
 **Scope:** `tests/test_views_commands.py` · `module`
 
-[Source](../tests/test_views_commands.py#L1264)
+[Source](../tests/test_views_commands.py#L1268)
 
 Verify that tasks cog awaits cancelled background loops.
 
@@ -5509,7 +5509,7 @@ Verify that tasks cog awaits cancelled background loops.
 
 **Scope:** `tests/test_views_commands.py` · `test_tasks_cog_awaits_cancelled_background_loops`
 
-[Source](../tests/test_views_commands.py#L1268)
+[Source](../tests/test_views_commands.py#L1272)
 
 Simulate the cancellable background task used by the test.
 
@@ -5517,7 +5517,7 @@ Simulate the cancellable background task used by the test.
 
 **Scope:** `tests/test_views_commands.py` · `test_tasks_cog_awaits_cancelled_background_loops`
 
-[Source](../tests/test_views_commands.py#L1276)
+[Source](../tests/test_views_commands.py#L1280)
 
 Expose a running task and record cancellation for cog-shutdown assertions.
 
@@ -5525,7 +5525,7 @@ Expose a running task and record cancellation for cog-shutdown assertions.
 
 **Scope:** `tests/test_views_commands.py` · `test_tasks_cog_awaits_cancelled_background_loops.Loop`
 
-[Source](../tests/test_views_commands.py#L1279)
+[Source](../tests/test_views_commands.py#L1283)
 
 Retain the worker task whose shutdown and cancellation are asserted.
 
@@ -5533,7 +5533,7 @@ Retain the worker task whose shutdown and cancellation are asserted.
 
 **Scope:** `tests/test_views_commands.py` · `test_tasks_cog_awaits_cancelled_background_loops.Loop`
 
-[Source](../tests/test_views_commands.py#L1283)
+[Source](../tests/test_views_commands.py#L1287)
 
 Return the fake background loop's current task.
 
@@ -5541,7 +5541,7 @@ Return the fake background loop's current task.
 
 **Scope:** `tests/test_views_commands.py` · `test_tasks_cog_awaits_cancelled_background_loops.Loop`
 
-[Source](../tests/test_views_commands.py#L1287)
+[Source](../tests/test_views_commands.py#L1291)
 
 Cancel the fake task and record the cancellation.
 
@@ -5549,7 +5549,7 @@ Cancel the fake task and record the cancellation.
 
 **Scope:** `tests/test_views_commands.py` · `module`
 
-[Source](../tests/test_views_commands.py#L1308)
+[Source](../tests/test_views_commands.py#L1312)
 
 Verify that task notifications handle HTTP errors while fetching user.
 
@@ -5557,7 +5557,7 @@ Verify that task notifications handle HTTP errors while fetching user.
 
 **Scope:** `tests/test_views_commands.py` · `test_task_notifications_handle_http_errors_while_fetching_user`
 
-[Source](../tests/test_views_commands.py#L1314)
+[Source](../tests/test_views_commands.py#L1318)
 
 Return the configured Discord user fixture.
 
@@ -5565,7 +5565,7 @@ Return the configured Discord user fixture.
 
 **Scope:** `tests/test_views_commands.py` · `test_task_notifications_handle_http_errors_while_fetching_user`
 
-[Source](../tests/test_views_commands.py#L1321)
+[Source](../tests/test_views_commands.py#L1325)
 
 Return a stable currency marker for embed assertions.
 
@@ -5573,7 +5573,7 @@ Return a stable currency marker for embed assertions.
 
 **Scope:** `tests/test_views_commands.py` · `module`
 
-[Source](../tests/test_views_commands.py#L1357)
+[Source](../tests/test_views_commands.py#L1361)
 
 Verify that extra cog awaits cancelled background loop.
 
@@ -5581,7 +5581,7 @@ Verify that extra cog awaits cancelled background loop.
 
 **Scope:** `tests/test_views_commands.py` · `test_extra_cog_awaits_cancelled_background_loop`
 
-[Source](../tests/test_views_commands.py#L1361)
+[Source](../tests/test_views_commands.py#L1365)
 
 Simulate the cancellable background task used by the test.
 
@@ -5589,7 +5589,7 @@ Simulate the cancellable background task used by the test.
 
 **Scope:** `tests/test_views_commands.py` · `test_extra_cog_awaits_cancelled_background_loop`
 
-[Source](../tests/test_views_commands.py#L1371)
+[Source](../tests/test_views_commands.py#L1375)
 
 Expose a running task and record cancellation for cog-shutdown assertions.
 
@@ -5597,7 +5597,7 @@ Expose a running task and record cancellation for cog-shutdown assertions.
 
 **Scope:** `tests/test_views_commands.py` · `test_extra_cog_awaits_cancelled_background_loop.Loop`
 
-[Source](../tests/test_views_commands.py#L1374)
+[Source](../tests/test_views_commands.py#L1378)
 
 Return the fake background loop's current task.
 
@@ -5605,7 +5605,7 @@ Return the fake background loop's current task.
 
 **Scope:** `tests/test_views_commands.py` · `test_extra_cog_awaits_cancelled_background_loop.Loop`
 
-[Source](../tests/test_views_commands.py#L1378)
+[Source](../tests/test_views_commands.py#L1382)
 
 Cancel the fake task and record the cancellation.
 
@@ -5613,7 +5613,7 @@ Cancel the fake task and record the cancellation.
 
 **Scope:** `tests/test_views_commands.py` · `module`
 
-[Source](../tests/test_views_commands.py#L1389)
+[Source](../tests/test_views_commands.py#L1393)
 
 Verify that the initial release command groups remain available.
 
@@ -5621,7 +5621,7 @@ Verify that the initial release command groups remain available.
 
 **Scope:** `tests/test_views_commands.py` · `module`
 
-[Source](../tests/test_views_commands.py#L1437)
+[Source](../tests/test_views_commands.py#L1441)
 
 Verify that ping uses database probe and keeps latency embed.
 
@@ -5629,7 +5629,7 @@ Verify that ping uses database probe and keeps latency embed.
 
 **Scope:** `tests/test_views_commands.py` · `test_ping_uses_database_probe_and_keeps_latency_embed`
 
-[Source](../tests/test_views_commands.py#L1444)
+[Source](../tests/test_views_commands.py#L1448)
 
 Capture whether an interaction was deferred and whether its initial response was private.
 
@@ -5637,7 +5637,7 @@ Capture whether an interaction was deferred and whether its initial response was
 
 **Scope:** `tests/test_views_commands.py` · `test_ping_uses_database_probe_and_keeps_latency_embed.Response`
 
-[Source](../tests/test_views_commands.py#L1447)
+[Source](../tests/test_views_commands.py#L1451)
 
 Record that the fake interaction response was deferred.
 
@@ -5645,7 +5645,7 @@ Record that the fake interaction response was deferred.
 
 **Scope:** `tests/test_views_commands.py` · `test_ping_uses_database_probe_and_keeps_latency_embed`
 
-[Source](../tests/test_views_commands.py#L1451)
+[Source](../tests/test_views_commands.py#L1455)
 
 Capture outgoing embeds and privacy flags sent after an interaction's initial response.
 
@@ -5653,7 +5653,7 @@ Capture outgoing embeds and privacy flags sent after an interaction's initial re
 
 **Scope:** `tests/test_views_commands.py` · `test_ping_uses_database_probe_and_keeps_latency_embed.Followup`
 
-[Source](../tests/test_views_commands.py#L1454)
+[Source](../tests/test_views_commands.py#L1458)
 
 Record the follow-up message sent through the fake interaction.
 
@@ -5661,7 +5661,7 @@ Record the follow-up message sent through the fake interaction.
 
 **Scope:** `tests/test_views_commands.py` · `test_ping_uses_database_probe_and_keeps_latency_embed`
 
-[Source](../tests/test_views_commands.py#L1458)
+[Source](../tests/test_views_commands.py#L1462)
 
 Stub and record the database health check.
 
@@ -5669,7 +5669,7 @@ Stub and record the database health check.
 
 **Scope:** `tests/test_views_commands.py` · `module`
 
-[Source](../tests/test_views_commands.py#L1488)
+[Source](../tests/test_views_commands.py#L1492)
 
 Verify that setup hook passes bot settings to database.
 
@@ -5677,7 +5677,7 @@ Verify that setup hook passes bot settings to database.
 
 **Scope:** `tests/test_views_commands.py` · `test_setup_hook_passes_bot_settings_to_database`
 
-[Source](../tests/test_views_commands.py#L1498)
+[Source](../tests/test_views_commands.py#L1502)
 
 Capture the settings passed to database initialization.
 
@@ -5685,7 +5685,7 @@ Capture the settings passed to database initialization.
 
 **Scope:** `tests/test_views_commands.py` · `test_setup_hook_passes_bot_settings_to_database`
 
-[Source](../tests/test_views_commands.py#L1503)
+[Source](../tests/test_views_commands.py#L1507)
 
 Provide an intentionally empty callback for this test.
 
