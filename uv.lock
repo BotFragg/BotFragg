@@ -177,6 +177,49 @@ wheels = [
 ]
 
 [[package]]
+name = "botfragg"
+version = "1.0.0"
+source = { editable = "." }
+dependencies = [
+    { name = "aiohttp" },
+    { name = "cryptography" },
+    { name = "discord-py" },
+    { name = "jishaku", extra = ["procinfo"] },
+    { name = "python-dotenv" },
+    { name = "rapidfuzz" },
+    { name = "sentry-sdk" },
+    { name = "tortoise-orm", extra = ["asyncpg"] },
+    { name = "tzdata" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "ruff" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "aiohttp", specifier = ">=3.13.0" },
+    { name = "cryptography", specifier = ">=50.0.1" },
+    { name = "discord-py", specifier = ">=2.7.1" },
+    { name = "jishaku", extras = ["procinfo"], specifier = ">=2.7.5" },
+    { name = "python-dotenv", specifier = ">=1.2.3" },
+    { name = "rapidfuzz", specifier = ">=3.14.6" },
+    { name = "sentry-sdk", specifier = ">=2.52.0" },
+    { name = "tortoise-orm", extras = ["asyncpg"], specifier = ">=1.1.8" },
+    { name = "tzdata", specifier = ">=2026.4" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "pytest", specifier = ">=8.4.0" },
+    { name = "pytest-asyncio", specifier = ">=1.1.0" },
+    { name = "ruff", specifier = ">=0.14.0" },
+]
+
+[[package]]
 name = "braceexpand"
 version = "0.1.7"
 source = { registry = "https://pypi.org/simple" }
@@ -846,6 +889,15 @@ wheels = [
 ]
 
 [[package]]
+name = "tzdata"
+version = "2026.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e4/31/3d74fa778a63b98b7374323befcc0be5ab3bd94afd4096a0124e7379152c/tzdata-2026.4.tar.gz", hash = "sha256:f1b8bd365d8d210c55353f4d7f8d6d8561c0ba50d704b700d195a9424bba0d79", size = 199350, upload-time = "2026-09-12T12:56:03.251Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f9/bc/8737e8d54cf51106118039b83f485a4783112fab49ea9d044b234978a46e/tzdata-2026.4-py2.py3-none-any.whl", hash = "sha256:c2169a8b0a7a5e9674da5a135ccdfb2b3e671b333ed9fed17b41f73c34476e81", size = 347494, upload-time = "2026-09-12T12:56:01.67Z" },
+]
+
+[[package]]
 name = "urllib3"
 version = "2.8.0"
 source = { registry = "https://pypi.org/simple" }
@@ -934,45 +986,4 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/38/02/eef443559563ef8f2e10469387b8b1e97cb5efee95b288a56da60801f7ee/yarl-1.25.1-cp315-cp315t-win_amd64.whl", hash = "sha256:b13b88747769537f3d32e89e3a735da10c0a9e35d7322928c701b5f93d3afffd", size = 106811, upload-time = "2026-09-15T19:34:54.935Z" },
     { url = "https://files.pythonhosted.org/packages/88/91/41e284ca2cf5211e05dae031d126a3668aea88fa759df56e7e35c6ad25ba/yarl-1.25.1-cp315-cp315t-win_arm64.whl", hash = "sha256:783dd1467083f4d3f7722ad6a313f24c173e7571372738fcb7a6e6d1ba48df25", size = 101804, upload-time = "2026-09-15T19:34:57.231Z" },
     { url = "https://files.pythonhosted.org/packages/54/22/318c7980066769c6bcd9221ed2248294f5698811da099013098c670565ed/yarl-1.25.1-py3-none-any.whl", hash = "sha256:681c758b0490f9e96b78e5fa8e8dc6e648e9185bb6eaebe73183c33ea0c445f3", size = 63617, upload-time = "2026-09-15T19:34:59.616Z" },
-]
-
-[[package]]
-name = "botfragg"
-version = "1.0.0"
-source = { editable = "." }
-dependencies = [
-    { name = "aiohttp" },
-    { name = "cryptography" },
-    { name = "discord-py" },
-    { name = "jishaku", extra = ["procinfo"] },
-    { name = "python-dotenv" },
-    { name = "rapidfuzz" },
-    { name = "sentry-sdk" },
-    { name = "tortoise-orm", extra = ["asyncpg"] },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "ruff" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "aiohttp", specifier = ">=3.13.0" },
-    { name = "cryptography", specifier = ">=50.0.1" },
-    { name = "discord-py", specifier = ">=2.7.1" },
-    { name = "jishaku", extras = ["procinfo"], specifier = ">=2.7.5" },
-    { name = "python-dotenv", specifier = ">=1.2.3" },
-    { name = "rapidfuzz", specifier = ">=3.14.6" },
-    { name = "sentry-sdk", specifier = ">=2.52.0" },
-    { name = "tortoise-orm", extras = ["asyncpg"], specifier = ">=1.1.8" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "pytest", specifier = ">=8.4.0" },
-    { name = "pytest-asyncio", specifier = ">=1.1.0" },
-    { name = "ruff", specifier = ">=0.14.0" },
 ]
