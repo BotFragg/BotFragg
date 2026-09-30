@@ -941,7 +941,16 @@ async def test_catalog_load_reads_file_off_event_loop(
     """Verify that catalog load reads file off event loop."""
     with tempfile.TemporaryDirectory(prefix=".catalog-test-", dir=Path.cwd()) as folder:
         path = Path(folder) / "skins.json"
-        path.write_text(json.dumps({"version": "test", "skins": []}), encoding="utf-8")
+        path.write_text(
+            json.dumps(
+                {
+                    "format_version": catalog_module.CATALOG_FORMAT_VERSION,
+                    "version": "test",
+                    "skins": [],
+                }
+            ),
+            encoding="utf-8",
+        )
         service = CatalogService(SimpleNamespace())
         service.path = path
         caller_thread = threading.get_ident()
@@ -957,6 +966,181 @@ async def test_catalog_load_reads_file_off_event_loop(
         await service.load()
 
         assert read_threads and read_threads[0] != caller_thread
+
+
+@pytest.mark.asyncio
+async def test_catalog_snapshot_round_trips_skin_chromas() -> None:
+    """Verify skin chromas survive catalog build, save, and load."""
+    with tempfile.TemporaryDirectory(prefix=".catalog-test-", dir=Path.cwd()) as folder:
+        path = Path(folder) / "skins.json"
+
+        class CatalogHTTP:
+            """Provide deterministic version and skin catalog responses."""
+
+            async def request(self, _method: str, url: str):
+                """Return the manifest or skin response for the requested URL."""
+                if url.endswith("/version"):
+                    return SimpleNamespace(
+                        status=200, data={"data": {"manifestId": "manifest"}}
+                    )
+                return SimpleNamespace(
+                    status=200,
+                    data={
+                        "data": [
+                            {
+                                "skins": [
+                                    {
+                                        "uuid": "skin",
+                                        "displayName": "Skin",
+                                        "levels": [
+                                            {
+                                                "uuid": "level",
+                                                "streamedVideo": "https://example.com/level.mp4",
+                                            }
+                                        ],
+                                        "chromas": [
+                                            {
+                                                "uuid": "chroma",
+                                                "displayName": "Skin Green",
+                                                "streamedVideo": "https://example.com/chroma.mp4",
+                                            }
+                                        ],
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                )
+
+        service = CatalogService(CatalogHTTP())
+        service.path = path
+        await service.refresh()
+
+        loaded = CatalogService(SimpleNamespace())
+        loaded.path = path
+        await loaded.load()
+
+        skin = loaded.get_skin("skin")
+        assert skin is not None
+        assert skin.chromas == [
+            {
+                "uuid": "chroma",
+                "displayName": "Skin Green",
+                "streamedVideo": "https://example.com/chroma.mp4",
+            }
+        ]
+        assert skin.levels[0]["streamedVideo"] == "https://example.com/level.mp4"
+
+
+@pytest.mark.asyncio
+async def test_catalog_load_refreshes_legacy_snapshot_with_same_manifest() -> None:
+    """Verify a legacy snapshot refreshes even when Riot's manifest matches."""
+    with tempfile.TemporaryDirectory(prefix=".catalog-test-", dir=Path.cwd()) as folder:
+        path = Path(folder) / "skins.json"
+        path.write_text(
+            json.dumps(
+                {
+                    "version": "manifest",
+                    "skins": [
+                        {
+                            "uuid": "skin",
+                            "offer_uuid": "offer",
+                            "name": "Skin",
+                            "levels": [],
+                        }
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        calls: list[str] = []
+
+        class CatalogHTTP:
+            """Provide manifest and upgraded catalog responses for the test."""
+
+            async def request(self, _method: str, url: str):
+                """Record requests and return the configured catalog response."""
+                calls.append(url)
+                if url.endswith("/version"):
+                    return SimpleNamespace(
+                        status=200, data={"data": {"manifestId": "manifest"}}
+                    )
+                return SimpleNamespace(
+                    status=200,
+                    data={
+                        "data": [
+                            {
+                                "skins": [
+                                    {
+                                        "uuid": "skin",
+                                        "displayName": "Skin",
+                                        "levels": [{"uuid": "offer"}],
+                                        "chromas": [{"uuid": "chroma"}],
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                )
+
+        http = CatalogHTTP()
+        service = CatalogService(http)
+        service.path = path
+        await service.load()
+
+        assert any("/weapons?" in url for url in calls)
+        assert service._cache_format == catalog_module.CATALOG_FORMAT_VERSION
+        assert service.get_skin("skin").chromas == [{"uuid": "chroma"}]
+
+
+@pytest.mark.asyncio
+async def test_failed_catalog_upgrade_keeps_legacy_data_and_retries() -> None:
+    """Verify failed upgrades preserve the old catalog and remain retryable."""
+    with tempfile.TemporaryDirectory(prefix=".catalog-test-", dir=Path.cwd()) as folder:
+        path = Path(folder) / "skins.json"
+        path.write_text(
+            json.dumps(
+                {
+                    "version": "manifest",
+                    "skins": [
+                        {
+                            "uuid": "old-skin",
+                            "offer_uuid": "old-offer",
+                            "name": "Old skin",
+                        }
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        class CatalogHTTP:
+            """Return catalog failures while tracking upgrade attempts."""
+
+            weapons_calls = 0
+
+            async def request(self, _method: str, url: str):
+                """Return the manifest or a failure for the weapon catalog."""
+                if url.endswith("/version"):
+                    return SimpleNamespace(
+                        status=200, data={"data": {"manifestId": "manifest"}}
+                    )
+                self.weapons_calls += 1
+                return SimpleNamespace(status=503, data={})
+
+        http = CatalogHTTP()
+        service = CatalogService(http)
+        service.path = path
+
+        with pytest.raises(HTTPFailure):
+            await service.load()
+        assert service.get_skin("old-skin").name == "Old skin"
+
+        with pytest.raises(HTTPFailure):
+            await service.refresh(check_version=True)
+        assert http.weapons_calls == 2
+        assert service.get_skin("old-skin").name == "Old skin"
 
 
 def test_catalog_data_file_uses_the_working_directory() -> None:

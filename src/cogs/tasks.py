@@ -17,7 +17,7 @@ from ..services.accounts import run_daily_alerts
 from ..services.shop import Offer, ShopData
 from ..views import OwnedActionButton, timestamp
 from .valorant._ui import embed
-from .valorant.shop import offer_cards
+from .valorant.shop import add_skin_selector, offer_cards
 
 log = logging.getLogger(__name__)
 
@@ -164,9 +164,15 @@ class TasksCog(commands.Cog):
             link_item_image=self.bot.config.link_item_image,
             emoji_service=self.bot.emoji_service,
         )
+        controls = discord.ui.View(timeout=None)
+        add_skin_selector(
+            controls, user.id, shop.offers, shop.expires, self.bot.emoji_service
+        )
         try:
             target = self.bot.get_user(user.id) or await self.bot.fetch_user(user.id)
-            await target.send(embeds=cards)
+            await target.send(
+                embeds=cards, view=controls if controls.children else None
+            )
         except discord.HTTPException:
             log.warning("Could not deliver daily shop notification")
 

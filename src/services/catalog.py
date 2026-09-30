@@ -18,13 +18,14 @@ from .http import HTTPClient, HTTPFailure
 
 ENGLISH_LOCALE = "en-US"
 MISSION_METADATA_TTL = 1800
+CATALOG_FORMAT_VERSION = 2
 
 log = logging.getLogger(__name__)
 
 
 @dataclass(slots=True)
 class Skin:
-    """Hold normalized skin identity, display data, pricing, and upgrade levels."""
+    """Hold normalized skin identity, display data, pricing, levels, and chromas."""
 
     uuid: str
     offer_uuid: str
@@ -33,6 +34,7 @@ class Skin:
     tier_uuid: str | None
     price: int | None = None
     levels: list[dict[str, Any]] = field(default_factory=list)
+    chromas: list[dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass(slots=True)
@@ -62,6 +64,7 @@ class CatalogService:
         self._mission_metadata_loaded_at: float | None = None
         self._mission_metadata_lock = asyncio.Lock()
         self.version = ""
+        self._cache_format = 0
         self._lock = asyncio.Lock()
 
     async def load(self) -> None:
@@ -73,12 +76,14 @@ class CatalogService:
             await self.refresh()
             return
         self._deserialize(raw)
+        if self._cache_format != CATALOG_FORMAT_VERSION:
+            await self.refresh()
 
     async def refresh(self, *, check_version: bool = False) -> None:
         """Fetch the current weapon catalog and atomically save its snapshot.
 
-        When ``check_version`` is true, skip rebuilding if the upstream version has
-        not changed and a usable catalog is already loaded.
+        When ``check_version`` is true, skip rebuilding only if the upstream version
+        and local cache format are current.
         """
         async with self._lock:
             version_response = await self.http.request(
@@ -96,22 +101,43 @@ class CatalogService:
                 check_version
                 and current_version
                 and current_version == self.version
+                and self._cache_format == CATALOG_FORMAT_VERSION
                 and self.skins
             ):
                 return
-            self._build(await self._fetch_data("weapons"))
-            self.version = current_version
-            snapshot = self._serialize()
-            write = asyncio.create_task(asyncio.to_thread(self._save, snapshot))
+            previous = (
+                self.skins,
+                self._skin_choices,
+                self.skin_aliases,
+                self.version,
+                self._cache_format,
+            )
             try:
-                await asyncio.shield(write)
-            except asyncio.CancelledError:
-                completion = asyncio.gather(write, return_exceptions=True)
-                while not completion.done():
-                    try:
-                        await asyncio.shield(completion)
-                    except asyncio.CancelledError:
-                        continue
+                self._build(await self._fetch_data("weapons"))
+                if not self.skins:
+                    raise HTTPFailure("Weapon catalog contained no skins")
+                self.version = current_version
+                self._cache_format = CATALOG_FORMAT_VERSION
+                snapshot = self._serialize()
+                write = asyncio.create_task(asyncio.to_thread(self._save, snapshot))
+                try:
+                    await asyncio.shield(write)
+                except asyncio.CancelledError:
+                    completion = asyncio.gather(write, return_exceptions=True)
+                    while not completion.done():
+                        try:
+                            await asyncio.shield(completion)
+                        except asyncio.CancelledError:
+                            continue
+                    raise
+            except Exception:
+                (
+                    self.skins,
+                    self._skin_choices,
+                    self.skin_aliases,
+                    self.version,
+                    self._cache_format,
+                ) = previous
                 raise
 
     async def _fetch_data(self, kind: str) -> list[dict[str, Any]]:
@@ -120,9 +146,11 @@ class CatalogService:
             "GET", f"https://valorant-api.com/v1/{kind}?language={ENGLISH_LOCALE}"
         )
         if response.status != 200 or not isinstance(response.data, dict):
-            return []
+            raise HTTPFailure(f"Could not fetch the {kind} catalog")
         data = response.data.get("data")
-        return data if isinstance(data, list) else []
+        if not isinstance(data, list) or not data:
+            raise HTTPFailure(f"Invalid or empty {kind} catalog response")
+        return data
 
     async def mission_metadata(
         self,
@@ -191,6 +219,7 @@ class CatalogService:
                     or (levels[0] if levels else {}).get("displayIcon"),
                     tier_uuid=raw.get("contentTierUuid"),
                     levels=levels,
+                    chromas=raw.get("chromas") or [],
                 )
         self.skins = skin_map
         self._reindex()
@@ -291,6 +320,7 @@ class CatalogService:
     def _serialize(self) -> str:
         """Encode the current version and normalized skin list as compact JSON."""
         payload = {
+            "format_version": CATALOG_FORMAT_VERSION,
             "version": self.version,
             "skins": [
                 {
@@ -301,6 +331,7 @@ class CatalogService:
                     "tier_uuid": skin.tier_uuid,
                     "price": skin.price,
                     "levels": skin.levels,
+                    "chromas": skin.chromas,
                 }
                 for skin in self.skins.values()
             ],
@@ -317,6 +348,7 @@ class CatalogService:
     def _deserialize(self, raw: dict[str, Any]) -> None:
         """Restore catalog records from a snapshot and rebuild lookup indexes."""
         self.version = str(raw.get("version") or "")
+        self._cache_format = int(raw.get("format_version") or 0)
         self.skins = {
             item["uuid"]: Skin(
                 uuid=item["uuid"],
@@ -328,6 +360,7 @@ class CatalogService:
                 tier_uuid=item.get("tier_uuid"),
                 price=item.get("price"),
                 levels=item.get("levels", []),
+                chromas=item.get("chromas", []),
             )
             for item in raw.get("skins", [])
             if item.get("uuid") and item.get("offer_uuid")

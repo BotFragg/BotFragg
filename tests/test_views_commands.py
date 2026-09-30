@@ -24,7 +24,13 @@ from src.cogs.valorant.battlepass import BattlepassCog
 from src.cogs.valorant.login import LoginCog
 from src.cogs.valorant.logout import LogoutCog
 from src.cogs.valorant.settings import SettingsCog
-from src.cogs.valorant.shop import BalanceCog, NightMarketCog, ShopCog, offer_cards
+from src.cogs.valorant.shop import (
+    BalanceCog,
+    NightMarketCog,
+    ShopCog,
+    add_skin_selector,
+    offer_cards,
+)
 from src.config import Settings
 from src.services.catalog import Accessory, Skin
 from src.services.http import HTTPFailure
@@ -34,12 +40,23 @@ from src.views import OwnedActionButton, OwnedSelect
 
 def test_dynamic_component_ids_fit_discord_limit() -> None:
     """Verify that dynamic component IDs fit Discord limit."""
+    owner_id = 12345678901234567890
     assert (
         len(
             OwnedSelect(
                 "alert_create",
-                123456789012345678,
+                owner_id,
                 "12345678-1234-1234-1234-123456789012",
+            ).item.custom_id
+        )
+        <= 100
+    )
+    assert (
+        len(
+            OwnedSelect(
+                "shop_variant",
+                owner_id,
+                "4000000000|12345678-1234-1234-1234-123456789012",
             ).item.custom_id
         )
         <= 100
@@ -192,7 +209,7 @@ async def test_accessory_shop_renders_catalog_item_without_changing_output(
 
     async def list_accounts(_owner_id: int):
         """Return the configured accounts for the requested Discord user."""
-        return []
+        return [account, SimpleNamespace(puuid="two", username="Two#EU")]
 
     async def edit_original_response(*, embeds, view) -> None:
         """Record edits to the fake interaction's original response."""
@@ -221,6 +238,12 @@ async def test_accessory_shop_renders_catalog_item_without_changing_output(
     assert embeds[1].description == "`Limited edition`\n\nKC **1,500**"
     assert embeds[1].url == item.icon
     assert embeds[1].thumbnail.url == item.icon
+    controls = rendered["view"]
+    assert isinstance(controls, discord.ui.View)
+    assert [child.item.custom_id.split(":")[1] for child in controls.children] == [
+        "shop_account",
+        "shop_mode",
+    ]
 
 
 def test_glitchtip_groups_subcommands_separately() -> None:
@@ -250,6 +273,387 @@ def test_shop_offer_layout_uses_tier_colour() -> None:
         0x009984,
         "https://example.com/prime.png",
     )
+
+
+@pytest.mark.asyncio
+async def test_shop_skin_menu_selects_tiered_skin_and_returns_private_video() -> None:
+    """Verify tier emoji options and private level/chroma video delivery."""
+    skin = Skin(
+        "skin",
+        "offer",
+        "Prime Vandal",
+        None,
+        "0cebb8be-46d7-c12a-d306-e9907bfc5a25",
+        levels=[
+            {
+                "uuid": "level",
+                "displayName": "Prime Vandal Level 2",
+                "streamedVideo": "https://example.com/level.mp4",
+            }
+        ],
+        chromas=[
+            {
+                "uuid": "chroma",
+                "displayName": "Prime Vandal Green",
+                "streamedVideo": "https://example.com/chroma.mp4",
+            },
+            {"uuid": "unavailable", "displayName": "No video"},
+        ],
+    )
+
+    class EmojiService:
+        """Return stable tier emoji labels for the shop selector test."""
+
+        def skin_emoji(self, _tier_uuid: str) -> str:
+            """Return the fixture's tier emoji."""
+            return "<:tier_deluxe:123456>"
+
+        def skin_name(self, name: str, _tier_uuid: str) -> str:
+            """Prefix the fixture's tier emoji to a displayed name."""
+            return f"<:tier_deluxe:123456> {name}"
+
+    class Response:
+        """Capture private interaction replies for response assertions."""
+
+        def __init__(self) -> None:
+            """Initialize the captured response list."""
+            self.messages: list[dict[str, object]] = []
+
+        async def send_message(self, content: str, **kwargs: object) -> None:
+            """Record a response's content and keyword arguments."""
+            self.messages.append({"content": content, **kwargs})
+
+    bot = SimpleNamespace(
+        register_component=lambda *_args: None,
+        catalog=SimpleNamespace(get_skin=lambda uuid: skin if uuid == "skin" else None),
+        emoji_service=EmojiService(),
+    )
+    cog = ShopCog(bot)
+    controls = discord.ui.View(timeout=None)
+    add_skin_selector(
+        controls, 123, [Offer(skin, 1775, 1)], 4_000_000_000, bot.emoji_service
+    )
+    selector = controls.children[0]
+
+    assert selector.item.options[0].label == "Prime Vandal"
+    assert str(selector.item.options[0].emoji) == "<:tier_deluxe:123456>"
+
+    interaction = SimpleNamespace(
+        user=SimpleNamespace(id=123),
+        message=SimpleNamespace(components=[SimpleNamespace(children=[selector.item])]),
+        response=Response(),
+    )
+    await cog.shop_skin(interaction, "4000000000|skin")
+
+    detail_view = interaction.response.messages[-1]["view"]
+    detail_selector = detail_view.children[0]
+    assert [option.label for option in detail_selector.item.options] == [
+        "Level: Prime Vandal Level 2",
+        "Chroma: Prime Vandal Green",
+    ]
+
+    interaction.message = SimpleNamespace(
+        components=[SimpleNamespace(children=[detail_selector.item])]
+    )
+    await cog.shop_variant(interaction, "4000000000|skin|level")
+
+    assert interaction.response.messages[-1] == {
+        "content": "[<:tier_deluxe:123456> Prime Vandal](https://example.com/level.mp4)",
+        "ephemeral": True,
+    }
+
+    await cog.shop_variant(interaction, "4000000000|skin|chroma")
+
+    assert interaction.response.messages[-1] == {
+        "content": "[<:tier_deluxe:123456> Prime Vandal Green](https://example.com/chroma.mp4)",
+        "ephemeral": True,
+    }
+
+
+@pytest.mark.asyncio
+async def test_daily_shop_view_includes_only_its_offers_in_skin_menu(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Verify the standard daily shop view exposes its current offer choices."""
+    skin = Skin("skin", "offer", "Prime Vandal", None, None)
+
+    async def list_accounts(_owner_id: int) -> list[object]:
+        """Return two accounts so selector ordering is visible in the view."""
+        return [
+            SimpleNamespace(puuid="account", username="Player#NA"),
+            SimpleNamespace(puuid="another", username="Other#EU"),
+        ]
+
+    class EmojiService:
+        """Return stable currency and tier emoji markers for shop cards."""
+
+        async def currency(self, _kind: str) -> str:
+            """Return the fixture currency marker."""
+            return "VP"
+
+        def skin_name(self, name: str, _tier_uuid: str | None) -> str:
+            """Return skin names without a tier prefix for this fixture."""
+            return name
+
+        def skin_emoji(self, _tier_uuid: str | None) -> str:
+            """Report that no custom tier emoji is available."""
+            return ""
+
+    monkeypatch.setattr("src.cogs.valorant.shop.list_accounts", list_accounts)
+    bot = SimpleNamespace(
+        register_component=lambda *_args: None,
+        emoji_service=EmojiService(),
+        config=SimpleNamespace(link_item_image=False),
+    )
+    cog = ShopCog(bot)
+    embeds, controls = await cog.shop_view(
+        ShopData(
+            [Offer(skin, 1775, 1)],
+            [],
+            [Offer(skin, 1775, 1)],
+            4_000_000_000,
+            4_000_000_000,
+        ),
+        "Player",
+        123,
+        "account",
+    )
+
+    selector = next(
+        child
+        for child in controls.children
+        if child.item.custom_id.startswith("botfragg_select:shop_skin:")
+    )
+    assert embeds[1].title == "Prime Vandal"
+    assert [option.value for option in selector.item.options] == ["skin"]
+    assert [child.item.custom_id.split(":")[1] for child in controls.children] == [
+        "shop_skin",
+        "shop_account",
+        "shop_mode",
+        "shop_mode",
+    ]
+
+
+@pytest.mark.asyncio
+async def test_shop_video_selector_rejects_forged_and_mismatched_values() -> None:
+    """Verify menu values and cached skin ownership gate video delivery."""
+    skin = Skin("skin", "offer", "Skin", None, None, levels=[])
+    other = Skin(
+        "other",
+        "other-offer",
+        "Other Skin",
+        None,
+        None,
+        levels=[
+            {
+                "uuid": "foreign-level",
+                "displayName": "Other Skin Level",
+                "streamedVideo": "https://example.com/foreign.mp4",
+            }
+        ],
+    )
+    empty = Skin("empty", "empty-offer", "Empty Skin", None, None)
+
+    class Response:
+        """Capture invalid selector messages for assertions."""
+
+        def __init__(self) -> None:
+            """Initialize the response history."""
+            self.messages: list[dict[str, object]] = []
+
+        async def send_message(self, content: str, **kwargs: object) -> None:
+            """Record a message and its response options."""
+            self.messages.append({"content": content, **kwargs})
+
+    bot = SimpleNamespace(
+        register_component=lambda *_args: None,
+        catalog=SimpleNamespace(
+            get_skin=lambda uuid: {"skin": skin, "other": other, "empty": empty}.get(
+                uuid
+            )
+        ),
+        emoji_service=SimpleNamespace(
+            skin_emoji=lambda _tier_uuid: "",
+            skin_name=lambda name, _tier_uuid: name,
+        ),
+    )
+    cog = ShopCog(bot)
+    selector = OwnedSelect(
+        "shop_skin",
+        123,
+        "4000000000",
+        options=[
+            discord.SelectOption(label="Skin", value="skin"),
+            discord.SelectOption(label="Empty Skin", value="empty"),
+        ],
+    )
+    interaction = SimpleNamespace(
+        user=SimpleNamespace(id=123),
+        message=SimpleNamespace(components=[SimpleNamespace(children=[selector.item])]),
+        response=Response(),
+    )
+
+    await cog.shop_skin(interaction, "1|skin")
+    assert interaction.response.messages[-1]["ephemeral"] is True
+    assert "no longer available" in str(interaction.response.messages[-1]["content"])
+
+    await cog.shop_skin(interaction, "4000000000|other")
+    assert interaction.response.messages[-1]["ephemeral"] is True
+    assert "no longer available" in str(interaction.response.messages[-1]["content"])
+
+    await cog.shop_skin(interaction, "4000000000|empty")
+    assert interaction.response.messages[-1]["ephemeral"] is True
+    assert "No level or chroma videos" in str(
+        interaction.response.messages[-1]["content"]
+    )
+
+    forged_variant_menu = OwnedSelect(
+        "shop_variant",
+        123,
+        "4000000000|skin",
+        options=[discord.SelectOption(label="Foreign video", value="foreign-level")],
+    )
+    interaction.message = SimpleNamespace(
+        components=[SimpleNamespace(children=[forged_variant_menu.item])]
+    )
+    await cog.shop_variant(interaction, "4000000000|skin|foreign-level")
+
+    assert interaction.response.messages[-1]["ephemeral"] is True
+    assert "no longer available" in str(interaction.response.messages[-1]["content"])
+
+
+@pytest.mark.asyncio
+async def test_nightmarket_command_includes_skin_video_menu(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Verify Night Market slash-command offers receive their selector."""
+    skin = Skin("skin", "offer", "Prime Vandal", None, None)
+    data = ShopData([], [], [Offer(skin, 1775, 1, 1000, 44)], 4_000_000_000, None)
+    account = SimpleNamespace(puuid="account", username="Player#NA")
+
+    async def selected_account(_owner_id: int) -> SimpleNamespace:
+        """Return the account fixture for the Night Market command."""
+        return account
+
+    async def get_user(_owner_id: int) -> None:
+        """Report default visibility preferences for the fixture user."""
+        return None
+
+    monkeypatch.setattr("src.cogs.valorant.shop.selected_account", selected_account)
+    monkeypatch.setattr("src.cogs.valorant.shop.get_user", get_user)
+
+    class EmojiService:
+        """Provide stable currency and tier emoji values for embeds."""
+
+        async def currency(self, _kind: str) -> str:
+            """Return the fixture's VP marker."""
+            return "VP"
+
+        def skin_name(self, name: str, _tier_uuid: str | None) -> str:
+            """Return a skin name without a tier marker."""
+            return name
+
+        def skin_emoji(self, _tier_uuid: str | None) -> str:
+            """Report no custom tier emoji for the fixture skin."""
+            return ""
+
+    class Shop:
+        """Return the fixture storefront for command rendering."""
+
+        async def storefront(self, _account: object) -> ShopData:
+            """Return the configured Night Market data."""
+            return data
+
+    class Response:
+        """Verify the command defers before sending its follow-up."""
+
+        async def defer(self, *, thinking: bool) -> None:
+            """Assert that the command uses a thinking response."""
+            assert thinking
+
+    class Followup:
+        """Capture the Night Market message and its controls."""
+
+        def __init__(self) -> None:
+            """Initialize the captured follow-up payload."""
+            self.message: dict[str, object] = {}
+
+        async def send(self, **kwargs: object) -> None:
+            """Store the follow-up message arguments."""
+            self.message.update(kwargs)
+
+    bot = SimpleNamespace(
+        shop=Shop(),
+        emoji_service=EmojiService(),
+        register_component=lambda *_args: None,
+    )
+    interaction = SimpleNamespace(
+        user=SimpleNamespace(id=123),
+        response=Response(),
+        followup=Followup(),
+    )
+
+    await NightMarketCog.nightmarket.callback(NightMarketCog(bot), interaction)
+
+    controls = interaction.followup.message["view"]
+    selector = next(
+        child
+        for child in controls.children
+        if child.item.custom_id.startswith("botfragg_select:shop_skin:")
+    )
+    assert [option.value for option in selector.item.options] == ["skin"]
+
+
+@pytest.mark.asyncio
+async def test_daily_shop_dm_includes_skin_video_menu() -> None:
+    """Verify daily-shop notification DMs include the shared skin selector."""
+    skin = Skin("skin", "offer", "Prime Vandal", None, None)
+    sent: dict[str, object] = {}
+
+    class Target:
+        """Capture the daily-shop DM sent by the task notification."""
+
+        async def send(self, **kwargs: object) -> None:
+            """Store the DM arguments."""
+            sent.update(kwargs)
+
+    class EmojiService:
+        """Provide stable currency and tier emoji values for the DM."""
+
+        async def currency(self, _kind: str) -> str:
+            """Return the fixture's VP marker."""
+            return "VP"
+
+        def skin_name(self, name: str, _tier_uuid: str | None) -> str:
+            """Return a skin name without a tier marker."""
+            return name
+
+        def skin_emoji(self, _tier_uuid: str | None) -> str:
+            """Report no custom tier emoji for the fixture skin."""
+            return ""
+
+    target = Target()
+    bot = SimpleNamespace(
+        get_user=lambda _user_id: target,
+        emoji_service=EmojiService(),
+        config=SimpleNamespace(link_item_image=False),
+        register_component=lambda *_args: None,
+    )
+
+    await TasksCog._send_daily_shop(
+        SimpleNamespace(bot=bot),
+        SimpleNamespace(id=123),
+        SimpleNamespace(username="Player#NA"),
+        ShopData([Offer(skin, 1775, 1)], [], [], 4_000_000_000, None),
+    )
+
+    controls = sent["view"]
+    selector = next(
+        child
+        for child in controls.children
+        if child.item.custom_id.startswith("botfragg_select:shop_skin:")
+    )
+    assert [option.value for option in selector.item.options] == ["skin"]
 
 
 @pytest.mark.asyncio
