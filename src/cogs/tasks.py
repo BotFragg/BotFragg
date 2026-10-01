@@ -10,7 +10,7 @@ from datetime import UTC, time
 import discord
 from discord.ext import commands, tasks
 
-from ..bot import BotfraggBot
+from ..bot import BotFraggBot
 from ..models import Account, Alert, User
 from ..monitoring import StructuredFormatter, transaction
 from ..services.accounts import run_daily_alerts
@@ -26,7 +26,7 @@ class DiscordLogHandler(logging.Handler):
     """Buffer privacy-filtered structured log lines for periodic Discord delivery."""
 
     def __init__(self) -> None:
-        """Create a bounded log buffer using Botfragg's privacy-aware formatter."""
+        """Create a bounded log buffer using BotFragg's privacy-aware formatter."""
         super().__init__()
         self.messages: deque[str] = deque(maxlen=1000)
         self.setFormatter(StructuredFormatter())
@@ -42,7 +42,7 @@ class DiscordLogHandler(logging.Handler):
 class TasksCog(commands.Cog):
     """Own periodic application jobs and stop them cleanly when unloaded."""
 
-    def __init__(self, bot: BotfraggBot) -> None:
+    def __init__(self, bot: BotFraggBot) -> None:
         """Set job intervals from settings and prepare the optional log handler."""
         self.bot = bot
         self.version_refresh.change_interval(
@@ -242,6 +242,6 @@ class TasksCog(commands.Cog):
         await self.bot.wait_until_ready()
 
 
-async def setup(bot: BotfraggBot) -> None:
+async def setup(bot: BotFraggBot) -> None:
     """Register the background-task cog with the bot."""
     await bot.add_cog(TasksCog(bot))

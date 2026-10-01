@@ -119,7 +119,7 @@ def _render_docstring(docstring: str) -> list[str]:
 def render_reference() -> str:
     """Build the complete module, class, and callable reference from source files."""
     lines = [
-        "# Botfragg API reference",
+        "# BotFragg API reference",
         "",
         "This reference covers every Python module, class, and named function in the application, tests, and documentation tools. It is generated from the source docstrings; edit those docstrings and regenerate this page when behavior or signatures change.",
         "",

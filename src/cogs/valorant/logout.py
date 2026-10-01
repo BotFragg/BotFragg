@@ -6,15 +6,15 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from ...bot import BotfraggBot
+from ...bot import BotFraggBot
 from ...services.accounts import delete_user_data, list_accounts, resolve_account
 from ._ui import embed, error
 
 
 class LogoutCog(commands.Cog):
-    """Let users disconnect Riot credentials or erase their Botfragg records."""
+    """Let users disconnect Riot credentials or erase their BotFragg records."""
 
-    def __init__(self, bot: BotfraggBot) -> None:
+    def __init__(self, bot: BotFraggBot) -> None:
         """Bind the bot's account, authentication, and storefront services."""
         self.bot = bot
 
@@ -55,7 +55,7 @@ class LogoutCog(commands.Cog):
 
     @app_commands.command(
         name="deletedata",
-        description="Permanently delete your Botfragg account and data.",
+        description="Permanently delete your BotFragg account and data.",
     )
     async def deletedata(self, interaction: discord.Interaction, confirm: bool) -> None:
         """Permanently delete the caller's records and clear cached storefronts."""
@@ -70,7 +70,7 @@ class LogoutCog(commands.Cog):
             account.puuid for account in await list_accounts(interaction.user.id)
         ]
         if not await delete_user_data(interaction.user.id):
-            await error(interaction, "You do not have any Botfragg data to delete.")
+            await error(interaction, "You do not have any BotFragg data to delete.")
             return
         for account_id in account_ids:
             await self.bot.shop.clear_cached_storefront(account_id)
@@ -82,6 +82,6 @@ class LogoutCog(commands.Cog):
         )
 
 
-async def setup(bot: BotfraggBot) -> None:
+async def setup(bot: BotFraggBot) -> None:
     """Register the account logout and personal data deletion commands."""
     await bot.add_cog(LogoutCog(bot))

@@ -1,4 +1,4 @@
-"""Tortoise ORM entities and database constraints for Botfragg data."""
+"""Tortoise ORM entities and database constraints for BotFragg data."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-# Contributing to Botfragg
+# Contributing to BotFragg
 
 Use Python 3.14 and [uv](https://docs.astral.sh/uv/).
 

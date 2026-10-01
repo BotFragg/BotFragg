@@ -24,7 +24,7 @@ def view(*items: discord.ui.Item) -> discord.ui.View:
 def embed(
     message: str | None = None, *, colour: int = RED, title: str | None = None
 ) -> discord.Embed:
-    """Build a standard Botfragg embed with optional description, title, and colour."""
+    """Build a standard BotFragg embed with optional description, title, and colour."""
     return discord.Embed(title=title, description=message, colour=colour)
 
 

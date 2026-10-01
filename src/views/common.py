@@ -1,4 +1,4 @@
-"""Shared Discord presentation helpers used across Botfragg cogs."""
+"""Shared Discord presentation helpers used across BotFragg cogs."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-# Botfragg API reference
+# BotFragg API reference
 
 This reference covers every Python module, class, and named function in the application, tests, and documentation tools. It is generated from the source docstrings; edit those docstrings and regenerate this page when behavior or signatures change.
 
@@ -8,7 +8,7 @@ Support the repository's ``python main.py`` startup command.
 
 ## `src/__init__.py`
 
-Botfragg bot package.
+BotFragg bot package.
 
 ## `src/bot.py`
 
@@ -22,7 +22,7 @@ Discord client construction, command handling, service wiring, and shutdown.
 
 Build the generic, user-safe response shown after an unhandled command error.
 
-### `class BotfraggCommandTree(app_commands.CommandTree)`
+### `class BotFraggCommandTree(app_commands.CommandTree)`
 
 **Scope:** `src/bot.py` · `module`
 
@@ -32,7 +32,7 @@ Application-command tree with shared context rules and error reporting.
 
 ### `def __init__(self, client: discord.Client) -> None`
 
-**Scope:** `src/bot.py` · `BotfraggCommandTree`
+**Scope:** `src/bot.py` · `BotFraggCommandTree`
 
 [Source](../src/bot.py#L39)
 
@@ -40,7 +40,7 @@ Allow commands in servers and private contexts for guild and user installs.
 
 ### `async def _call(self, interaction: discord.Interaction) -> None`
 
-**Scope:** `src/bot.py` · `BotfraggCommandTree`
+**Scope:** `src/bot.py` · `BotFraggCommandTree`
 
 [Source](../src/bot.py#L49)
 
@@ -48,7 +48,7 @@ Record command executions while leaving autocomplete requests untraced.
 
 ### `def _command_name(data: dict[str, object]) -> str`
 
-**Scope:** `src/bot.py` · `BotfraggCommandTree`
+**Scope:** `src/bot.py` · `BotFraggCommandTree`
 
 [Source](../src/bot.py#L60)
 
@@ -56,13 +56,13 @@ Return the dotted parent and subcommand path from Discord's payload.
 
 ### `async def on_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError, /) -> None`
 
-**Scope:** `src/bot.py` · `BotfraggCommandTree`
+**Scope:** `src/bot.py` · `BotFraggCommandTree`
 
 [Source](../src/bot.py#L79)
 
 Log unhandled app-command errors and send a private generic response.
 
-### `class BotfraggBot(commands.AutoShardedBot)`
+### `class BotFraggBot(commands.AutoShardedBot)`
 
 **Scope:** `src/bot.py` · `module`
 
@@ -72,15 +72,15 @@ Own Discord lifecycle and the shared Riot, database, and presentation services.
 
 ### `def __init__(self, config: Settings) -> None`
 
-**Scope:** `src/bot.py` · `BotfraggBot`
+**Scope:** `src/bot.py` · `BotFraggBot`
 
 [Source](../src/bot.py#L111)
 
 Configure the bot's prefix, minimal intents, and application services.
 
-### `async def on_command_error(self, context: commands.Context[BotfraggBot], exception: commands.CommandError, /) -> None`
+### `async def on_command_error(self, context: commands.Context[BotFraggBot], exception: commands.CommandError, /) -> None`
 
-**Scope:** `src/bot.py` · `BotfraggBot`
+**Scope:** `src/bot.py` · `BotFraggBot`
 
 [Source](../src/bot.py#L136)
 
@@ -88,7 +88,7 @@ Log failed prefix commands and reply with a generic error message.
 
 ### `def register_component(self, action: str, handler: ComponentHandler) -> None`
 
-**Scope:** `src/bot.py` · `BotfraggBot`
+**Scope:** `src/bot.py` · `BotFraggBot`
 
 [Source](../src/bot.py#L160)
 
@@ -96,7 +96,7 @@ Register a persistent component action, rejecting duplicate action names.
 
 ### `async def setup_hook(self) -> None`
 
-**Scope:** `src/bot.py` · `BotfraggBot`
+**Scope:** `src/bot.py` · `BotFraggBot`
 
 [Source](../src/bot.py#L166)
 
@@ -104,7 +104,7 @@ Initialize shared resources, load extensions, and optionally sync commands.
 
 ### `async def on_ready(self) -> None`
 
-**Scope:** `src/bot.py` · `BotfraggBot`
+**Scope:** `src/bot.py` · `BotFraggBot`
 
 [Source](../src/bot.py#L200)
 
@@ -112,7 +112,7 @@ Set the online activity and log the connected shard and guild counts.
 
 ### `async def close(self) -> None`
 
-**Scope:** `src/bot.py` · `BotfraggBot`
+**Scope:** `src/bot.py` · `BotFraggBot`
 
 [Source](../src/bot.py#L213)
 
@@ -134,7 +134,7 @@ Discord event listeners for analytics, guild notifications, and shard logs.
 
 Record successful commands and report configured Discord lifecycle events.
 
-### `def __init__(self, bot: BotfraggBot) -> None`
+### `def __init__(self, bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/events.py` · `EventsCog`
 
@@ -206,7 +206,7 @@ Report that a disconnected Discord shard resumed its session.
 
 Post a shard state update to the optional logging webhook.
 
-### `async def setup(bot: BotfraggBot) -> None`
+### `async def setup(bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/events.py` · `module`
 
@@ -216,7 +216,7 @@ Register the Discord event-listener cog with the bot.
 
 ## `src/cogs/extra.py`
 
-General Botfragg commands for status, links, suggestions, and shard health.
+General BotFragg commands for status, links, suggestions, and shard health.
 
 ### `class ExtraCog(commands.Cog)`
 
@@ -226,7 +226,7 @@ General Botfragg commands for status, links, suggestions, and shard health.
 
 Provide public utility commands and owner-managed suggestion workflows.
 
-### `def __init__(self, bot: BotfraggBot) -> None`
+### `def __init__(self, bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
@@ -346,7 +346,7 @@ Update or recreate the persistent embed containing per-shard health.
 
 Wait for Discord readiness before the first shard-status update.
 
-### `async def setup(bot: BotfraggBot) -> None`
+### `async def setup(bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/extra.py` · `module`
 
@@ -366,7 +366,7 @@ Owner-only Discord diagnostics for users, servers, and command analytics.
 
 Owner-only operational diagnostics.
 
-### `def __init__(self, bot: BotfraggBot) -> None`
+### `def __init__(self, bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/staff.py` · `StaffCog`
 
@@ -396,7 +396,7 @@ Show the owner's stored account statistics and shared-server details.
 
 [Source](../src/cogs/staff.py#L64)
 
-Show analytics and membership details for a server Botfragg has joined.
+Show analytics and membership details for a server BotFragg has joined.
 
 ### `async def _favorite_command(self, *, user_id: int | None = None, guild_id: int | None = None) -> str | None`
 
@@ -406,7 +406,7 @@ Show analytics and membership details for a server Botfragg has joined.
 
 Return the most-used command for exactly one user or server scope.
 
-### `async def setup(bot: BotfraggBot) -> None`
+### `async def setup(bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/staff.py` · `module`
 
@@ -432,7 +432,7 @@ Buffer privacy-filtered structured log lines for periodic Discord delivery.
 
 [Source](../src/cogs/tasks.py#L28)
 
-Create a bounded log buffer using Botfragg's privacy-aware formatter.
+Create a bounded log buffer using BotFragg's privacy-aware formatter.
 
 ### `def emit(self, record: logging.LogRecord) -> None`
 
@@ -450,7 +450,7 @@ Format a log record into the buffer or delegate failures to logging.
 
 Own periodic application jobs and stop them cleanly when unloaded.
 
-### `def __init__(self, bot: BotfraggBot) -> None`
+### `def __init__(self, bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
@@ -578,7 +578,7 @@ Send buffered log lines to Discord and requeue them after HTTP failures.
 
 Wait for Discord readiness before sending buffered logs.
 
-### `async def setup(bot: BotfraggBot) -> None`
+### `async def setup(bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
@@ -616,7 +616,7 @@ Create a persistent view containing the supplied Discord components.
 
 [Source](../src/cogs/valorant/_ui.py#L24)
 
-Build a standard Botfragg embed with optional description, title, and colour.
+Build a standard BotFragg embed with optional description, title, and colour.
 
 ### `async def error(interaction: discord.Interaction, message: str) -> None`
 
@@ -638,7 +638,7 @@ Slash commands for selecting, listing, and paging through linked accounts.
 
 Present a user's linked Riot accounts and handle account selection.
 
-### `def __init__(self, bot: BotfraggBot) -> None`
+### `def __init__(self, bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/valorant/accounts.py` · `AccountsCog`
 
@@ -694,7 +694,7 @@ Show the caller's accounts privately when their name-hiding preference is on.
 
 Handle a persistent account-page control and refresh its message.
 
-### `async def setup(bot: BotfraggBot) -> None`
+### `async def setup(bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/valorant/accounts.py` · `module`
 
@@ -714,7 +714,7 @@ Commands for creating, viewing, removing, and testing skin alerts.
 
 Manage owner-scoped alert records and their persistent Discord controls.
 
-### `def __init__(self, bot: BotfraggBot) -> None`
+### `def __init__(self, bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
@@ -802,7 +802,7 @@ Validate a page payload and update the alert-management message.
 
 Check login and shop availability, then send the caller a test alert DM.
 
-### `async def setup(bot: BotfraggBot) -> None`
+### `async def setup(bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/valorant/alerts.py` · `module`
 
@@ -822,7 +822,7 @@ Commands and embed builders for VALORANT battlepass and mission progress.
 
 Display the caller's current battlepass level and mission progress.
 
-### `def __init__(self, bot: BotfraggBot) -> None`
+### `def __init__(self, bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/valorant/battlepass.py` · `BattlepassCog`
 
@@ -862,7 +862,7 @@ Group mission entries by type and expiry and render progress bars.
 
 Render the active act, current tier, next reward, and XP progress bar.
 
-### `async def setup(bot: BotfraggBot) -> None`
+### `async def setup(bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/valorant/battlepass.py` · `module`
 
@@ -882,7 +882,7 @@ Private Riot sign-in flow using an authorization link and callback modal.
 
 Collect the redirect URL returned after a user signs in with Riot.
 
-### `def __init__(self, bot: BotfraggBot) -> None`
+### `def __init__(self, bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/valorant/login.py` · `LoginModal`
 
@@ -906,7 +906,7 @@ Redeem the submitted callback and privately report the login result.
 
 Start Riot sign-in and open the callback URL entry modal.
 
-### `def __init__(self, bot: BotfraggBot) -> None`
+### `def __init__(self, bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/valorant/login.py` · `LoginCog`
 
@@ -930,7 +930,7 @@ Start a nonce-bound Riot login when the caller has account capacity.
 
 Open the modal where the caller pastes Riot's redirect URL.
 
-### `async def setup(bot: BotfraggBot) -> None`
+### `async def setup(bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/valorant/login.py` · `module`
 
@@ -948,9 +948,9 @@ Commands for clearing Riot credentials or deleting all stored user data.
 
 [Source](../src/cogs/valorant/logout.py#L14)
 
-Let users disconnect Riot credentials or erase their Botfragg records.
+Let users disconnect Riot credentials or erase their BotFragg records.
 
-### `def __init__(self, bot: BotfraggBot) -> None`
+### `def __init__(self, bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/valorant/logout.py` · `LogoutCog`
 
@@ -982,7 +982,7 @@ Clear Riot credentials for one linked account while preserving its settings.
 
 Permanently delete the caller's records and clear cached storefronts.
 
-### `async def setup(bot: BotfraggBot) -> None`
+### `async def setup(bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/valorant/logout.py` · `module`
 
@@ -1002,7 +1002,7 @@ Private commands for viewing and changing user display and shop preferences.
 
 Present user preferences and handle their owner-scoped select menu.
 
-### `def __init__(self, bot: BotfraggBot) -> None`
+### `def __init__(self, bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/valorant/settings.py` · `SettingsCog`
 
@@ -1034,7 +1034,7 @@ Present Yes/No options for the caller's selected preference.
 
 Validate and persist a setting selection, then update its confirmation.
 
-### `async def setup(bot: BotfraggBot) -> None`
+### `async def setup(bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/valorant/settings.py` · `module`
 
@@ -1078,7 +1078,7 @@ Add a private account selector when the owner has multiple accounts.
 
 Show the caller's daily shop and handle its account and mode controls.
 
-### `def __init__(self, bot: BotfraggBot) -> None`
+### `def __init__(self, bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
@@ -1158,7 +1158,7 @@ Validate the selected account and reopen the corresponding shop mode.
 
 Display discounted Night Market offers for the selected Riot account.
 
-### `def __init__(self, bot: BotfraggBot) -> None`
+### `def __init__(self, bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/valorant/shop.py` · `NightMarketCog`
 
@@ -1182,7 +1182,7 @@ Fetch and render Night Market offers or report that none are active.
 
 Display the selected account's three VALORANT wallet balances.
 
-### `def __init__(self, bot: BotfraggBot) -> None`
+### `def __init__(self, bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/valorant/shop.py` · `BalanceCog`
 
@@ -1198,7 +1198,7 @@ Bind the shared shop and user-preference services.
 
 Fetch and display VP, Radianite, and Kingdom Credit balances.
 
-### `async def setup(bot: BotfraggBot) -> None`
+### `async def setup(bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
@@ -1356,7 +1356,7 @@ Create or update the status-message reference for a channel.
 
 ## `src/main.py`
 
-Executable entry point that configures logging and starts Botfragg.
+Executable entry point that configures logging and starts BotFragg.
 
 ### `def main() -> None`
 
@@ -1376,7 +1376,7 @@ Create the initial user, account, alert, and suggestion tables.
 
 [Source](../src/migrations/0001_initial.py#L8)
 
-Define the initial persisted Botfragg schema and ownership relations.
+Define the initial persisted BotFragg schema and ownership relations.
 
 ## `src/migrations/0002_add_command_analytics.py`
 
@@ -1416,7 +1416,7 @@ Create the channel-to-status-message mapping table.
 
 ## `src/migrations/__init__.py`
 
-Tortoise migration package for the Botfragg database schema.
+Tortoise migration package for the BotFragg database schema.
 
 ## `src/models/__init__.py`
 
@@ -1424,7 +1424,7 @@ Public model exports for application services and Discord cogs.
 
 ## `src/models/entities.py`
 
-Tortoise ORM entities and database constraints for Botfragg data.
+Tortoise ORM entities and database constraints for BotFragg data.
 
 ### `class User(Model)`
 
@@ -1556,7 +1556,7 @@ Remove request payloads and HTTP span details from a transaction.
 
 [Source](../src/monitoring.py#L135)
 
-Keep Botfragg logs and serious Discord errors after removing URL data.
+Keep BotFragg logs and serious Discord errors after removing URL data.
 
 ### `def _release() -> str`
 
@@ -1564,7 +1564,7 @@ Keep Botfragg logs and serious Discord errors after removing URL data.
 
 [Source](../src/monitoring.py#L149)
 
-Return the installed Botfragg release label or an unknown fallback.
+Return the installed BotFragg release label or an unknown fallback.
 
 ### `def configure_monitoring(config: Settings) -> None`
 
@@ -1604,7 +1604,7 @@ Persistence operations for users, Riot accounts, alerts, analytics, and ideas.
 
 [Source](../src/services/accounts.py#L33)
 
-Return the stored Botfragg user for a Discord ID, if one exists.
+Return the stored BotFragg user for a Discord ID, if one exists.
 
 ### `async def count_registered_users() -> int`
 
@@ -1612,7 +1612,7 @@ Return the stored Botfragg user for a Discord ID, if one exists.
 
 [Source](../src/services/accounts.py#L38)
 
-Count users with a stored Botfragg profile.
+Count users with a stored BotFragg profile.
 
 ### `async def daily_shop_user_ids() -> set[int]`
 
@@ -1680,7 +1680,7 @@ Set a user's active account after verifying that the account is theirs.
 
 [Source](../src/services/accounts.py#L149)
 
-Delete the user's stored Botfragg records and all linked Riot accounts.
+Delete the user's stored BotFragg records and all linked Riot accounts.
 
 ### `class AlertPage`
 
@@ -2619,7 +2619,7 @@ Public timestamp and owner-scoped Discord component exports.
 
 ## `src/views/common.py`
 
-Shared Discord presentation helpers used across Botfragg cogs.
+Shared Discord presentation helpers used across BotFragg cogs.
 
 ### `def timestamp(value: int | float | datetime, style: str = 'R') -> str`
 
@@ -3347,7 +3347,7 @@ Verify that error tracking ignores HTTP breadcrumbs and handles null category.
 
 [Source](../tests/test_config_crypto_monitoring.py#L326)
 
-Verify that GlitchTip logs keep Botfragg events and drop unrelated or URL data.
+Verify that GlitchTip logs keep BotFragg events and drop unrelated or URL data.
 
 ### `def test_glitchtip_enables_supported_telemetry(monkeypatch: pytest.MonkeyPatch) -> None`
 

@@ -6,7 +6,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from ...bot import BotfraggBot
+from ...bot import BotFraggBot
 from ...services.accounts import list_accounts
 from ...views import OwnedActionButton
 from ._ui import embed, error, view
@@ -22,7 +22,7 @@ class LoginModal(discord.ui.Modal, title="Paste your login URL"):
         max_length=1800,
     )
 
-    def __init__(self, bot: BotfraggBot) -> None:
+    def __init__(self, bot: BotFraggBot) -> None:
         """Set a five-minute timeout and retain the authentication service owner."""
         super().__init__(timeout=300)
         self.bot = bot
@@ -47,7 +47,7 @@ class LoginModal(discord.ui.Modal, title="Paste your login URL"):
 class LoginCog(commands.Cog):
     """Start Riot sign-in and open the callback URL entry modal."""
 
-    def __init__(self, bot: BotfraggBot) -> None:
+    def __init__(self, bot: BotFraggBot) -> None:
         """Bind the bot and register the persistent login-modal action."""
         self.bot = bot
         bot.register_component("login_modal", self.login_modal)
@@ -99,6 +99,6 @@ class LoginCog(commands.Cog):
         await interaction.response.send_modal(LoginModal(self.bot))
 
 
-async def setup(bot: BotfraggBot) -> None:
+async def setup(bot: BotFraggBot) -> None:
     """Register the Riot login command and modal handler."""
     await bot.add_cog(LoginCog(bot))

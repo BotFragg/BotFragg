@@ -1,4 +1,4 @@
-"""General Botfragg commands for status, links, suggestions, and shard health."""
+"""General BotFragg commands for status, links, suggestions, and shard health."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands, tasks
 
-from ..bot import BotfraggBot
+from ..bot import BotFraggBot
 from ..database import (
     get_shard_status_message_id,
     ping_database,
@@ -37,7 +37,7 @@ class ExtraCog(commands.Cog):
         name="suggestion", description="Track or review feature suggestions"
     )
 
-    def __init__(self, bot: BotfraggBot) -> None:
+    def __init__(self, bot: BotFraggBot) -> None:
         """Store the bot and record when this cog started for the info command."""
         self.bot = bot
         self.started_at = datetime.now(UTC)
@@ -54,7 +54,7 @@ class ExtraCog(commands.Cog):
         if task is not None and task is not asyncio.current_task():
             await asyncio.gather(task, return_exceptions=True)
 
-    @app_commands.command(name="ping", description="Show Botfragg's current latency")
+    @app_commands.command(name="ping", description="Show BotFragg's current latency")
     @app_commands.guild_only()
     async def ping(self, interaction: discord.Interaction) -> None:
         """Report Discord gateway latency and a live database probe duration."""
@@ -73,7 +73,7 @@ class ExtraCog(commands.Cog):
         card.add_field(name="Database latency", value=f"{database_ms:.0f}ms")
         await interaction.followup.send(embed=card)
 
-    @app_commands.command(name="botinfo", description="Show information about Botfragg")
+    @app_commands.command(name="botinfo", description="Show information about BotFragg")
     @app_commands.guild_only()
     async def botinfo(self, interaction: discord.Interaction) -> None:
         """Show runtime, deployment, library, and registered-user information."""
@@ -81,13 +81,13 @@ class ExtraCog(commands.Cog):
         user = self.bot.user
         if not user:
             await error(
-                interaction, "Botfragg is still starting up. Try again shortly."
+                interaction, "BotFragg is still starting up. Try again shortly."
             )
             return
         registered_users = await count_registered_users()
         members = sum(guild.member_count or 0 for guild in self.bot.guilds)
         card = embed(
-            "Botfragg is a VALORANT companion for personal shops, balances, battlepass progress, and alerts.",
+            "BotFragg is a VALORANT companion for personal shops, balances, battlepass progress, and alerts.",
             title=f"About {user.name}",
         )
         card.add_field(name="Commands", value=str(len(self.bot.tree.get_commands())))
@@ -101,14 +101,14 @@ class ExtraCog(commands.Cog):
         card.set_thumbnail(url=user.display_avatar.url)
         await interaction.followup.send(embed=card)
 
-    @app_commands.command(name="links", description="Show Botfragg's public links")
+    @app_commands.command(name="links", description="Show BotFragg's public links")
     async def links(self, interaction: discord.Interaction) -> None:
         """Show an invite link and any configured support, vote, and website links."""
         await interaction.response.defer(thinking=True)
         user = self.bot.user
         if not user:
             await error(
-                interaction, "Botfragg is still starting up. Try again shortly."
+                interaction, "BotFragg is still starting up. Try again shortly."
             )
             return
         invite_url = discord.utils.oauth_url(
@@ -118,7 +118,7 @@ class ExtraCog(commands.Cog):
         )
         buttons = [
             discord.ui.Button(
-                label="Invite Botfragg",
+                label="Invite BotFragg",
                 url=invite_url,
                 style=discord.ButtonStyle.link,
             )
@@ -130,11 +130,11 @@ class ExtraCog(commands.Cog):
         ):
             if url:
                 buttons.append(discord.ui.Button(label=label, url=url))
-        card = embed("Use the buttons below to find Botfragg online.", title="🔗 Links")
+        card = embed("Use the buttons below to find BotFragg online.", title="🔗 Links")
         card.set_thumbnail(url=user.display_avatar.url)
         await interaction.followup.send(embed=card, view=view(*buttons))
 
-    @app_commands.command(name="suggest", description="Suggest a feature for Botfragg")
+    @app_commands.command(name="suggest", description="Suggest a feature for BotFragg")
     @app_commands.guild_only()
     async def suggest(
         self,
@@ -245,7 +245,7 @@ class ExtraCog(commands.Cog):
         """Authorize a review, update its record, and notify its followers."""
         await interaction.response.defer(thinking=True, ephemeral=True)
         if not await self.bot.is_owner(interaction.user):
-            await error(interaction, "Only Botfragg's owner can review suggestions.")
+            await error(interaction, "Only BotFragg's owner can review suggestions.")
             return
         result = await review_suggestion(id, status, reason)
         if result is None:
@@ -331,6 +331,6 @@ class ExtraCog(commands.Cog):
         await self.bot.wait_until_ready()
 
 
-async def setup(bot: BotfraggBot) -> None:
+async def setup(bot: BotFraggBot) -> None:
     """Register the general utility and suggestion cog with the bot."""
     await bot.add_cog(ExtraCog(bot))

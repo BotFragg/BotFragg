@@ -6,7 +6,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from ..bot import BotfraggBot
+from ..bot import BotFraggBot
 from ..services.accounts import command_stats, count_suggestions_by_author
 from ..views import timestamp
 from .valorant._ui import embed, error
@@ -15,7 +15,7 @@ from .valorant._ui import embed, error
 class StaffCog(commands.Cog):
     """Owner-only operational diagnostics."""
 
-    def __init__(self, bot: BotfraggBot) -> None:
+    def __init__(self, bot: BotFraggBot) -> None:
         """Bind the staff diagnostics to the running bot."""
         self.bot = bot
 
@@ -23,10 +23,10 @@ class StaffCog(commands.Cog):
         """Authorize the bot owner and privately reject all other callers."""
         if await self.bot.is_owner(interaction.user):
             return True
-        await error(interaction, "Only Botfragg's owner can use this command.")
+        await error(interaction, "Only BotFragg's owner can use this command.")
         return False
 
-    @app_commands.command(name="userinfo", description="Show Botfragg data for a user")
+    @app_commands.command(name="userinfo", description="Show BotFragg data for a user")
     @app_commands.guild_only()
     async def userinfo(
         self, interaction: discord.Interaction, user: discord.User
@@ -58,19 +58,19 @@ class StaffCog(commands.Cog):
         await interaction.followup.send(embed=card, ephemeral=True)
 
     @app_commands.command(
-        name="serverinfo", description="Show Botfragg data for a server"
+        name="serverinfo", description="Show BotFragg data for a server"
     )
     @app_commands.guild_only()
     async def serverinfo(
         self, interaction: discord.Interaction, server_id: str
     ) -> None:
-        """Show analytics and membership details for a server Botfragg has joined."""
+        """Show analytics and membership details for a server BotFragg has joined."""
         if not await self._owner_only(interaction):
             return
         if not server_id.isdecimal() or not (
             server := self.bot.get_guild(int(server_id))
         ):
-            await error(interaction, "Provide the ID of a server Botfragg is in.")
+            await error(interaction, "Provide the ID of a server BotFragg is in.")
             return
         await interaction.response.defer(thinking=True, ephemeral=True)
         command_count, favorite = await command_stats(guild_id=server.id)
@@ -120,6 +120,6 @@ class StaffCog(commands.Cog):
         return favorite
 
 
-async def setup(bot: BotfraggBot) -> None:
+async def setup(bot: BotFraggBot) -> None:
     """Register the owner-only diagnostics cog with the bot."""
     await bot.add_cog(StaffCog(bot))

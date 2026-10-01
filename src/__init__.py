@@ -1,1 +1,1 @@
-"""Botfragg bot package."""
+"""BotFragg bot package."""

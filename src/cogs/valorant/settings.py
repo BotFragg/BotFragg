@@ -6,7 +6,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from ...bot import BotfraggBot
+from ...bot import BotFraggBot
 from ...services.accounts import get_user, update_user_preference
 from ...views import OwnedSelect
 from ._ui import DARK, embed, error, view
@@ -25,7 +25,7 @@ class SettingsCog(commands.Cog):
         name="settings", description="Change or view your bot settings"
     )
 
-    def __init__(self, bot: BotfraggBot) -> None:
+    def __init__(self, bot: BotFraggBot) -> None:
         """Bind the bot and register the persistent preference-selection action."""
         self.bot = bot
         bot.register_component("setting", self.setting_selected)
@@ -103,6 +103,6 @@ class SettingsCog(commands.Cog):
         )
 
 
-async def setup(bot: BotfraggBot) -> None:
+async def setup(bot: BotFraggBot) -> None:
     """Register the user preference commands and selection handler."""
     await bot.add_cog(SettingsCog(bot))

@@ -324,7 +324,7 @@ def test_error_tracking_ignores_http_breadcrumbs_and_handles_null_category() -> 
 
 
 def test_glitchtip_logs_keep_botfragg_events_and_drop_unrelated_or_url_data() -> None:
-    """Verify that GlitchTip logs keep Botfragg events and drop unrelated or URL data."""
+    """Verify that GlitchTip logs keep BotFragg events and drop unrelated or URL data."""
     assert monitoring._scrub_log(
         {
             "body": "Completed",

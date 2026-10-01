@@ -1,1 +1,1 @@
-"""Tortoise migration package for the Botfragg database schema."""
+"""Tortoise migration package for the BotFragg database schema."""

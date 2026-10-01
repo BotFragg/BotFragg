@@ -33,7 +33,7 @@ def _command_error_embed() -> discord.Embed:
     )
 
 
-class BotfraggCommandTree(app_commands.CommandTree):
+class BotFraggCommandTree(app_commands.CommandTree):
     """Application-command tree with shared context rules and error reporting."""
 
     def __init__(self, client: discord.Client) -> None:
@@ -105,7 +105,7 @@ class BotfraggCommandTree(app_commands.CommandTree):
             log.warning("Could not deliver application-command error response")
 
 
-class BotfraggBot(commands.AutoShardedBot):
+class BotFraggBot(commands.AutoShardedBot):
     """Own Discord lifecycle and the shared Riot, database, and presentation services."""
 
     def __init__(self, config: Settings) -> None:
@@ -121,7 +121,7 @@ class BotfraggBot(commands.AutoShardedBot):
             allowed_mentions=discord.AllowedMentions(
                 users=True, roles=False, everyone=False, replied_user=False
             ),
-            tree_cls=BotfraggCommandTree,
+            tree_cls=BotFraggCommandTree,
         )
         self.config = config
         self.component_handlers: dict[str, ComponentHandler] = {}
@@ -135,7 +135,7 @@ class BotfraggBot(commands.AutoShardedBot):
 
     async def on_command_error(
         self,
-        context: commands.Context[BotfraggBot],
+        context: commands.Context[BotFraggBot],
         exception: commands.CommandError,
         /,
     ) -> None:
@@ -206,7 +206,7 @@ class BotfraggBot(commands.AutoShardedBot):
             ),
         )
         log.info(
-            "Botfragg is ready",
+            "BotFragg is ready",
             extra={"shards": self.shard_count, "guilds": len(self.guilds)},
         )
 

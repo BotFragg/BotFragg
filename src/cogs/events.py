@@ -8,7 +8,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from ..bot import BotfraggBot
+from ..bot import BotFraggBot
 from ..services.accounts import record_command_invocation
 from ..views import timestamp
 from .valorant._ui import embed
@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 class EventsCog(commands.Cog):
     """Record successful commands and report configured Discord lifecycle events."""
 
-    def __init__(self, bot: BotfraggBot) -> None:
+    def __init__(self, bot: BotFraggBot) -> None:
         """Bind event handlers to the running bot instance."""
         self.bot = bot
 
@@ -126,12 +126,12 @@ class EventsCog(commands.Cog):
         try:
             await hook.send(
                 content=f"Shard {shard_id} {state}. Total shards: {self.bot.shard_count}.",
-                username="Botfragg Shard Manager",
+                username="BotFragg Shard Manager",
             )
         except discord.HTTPException:
             log.warning("Could not deliver shard %s event", shard_id)
 
 
-async def setup(bot: BotfraggBot) -> None:
+async def setup(bot: BotFraggBot) -> None:
     """Register the Discord event-listener cog with the bot."""
     await bot.add_cog(EventsCog(bot))

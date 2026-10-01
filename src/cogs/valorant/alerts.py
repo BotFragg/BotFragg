@@ -8,7 +8,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from ...bot import BotfraggBot
+from ...bot import BotFraggBot
 from ...services.accounts import (
     create_alert,
     first_alert,
@@ -27,7 +27,7 @@ from ._ui import embed, error, view
 class AlertsCog(commands.Cog):
     """Manage owner-scoped alert records and their persistent Discord controls."""
 
-    def __init__(self, bot: BotfraggBot) -> None:
+    def __init__(self, bot: BotFraggBot) -> None:
         """Bind the bot and register persistent alert-management actions."""
         self.bot = bot
         bot.register_component("remove_alert", self.remove_alert)
@@ -280,6 +280,6 @@ class AlertsCog(commands.Cog):
         )
 
 
-async def setup(bot: BotfraggBot) -> None:
+async def setup(bot: BotFraggBot) -> None:
     """Register the skin-alert commands and their persistent handlers."""
     await bot.add_cog(AlertsCog(bot))

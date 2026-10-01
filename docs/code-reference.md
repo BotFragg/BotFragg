@@ -9,8 +9,8 @@ docstring. Regenerate it after code documentation changes with
 ## Runtime flow
 
 1. `main.py` starts `src.main.main`, which loads settings, configures logging
-   and optional GlitchTip reporting, and runs `BotfraggBot`.
-2. `BotfraggBot.setup_hook` initializes the database and Riot HTTP client,
+   and optional GlitchTip reporting, and runs `BotFraggBot`.
+2. `BotFraggBot.setup_hook` initializes the database and Riot HTTP client,
    warms the catalog and application emojis, registers persistent controls,
    and loads the Discord cogs.
 3. Cogs translate Discord commands and events into calls to `src.services`.
@@ -33,12 +33,12 @@ docstring. Regenerate it after code documentation changes with
 | [CONTRIBUTING.md](../CONTRIBUTING.md) | Documents the development environment and required checks. |
 | [docs/api-reference.md](api-reference.md) | Lists all Python modules, classes, and callables with their signatures, source links, and docstrings. |
 | [docs/code-reference.md](code-reference.md) | Maps tracked files and summarizes how runtime components work together. |
-| [Dockerfile](../Dockerfile) | Builds the Python 3.14 Botfragg image and runs it as an unprivileged user. |
+| [Dockerfile](../Dockerfile) | Builds the Python 3.14 BotFragg image and runs it as an unprivileged user. |
 | [LICENSE](../LICENSE) | Contains the GNU GPLv3 license text. |
-| [PRIVACY.md](../PRIVACY.md) | Describes Botfragg's data processing, retention, and user controls. |
+| [PRIVACY.md](../PRIVACY.md) | Describes BotFragg's data processing, retention, and user controls. |
 | [README.md](../README.md) | Covers setup, commands, configuration, deployment, and privacy. |
 | [SECURITY.md](../SECURITY.md) | Explains how to report a vulnerability and respond to exposed credentials. |
-| [docker-compose.yml](../docker-compose.yml) | Defines the local production-style Botfragg service and persistent data volume. |
+| [docker-compose.yml](../docker-compose.yml) | Defines the local production-style BotFragg service and persistent data volume. |
 | [main.py](../main.py) | Invokes the application entry point for `python main.py` startup. |
 | [pyproject.toml](../pyproject.toml) | Defines package metadata, dependencies, entry point, Ruff rules, and test settings. |
 | [tools/generate_api_reference.py](../tools/generate_api_reference.py) | Generates the exhaustive API reference from Python source docstrings and signatures. |

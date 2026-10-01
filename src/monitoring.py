@@ -133,7 +133,7 @@ def _scrub_transaction(event: dict[str, Any], hint: dict[str, Any]) -> dict[str,
 
 
 def _scrub_log(log: dict[str, Any], hint: dict[str, Any]) -> dict[str, Any] | None:
-    """Keep Botfragg logs and serious Discord errors after removing URL data."""
+    """Keep BotFragg logs and serious Discord errors after removing URL data."""
     attributes = log.get("attributes", {})
     logger_name = str(attributes.get("logger.name") or "")
     severity = str(log.get("severity_text") or "")
@@ -147,7 +147,7 @@ def _scrub_log(log: dict[str, Any], hint: dict[str, Any]) -> dict[str, Any] | No
 
 
 def _release() -> str:
-    """Return the installed Botfragg release label or an unknown fallback."""
+    """Return the installed BotFragg release label or an unknown fallback."""
     try:
         return f"botfragg@{version('botfragg')}"
     except PackageNotFoundError:

@@ -6,7 +6,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from ...bot import BotfraggBot
+from ...bot import BotFraggBot
 from ...models import Account
 from ...services.accounts import (
     get_user,
@@ -23,7 +23,7 @@ ACCOUNTS_PER_PAGE = 25
 class AccountsCog(commands.Cog):
     """Present a user's linked Riot accounts and handle account selection."""
 
-    def __init__(self, bot: BotfraggBot) -> None:
+    def __init__(self, bot: BotFraggBot) -> None:
         """Bind the bot and register the persistent account-page action."""
         self.bot = bot
         bot.register_component("accounts_page", self.accounts_page)
@@ -160,6 +160,6 @@ class AccountsCog(commands.Cog):
         )
 
 
-async def setup(bot: BotfraggBot) -> None:
+async def setup(bot: BotFraggBot) -> None:
     """Register the linked-account commands and component handlers."""
     await bot.add_cog(AccountsCog(bot))

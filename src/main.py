@@ -1,10 +1,10 @@
-"""Executable entry point that configures logging and starts Botfragg."""
+"""Executable entry point that configures logging and starts BotFragg."""
 
 from __future__ import annotations
 
 import logging
 
-from .bot import BotfraggBot
+from .bot import BotFraggBot
 from .config import Settings
 from .monitoring import StructuredFormatter, configure_monitoring
 
@@ -19,7 +19,7 @@ def main() -> None:
         handlers=[handler],
     )
     configure_monitoring(config)
-    bot = BotfraggBot(config)
+    bot = BotFraggBot(config)
     bot.run(config.discord_token, log_handler=None)
 
 

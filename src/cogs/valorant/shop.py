@@ -8,7 +8,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from ...bot import BotfraggBot
+from ...bot import BotFraggBot
 from ...services.accounts import (
     account_for_user,
     get_user,
@@ -130,7 +130,7 @@ async def add_account_selector(
 class ShopCog(commands.Cog):
     """Show the caller's daily shop and handle its account and mode controls."""
 
-    def __init__(self, bot: BotfraggBot) -> None:
+    def __init__(self, bot: BotFraggBot) -> None:
         """Bind the bot and register persistent shop-mode and account actions."""
         self.bot = bot
         bot.register_component("shop_mode", self.shop_mode)
@@ -507,7 +507,7 @@ class ShopCog(commands.Cog):
 class NightMarketCog(commands.Cog):
     """Display discounted Night Market offers for the selected Riot account."""
 
-    def __init__(self, bot: BotfraggBot) -> None:
+    def __init__(self, bot: BotFraggBot) -> None:
         """Bind the shared shop, account, and emoji services."""
         self.bot = bot
 
@@ -575,7 +575,7 @@ class NightMarketCog(commands.Cog):
 class BalanceCog(commands.Cog):
     """Display the selected account's three VALORANT wallet balances."""
 
-    def __init__(self, bot: BotfraggBot) -> None:
+    def __init__(self, bot: BotFraggBot) -> None:
         """Bind the shared shop and user-preference services."""
         self.bot = bot
 
@@ -612,7 +612,7 @@ class BalanceCog(commands.Cog):
         await interaction.followup.send(embed=card)
 
 
-async def setup(bot: BotfraggBot) -> None:
+async def setup(bot: BotFraggBot) -> None:
     """Register the shop, Night Market, and wallet-balance cogs."""
     await bot.add_cog(ShopCog(bot))
     await bot.add_cog(NightMarketCog(bot))

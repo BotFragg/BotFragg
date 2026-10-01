@@ -31,12 +31,12 @@ _USER_PREFERENCE_FIELDS = frozenset(
 
 
 async def get_user(discord_id: int) -> User | None:
-    """Return the stored Botfragg user for a Discord ID, if one exists."""
+    """Return the stored BotFragg user for a Discord ID, if one exists."""
     return await User.get_or_none(id=discord_id)
 
 
 async def count_registered_users() -> int:
-    """Count users with a stored Botfragg profile."""
+    """Count users with a stored BotFragg profile."""
     return await User.all().count()
 
 
@@ -147,7 +147,7 @@ async def select_account(discord_id: int, account: Account) -> None:
 
 
 async def delete_user_data(discord_id: int) -> bool:
-    """Delete the user's stored Botfragg records and all linked Riot accounts."""
+    """Delete the user's stored BotFragg records and all linked Riot accounts."""
     async with in_transaction():
         user = await User.get_or_none(id=discord_id)
         if not user:

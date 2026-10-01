@@ -13,7 +13,7 @@ import pytest
 from cryptography.fernet import Fernet
 from discord.ext import commands
 
-from src.bot import BotfraggBot, BotfraggCommandTree
+from src.bot import BotFraggBot, BotFraggCommandTree
 from src.cogs.extra import ExtraCog
 from src.cogs.staff import StaffCog
 from src.cogs.tasks import TasksCog
@@ -80,8 +80,8 @@ async def test_unhandled_app_command_error_returns_ephemeral_response() -> None:
             sent.append((embed, ephemeral))
 
     interaction = SimpleNamespace(command=None, data={}, response=Response())
-    await BotfraggCommandTree.on_error(
-        object.__new__(BotfraggCommandTree), interaction, RuntimeError("unexpected")
+    await BotFraggCommandTree.on_error(
+        object.__new__(BotFraggCommandTree), interaction, RuntimeError("unexpected")
     )
 
     assert sent[0][0].description.startswith("Something went wrong")
@@ -102,8 +102,8 @@ async def test_unhandled_prefix_command_error_returns_generic_response() -> None
     )
     error = commands.CommandInvokeError(RuntimeError("private detail"))
 
-    assert "on_command_error" in BotfraggBot.__dict__
-    await BotfraggBot.on_command_error(object.__new__(BotfraggBot), context, error)
+    assert "on_command_error" in BotFraggBot.__dict__
+    await BotFraggBot.on_command_error(object.__new__(BotFraggBot), context, error)
 
     assert sent[0].description.startswith("Something went wrong")
     assert "private detail" not in sent[0].description
@@ -130,7 +130,7 @@ async def test_links_invite_preserves_zero_permissions() -> None:
 
     user = SimpleNamespace(
         id=123,
-        name="Botfragg",
+        name="BotFragg",
         display_avatar=SimpleNamespace(url="https://example.com/avatar.png"),
     )
     bot = SimpleNamespace(
@@ -249,7 +249,7 @@ async def test_accessory_shop_renders_catalog_item_without_changing_output(
 def test_glitchtip_groups_subcommands_separately() -> None:
     """Verify that GlitchTip groups subcommands separately."""
     assert (
-        BotfraggCommandTree._command_name(
+        BotFraggCommandTree._command_name(
             {"name": "suggestion", "options": [{"type": 1, "name": "track"}]}
         )
         == "suggestion.track"
@@ -1169,7 +1169,7 @@ def test_bot_preserves_discord_http_client(monkeypatch: pytest.MonkeyPatch) -> N
     """Verify that bot preserves Discord HTTP client."""
     monkeypatch.setenv("DISCORD_TOKEN", "test")
     monkeypatch.setenv("TOKEN_ENCRYPTION_KEY", Fernet.generate_key().decode())
-    bot = BotfraggBot(Settings.from_env())
+    bot = BotFraggBot(Settings.from_env())
     assert hasattr(bot.http, "static_login")
     assert bot.intents.dm_messages and bot.intents.guild_messages
     assert not bot.intents.message_content
@@ -1182,7 +1182,7 @@ async def test_bot_stops_extensions_before_closing_shared_resources(
     """Verify that bot stops extensions before closing shared resources."""
     monkeypatch.setenv("DISCORD_TOKEN", "test")
     monkeypatch.setenv("TOKEN_ENCRYPTION_KEY", Fernet.generate_key().decode())
-    bot = BotfraggBot(Settings.from_env())
+    bot = BotFraggBot(Settings.from_env())
     events: list[str] = []
 
     class HTTP:
@@ -1439,7 +1439,7 @@ async def test_initial_release_command_contract(
     monkeypatch.setenv("APP_ENV", "test")
     monkeypatch.setenv("DISCORD_TOKEN", "test")
     monkeypatch.setenv("TOKEN_ENCRYPTION_KEY", Fernet.generate_key().decode())
-    bot = BotfraggBot(Settings.from_env())
+    bot = BotFraggBot(Settings.from_env())
     for cog in (
         LoginCog(bot),
         LogoutCog(bot),
@@ -1538,7 +1538,7 @@ async def test_setup_hook_passes_bot_settings_to_database(
     monkeypatch.setenv("APP_ENV", "test")
     monkeypatch.setenv("DISCORD_TOKEN", "test")
     monkeypatch.setenv("TOKEN_ENCRYPTION_KEY", Fernet.generate_key().decode())
-    bot = BotfraggBot(Settings.from_env())
+    bot = BotFraggBot(Settings.from_env())
     database_call: dict[str, object] = {}
 
     async def connect_database(settings: Settings, *, generate_schemas: bool) -> None:

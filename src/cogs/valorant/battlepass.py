@@ -6,7 +6,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from ...bot import BotfraggBot
+from ...bot import BotFraggBot
 from ...services.accounts import get_user, selected_account
 from ...services.auth import AuthenticationRequired
 from ...services.emojis import ApplicationEmojiService
@@ -18,7 +18,7 @@ from ._ui import _account_display_name, embed, error
 class BattlepassCog(commands.Cog):
     """Display the caller's current battlepass level and mission progress."""
 
-    def __init__(self, bot: BotfraggBot) -> None:
+    def __init__(self, bot: BotFraggBot) -> None:
         """Bind the bot's gameplay, account, and emoji services."""
         self.bot = bot
 
@@ -162,6 +162,6 @@ class BattlepassCog(commands.Cog):
         return card
 
 
-async def setup(bot: BotfraggBot) -> None:
+async def setup(bot: BotFraggBot) -> None:
     """Register the battlepass and mission commands."""
     await bot.add_cog(BattlepassCog(bot))

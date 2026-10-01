@@ -6,7 +6,7 @@ from tortoise.fields.base import OnDelete
 from tortoise import fields
 
 class Migration(migrations.Migration):
-    """Define the initial persisted Botfragg schema and ownership relations."""
+    """Define the initial persisted BotFragg schema and ownership relations."""
 
     initial = True
 

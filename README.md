@@ -1,10 +1,10 @@
-# Botfragg
+# BotFragg
 
-Botfragg is a privacy-conscious VALORANT companion for Discord. Link a Riot
+BotFragg is a privacy-conscious VALORANT companion for Discord. Link a Riot
 account to view the daily shop, Night Market, balances, battlepass progress,
 and receive direct-message skin alerts.
 
-Botfragg is written in Python 3.14 with discord.py, Tortoise ORM, and uv. It uses
+BotFragg is written in Python 3.14 with discord.py, Tortoise ORM, and uv. It uses
 SQLite for local development and PostgreSQL in production.
 
 ## Features
@@ -44,7 +44,7 @@ Create an application and bot in the [Discord Developer Portal](https://discord.
 then copy the bot token into `.env`. In **OAuth2 → URL Generator**, select the
 `bot` and `applications.commands` scopes. Grant **View Channels**, **Send
 Messages**, **Embed Links**, and **Read Message History**, then use the generated
-URL to invite Botfragg to a server. Administrator access is not required.
+URL to invite BotFragg to a server. Administrator access is not required.
 
 The bot enables the non-privileged Guilds, Guild Messages, and Direct Messages
 intents in code. The slash-command setup does not require privileged intents.
@@ -72,14 +72,14 @@ intents in code. The slash-command setup does not require privileged intents.
    ```
 
 SQLite is selected automatically when `APP_ENV=development` and no
-`DATABASE_URL` is provided. Botfragg creates its development schema on startup;
+`DATABASE_URL` is provided. BotFragg creates its development schema on startup;
 running the migration command keeps local environments aligned with production.
 
 ## Production
 
 1. Set `APP_ENV=production`, `DISCORD_TOKEN`, `TOKEN_ENCRYPTION_KEY`, and a
    strong `POSTGRES_PASSWORD` in `.env`.
-2. Start PostgreSQL and Botfragg:
+2. Start PostgreSQL and BotFragg:
 
    ```sh
    docker compose up -d --build
@@ -106,13 +106,13 @@ their default `0.1` only when full telemetry capture is needed.
 
 ## Privacy and observability
 
-Read [PRIVACY.md](PRIVACY.md) before operating or using Botfragg. Users can delete
-their Botfragg data with `/deletedata confirm:True`; `/logout` removes credentials
+Read [PRIVACY.md](PRIVACY.md) before operating or using BotFragg. Users can delete
+their BotFragg data with `/deletedata confirm:True`; `/logout` removes credentials
 only and retains account settings and alerts.
 
 Optional GlitchTip reporting filters credentials, tokens, cookies, HTTP
 request data, local variables, command inputs, message content, Riot account
-identifiers, and Discord IDs before events are sent. Botfragg does not read or
+identifiers, and Discord IDs before events are sent. BotFragg does not read or
 retain DM content or attachments.
 
 ## Code reference
@@ -130,4 +130,4 @@ vulnerabilities privately as described in [SECURITY.md](SECURITY.md).
 
 ## License
 
-Botfragg is licensed under the [GNU GPLv3](LICENSE).
+BotFragg is licensed under the [GNU GPLv3](LICENSE).
