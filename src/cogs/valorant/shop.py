@@ -1,7 +1,9 @@
-"""Commands for daily, accessory, and Night Market shops and wallet balances."""
+"""Commands for skin shops, featured bundles, and balances."""
 
 from __future__ import annotations
 
+import asyncio
+import logging
 import time
 
 import discord
@@ -16,9 +18,16 @@ from ...services.accounts import (
     selected_account,
 )
 from ...services.auth import AuthenticationRequired
-from ...services.catalog import Skin
+from ...services.catalog import Bundle, Skin
 from ...services.emojis import ApplicationEmojiService
-from ...services.shop import Offer, ShopData, ShopUnavailable
+from ...services.http import HTTPFailure
+from ...services.shop import (
+    FeaturedBundle,
+    FeaturedBundleItem,
+    Offer,
+    ShopData,
+    ShopUnavailable,
+)
 from ...views import OwnedActionButton, OwnedSelect, timestamp
 from ._ui import _account_display_name, embed, error, view
 
@@ -29,6 +38,23 @@ TIER_COLOURS = {
     "12683d76-48d7-84a3-4e09-6985794f0445": 0x5A9FE1,
     "411e4a55-4e59-7757-41f0-86a53f101bb5": 0xF9D563,
 }
+log = logging.getLogger(__name__)
+
+
+def _price_line(
+    currency: str,
+    final_price: int,
+    original_price: int | None = None,
+    discount_percent: int | None = None,
+) -> str:
+    """Format a current price and any original price discount on one line."""
+    price = f"{currency} **{final_price:,}**"
+    if original_price is None or original_price <= final_price:
+        return price
+    percent = discount_percent or max(
+        1, round((original_price - final_price) * 100 / original_price)
+    )
+    return f"{price} ~~{original_price:,}~~ (-{percent}%)"
 
 
 def offer_cards(
@@ -42,11 +68,11 @@ def offer_cards(
     """Render a heading and one tier-coloured embed for each skin offer."""
     result = [embed(header, colour=0x202225)]
     for offer in offers:
-        price = (
-            f"{currency} **{offer.discount_price:,}**\n"
-            f"{currency} ~~{offer.price:,}~~ (-{offer.discount_percent or 0}%)"
-            if offer.discount_price
-            else f"{currency} **{offer.price:,}**"
+        price = _price_line(
+            currency,
+            offer.discount_price if offer.discount_price is not None else offer.price,
+            offer.price,
+            offer.discount_percent,
         )
         item = embed(
             price,
@@ -128,7 +154,7 @@ async def add_account_selector(
 
 
 class ShopCog(commands.Cog):
-    """Show the caller's daily shop and handle its account and mode controls."""
+    """Show shops and bundles for the caller's linked account."""
 
     def __init__(self, bot: BotFraggBot) -> None:
         """Bind the bot and register persistent shop-mode and account actions."""
@@ -137,6 +163,7 @@ class ShopCog(commands.Cog):
         bot.register_component("shop_account", self.shop_account)
         bot.register_component("shop_skin", self.shop_skin)
         bot.register_component("shop_variant", self.shop_variant)
+        bot.register_component("shop_bundle", self.shop_bundle)
 
     @app_commands.command(name="shop", description="Show your current daily shop!")
     async def shop(
@@ -202,7 +229,7 @@ class ShopCog(commands.Cog):
         *,
         hide_ign: bool = False,
     ) -> tuple[list[discord.Embed], discord.ui.View]:
-        """Build the daily shop embeds and controls for accessories and other accounts."""
+        """Build daily shop embeds, owned selectors, and available shop controls."""
         controls = view()
         add_skin_selector(
             controls, owner_id, data.offers, data.expires, self.bot.emoji_service
@@ -217,6 +244,15 @@ class ShopCog(commands.Cog):
                     owner_id,
                     f"night,{puuid}",
                     label="Night Market",
+                )
+            )
+        if data.featured_bundles:
+            controls.add_item(
+                OwnedActionButton(
+                    "shop_mode",
+                    owner_id,
+                    f"bundles,{puuid}",
+                    label="Featured Bundles",
                 )
             )
         controls.add_item(
@@ -239,13 +275,225 @@ class ShopCog(commands.Cog):
             controls,
         )
 
+    @app_commands.command(
+        name="bundles", description="Show bundles currently featured in your store."
+    )
+    async def bundles(self, interaction: discord.Interaction) -> None:
+        """Show the selected account's current featured bundle offers and controls."""
+        await interaction.response.defer(thinking=True)
+        account = await selected_account(interaction.user.id)
+        if not account:
+            await error(interaction, "You're not registered. Try `/login`.")
+            return
+        try:
+            data = await self.bot.shop.storefront(account)
+        except (AuthenticationRequired, ShopUnavailable) as exc:
+            await error(interaction, str(exc))
+            return
+        embeds, controls = await self.featured_bundles_view(
+            data, interaction.user.id, account.puuid
+        )
+        await interaction.followup.send(embeds=embeds, view=controls)
+
+    async def featured_bundles_view(
+        self,
+        data: ShopData,
+        owner_id: int,
+        puuid: str,
+        *,
+        selected_id: str | None = None,
+        show_shop_button: bool = False,
+    ) -> tuple[list[discord.Embed], discord.ui.View]:
+        """Build current featured bundles with shop-style cards and controls."""
+        offers = data.featured_bundles
+        selected = next((offer for offer in offers if offer.id == selected_id), None)
+        if selected or len(offers) == 1:
+            cards = await self._featured_bundle_embeds(selected or offers[0])
+        elif offers:
+            vp = await self.bot.emoji_service.currency("vp") or "VP"
+            cards = [
+                embed(
+                    "Bundles currently featured in the store.",
+                    title="Featured Bundles",
+                    colour=0x202225,
+                )
+            ]
+            for offer in offers[:9]:
+                metadata = self._bundle_metadata(offer)
+                details = self._featured_price(offer, vp)
+                if offer.expires:
+                    details += f"\nAvailable until {timestamp(offer.expires)}"
+                card = embed(details, title=metadata.name[:256], colour=0x202225)
+                if metadata.icon:
+                    card.set_thumbnail(url=metadata.icon)
+                cards.append(card)
+            if len(offers) > 9:
+                cards[
+                    0
+                ].description += f"\n{len(offers) - 9} additional bundles are omitted."
+        else:
+            cards = [
+                embed(
+                    "There are no featured bundles right now.",
+                    title="Featured Bundles",
+                    colour=0x202225,
+                )
+            ]
+
+        controls = view()
+        source = "shop" if show_shop_button else "command"
+        if len(offers) > 1:
+            controls.add_item(
+                OwnedSelect(
+                    "shop_bundle",
+                    owner_id,
+                    f"{puuid}|{source}",
+                    placeholder="Choose a featured bundle",
+                    options=[
+                        discord.SelectOption(
+                            label=self._bundle_metadata(offer).name[:100],
+                            value=offer.id,
+                            default=offer.id == selected_id,
+                        )
+                        for offer in offers[:25]
+                    ],
+                )
+            )
+        if show_shop_button:
+            controls.add_item(
+                OwnedActionButton(
+                    "shop_mode",
+                    owner_id,
+                    f"daily,{puuid}",
+                    label="Skin shop",
+                )
+            )
+        return cards, controls
+
+    def _bundle_metadata(self, offer: FeaturedBundle) -> Bundle:
+        """Resolve static bundle metadata or provide a safe live-offer fallback."""
+        return (
+            self.bot.catalog.get_bundle(offer.data_asset_id)
+            or self.bot.catalog.get_bundle(offer.id)
+            or Bundle(offer.data_asset_id, "Featured bundle", None, None, None)
+        )
+
+    @staticmethod
+    def _featured_price(offer: FeaturedBundle, vp: str) -> str:
+        """Format only Riot-supplied VP totals, retaining exact discount values."""
+        base = offer.total_base_cost
+        discounted = offer.total_discounted_cost
+        if discounted is None:
+            return f"{vp} **{base:,}**" if base is not None else "Price unavailable"
+        return _price_line(vp, discounted, base, offer.total_discount_percent)
+
+    async def _featured_item_embed(
+        self, item: FeaturedBundleItem, vp: str
+    ) -> discord.Embed | None:
+        """Render one live bundle item in the shop's card, tier, and price style."""
+        colour = 0x202225
+        icon = None
+        extra = ""
+        if skin := self.bot.catalog.get_skin(item.item_id):
+            name = self.bot.emoji_service.skin_name(skin.name, skin.tier_uuid)
+            colour = TIER_COLOURS.get(skin.tier_uuid, 0)
+            icon = skin.icon
+        else:
+            try:
+                accessory = await self.bot.catalog.accessory(
+                    item.item_type_id, item.item_id
+                )
+            except HTTPFailure as exc:
+                log.warning(
+                    "Could not fetch featured bundle item metadata "
+                    "(type=%s, id=%s): %s",
+                    item.item_type_id,
+                    item.item_id,
+                    exc,
+                )
+                return None
+            if not accessory:
+                log.warning(
+                    "No catalog metadata for featured bundle item (type=%s, id=%s)",
+                    item.item_type_id,
+                    item.item_id,
+                )
+                return None
+            name = accessory.name
+            icon = accessory.icon
+            extra = f"`{accessory.title_text}`\n\n" if accessory.title_text else ""
+        if item.amount > 1:
+            name += f" x{item.amount}"
+        final_price = (
+            item.discounted_price
+            if item.discounted_price is not None
+            else item.base_price
+        )
+        price = (
+            _price_line(vp, final_price, item.base_price)
+            if final_price is not None
+            else "Price unavailable"
+        )
+        card = embed(extra + price, title=name[:256], colour=colour)
+        if icon:
+            if self.bot.config.link_item_image:
+                card.url = icon
+            card.set_thumbnail(url=icon)
+        return card
+
+    async def _featured_bundle_embeds(
+        self, offer: FeaturedBundle
+    ) -> list[discord.Embed]:
+        """Render a bundle summary and up to nine shop-style item cards."""
+        metadata = self._bundle_metadata(offer)
+        vp = await self.bot.emoji_service.currency("vp") or "VP"
+        title = metadata.name.strip().casefold()
+        description = [
+            "\n".join(
+                line for line in value.splitlines() if line.strip().casefold() != title
+            ).strip()
+            for value in (metadata.subtitle, metadata.description)
+            if value
+        ]
+        description.append(f"Bundle price: {self._featured_price(offer, vp)}")
+        if offer.expires:
+            description.append(f"Available until {timestamp(offer.expires)}")
+        card = embed(
+            "\n".join(value for value in description if value)[:1000],
+            title=metadata.name[:256],
+            colour=0x202225,
+        )
+        if metadata.icon:
+            card.set_thumbnail(url=metadata.icon)
+        max_items = 9
+        visible_items = offer.items[:max_items]
+        item_cards = await asyncio.gather(
+            *(self._featured_item_embed(item, vp) for item in visible_items)
+        )
+        displayed = [item_card for item_card in item_cards if item_card is not None]
+        unresolved = len(visible_items) - len(displayed)
+        hidden = len(offer.items) - len(visible_items)
+        if unresolved:
+            item_word = "item" if unresolved == 1 else "items"
+            card.description = (card.description or "") + (
+                f"\nCould not match {unresolved} bundle {item_word} "
+                "to catalog metadata."
+            )
+        if hidden:
+            item_word = "item" if hidden == 1 else "items"
+            card.description = (card.description or "") + (
+                f"\n{hidden} additional bundle {item_word} not shown "
+                "due Discord's 10-embed message limit."
+            )
+        return [card, *displayed]
+
     async def shop_mode(self, interaction: discord.Interaction, payload: str) -> None:
-        """Render the selected daily, Night Market, or accessory shop mode."""
+        """Render the selected daily, Night Market, accessory, or bundle mode."""
         await interaction.response.defer()
         mode, separator, puuid = payload.partition(",")
         if (
             not separator
-            or mode not in {"daily", "night", "nightmarket", "accessory"}
+            or mode not in {"daily", "night", "nightmarket", "accessory", "bundles"}
             or not puuid
         ):
             await error(interaction, "That shop control is invalid.")
@@ -269,6 +517,13 @@ class ShopCog(commands.Cog):
                 interaction.user.id,
                 puuid,
                 hide_ign=hide_ign,
+            )
+        elif mode == "bundles":
+            embeds, controls = await self.featured_bundles_view(
+                data,
+                interaction.user.id,
+                puuid,
+                show_shop_button=True,
             )
         elif mode in {"night", "nightmarket"}:
             vp = await self.bot.emoji_service.currency("vp") or "VP"
@@ -356,6 +611,55 @@ class ShopCog(commands.Cog):
                     )
                     return values
         return values
+
+    async def shop_bundle(self, interaction: discord.Interaction, payload: str) -> None:
+        """Revalidate a selected featured bundle against the caller's account and view."""
+        puuid, separator, remainder = payload.partition("|")
+        source, source_separator, bundle_id = remainder.partition("|")
+        if not source_separator:
+            bundle_id = source
+            source = "command"
+            selector_payload = puuid
+        else:
+            selector_payload = f"{puuid}|{source}"
+        custom_id = (
+            f"botfragg_select:shop_bundle:{interaction.user.id}:{selector_payload}"
+        )
+        if (
+            not separator
+            or not puuid
+            or not bundle_id
+            or source not in {"command", "shop"}
+            or bundle_id not in self._selection_values(interaction, custom_id)
+        ):
+            await interaction.response.send_message(
+                "That bundle selection is no longer available. Run `/bundles` again.",
+                ephemeral=True,
+            )
+            return
+        account = await account_for_user(interaction.user.id, puuid)
+        if not account:
+            await interaction.response.send_message(
+                "That account is no longer available.", ephemeral=True
+            )
+            return
+        await interaction.response.defer()
+        try:
+            data = await self.bot.shop.storefront(account)
+        except (AuthenticationRequired, ShopUnavailable) as exc:
+            await error(interaction, str(exc))
+            return
+        if not any(offer.id == bundle_id for offer in data.featured_bundles):
+            await error(interaction, "That featured bundle is no longer available.")
+            return
+        embeds, controls = await self.featured_bundles_view(
+            data,
+            interaction.user.id,
+            puuid,
+            selected_id=bundle_id,
+            show_shop_button=source == "shop",
+        )
+        await interaction.edit_original_response(embeds=embeds, view=controls)
 
     @staticmethod
     def _video_options(skin: Skin) -> list[discord.SelectOption]:
@@ -543,7 +847,14 @@ class NightMarketCog(commands.Cog):
         ]
         for offer in data.night_market:
             card = embed(
-                f"{vp} **{offer.discount_price or offer.price:,}**\n{vp} ~~{offer.price:,}~~ (-{offer.discount_percent or 0}%)",
+                _price_line(
+                    vp,
+                    offer.discount_price
+                    if offer.discount_price is not None
+                    else offer.price,
+                    offer.price,
+                    offer.discount_percent,
+                ),
                 title=self.bot.emoji_service.skin_name(
                     offer.skin.name, offer.skin.tier_uuid
                 ),

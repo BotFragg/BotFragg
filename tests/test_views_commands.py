@@ -32,9 +32,17 @@ from src.cogs.valorant.shop import (
     offer_cards,
 )
 from src.config import Settings
-from src.services.catalog import Accessory, Skin
+from src.services.catalog import Accessory, Bundle, Skin
 from src.services.http import HTTPFailure
-from src.services.shop import KC_UUID, Offer, ShopData, ShopService
+from src.services.shop import (
+    KC_UUID,
+    VP_UUID,
+    FeaturedBundle,
+    FeaturedBundleItem,
+    Offer,
+    ShopData,
+    ShopService,
+)
 from src.views import OwnedActionButton, OwnedSelect
 
 
@@ -276,7 +284,7 @@ def test_shop_offer_layout_uses_tier_colour_and_discount_price() -> None:
     discounted = offer_cards(
         "Night Market", [Offer(skin, 1775, 1, 1000, 44)], "VP", link_item_image=False
     )
-    assert discounted[1].description == "VP **1,000**\nVP ~~1,775~~ (-44%)"
+    assert discounted[1].description == "VP **1,000** ~~1,775~~ (-44%)"
 
 
 @pytest.mark.asyncio
@@ -417,6 +425,19 @@ async def test_daily_shop_view_includes_only_its_offers_in_skin_menu(
             [Offer(skin, 1775, 1)],
             4_000_000_000,
             4_000_000_000,
+            featured_bundles=[
+                FeaturedBundle(
+                    "featured-id",
+                    "bundle-id",
+                    VP_UUID,
+                    [],
+                    1000,
+                    800,
+                    20,
+                    4_000_000_000,
+                    False,
+                )
+            ],
         ),
         "Player",
         123,
@@ -435,7 +456,266 @@ async def test_daily_shop_view_includes_only_its_offers_in_skin_menu(
         "shop_account",
         "shop_mode",
         "shop_mode",
+        "shop_mode",
     ]
+    assert controls.children[3].item.label == "Featured Bundles"
+    assert controls.children[3].item.custom_id.endswith(":bundles,account")
+
+
+@pytest.mark.asyncio
+async def test_bundles_command_renders_live_prices_and_tiered_skin_names(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Verify the single current bundle includes exact prices and skin tier labels."""
+    skin = Skin("skin", "offer", "Prime Phantom", None, "tier-uuid")
+    bundle = Bundle("bundle-uuid", "Prime Collection", "Set", None, None)
+    account = SimpleNamespace(puuid="account")
+    data = ShopData(
+        [],
+        [],
+        [],
+        4_000_000_000,
+        None,
+        featured_bundles=[
+            FeaturedBundle(
+                "offer-id",
+                "bundle-uuid",
+                VP_UUID,
+                [FeaturedBundleItem("weapon", "skin", 2, VP_UUID, 1000, 600)],
+                2000,
+                1200,
+                40,
+                4_000_000_000,
+                False,
+            )
+        ],
+    )
+
+    async def selected_account(_owner_id: int):
+        """Return the account fixture used by the command."""
+        return account
+
+    monkeypatch.setattr(shop_module, "selected_account", selected_account)
+
+    class EmojiService:
+        """Return stable labels for bundle card assertions."""
+
+        async def currency(self, _kind: str) -> str:
+            """Return the fixture's VP currency label."""
+            return "VP"
+
+        def skin_name(self, name: str, _tier_uuid: str | None) -> str:
+            """Prefix skin names with a fixture tier emoji."""
+            return f"<:tier:1> {name}"
+
+    class Shop:
+        """Return the configured live bundle data."""
+
+        async def storefront(self, _account):
+            """Return the fixture's one featured bundle."""
+            return data
+
+    class Response:
+        """Require the bundle command to defer before fetching the shop."""
+
+        async def defer(self, *, thinking: bool) -> None:
+            """Require the command to defer while loading the storefront."""
+            assert thinking
+
+    class Followup:
+        """Record the bundle command response."""
+
+        def __init__(self) -> None:
+            """Initialize the captured command response."""
+            self.message: dict[str, object] = {}
+
+        async def send(self, **kwargs: object) -> None:
+            """Capture the command's embeds and controls."""
+            self.message = kwargs
+
+    catalog = SimpleNamespace(
+        get_bundle=lambda uuid: bundle if uuid == bundle.uuid else None,
+        get_skin=lambda uuid: skin if uuid == skin.uuid else None,
+    )
+    bot = SimpleNamespace(
+        register_component=lambda *_args: None,
+        catalog=catalog,
+        config=SimpleNamespace(link_item_image=False),
+        emoji_service=EmojiService(),
+        shop=Shop(),
+    )
+    interaction = SimpleNamespace(
+        user=SimpleNamespace(id=123), response=Response(), followup=Followup()
+    )
+
+    cog = ShopCog(bot)
+    await cog.bundles.callback(cog, interaction)
+
+    card = interaction.followup.message["embeds"][0]
+    assert card.title == "Prime Collection"
+    assert "Bundle price: VP **1,200** ~~2,000~~ (-40%)" in card.description
+    assert len(interaction.followup.message["embeds"]) == 2
+    item_card = interaction.followup.message["embeds"][1]
+    assert item_card.title == "<:tier:1> Prime Phantom x2"
+    assert item_card.description == "VP **600** ~~1,000~~ (-40%)"
+    controls = interaction.followup.message["view"]
+    assert controls.children == []
+
+
+@pytest.mark.asyncio
+async def test_bundles_reports_missing_account_and_empty_featured_list(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Verify `/bundles` reports unlinked accounts and accounts with no active offers."""
+
+    class Response:
+        """Capture command errors and support the normal defer path."""
+
+        def __init__(self) -> None:
+            """Initialize the captured response history."""
+            self.messages: list[dict[str, object]] = []
+
+        async def defer(self, *, thinking: bool) -> None:
+            """Require the command to defer before account lookup."""
+            assert thinking
+
+        def is_done(self) -> bool:
+            """Report that the initial interaction was already deferred."""
+            return True
+
+    class Followup:
+        """Capture the command's follow-up response."""
+
+        def __init__(self) -> None:
+            """Initialize the captured follow-up payload."""
+            self.message: dict[str, object] = {}
+
+        async def send(self, **kwargs: object) -> None:
+            """Capture the command's success or error response."""
+            self.message = kwargs
+
+    response = Response()
+    followup = Followup()
+
+    async def selected_account(_owner_id: int):
+        """Report that the caller has no linked account for the first request."""
+        return None
+
+    monkeypatch.setattr(shop_module, "selected_account", selected_account)
+    unregistered = SimpleNamespace(
+        user=SimpleNamespace(id=123), response=response, followup=followup
+    )
+    cog = ShopCog(SimpleNamespace(register_component=lambda *_args: None))
+    await cog.bundles.callback(cog, unregistered)
+    assert "`/login`" in followup.message["embed"].description
+    assert followup.message["ephemeral"] is True
+
+    account = SimpleNamespace(puuid="account")
+
+    async def selected(_owner_id: int):
+        """Return the linked account for the empty-list response check."""
+        return account
+
+    monkeypatch.setattr(shop_module, "selected_account", selected)
+
+    class Shop:
+        """Return a storefront without active bundle offers."""
+
+        async def storefront(self, _account):
+            """Return a storefront with no active featured bundles."""
+            return ShopData([], [], [], 4_000_000_000, None)
+
+    empty_followup = Followup()
+    empty_interaction = SimpleNamespace(
+        user=SimpleNamespace(id=123), response=Response(), followup=empty_followup
+    )
+    empty_cog = ShopCog(
+        SimpleNamespace(
+            register_component=lambda *_args: None,
+            shop=Shop(),
+        )
+    )
+    await empty_cog.bundles.callback(empty_cog, empty_interaction)
+    assert "no featured bundles" in empty_followup.message["embeds"][0].description
+
+
+@pytest.mark.asyncio
+async def test_featured_bundle_view_has_no_account_selector_and_rejects_forged_items():
+    """Keep live featured offers owner-scoped without an account selector."""
+    offers = [
+        FeaturedBundle(
+            f"offer-{index}", f"asset-{index}", VP_UUID, [], 1000, 800, 20, None, False
+        )
+        for index in (1, 2)
+    ]
+    metadata = {
+        "asset-1": Bundle("asset-1", "Bundle One", None, None, None),
+        "asset-2": Bundle("asset-2", "Bundle Two", None, None, None),
+    }
+
+    class EmojiService:
+        """Provide the VP marker needed by the featured-bundle summary."""
+
+        async def currency(self, _kind: str) -> str:
+            """Return the fixture's VP label."""
+            return "VP"
+
+    cog = ShopCog(
+        SimpleNamespace(
+            register_component=lambda *_args: None,
+            catalog=SimpleNamespace(get_bundle=metadata.get),
+            emoji_service=EmojiService(),
+        )
+    )
+    embeds, controls = await cog.featured_bundles_view(
+        ShopData([], [], [], 0, None, featured_bundles=offers), 123, "account"
+    )
+
+    assert [item.title for item in embeds] == [
+        "Featured Bundles",
+        "Bundle One",
+        "Bundle Two",
+    ]
+    assert [child.item.custom_id.split(":")[1] for child in controls.children] == [
+        "shop_bundle"
+    ]
+    _, shop_controls = await cog.featured_bundles_view(
+        ShopData([], [], [], 0, None, featured_bundles=offers),
+        123,
+        "account",
+        show_shop_button=True,
+    )
+    assert [child.item.custom_id.split(":")[1] for child in shop_controls.children] == [
+        "shop_bundle",
+        "shop_mode",
+    ]
+    assert shop_controls.children[1].item.label == "Skin shop"
+
+    class Response:
+        """Capture private rejections for invalid bundle choices."""
+
+        def __init__(self) -> None:
+            """Initialize the captured messages."""
+            self.messages: list[dict[str, object]] = []
+
+        async def send_message(self, content: str, **kwargs: object) -> None:
+            """Record a private validation response."""
+            self.messages.append({"content": content, **kwargs})
+
+    selector = OwnedSelect(
+        "shop_bundle",
+        123,
+        "account|command",
+        options=[discord.SelectOption(label="Bundle One", value="offer-1")],
+    )
+    response = Response()
+    interaction = SimpleNamespace(
+        user=SimpleNamespace(id=123),
+        message=SimpleNamespace(components=[SimpleNamespace(children=[selector.item])]),
+        response=response,
+    )
+    await cog.shop_bundle(interaction, "account|command|forged")
+    assert response.messages[-1]["ephemeral"] is True
 
 
 @pytest.mark.asyncio
@@ -1462,6 +1742,7 @@ async def test_initial_release_command_contract(
         "accounts",
         "settings",
         "shop",
+        "bundles",
         "nightmarket",
         "balance",
         "alert",

@@ -15,7 +15,8 @@ docstring. Regenerate it after code documentation changes with
    and loads the Discord cogs.
 3. Cogs translate Discord commands and events into calls to `src.services`.
    Services own Riot requests, account and suggestion operations, and catalog
-   normalization; `src.models.entities` defines the persisted records.
+   normalization, including static bundle metadata and account-scoped featured
+   offers; `src.models.entities` defines the persisted records.
 4. Background task cogs schedule daily alerts and periodic refreshes. Monitoring
    helpers remove sensitive fields before logs and events leave the process.
 
@@ -77,7 +78,7 @@ docstring. Regenerate it after code documentation changes with
 | [src/cogs/valorant/login.py](../src/cogs/valorant/login.py) | Handles nonce-bound Riot sign-in through a private Discord modal. |
 | [src/cogs/valorant/logout.py](../src/cogs/valorant/logout.py) | Clears Riot credentials or deletes the caller's stored data. |
 | [src/cogs/valorant/settings.py](../src/cogs/valorant/settings.py) | Displays and updates user privacy and notification preferences. |
-| [src/cogs/valorant/shop.py](../src/cogs/valorant/shop.py) | Displays daily shops, Night Markets, accessory offers, and wallet balances. |
+| [src/cogs/valorant/shop.py](../src/cogs/valorant/shop.py) | Displays daily and accessory shops, featured bundles, Night Markets, and wallet balances. |
 | [src/migrations/__init__.py](../src/migrations/__init__.py) | Exposes the Tortoise migration package. |
 | [src/migrations/0001_initial.py](../src/migrations/0001_initial.py) | Creates the initial user, account, alert, and suggestion schema. |
 | [src/migrations/0002_add_command_analytics.py](../src/migrations/0002_add_command_analytics.py) | Adds command invocation analytics. |
@@ -88,12 +89,12 @@ docstring. Regenerate it after code documentation changes with
 | [src/services/__init__.py](../src/services/__init__.py) | Defines the service package. |
 | [src/services/accounts.py](../src/services/accounts.py) | Owns user preferences, account selection, alerts, analytics, and suggestion persistence. |
 | [src/services/auth.py](../src/services/auth.py) | Owns Riot OAuth, credential refresh, entitlement repair, and account linking. |
-| [src/services/catalog.py](../src/services/catalog.py) | Loads, searches, refreshes, and caches skin, accessory, and mission metadata. |
+| [src/services/catalog.py](../src/services/catalog.py) | Loads, searches, refreshes, and caches skin, bundle, accessory, and mission metadata. |
 | [src/services/crypto.py](../src/services/crypto.py) | Encrypts and decrypts stored Riot credentials with Fernet. |
 | [src/services/emojis.py](../src/services/emojis.py) | Caches application emojis and creates missing ones from packaged assets. |
 | [src/services/gameplay.py](../src/services/gameplay.py) | Normalizes VALORANT battlepass and mission progress. |
 | [src/services/http.py](../src/services/http.py) | Provides shared Riot HTTP requests, URL redaction, and rate-limit handling. |
-| [src/services/shop.py](../src/services/shop.py) | Retrieves and normalizes authenticated store and wallet responses. |
+| [src/services/shop.py](../src/services/shop.py) | Retrieves and normalizes account-scoped skin, bundle, accessory, Night Market, and wallet data. |
 | [src/views/__init__.py](../src/views/__init__.py) | Re-exports common timestamps and persistent interactive controls. |
 | [src/views/common.py](../src/views/common.py) | Formats values as Discord timestamps. |
 | [src/views/components.py](../src/views/components.py) | Implements restart-safe, owner-restricted buttons and select menus. |

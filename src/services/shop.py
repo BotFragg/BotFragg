@@ -1,10 +1,10 @@
-"""Normalize authenticated VALORANT storefront, accessory, and wallet data."""
+"""Normalize authenticated VALORANT shop, featured bundle, and wallet data."""
 
 from __future__ import annotations
 
 import asyncio
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from weakref import WeakValueDictionary
 
@@ -39,14 +39,43 @@ class AccessoryOffer:
 
 
 @dataclass(slots=True)
+class FeaturedBundleItem:
+    """Represent one account-specific item and its exact bundle offer pricing."""
+
+    item_type_id: str
+    item_id: str
+    amount: int
+    currency_uuid: str | None
+    base_price: int | None
+    discounted_price: int | None
+
+
+@dataclass(slots=True)
+class FeaturedBundle:
+    """Represent one currently featured bundle from an account's storefront."""
+
+    id: str
+    data_asset_id: str
+    currency_uuid: str | None
+    items: list[FeaturedBundleItem]
+    total_base_cost: int | None
+    total_discounted_cost: int | None
+    total_discount_percent: int | None
+    expires: int | None
+    wholesale_only: bool
+
+
+@dataclass(slots=True)
 class ShopData:
-    """Hold daily, accessory, and Night Market offers with their expiry times."""
+    """Hold account-specific shop offers and separate display/cache expiries."""
 
     offers: list[Offer]
     accessory: list[dict[str, Any]]
     night_market: list[Offer]
     expires: int
     night_market_expires: int | None
+    featured_bundles: list[FeaturedBundle] = field(default_factory=list)
+    cache_expires: int | None = None
 
 
 class ShopService:
@@ -84,7 +113,11 @@ class ShopService:
         """Return a fresh or unexpired cached storefront for the linked account."""
         async with self._account_lock(account.puuid):
             cached = self._cache.get(account.puuid)
-            if cached and cached.expires <= time.time():
+            if cached and getattr(cached, "cache_expires", None) is not None:
+                expired = cached.cache_expires <= time.time()
+            else:
+                expired = bool(cached and cached.expires <= time.time())
+            if cached and expired:
                 self._cache.pop(account.puuid, None)
                 cached = None
             try:
@@ -98,7 +131,7 @@ class ShopService:
     async def _fetch_storefront(
         self, account: Account, headers: dict[str, str]
     ) -> ShopData:
-        """Fetch, repair claims when possible, normalize offers, and cache the result."""
+        """Fetch, repair claims, normalize all shop offers, and cache the result."""
         response = await self._storefront_request(account, headers)
         raw = response.data if isinstance(response.data, dict) else {}
         if response.status in {400, 401} and raw.get("errorCode") == "BAD_CLAIMS":
@@ -116,10 +149,9 @@ class ShopService:
             if raw.get("errorCode") == "SCHEDULED_DOWNTIME":
                 raise Maintenance("VALORANT is undergoing scheduled maintenance")
             raise ShopUnavailable("Riot returned an invalid storefront response")
+        now = int(time.time())
         panel = raw["SkinsPanelLayout"]
-        expires = int(time.time()) + int(
-            panel.get("SingleItemOffersRemainingDurationInSeconds", 0)
-        )
+        expires = now + int(panel.get("SingleItemOffersRemainingDurationInSeconds", 0))
         offer_ids = panel.get("SingleItemOffers") or []
         prices = self._offer_prices(raw)
         offers = [
@@ -129,8 +161,12 @@ class ShopService:
         ]
         night_raw = (raw.get("BonusStore") or {}).get("BonusStoreOffers") or []
         night_expires = (
-            int(time.time())
-            + int(raw["BonusStore"].get("BonusStoreRemainingDurationInSeconds", 0))
+            now
+            + int(
+                (raw.get("BonusStore") or {}).get(
+                    "BonusStoreRemainingDurationInSeconds", 0
+                )
+            )
             if raw.get("BonusStore")
             else None
         )
@@ -148,6 +184,82 @@ class ShopService:
                         int(entry.get("DiscountPercent", 0)),
                     )
                 )
+        featured = raw.get("FeaturedBundle")
+        featured = featured if isinstance(featured, dict) else {}
+        bundle_remaining = _nonnegative_int(
+            featured.get("BundlesRemainingDurationInSeconds")
+        )
+        bundle_expiry = now + bundle_remaining if bundle_remaining is not None else None
+        featured_bundles: list[FeaturedBundle] = []
+        for entry in featured.get("Bundles") or []:
+            if not isinstance(entry, dict):
+                continue
+            bundle_id = str(entry.get("ID") or entry.get("DataAssetID") or "")
+            data_asset_id = str(entry.get("DataAssetID") or bundle_id)
+            if not bundle_id:
+                continue
+            currency_uuid = str(entry.get("CurrencyID") or VP_UUID)
+            duration = _nonnegative_int(entry.get("DurationRemainingInSeconds"))
+            expiry_candidates = [
+                expiry
+                for expiry in (
+                    bundle_expiry,
+                    now + duration if duration is not None else None,
+                )
+                if expiry is not None
+            ]
+            items: list[FeaturedBundleItem] = []
+            for raw_item in entry.get("Items") or []:
+                if not isinstance(raw_item, dict):
+                    continue
+                item = raw_item.get("Item") or {}
+                if not isinstance(item, dict):
+                    continue
+                item_type_id = str(item.get("ItemTypeID") or "")
+                item_id = str(item.get("ItemID") or "")
+                if not item_type_id or not item_id:
+                    continue
+                item_currency = str(raw_item.get("CurrencyID") or currency_uuid)
+                items.append(
+                    FeaturedBundleItem(
+                        item_type_id=item_type_id,
+                        item_id=item_id,
+                        amount=_positive_int(
+                            raw_item.get("Quantity")
+                            or raw_item.get("BundleItemQty")
+                            or item.get("Amount")
+                        )
+                        or 1,
+                        currency_uuid=item_currency,
+                        base_price=_vp_price(raw_item.get("BasePrice"), item_currency),
+                        discounted_price=_vp_price(
+                            raw_item.get("DiscountedPrice"), item_currency
+                        ),
+                    )
+                )
+            featured_bundles.append(
+                FeaturedBundle(
+                    id=bundle_id,
+                    data_asset_id=data_asset_id,
+                    currency_uuid=currency_uuid,
+                    items=items,
+                    total_base_cost=_vp_price(
+                        entry.get("TotalBaseCost"), currency_uuid
+                    ),
+                    total_discounted_cost=_vp_price(
+                        entry.get("TotalDiscountedCost"), currency_uuid
+                    ),
+                    total_discount_percent=_nonnegative_int(
+                        entry.get("TotalDiscountPercent")
+                    ),
+                    expires=min(expiry_candidates) if expiry_candidates else None,
+                    wholesale_only=bool(entry.get("WholesaleOnly", False)),
+                )
+            )
+        cache_expiries = [expires]
+        cache_expiries.extend(
+            offer.expires for offer in featured_bundles if offer.expires is not None
+        )
         data = ShopData(
             offers=offers,
             accessory=(raw.get("AccessoryStore") or {}).get("AccessoryStoreOffers")
@@ -155,6 +267,8 @@ class ShopService:
             night_market=night_market,
             expires=expires,
             night_market_expires=night_expires,
+            featured_bundles=featured_bundles,
+            cache_expires=min(cache_expiries),
         )
         self.catalog.update_prices(self._raw_offers(raw))
         self._cache[account.puuid] = data
@@ -239,3 +353,34 @@ class ShopUnavailable(RuntimeError):
 
 class Maintenance(ShopUnavailable):
     """Raised when VALORANT reports scheduled downtime."""
+
+
+def _positive_int(value: Any) -> int | None:
+    """Parse a positive storefront number without rejecting the whole payload."""
+    try:
+        result = int(value)
+    except TypeError, ValueError:
+        return None
+    return result if result > 0 else None
+
+
+def _nonnegative_int(value: Any) -> int | None:
+    """Parse a duration where zero means that the offer has already expired."""
+    try:
+        result = int(value)
+    except TypeError, ValueError:
+        return None
+    return result if result >= 0 else None
+
+
+def _vp_price(value: Any, currency_uuid: str) -> int | None:
+    """Return a price only when the source entry explicitly uses VALORANT Points."""
+    if currency_uuid != VP_UUID:
+        return None
+    if isinstance(value, dict):
+        value = value.get(VP_UUID)
+    try:
+        result = int(value)
+    except TypeError, ValueError:
+        return None
+    return result if result >= 0 else None

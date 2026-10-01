@@ -42,12 +42,13 @@ from src.services.accounts import (
     update_user_preference,
 )
 from src.services.auth import AuthenticationRequired, AuthService, decode_jwt
-from src.services.catalog import Accessory, CatalogService
+from src.services.catalog import Accessory, Bundle, CatalogService
 from src.services.crypto import AuthVault
 from src.services.gameplay import GameplayService, GameplayUnavailable
 from src.services.http import HTTPFailure, RateLimited
 from src.services.shop import (
     KC_UUID,
+    VP_UUID,
     AccessoryOffer,
     ShopData,
     ShopService,
@@ -337,6 +338,41 @@ async def test_expired_shop_cache_entry_is_removed_when_auth_fails() -> None:
 
 
 @pytest.mark.asyncio
+async def test_featured_bundle_cache_expiry_does_not_change_daily_expiry() -> None:
+    """Verify a bundle expiry refreshes cached data while daily expiry stays intact."""
+
+    class Auth:
+        """Provide fake Riot credentials for the storefront request."""
+
+        async def auth_headers(self, _account) -> dict[str, str]:
+            """Return fake authorization headers."""
+            return {}
+
+    service = ShopService(SimpleNamespace(use_shop_cache=True), None, Auth(), None)
+    account = SimpleNamespace(puuid="early-bundle-expiry")
+    now = int(time.time())
+    stale = ShopData([], [], [], now + 3600, None, cache_expires=now - 1)
+    fresh = ShopData([], [], [], now + 3600, None, cache_expires=now + 600)
+    service._cache[account.puuid] = stale
+    fetches = 0
+
+    async def fetch(_account, _headers):
+        """Replace the stale cache entry with the freshly fetched shop."""
+        nonlocal fetches
+        fetches += 1
+        service._cache[account.puuid] = fresh
+        return fresh
+
+    service._fetch_storefront = fetch
+    result = await service.storefront(account)
+
+    assert result is fresh
+    assert fetches == 1
+    assert result.expires == now + 3600
+    assert result.cache_expires < result.expires
+
+
+@pytest.mark.asyncio
 async def test_shop_service_resolves_accessory_offer_data() -> None:
     """Verify that shop service resolves accessory offer data."""
     item = Accessory("Buddy", "https://example.com/buddy.png", "Limited edition")
@@ -370,6 +406,115 @@ async def test_shop_service_resolves_accessory_offer_data() -> None:
     )
 
     assert await service.accessory_offers(data) == [AccessoryOffer(item, 1500)]
+
+
+@pytest.mark.asyncio
+async def test_featured_bundles_keep_prices_account_scoped_and_malformed_data_safe() -> (
+    None
+):
+    """Verify bundle data is normalized, isolated by account, and optional-safe."""
+
+    class Auth:
+        """Return fake Riot credentials for storefront parsing."""
+
+        async def auth_headers(self, _account) -> dict[str, str]:
+            """Return fake credentials for the storefront request."""
+            return {}
+
+    class HTTP:
+        """Provide account-specific featured bundle fixtures."""
+
+        async def request(self, _method: str, url: str, **_kwargs):
+            """Return account-specific bundles or a malformed optional section."""
+            account_id = url.rsplit("/", 1)[-1]
+            featured = (
+                {
+                    "BundlesRemainingDurationInSeconds": 300,
+                    "Bundles": [
+                        {
+                            "ID": f"offer-{account_id}",
+                            "DataAssetID": "catalog-bundle",
+                            "CurrencyID": VP_UUID,
+                            "Items": [
+                                {
+                                    "Item": {
+                                        "ItemTypeID": "weapon-skin",
+                                        "ItemID": f"skin-{account_id}",
+                                        "Amount": 2,
+                                    },
+                                    "CurrencyID": VP_UUID,
+                                    "BasePrice": 100,
+                                    "DiscountedPrice": 50,
+                                },
+                                {
+                                    "Item": {
+                                        "ItemTypeID": "weapon-skin",
+                                        "ItemID": "non-vp-item",
+                                    },
+                                    "CurrencyID": KC_UUID,
+                                    "BasePrice": 100,
+                                    "DiscountedPrice": 10,
+                                },
+                            ],
+                            "TotalBaseCost": 1000
+                            if account_id == "bundle-account-one"
+                            else 2000,
+                            "TotalDiscountedCost": 500
+                            if account_id == "bundle-account-one"
+                            else 1500,
+                            "TotalDiscountPercent": 50,
+                            "DurationRemainingInSeconds": 600,
+                        }
+                    ],
+                }
+                if account_id != "bundle-account-malformed"
+                else {"Bundles": [None, {"ID": "broken", "Items": "invalid"}]}
+            )
+            if account_id == "bundle-account-absent":
+                featured = None
+            return SimpleNamespace(
+                status=200,
+                data={
+                    "SkinsPanelLayout": {
+                        "SingleItemOffersRemainingDurationInSeconds": 3600,
+                        "SingleItemOffers": [],
+                    },
+                    "FeaturedBundle": featured,
+                },
+            )
+
+    service = ShopService(
+        SimpleNamespace(use_shop_cache=True),
+        HTTP(),
+        Auth(),
+        SimpleNamespace(
+            get_skin=lambda _uuid: None, update_prices=lambda _offers: None
+        ),
+    )
+    first = await service.storefront(
+        SimpleNamespace(puuid="bundle-account-one", region="na")
+    )
+    second = await service.storefront(
+        SimpleNamespace(puuid="bundle-account-two", region="na")
+    )
+    malformed = await service.storefront(
+        SimpleNamespace(puuid="bundle-account-malformed", region="na")
+    )
+    absent = await service.storefront(
+        SimpleNamespace(puuid="bundle-account-absent", region="na")
+    )
+
+    assert first.featured_bundles[0].total_discounted_cost == 500
+    assert second.featured_bundles[0].total_discounted_cost == 1500
+    assert first.featured_bundles[0].items[0].item_id == "skin-bundle-account-one"
+    assert first.featured_bundles[0].items[0].amount == 2
+    assert first.featured_bundles[0].items[0].discounted_price == 50
+    assert first.featured_bundles[0].items[1].base_price is None
+    assert first.featured_bundles[0].expires <= first.expires
+    assert first.cache_expires == first.featured_bundles[0].expires
+    assert malformed.featured_bundles[0].items == []
+    assert malformed.featured_bundles[0].total_base_cost is None
+    assert absent.featured_bundles == []
 
 
 @pytest.mark.usefixtures("database")
@@ -975,13 +1120,29 @@ async def test_catalog_snapshot_round_trips_skin_chromas() -> None:
         path = Path(folder) / "skins.json"
 
         class CatalogHTTP:
-            """Provide deterministic version and skin catalog responses."""
+            """Provide deterministic version, skin, and bundle responses."""
 
             async def request(self, _method: str, url: str):
-                """Return the manifest or skin response for the requested URL."""
+                """Return the requested catalog fixture."""
                 if url.endswith("/version"):
                     return SimpleNamespace(
                         status=200, data={"data": {"manifestId": "manifest"}}
+                    )
+                if "/bundles?" in url:
+                    return SimpleNamespace(
+                        status=200,
+                        data={
+                            "data": [
+                                {
+                                    "uuid": "bundle",
+                                    "displayName": "Test Bundle",
+                                    "displayNameSubText": "Limited Edition",
+                                    "description": "A test bundle",
+                                    "displayIcon": "https://example.com/bundle.png",
+                                    "assetPath": "ShooterGame/Content/Bundles/Test",
+                                }
+                            ]
+                        },
                     )
                 return SimpleNamespace(
                     status=200,
@@ -992,6 +1153,7 @@ async def test_catalog_snapshot_round_trips_skin_chromas() -> None:
                                     {
                                         "uuid": "skin",
                                         "displayName": "Skin",
+                                        "assetPath": "ShooterGame/Content/Weapons/Skin",
                                         "levels": [
                                             {
                                                 "uuid": "level",
@@ -1030,6 +1192,14 @@ async def test_catalog_snapshot_round_trips_skin_chromas() -> None:
             }
         ]
         assert skin.levels[0]["streamedVideo"] == "https://example.com/level.mp4"
+        bundle = loaded.get_bundle("bundle")
+        assert bundle == Bundle(
+            "bundle",
+            "Test Bundle",
+            "Limited Edition",
+            "A test bundle",
+            "https://example.com/bundle.png",
+        )
 
 
 @pytest.mark.asyncio
@@ -1066,6 +1236,11 @@ async def test_catalog_load_refreshes_legacy_snapshot_with_same_manifest() -> No
                     return SimpleNamespace(
                         status=200, data={"data": {"manifestId": "manifest"}}
                     )
+                if "/bundles?" in url:
+                    return SimpleNamespace(
+                        status=200,
+                        data={"data": [{"uuid": "bundle", "displayName": "Bundle"}]},
+                    )
                 return SimpleNamespace(
                     status=200,
                     data={
@@ -1096,18 +1271,26 @@ async def test_catalog_load_refreshes_legacy_snapshot_with_same_manifest() -> No
 
 @pytest.mark.asyncio
 async def test_failed_catalog_upgrade_keeps_legacy_data_and_retries() -> None:
-    """Verify failed upgrades preserve the old catalog and remain retryable."""
+    """Verify failed bundle refreshes preserve the old catalog and remain retryable."""
     with tempfile.TemporaryDirectory(prefix=".catalog-test-", dir=Path.cwd()) as folder:
         path = Path(folder) / "skins.json"
         path.write_text(
             json.dumps(
                 {
-                    "version": "manifest",
+                    "format_version": catalog_module.CATALOG_FORMAT_VERSION,
+                    "version": "old-manifest",
                     "skins": [
                         {
                             "uuid": "old-skin",
                             "offer_uuid": "old-offer",
                             "name": "Old skin",
+                        }
+                    ],
+                    "bundles": [
+                        {
+                            "uuid": "old-bundle",
+                            "name": "Old bundle",
+                            "asset_path": "old/path",
                         }
                     ],
                 }
@@ -1119,28 +1302,39 @@ async def test_failed_catalog_upgrade_keeps_legacy_data_and_retries() -> None:
             """Return catalog failures while tracking upgrade attempts."""
 
             weapons_calls = 0
+            bundle_calls = 0
 
             async def request(self, _method: str, url: str):
-                """Return the manifest or a failure for the weapon catalog."""
+                """Return valid weapons and an empty bundle catalog."""
                 if url.endswith("/version"):
                     return SimpleNamespace(
-                        status=200, data={"data": {"manifestId": "manifest"}}
+                        status=200, data={"data": {"manifestId": "new-manifest"}}
                     )
-                self.weapons_calls += 1
-                return SimpleNamespace(status=503, data={})
+                if "/weapons?" in url:
+                    self.weapons_calls += 1
+                    return SimpleNamespace(
+                        status=200,
+                        data={"data": [{"skins": [{"uuid": "new-skin"}]}]},
+                    )
+                self.bundle_calls += 1
+                return SimpleNamespace(status=200, data={"data": []})
 
         http = CatalogHTTP()
         service = CatalogService(http)
         service.path = path
 
-        with pytest.raises(HTTPFailure):
-            await service.load()
+        await service.load()
+        with pytest.raises(HTTPFailure, match="empty bundles catalog"):
+            await service.refresh(check_version=True)
         assert service.get_skin("old-skin").name == "Old skin"
+        assert service.get_bundle("old-bundle").name == "Old bundle"
 
-        with pytest.raises(HTTPFailure):
+        with pytest.raises(HTTPFailure, match="empty bundles catalog"):
             await service.refresh(check_version=True)
         assert http.weapons_calls == 2
+        assert http.bundle_calls == 2
         assert service.get_skin("old-skin").name == "Old skin"
+        assert service.get_bundle("old-bundle").name == "Old bundle"
 
 
 def test_catalog_data_file_uses_the_working_directory() -> None:
@@ -1167,10 +1361,18 @@ async def test_concurrent_accessory_lookups_share_one_request() -> None:
             return SimpleNamespace(
                 status=200,
                 data={
-                    "data": {
-                        "displayName": "Buddy",
-                        "levels": [{"displayIcon": "https://example.com/buddy.png"}],
-                    }
+                    "data": [
+                        {
+                            "uuid": "buddy-base",
+                            "displayName": "Buddy",
+                            "levels": [
+                                {
+                                    "uuid": "buddy-id",
+                                    "displayIcon": "https://example.com/buddy.png",
+                                }
+                            ],
+                        }
+                    ]
                 },
             )
 
@@ -1198,12 +1400,17 @@ async def test_catalog_refresh_writes_a_stable_snapshot_off_event_loop(
         path = Path(folder) / "skins.json"
 
         class CatalogHTTP:
-            """Provide a fake version and weapons catalog response."""
+            """Provide fake version, weapons, and bundle catalog responses."""
 
             async def request(self, _method, url):
-                """Return the matching version or weapon catalog fixture."""
+                """Return the matching version or catalog fixture."""
                 if url.endswith("/version"):
                     return SimpleNamespace(status=200, data={"data": {"version": "v1"}})
+                if "/bundles?" in url:
+                    return SimpleNamespace(
+                        status=200,
+                        data={"data": [{"uuid": "bundle", "displayName": "Bundle"}]},
+                    )
                 return SimpleNamespace(
                     status=200,
                     data={
@@ -1276,18 +1483,10 @@ async def test_catalog_refresh_waits_for_file_worker_after_repeated_cancellation
         service.path = path
 
         async def fetch_weapons(_kind):
-            """Return the minimal weapon and skin data needed by catalog refresh."""
-            return [
-                {
-                    "skins": [
-                        {
-                            "uuid": "skin",
-                            "displayName": "Skin",
-                            "levels": [{"uuid": "offer"}],
-                        }
-                    ]
-                }
-            ]
+            """Return the minimum metadata needed by catalog refresh."""
+            if _kind == "bundles":
+                return [{"uuid": "bundle", "displayName": "Bundle"}]
+            return [{"skins": [{"uuid": "skin", "displayName": "Skin"}]}]
 
         service._fetch_data = fetch_weapons
         worker_started = asyncio.Event()
