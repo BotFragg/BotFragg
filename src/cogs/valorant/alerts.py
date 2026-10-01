@@ -102,24 +102,16 @@ class AlertsCog(commands.Cog):
         return card
 
     def _skin_display_name(self, skin: Skin | None) -> str:
-        """Return a skin name with its tier emoji when the emoji service is available."""
+        """Return a skin name prefixed with its tier emoji, if one exists."""
         if skin is None:
             return "Unknown skin"
-        emoji_service = getattr(self.bot, "emoji_service", None)
-        format_name = getattr(emoji_service, "skin_name", None)
-        if format_name:
-            return format_name(skin.name, getattr(skin, "tier_uuid", None))
-        return skin.name
+        return self.bot.emoji_service.skin_name(skin.name, skin.tier_uuid)
 
     def _skin_emoji(self, skin: Skin | None) -> str | None:
         """Return a button emoji for a skin tier when one is available."""
         if skin is None:
             return None
-        emoji_service = getattr(self.bot, "emoji_service", None)
-        get_emoji = getattr(emoji_service, "skin_emoji", None)
-        if get_emoji:
-            return get_emoji(getattr(skin, "tier_uuid", None)) or None
-        return None
+        return self.bot.emoji_service.skin_emoji(skin.tier_uuid) or None
 
     async def manager_view(
         self, user_id: int, page: int

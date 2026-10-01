@@ -140,7 +140,7 @@ class BattlepassCog(commands.Cog):
         bar = filled_bar * progress + empty_bar * (10 - progress)
         reward = data["next_reward"]
         card = embed(
-            f"**{data['act']}** ends in <t:{int(data['end'].timestamp())}:R>",
+            f"**{data['act']}** ends in {timestamp(data['end'])}",
             title=player,
         )
         card.add_field(name="Current Tier", value=str(data["level"]), inline=False)

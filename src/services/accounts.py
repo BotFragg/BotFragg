@@ -24,7 +24,6 @@ from ..models import (
 from .auth import AuthenticationRequired
 from .shop import Offer, ShopData, ShopService, ShopUnavailable
 
-UserPreference = Literal["daily_shop_enabled", "hide_ign", "others_can_view_shop"]
 _USER_PREFERENCE_FIELDS = frozenset(
     {"daily_shop_enabled", "hide_ign", "others_can_view_shop"}
 )
@@ -286,66 +285,70 @@ async def run_daily_alerts(
         [account.puuid for account in accounts]
     )
 
-    semaphore = asyncio.Semaphore(alert_concurrency)
-
     async def process(user_id: int) -> None:
         """Check one user's accounts and dispatch any matching shop results."""
-        async with semaphore:
-            user_accounts = accounts_by_user.get(user_id, [])
-            user = user_accounts[0].user if user_accounts else None
-            current = (
-                await selected_account(user_id, user=user, accounts=user_accounts)
-                if user
-                else None
+        user_accounts = accounts_by_user.get(user_id, [])
+        user = user_accounts[0].user if user_accounts else None
+        current = (
+            await selected_account(user_id, user=user, accounts=user_accounts)
+            if user
+            else None
+        )
+        for account in user_accounts:
+            has_alerts = account.puuid in alerted_accounts
+            send_daily_shop = bool(
+                user
+                and user.daily_shop_enabled
+                and account.puuid == getattr(current, "puuid", None)
             )
-            for account in user_accounts:
-                has_alerts = account.puuid in alerted_accounts
-                send_daily_shop = bool(
-                    user
-                    and user.daily_shop_enabled
-                    and account.puuid == getattr(current, "puuid", None)
+            if not has_alerts and not send_daily_shop:
+                continue
+
+            try:
+                storefront = await shop.storefront(account, use_cache=False)
+            except AuthenticationRequired:
+                summary["failures"] += 1
+                if not dry_run:
+                    await on_credentials_expired(user_id)
+                continue
+            except ShopUnavailable:
+                summary["failures"] += 1
+                continue
+
+            summary["shops"] += 1
+            offers_by_uuid = {offer.skin.uuid: offer for offer in storefront.offers}
+            matches = (
+                await matching_alerts_for_skins(account.puuid, list(offers_by_uuid))
+                if has_alerts
+                else []
+            )
+            summary["alerts"] += len(matches)
+
+            if not dry_run and (matches or send_daily_shop):
+                await on_shop(
+                    user_id,
+                    user,
+                    account,
+                    storefront,
+                    [
+                        (alert, offers_by_uuid[str(alert.skin_uuid)])
+                        for alert in matches
+                    ],
+                    send_daily_shop,
                 )
-                if not has_alerts and not send_daily_shop:
-                    continue
+            if delay_between_alerts_seconds:
+                await asyncio.sleep(delay_between_alerts_seconds)
 
-                try:
-                    storefront = await shop.storefront(account, use_cache=False)
-                except AuthenticationRequired:
-                    summary["failures"] += 1
-                    if not dry_run:
-                        await on_credentials_expired(user_id)
-                    continue
-                except ShopUnavailable:
-                    summary["failures"] += 1
-                    continue
+    user_iterator = iter(user_ids)
 
-                summary["shops"] += 1
-                offers_by_uuid = {offer.skin.uuid: offer for offer in storefront.offers}
-                matches = (
-                    await matching_alerts_for_skins(account.puuid, list(offers_by_uuid))
-                    if has_alerts
-                    else []
-                )
-                summary["alerts"] += len(matches)
-
-                if not dry_run and (matches or send_daily_shop):
-                    await on_shop(
-                        user_id,
-                        user,
-                        account,
-                        storefront,
-                        [
-                            (alert, offers_by_uuid[str(alert.skin_uuid)])
-                            for alert in matches
-                        ],
-                        send_daily_shop,
-                    )
-                if delay_between_alerts_seconds:
-                    await asyncio.sleep(delay_between_alerts_seconds)
+    async def worker() -> None:
+        """Process users from the shared iterator until it is exhausted."""
+        for user_id in user_iterator:
+            await process(user_id)
 
     async with asyncio.TaskGroup() as task_group:
-        for user_id in user_ids:
-            task_group.create_task(process(user_id))
+        for _ in range(min(alert_concurrency, len(user_ids))):
+            task_group.create_task(worker())
 
     return summary
 

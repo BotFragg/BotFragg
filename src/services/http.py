@@ -37,11 +37,10 @@ def _safe_log_url(url: str) -> str:
 
 @dataclass(slots=True)
 class HTTPResult:
-    """Hold an HTTP response status, decoded body, and response headers."""
+    """Hold an HTTP response status and decoded body."""
 
     status: int
     data: Any
-    headers: aiohttp.typedefs.LooseHeaders
 
 
 class HTTPClient:
@@ -104,7 +103,7 @@ class HTTPClient:
                     seconds = self._retry_after(response.headers.get("Retry-After"))
                     self._limited_until[host] = time.monotonic() + seconds
                     raise HTTPFailure(f"Rate limited for {seconds:.0f} seconds")
-                return HTTPResult(response.status, body, response.headers)
+                return HTTPResult(response.status, body)
         except TimeoutError as exc:
             raise HTTPFailure("Request timed out") from exc
         except aiohttp.ClientError as exc:

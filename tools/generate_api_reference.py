@@ -10,7 +10,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "docs" / "api-reference.md"
-SOURCE_DIRECTORIES = (ROOT / "src", ROOT / "tests", ROOT / "tools")
 SECTION_NAMES = {
     "Args",
     "Arguments",
@@ -24,15 +23,14 @@ SECTION_NAMES = {
 
 
 def _python_files() -> list[Path]:
-    """Return application, test, and documentation-tool modules in stable order."""
+    """Return application modules in stable order."""
     paths = [ROOT / "main.py"]
-    for directory in SOURCE_DIRECTORIES:
-        paths.extend(directory.rglob("*.py"))
+    paths.extend((ROOT / "src").rglob("*.py"))
     return sorted(paths, key=lambda path: path.relative_to(ROOT).as_posix())
 
 
 def _definitions(node: ast.AST, scope: tuple[str, ...] = ()):
-    """Yield each named class and function, including definitions nested in callables."""
+    """Yield named classes and functions declared at module or class scope."""
     for child in ast.iter_child_nodes(node):
         if isinstance(child, ast.ClassDef):
             qualified_name = (*scope, child.name)
@@ -41,7 +39,6 @@ def _definitions(node: ast.AST, scope: tuple[str, ...] = ()):
         elif isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
             qualified_name = (*scope, child.name)
             yield child, "function", qualified_name
-            yield from _definitions(child, qualified_name)
         else:
             yield from _definitions(child, scope)
 
@@ -121,7 +118,7 @@ def render_reference() -> str:
     lines = [
         "# BotFragg API reference",
         "",
-        "This reference covers every Python module, class, and named function in the application, tests, and documentation tools. It is generated from the source docstrings; edit those docstrings and regenerate this page when behavior or signatures change.",
+        "This reference covers application modules, classes, module-level functions, and class methods. It is generated from application source docstrings; edit those docstrings and regenerate this page when behavior or signatures change.",
         "",
     ]
 

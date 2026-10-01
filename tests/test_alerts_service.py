@@ -567,3 +567,57 @@ async def test_daily_alert_run_batches_user_and_alert_lookups(
         "account_filter": 1,
         "alert_filter": 1,
     }
+
+
+@pytest.mark.usefixtures("database")
+async def test_daily_alert_tasks_are_bounded_by_configured_concurrency() -> None:
+    """Verify that the alert job creates workers, not one task per user."""
+    user_count = 8
+    for index in range(user_count):
+        user_id = 950 + index
+        user = await User.create(id=user_id, current_account_id=f"bounded-{index}")
+        account = await Account.create(
+            puuid=f"bounded-{index}", user=user, username=f"User{index}#NA"
+        )
+        await Alert.create(account=account, skin_uuid=UUID(int=10_000 + index))
+
+    concurrency = 2
+    entered = 0
+    started = asyncio.Event()
+    release = asyncio.Event()
+
+    class Shop:
+        """Hold storefront workers until the test can inspect scheduled task counts."""
+
+        async def storefront(self, _account, *, use_cache=True):
+            """Wait for the test to inspect the bounded worker pool."""
+            nonlocal entered
+            entered += 1
+            if entered == concurrency:
+                started.set()
+            await release.wait()
+            return SimpleNamespace(offers=[])
+
+    async def unused_callback(*_args) -> None:
+        """Fail the test if an unexpected notification callback is invoked."""
+        raise AssertionError("dry-run should not send notifications")
+
+    existing_tasks = len(asyncio.all_tasks())
+    job = asyncio.create_task(
+        run_daily_alerts(
+            Shop(),
+            alert_concurrency=concurrency,
+            delay_between_alerts_seconds=0,
+            dry_run=True,
+            on_shop=unused_callback,
+            on_credentials_expired=unused_callback,
+        )
+    )
+    await asyncio.wait_for(started.wait(), timeout=1)
+    await asyncio.sleep(0)
+    new_tasks = len(asyncio.all_tasks()) - existing_tasks
+    release.set()
+
+    await asyncio.wait_for(job, timeout=1)
+
+    assert new_tasks <= concurrency + 1

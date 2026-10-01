@@ -302,13 +302,13 @@ class CatalogService:
                 "GET",
                 f"https://valorant-api.com/v1/{endpoint}/{uuid}?language={ENGLISH_LOCALE}",
             )
-            raw = (
-                response.data.get("data")
-                if response.status == 200 and isinstance(response.data, dict)
-                else None
-            )
-            if not isinstance(raw, dict):
+            if response.status == 404:
                 self._accessories[key] = None
+                return None
+            if response.status != 200 or not isinstance(response.data, dict):
+                return None
+            raw = response.data.get("data")
+            if not isinstance(raw, dict):
                 return None
             self._accessories[key] = self._accessory_from_data(endpoint, raw)
             return self._accessories[key]

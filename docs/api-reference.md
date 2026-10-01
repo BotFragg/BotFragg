@@ -1,6 +1,6 @@
 # BotFragg API reference
 
-This reference covers every Python module, class, and named function in the application, tests, and documentation tools. It is generated from the source docstrings; edit those docstrings and regenerate this page when behavior or signatures change.
+This reference covers application modules, classes, module-level functions, and class methods. It is generated from application source docstrings; edit those docstrings and regenerate this page when behavior or signatures change.
 
 ## `main.py`
 
@@ -394,15 +394,15 @@ Show the owner's stored account statistics and shared-server details.
 
 **Scope:** `src/cogs/staff.py` · `StaffCog`
 
-[Source](../src/cogs/staff.py#L64)
+[Source](../src/cogs/staff.py#L81)
 
-Show analytics and membership details for a server BotFragg has joined.
+Show analytics and Discord's cached membership count for a server.
 
 ### `async def setup(bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/staff.py` · `module`
 
-[Source](../src/cogs/staff.py#L116)
+[Source](../src/cogs/staff.py#L126)
 
 Register the owner-only diagnostics cog with the bot.
 
@@ -510,7 +510,7 @@ DM a matching skin alert with a control owned by the recipient.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L155)
+[Source](../src/cogs/tasks.py#L151)
 
 DM the selected account's daily shop as a set of offer embeds.
 
@@ -518,7 +518,7 @@ DM the selected account's daily shop as a set of offer embeds.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L179)
+[Source](../src/cogs/tasks.py#L175)
 
 Tell a user privately when their Riot login must be renewed.
 
@@ -526,7 +526,7 @@ Tell a user privately when their Riot login must be renewed.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L190)
+[Source](../src/cogs/tasks.py#L186)
 
 Refresh the Riot client version used in authenticated API requests.
 
@@ -534,7 +534,7 @@ Refresh the Riot client version used in authenticated API requests.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L196)
+[Source](../src/cogs/tasks.py#L192)
 
 Wait for Discord readiness before the first version refresh.
 
@@ -542,7 +542,7 @@ Wait for Discord readiness before the first version refresh.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L201)
+[Source](../src/cogs/tasks.py#L197)
 
 Refresh the VALORANT catalog when its upstream version changes.
 
@@ -550,7 +550,7 @@ Refresh the VALORANT catalog when its upstream version changes.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L207)
+[Source](../src/cogs/tasks.py#L203)
 
 Wait for Discord readiness before the first catalog refresh.
 
@@ -558,7 +558,7 @@ Wait for Discord readiness before the first catalog refresh.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L212)
+[Source](../src/cogs/tasks.py#L208)
 
 Send buffered log lines to Discord and requeue them after HTTP failures.
 
@@ -566,7 +566,7 @@ Send buffered log lines to Discord and requeue them after HTTP failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L240)
+[Source](../src/cogs/tasks.py#L236)
 
 Wait for Discord readiness before sending buffered logs.
 
@@ -574,7 +574,7 @@ Wait for Discord readiness before sending buffered logs.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L245)
+[Source](../src/cogs/tasks.py#L241)
 
 Register the background-task cog with the bot.
 
@@ -590,15 +590,23 @@ VALORANT cog presentation helpers for names, views, embeds, and errors.
 
 **Scope:** `src/cogs/valorant/_ui.py` · `module`
 
-[Source](../src/cogs/valorant/_ui.py#L11)
+[Source](../src/cogs/valorant/_ui.py#L14)
 
 Return a generic account label when the user has chosen to hide their name.
+
+### `def account_autocomplete_choices(accounts: list[Account], current: str) -> list[app_commands.Choice[str]]`
+
+**Scope:** `src/cogs/valorant/_ui.py` · `module`
+
+[Source](../src/cogs/valorant/_ui.py#L19)
+
+Format account-name matches for Discord's bounded autocomplete menu.
 
 ### `def view(*items: discord.ui.Item) -> discord.ui.View`
 
 **Scope:** `src/cogs/valorant/_ui.py` · `module`
 
-[Source](../src/cogs/valorant/_ui.py#L16)
+[Source](../src/cogs/valorant/_ui.py#L30)
 
 Create a persistent view containing the supplied Discord components.
 
@@ -606,7 +614,7 @@ Create a persistent view containing the supplied Discord components.
 
 **Scope:** `src/cogs/valorant/_ui.py` · `module`
 
-[Source](../src/cogs/valorant/_ui.py#L24)
+[Source](../src/cogs/valorant/_ui.py#L38)
 
 Build a standard BotFragg embed with optional description, title, and colour.
 
@@ -614,7 +622,7 @@ Build a standard BotFragg embed with optional description, title, and colour.
 
 **Scope:** `src/cogs/valorant/_ui.py` · `module`
 
-[Source](../src/cogs/valorant/_ui.py#L31)
+[Source](../src/cogs/valorant/_ui.py#L45)
 
 Send a private error embed using the interaction's available response path.
 
@@ -626,7 +634,7 @@ Slash commands for selecting, listing, and paging through linked accounts.
 
 **Scope:** `src/cogs/valorant/accounts.py` · `module`
 
-[Source](../src/cogs/valorant/accounts.py#L23)
+[Source](../src/cogs/valorant/accounts.py#L29)
 
 Present a user's linked Riot accounts and handle account selection.
 
@@ -634,7 +642,7 @@ Present a user's linked Riot accounts and handle account selection.
 
 **Scope:** `src/cogs/valorant/accounts.py` · `AccountsCog`
 
-[Source](../src/cogs/valorant/accounts.py#L26)
+[Source](../src/cogs/valorant/accounts.py#L32)
 
 Bind the bot and register the persistent account-page action.
 
@@ -642,7 +650,7 @@ Bind the bot and register the persistent account-page action.
 
 **Scope:** `src/cogs/valorant/accounts.py` · `AccountsCog`
 
-[Source](../src/cogs/valorant/accounts.py#L31)
+[Source](../src/cogs/valorant/accounts.py#L37)
 
 Return up to 25 of the caller's accounts matching the typed name.
 
@@ -650,7 +658,7 @@ Return up to 25 of the caller's accounts matching the typed name.
 
 **Scope:** `src/cogs/valorant/accounts.py` · `AccountsCog`
 
-[Source](../src/cogs/valorant/accounts.py#L44)
+[Source](../src/cogs/valorant/accounts.py#L46)
 
 Render one bounded account page and mark the currently selected entry.
 
@@ -658,7 +666,7 @@ Render one bounded account page and mark the currently selected entry.
 
 **Scope:** `src/cogs/valorant/accounts.py` · `AccountsCog`
 
-[Source](../src/cogs/valorant/accounts.py#L66)
+[Source](../src/cogs/valorant/accounts.py#L68)
 
 Build owner-scoped previous and next controls when multiple pages exist.
 
@@ -666,7 +674,7 @@ Build owner-scoped previous and next controls when multiple pages exist.
 
 **Scope:** `src/cogs/valorant/accounts.py` · `AccountsCog`
 
-[Source](../src/cogs/valorant/accounts.py#L87)
+[Source](../src/cogs/valorant/accounts.py#L85)
 
 Switch the caller's active account using an autocomplete selection.
 
@@ -674,7 +682,7 @@ Switch the caller's active account using an autocomplete selection.
 
 **Scope:** `src/cogs/valorant/accounts.py` · `AccountsCog`
 
-[Source](../src/cogs/valorant/accounts.py#L121)
+[Source](../src/cogs/valorant/accounts.py#L119)
 
 Show the caller's accounts privately when their name-hiding preference is on.
 
@@ -682,7 +690,7 @@ Show the caller's accounts privately when their name-hiding preference is on.
 
 **Scope:** `src/cogs/valorant/accounts.py` · `AccountsCog`
 
-[Source](../src/cogs/valorant/accounts.py#L142)
+[Source](../src/cogs/valorant/accounts.py#L140)
 
 Handle a persistent account-page control and refresh its message.
 
@@ -690,7 +698,7 @@ Handle a persistent account-page control and refresh its message.
 
 **Scope:** `src/cogs/valorant/accounts.py` · `module`
 
-[Source](../src/cogs/valorant/accounts.py#L163)
+[Source](../src/cogs/valorant/accounts.py#L161)
 
 Register the linked-account commands and component handlers.
 
@@ -752,13 +760,13 @@ Build the confirmation card for a newly created skin alert.
 
 [Source](../src/cogs/valorant/alerts.py#L104)
 
-Return a skin name with its tier emoji when the emoji service is available.
+Return a skin name prefixed with its tier emoji, if one exists.
 
 ### `def _skin_emoji(self, skin: Skin | None) -> str | None`
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L114)
+[Source](../src/cogs/valorant/alerts.py#L110)
 
 Return a button emoji for a skin tier when one is available.
 
@@ -766,7 +774,7 @@ Return a button emoji for a skin tier when one is available.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L124)
+[Source](../src/cogs/valorant/alerts.py#L116)
 
 Render one alert page with per-alert removal and optional page controls.
 
@@ -774,7 +782,7 @@ Render one alert page with per-alert removal and optional page controls.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L177)
+[Source](../src/cogs/valorant/alerts.py#L169)
 
 Remove the selected owner-scoped alert and refresh or dismiss its controls.
 
@@ -782,7 +790,7 @@ Remove the selected owner-scoped alert and refresh or dismiss its controls.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L206)
+[Source](../src/cogs/valorant/alerts.py#L198)
 
 Validate a page payload and update the alert-management message.
 
@@ -790,7 +798,7 @@ Validate a page payload and update the alert-management message.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L220)
+[Source](../src/cogs/valorant/alerts.py#L212)
 
 Check login and shop availability, then send the caller a test alert DM.
 
@@ -798,7 +806,7 @@ Check login and shop availability, then send the caller a test alert DM.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `module`
 
-[Source](../src/cogs/valorant/alerts.py#L283)
+[Source](../src/cogs/valorant/alerts.py#L275)
 
 Register the skin-alert commands and their persistent handlers.
 
@@ -962,7 +970,7 @@ Return the caller's linked accounts for the logout command.
 
 **Scope:** `src/cogs/valorant/logout.py` · `LogoutCog`
 
-[Source](../src/cogs/valorant/logout.py#L37)
+[Source](../src/cogs/valorant/logout.py#L33)
 
 Clear Riot credentials for one linked account while preserving its settings.
 
@@ -970,7 +978,7 @@ Clear Riot credentials for one linked account while preserving its settings.
 
 **Scope:** `src/cogs/valorant/logout.py` · `LogoutCog`
 
-[Source](../src/cogs/valorant/logout.py#L60)
+[Source](../src/cogs/valorant/logout.py#L56)
 
 Permanently delete the caller's records and clear cached storefronts.
 
@@ -978,7 +986,7 @@ Permanently delete the caller's records and clear cached storefronts.
 
 **Scope:** `src/cogs/valorant/logout.py` · `module`
 
-[Source](../src/cogs/valorant/logout.py#L85)
+[Source](../src/cogs/valorant/logout.py#L81)
 
 Register the account logout and personal data deletion commands.
 
@@ -1046,7 +1054,7 @@ Commands for skin shops, featured bundles, and balances.
 
 Format a current price and any original price discount on one line.
 
-### `def offer_cards(header: str, offers: list[Offer], currency: str, *, link_item_image: bool, emoji_service: ApplicationEmojiService | None = None) -> list[discord.Embed]`
+### `def offer_cards(header: str, offers: list[Offer], currency: str, *, link_item_image: bool, emoji_service: ApplicationEmojiService | None = None, header_colour: int = 2105893) -> list[discord.Embed]`
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
@@ -1058,7 +1066,7 @@ Render a heading and one tier-coloured embed for each skin offer.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L94)
+[Source](../src/cogs/valorant/shop.py#L95)
 
 Add a menu containing only the skin offers rendered beside it.
 
@@ -1066,7 +1074,7 @@ Add a menu containing only the skin offers rendered beside it.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L127)
+[Source](../src/cogs/valorant/shop.py#L128)
 
 Add a private account selector when the owner has multiple accounts.
 
@@ -1074,7 +1082,7 @@ Add a private account selector when the owner has multiple accounts.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L156)
+[Source](../src/cogs/valorant/shop.py#L157)
 
 Show shops and bundles for the caller's linked account.
 
@@ -1082,7 +1090,7 @@ Show shops and bundles for the caller's linked account.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L159)
+[Source](../src/cogs/valorant/shop.py#L160)
 
 Bind the bot and register persistent shop-mode and account actions.
 
@@ -1090,7 +1098,7 @@ Bind the bot and register persistent shop-mode and account actions.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L169)
+[Source](../src/cogs/valorant/shop.py#L170)
 
 Show the caller's shop or a shop another user has chosen to share.
 
@@ -1098,7 +1106,7 @@ Show the caller's shop or a shop another user has chosen to share.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L223)
+[Source](../src/cogs/valorant/shop.py#L224)
 
 Build daily shop embeds, owned selectors, and available shop controls.
 
@@ -1106,7 +1114,7 @@ Build daily shop embeds, owned selectors, and available shop controls.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L281)
+[Source](../src/cogs/valorant/shop.py#L282)
 
 Show the selected account's current featured bundle offers and controls.
 
@@ -1114,7 +1122,7 @@ Show the selected account's current featured bundle offers and controls.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L298)
+[Source](../src/cogs/valorant/shop.py#L299)
 
 Build current featured bundles with shop-style cards and controls.
 
@@ -1122,7 +1130,7 @@ Build current featured bundles with shop-style cards and controls.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L373)
+[Source](../src/cogs/valorant/shop.py#L374)
 
 Resolve static bundle metadata or provide a safe live-offer fallback.
 
@@ -1130,7 +1138,7 @@ Resolve static bundle metadata or provide a safe live-offer fallback.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L382)
+[Source](../src/cogs/valorant/shop.py#L383)
 
 Format only Riot-supplied VP totals, retaining exact discount values.
 
@@ -1138,7 +1146,7 @@ Format only Riot-supplied VP totals, retaining exact discount values.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L390)
+[Source](../src/cogs/valorant/shop.py#L391)
 
 Render one live bundle item in the shop's card, tier, and price style.
 
@@ -1146,7 +1154,7 @@ Render one live bundle item in the shop's card, tier, and price style.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L444)
+[Source](../src/cogs/valorant/shop.py#L445)
 
 Render a bundle summary and up to nine shop-style item cards.
 
@@ -1154,7 +1162,7 @@ Render a bundle summary and up to nine shop-style item cards.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L490)
+[Source](../src/cogs/valorant/shop.py#L491)
 
 Render the selected daily, Night Market, accessory, or bundle mode.
 
@@ -1162,7 +1170,7 @@ Render the selected daily, Night Market, accessory, or bundle mode.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L601)
+[Source](../src/cogs/valorant/shop.py#L602)
 
 Read the values actually offered by this message's matching select menu.
 
@@ -1170,7 +1178,7 @@ Read the values actually offered by this message's matching select menu.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L615)
+[Source](../src/cogs/valorant/shop.py#L616)
 
 Revalidate a selected featured bundle against the caller's account and view.
 
@@ -1178,7 +1186,7 @@ Revalidate a selected featured bundle against the caller's account and view.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L665)
+[Source](../src/cogs/valorant/shop.py#L666)
 
 List playable levels and chromas within Discord's select-menu limit.
 
@@ -1186,7 +1194,7 @@ List playable levels and chromas within Discord's select-menu limit.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L689)
+[Source](../src/cogs/valorant/shop.py#L690)
 
 Open a private level/chroma menu for a skin offered in this message.
 
@@ -1194,7 +1202,7 @@ Open a private level/chroma menu for a skin offered in this message.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L738)
+[Source](../src/cogs/valorant/shop.py#L739)
 
 Privately return a selected video only when it belongs to that skin.
 
@@ -1202,7 +1210,7 @@ Privately return a selected video only when it belongs to that skin.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L795)
+[Source](../src/cogs/valorant/shop.py#L796)
 
 Validate the selected account and reopen the corresponding shop mode.
 
@@ -1210,7 +1218,7 @@ Validate the selected account and reopen the corresponding shop mode.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L811)
+[Source](../src/cogs/valorant/shop.py#L812)
 
 Display discounted Night Market offers for the selected Riot account.
 
@@ -1218,7 +1226,7 @@ Display discounted Night Market offers for the selected Riot account.
 
 **Scope:** `src/cogs/valorant/shop.py` · `NightMarketCog`
 
-[Source](../src/cogs/valorant/shop.py#L814)
+[Source](../src/cogs/valorant/shop.py#L815)
 
 Bind the shared shop, account, and emoji services.
 
@@ -1226,7 +1234,7 @@ Bind the shared shop, account, and emoji services.
 
 **Scope:** `src/cogs/valorant/shop.py` · `NightMarketCog`
 
-[Source](../src/cogs/valorant/shop.py#L821)
+[Source](../src/cogs/valorant/shop.py#L822)
 
 Fetch and render Night Market offers or report that none are active.
 
@@ -1234,7 +1242,7 @@ Fetch and render Night Market offers or report that none are active.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L886)
+[Source](../src/cogs/valorant/shop.py#L871)
 
 Display the selected account's three VALORANT wallet balances.
 
@@ -1242,7 +1250,7 @@ Display the selected account's three VALORANT wallet balances.
 
 **Scope:** `src/cogs/valorant/shop.py` · `BalanceCog`
 
-[Source](../src/cogs/valorant/shop.py#L889)
+[Source](../src/cogs/valorant/shop.py#L874)
 
 Bind the shared shop and user-preference services.
 
@@ -1250,7 +1258,7 @@ Bind the shared shop and user-preference services.
 
 **Scope:** `src/cogs/valorant/shop.py` · `BalanceCog`
 
-[Source](../src/cogs/valorant/shop.py#L897)
+[Source](../src/cogs/valorant/shop.py#L882)
 
 Fetch and display VP, Radianite, and Kingdom Credit balances.
 
@@ -1258,7 +1266,7 @@ Fetch and display VP, Radianite, and Kingdom Credit balances.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L926)
+[Source](../src/cogs/valorant/shop.py#L911)
 
 Register the shop, Night Market, and wallet-balance cogs.
 
@@ -1658,7 +1666,7 @@ Persistence operations for users, Riot accounts, alerts, analytics, and ideas.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L33)
+[Source](../src/services/accounts.py#L32)
 
 Return the stored BotFragg user for a Discord ID, if one exists.
 
@@ -1666,7 +1674,7 @@ Return the stored BotFragg user for a Discord ID, if one exists.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L38)
+[Source](../src/services/accounts.py#L37)
 
 Count users with a stored BotFragg profile.
 
@@ -1674,7 +1682,7 @@ Count users with a stored BotFragg profile.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L43)
+[Source](../src/services/accounts.py#L42)
 
 Return Discord IDs whose saved preference enables daily shop DMs.
 
@@ -1682,7 +1690,7 @@ Return Discord IDs whose saved preference enables daily shop DMs.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L48)
+[Source](../src/services/accounts.py#L47)
 
 Return a Riot account only when it belongs to the requested Discord user.
 
@@ -1690,7 +1698,7 @@ Return a Riot account only when it belongs to the requested Discord user.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L53)
+[Source](../src/services/accounts.py#L52)
 
 Update one allowlisted Boolean preference and refresh the user's timestamp.
 
@@ -1698,7 +1706,7 @@ Update one allowlisted Boolean preference and refresh the user's timestamp.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L63)
+[Source](../src/services/accounts.py#L62)
 
 Return the active account, choosing the oldest account when none is selected.
 
@@ -1710,7 +1718,7 @@ conditional so a concurrent selection is not overwritten.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L119)
+[Source](../src/services/accounts.py#L118)
 
 Return a user's Riot accounts in creation order.
 
@@ -1718,7 +1726,7 @@ Return a user's Riot accounts in creation order.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L124)
+[Source](../src/services/accounts.py#L123)
 
 Resolve an account by PUUID, case-insensitive name, or one-based position.
 
@@ -1726,7 +1734,7 @@ Resolve an account by PUUID, case-insensitive name, or one-based position.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L140)
+[Source](../src/services/accounts.py#L139)
 
 Set a user's active account after verifying that the account is theirs.
 
@@ -1734,7 +1742,7 @@ Set a user's active account after verifying that the account is theirs.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L149)
+[Source](../src/services/accounts.py#L148)
 
 Delete the user's stored BotFragg records and all linked Riot accounts.
 
@@ -1742,7 +1750,7 @@ Delete the user's stored BotFragg records and all linked Riot accounts.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L166)
+[Source](../src/services/accounts.py#L165)
 
 Hold one bounded page of alerts and its normalized pagination metadata.
 
@@ -1750,7 +1758,7 @@ Hold one bounded page of alerts and its normalized pagination metadata.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L176)
+[Source](../src/services/accounts.py#L175)
 
 Create an account-scoped skin alert or return the existing duplicate.
 
@@ -1758,7 +1766,7 @@ Create an account-scoped skin alert or return the existing duplicate.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L185)
+[Source](../src/services/accounts.py#L184)
 
 Fetch an owner-scoped alert page, wrapping page indexes and bounding size.
 
@@ -1766,7 +1774,7 @@ Fetch an owner-scoped alert page, wrapping page indexes and bounding size.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L207)
+[Source](../src/services/accounts.py#L206)
 
 Delete and return an alert only when it belongs to the requesting user.
 
@@ -1774,7 +1782,7 @@ Delete and return an alert only when it belongs to the requesting user.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L215)
+[Source](../src/services/accounts.py#L214)
 
 Return a user's first alert with its linked account loaded.
 
@@ -1782,7 +1790,7 @@ Return a user's first alert with its linked account loaded.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L222)
+[Source](../src/services/accounts.py#L221)
 
 Return distinct Discord IDs that own at least one alert.
 
@@ -1790,7 +1798,7 @@ Return distinct Discord IDs that own at least one alert.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L227)
+[Source](../src/services/accounts.py#L226)
 
 Return only the supplied account IDs that currently have alerts.
 
@@ -1798,7 +1806,7 @@ Return only the supplied account IDs that currently have alerts.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L238)
+[Source](../src/services/accounts.py#L237)
 
 Fetch alerts matching one account and a bounded set of shop skin IDs.
 
@@ -1806,7 +1814,7 @@ Fetch alerts matching one account and a bounded set of shop skin IDs.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L256)
+[Source](../src/services/accounts.py#L255)
 
 Check eligible accounts with bounded concurrency and report run totals.
 
@@ -1814,19 +1822,11 @@ Check eligible accounts with bounded concurrency and report run totals.
 handle successful shops and expired credentials; the returned counts include
 users, fetched shops, matched alerts, and recoverable failures.
 
-### `async def process(user_id: int) -> None`
-
-**Scope:** `src/services/accounts.py` · `run_daily_alerts`
-
-[Source](../src/services/accounts.py#L291)
-
-Check one user's accounts and dispatch any matching shop results.
-
 ### `async def record_command_invocation(*, command: str, user_id: int, guild_id: int | None, channel_id: int | None) -> None`
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L353)
+[Source](../src/services/accounts.py#L356)
 
 Persist a successful command invocation with its optional Discord scope.
 
@@ -1834,7 +1834,7 @@ Persist a successful command invocation with its optional Discord scope.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L369)
+[Source](../src/services/accounts.py#L372)
 
 Return a scoped command-use count and the most-used command.
 
@@ -1845,7 +1845,7 @@ command are resolved alphabetically for stable results.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L401)
+[Source](../src/services/accounts.py#L404)
 
 Create a pending suggestion with its author and optional delivery channel.
 
@@ -1853,7 +1853,7 @@ Create a pending suggestion with its author and optional delivery channel.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L410)
+[Source](../src/services/accounts.py#L413)
 
 Record the posted message and ensure the author follows the suggestion.
 
@@ -1861,7 +1861,7 @@ Record the posted message and ensure the author follows the suggestion.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L419)
+[Source](../src/services/accounts.py#L422)
 
 Delete a suggestion record by its database ID.
 
@@ -1869,7 +1869,7 @@ Delete a suggestion record by its database ID.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L424)
+[Source](../src/services/accounts.py#L427)
 
 Follow an existing suggestion, returning ``None`` when it does not exist.
 
@@ -1877,7 +1877,7 @@ Follow an existing suggestion, returning ``None`` when it does not exist.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L434)
+[Source](../src/services/accounts.py#L437)
 
 Remove a follow and report missing, own, removed, or absent-follow status.
 
@@ -1885,7 +1885,7 @@ Remove a follow and report missing, own, removed, or absent-follow status.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L447)
+[Source](../src/services/accounts.py#L450)
 
 Atomically review a pending suggestion and return its followers once.
 
@@ -1896,7 +1896,7 @@ review returns the updated record and the distinct follower IDs to notify.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L470)
+[Source](../src/services/accounts.py#L473)
 
 Count suggestions submitted by a Discord user.
 
@@ -2481,13 +2481,13 @@ Remove credentials, query data, and UUID path segments from a URL.
 
 [Source](../src/services/http.py#L39)
 
-Hold an HTTP response status, decoded body, and response headers.
+Hold an HTTP response status and decoded body.
 
 ### `class HTTPClient`
 
 **Scope:** `src/services/http.py` · `module`
 
-[Source](../src/services/http.py#L47)
+[Source](../src/services/http.py#L46)
 
 Own a reusable aiohttp session and normalize transport failures.
 
@@ -2495,7 +2495,7 @@ Own a reusable aiohttp session and normalize transport failures.
 
 **Scope:** `src/services/http.py` · `HTTPClient`
 
-[Source](../src/services/http.py#L50)
+[Source](../src/services/http.py#L49)
 
 Store request settings and initialize session and rate-limit state.
 
@@ -2503,7 +2503,7 @@ Store request settings and initialize session and rate-limit state.
 
 **Scope:** `src/services/http.py` · `HTTPClient`
 
-[Source](../src/services/http.py#L56)
+[Source](../src/services/http.py#L55)
 
 Create the shared aiohttp session with configured timeout and pool limits.
 
@@ -2511,7 +2511,7 @@ Create the shared aiohttp session with configured timeout and pool limits.
 
 **Scope:** `src/services/http.py` · `HTTPClient`
 
-[Source](../src/services/http.py#L62)
+[Source](../src/services/http.py#L61)
 
 Close the shared session when it has been started and remains open.
 
@@ -2519,7 +2519,7 @@ Close the shared session when it has been started and remains open.
 
 **Scope:** `src/services/http.py` · `HTTPClient`
 
-[Source](../src/services/http.py#L67)
+[Source](../src/services/http.py#L66)
 
 Send a request, decode its body, and apply per-host rate-limit backoff.
 
@@ -2533,7 +2533,7 @@ Send a request, decode its body, and apply per-host rate-limit backoff.
 
 **Scope:** `src/services/http.py` · `HTTPClient`
 
-[Source](../src/services/http.py#L113)
+[Source](../src/services/http.py#L112)
 
 Parse and clamp a Retry-After value to the configured backoff limit.
 
@@ -2541,7 +2541,7 @@ Parse and clamp a Retry-After value to the configured backoff limit.
 
 **Scope:** `src/services/http.py` · `module`
 
-[Source](../src/services/http.py#L122)
+[Source](../src/services/http.py#L121)
 
 Raised for rate limits, transport failures, and bounded request timeouts.
 
@@ -2577,7 +2577,7 @@ Represent one account-specific item and its exact bundle offer pricing.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L54)
+[Source](../src/services/shop.py#L53)
 
 Represent one currently featured bundle from an account's storefront.
 
@@ -2585,7 +2585,7 @@ Represent one currently featured bundle from an account's storefront.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L69)
+[Source](../src/services/shop.py#L66)
 
 Hold account-specific shop offers and separate display/cache expiries.
 
@@ -2593,7 +2593,7 @@ Hold account-specific shop offers and separate display/cache expiries.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L81)
+[Source](../src/services/shop.py#L78)
 
 Retrieve and normalize Riot storefronts and wallet balances.
 
@@ -2601,7 +2601,7 @@ Retrieve and normalize Riot storefronts and wallet balances.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L84)
+[Source](../src/services/shop.py#L81)
 
 Bind dependencies and initialize storefront data and per-account locks.
 
@@ -2609,7 +2609,7 @@ Bind dependencies and initialize storefront data and per-account locks.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L99)
+[Source](../src/services/shop.py#L96)
 
 Return the shared in-process lock used for one account's shop requests.
 
@@ -2617,7 +2617,7 @@ Return the shared in-process lock used for one account's shop requests.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L107)
+[Source](../src/services/shop.py#L104)
 
 Remove an account's cached storefront after coordinating with active fetches.
 
@@ -2625,7 +2625,7 @@ Remove an account's cached storefront after coordinating with active fetches.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L112)
+[Source](../src/services/shop.py#L109)
 
 Return a fresh or unexpired cached storefront for the linked account.
 
@@ -2633,7 +2633,7 @@ Return a fresh or unexpired cached storefront for the linked account.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L131)
+[Source](../src/services/shop.py#L128)
 
 Fetch, repair claims, normalize all shop offers, and cache the result.
 
@@ -2641,15 +2641,15 @@ Fetch, repair claims, normalize all shop offers, and cache the result.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L277)
+[Source](../src/services/shop.py#L271)
 
-Request one account's regional storefront and normalize transport failures.
+Request one account's regional storefront.
 
 ### `async def wallet(self, account: Account) -> dict[str, int]`
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L291)
+[Source](../src/services/shop.py#L282)
 
 Return VP, Radianite, and Kingdom Credit balances for an account.
 
@@ -2657,7 +2657,7 @@ Return VP, Radianite, and Kingdom Credit balances for an account.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L311)
+[Source](../src/services/shop.py#L302)
 
 Resolve the storefront's accessory rewards and their Kingdom Credit prices.
 
@@ -2665,7 +2665,7 @@ Resolve the storefront's accessory rewards and their Kingdom Credit prices.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L327)
+[Source](../src/services/shop.py#L318)
 
 Extract the raw single-item store offers across Riot response shapes.
 
@@ -2673,7 +2673,7 @@ Extract the raw single-item store offers across Riot response shapes.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L334)
+[Source](../src/services/shop.py#L325)
 
 Build a skin-offer-to-VP-price lookup from the storefront payload.
 
@@ -2681,23 +2681,15 @@ Build a skin-offer-to-VP-price lookup from the storefront payload.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L350)
+[Source](../src/services/shop.py#L341)
 
 Raised when Riot does not return a usable storefront or wallet.
-
-### `class Maintenance(ShopUnavailable)`
-
-**Scope:** `src/services/shop.py` · `module`
-
-[Source](../src/services/shop.py#L354)
-
-Raised when VALORANT reports scheduled downtime.
 
 ### `def _positive_int(value: Any) -> int | None`
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L358)
+[Source](../src/services/shop.py#L345)
 
 Parse a positive storefront number without rejecting the whole payload.
 
@@ -2705,7 +2697,7 @@ Parse a positive storefront number without rejecting the whole payload.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L367)
+[Source](../src/services/shop.py#L354)
 
 Parse a duration where zero means that the offer has already expired.
 
@@ -2713,7 +2705,7 @@ Parse a duration where zero means that the offer has already expired.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L376)
+[Source](../src/services/shop.py#L363)
 
 Return a price only when the source entry explicitly uses VALORANT Points.
 
@@ -2824,3375 +2816,3 @@ Dispatch the selected value with the menu payload to its registered handler.
 [Source](../src/views/components.py#L157)
 
 Build a compact red embed for an invalid or unavailable component action.
-
-## `tests/conftest.py`
-
-Shared asynchronous database fixtures for the test suite.
-
-### `async def database()`
-
-**Scope:** `tests/conftest.py` · `module`
-
-[Source](../tests/conftest.py#L10)
-
-Initialize the in-memory database for a test and close it afterward.
-
-## `tests/test_alert_pagination.py`
-
-Tests for alert-page ordering, wrapping, and concurrent deletion.
-
-### `async def test_alert_manager_preserves_order_and_page_wrapping() -> None`
-
-**Scope:** `tests/test_alert_pagination.py` · `module`
-
-[Source](../tests/test_alert_pagination.py#L15)
-
-Verify that alert manager preserves order and page wrapping.
-
-### `async def test_alert_manager_handles_deletion_between_count_and_fetch(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_alert_pagination.py` · `module`
-
-[Source](../tests/test_alert_pagination.py#L64)
-
-Verify that alert manager handles deletion between count and fetch.
-
-### `class Query`
-
-**Scope:** `tests/test_alert_pagination.py` · `test_alert_manager_handles_deletion_between_count_and_fetch`
-
-[Source](../tests/test_alert_pagination.py#L69)
-
-Capture query filters and pagination bounds, including rows removed between count and fetch.
-
-### `def __init__(self) -> None`
-
-**Scope:** `tests/test_alert_pagination.py` · `test_alert_manager_handles_deletion_between_count_and_fetch.Query`
-
-[Source](../tests/test_alert_pagination.py#L72)
-
-Seed a stale count before the page fetch returns no remaining rows.
-
-### `def order_by(self, *_args: object) -> Query`
-
-**Scope:** `tests/test_alert_pagination.py` · `test_alert_manager_handles_deletion_between_count_and_fetch.Query`
-
-[Source](../tests/test_alert_pagination.py#L76)
-
-Record the requested ordering and return this query stub.
-
-### `async def count(self) -> int`
-
-**Scope:** `tests/test_alert_pagination.py` · `test_alert_manager_handles_deletion_between_count_and_fetch.Query`
-
-[Source](../tests/test_alert_pagination.py#L80)
-
-Return the number of rows represented by this query stub.
-
-### `def offset(self, _offset: int) -> Query`
-
-**Scope:** `tests/test_alert_pagination.py` · `test_alert_manager_handles_deletion_between_count_and_fetch.Query`
-
-[Source](../tests/test_alert_pagination.py#L84)
-
-Set the query offset and return this query stub.
-
-### `def limit(self, _limit: int) -> Query`
-
-**Scope:** `tests/test_alert_pagination.py` · `test_alert_manager_handles_deletion_between_count_and_fetch.Query`
-
-[Source](../tests/test_alert_pagination.py#L88)
-
-Set the query limit and return this query stub.
-
-### `def __await__(self)`
-
-**Scope:** `tests/test_alert_pagination.py` · `test_alert_manager_handles_deletion_between_count_and_fetch.Query`
-
-[Source](../tests/test_alert_pagination.py#L92)
-
-Make the query stub awaitable and yield its configured rows.
-
-### `async def fetch() -> list[object]`
-
-**Scope:** `tests/test_alert_pagination.py` · `test_alert_manager_handles_deletion_between_count_and_fetch.Query.__await__`
-
-[Source](../tests/test_alert_pagination.py#L95)
-
-Return the configured result from the fake query or HTTP client.
-
-## `tests/test_alerts_service.py`
-
-Tests for alert ownership, bounded queries, batching, and delivery behavior.
-
-### `async def test_create_alert_returns_existing_record_for_duplicate() -> None`
-
-**Scope:** `tests/test_alerts_service.py` · `module`
-
-[Source](../tests/test_alerts_service.py#L32)
-
-Verify that creating a duplicate alert returns the existing record.
-
-### `async def test_remove_alert_is_scoped_to_owner() -> None`
-
-**Scope:** `tests/test_alerts_service.py` · `module`
-
-[Source](../tests/test_alerts_service.py#L56)
-
-Verify that remove alert is scoped to owner.
-
-### `async def test_alert_job_queries_are_bounded_to_users_accounts_and_skins() -> None`
-
-**Scope:** `tests/test_alerts_service.py` · `module`
-
-[Source](../tests/test_alerts_service.py#L70)
-
-Verify that alert job queries are bounded to users accounts and skins.
-
-### `async def test_alert_page_uses_a_bounded_owner_scoped_query(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_alerts_service.py` · `module`
-
-[Source](../tests/test_alerts_service.py#L97)
-
-Verify that alert page uses a bounded owner scoped query.
-
-### `class Query`
-
-**Scope:** `tests/test_alerts_service.py` · `test_alert_page_uses_a_bounded_owner_scoped_query`
-
-[Source](../tests/test_alerts_service.py#L104)
-
-Capture query filters and pagination bounds, including rows removed between count and fetch.
-
-### `def order_by(self, *_args: object) -> Query`
-
-**Scope:** `tests/test_alerts_service.py` · `test_alert_page_uses_a_bounded_owner_scoped_query.Query`
-
-[Source](../tests/test_alerts_service.py#L110)
-
-Record the requested ordering and return this query stub.
-
-### `async def count(self) -> int`
-
-**Scope:** `tests/test_alerts_service.py` · `test_alert_page_uses_a_bounded_owner_scoped_query.Query`
-
-[Source](../tests/test_alerts_service.py#L114)
-
-Return the number of rows represented by this query stub.
-
-### `def offset(self, value: int) -> Query`
-
-**Scope:** `tests/test_alerts_service.py` · `test_alert_page_uses_a_bounded_owner_scoped_query.Query`
-
-[Source](../tests/test_alerts_service.py#L118)
-
-Set the query offset and return this query stub.
-
-### `def limit(self, value: int) -> Query`
-
-**Scope:** `tests/test_alerts_service.py` · `test_alert_page_uses_a_bounded_owner_scoped_query.Query`
-
-[Source](../tests/test_alerts_service.py#L123)
-
-Set the query limit and return this query stub.
-
-### `def __await__(self)`
-
-**Scope:** `tests/test_alerts_service.py` · `test_alert_page_uses_a_bounded_owner_scoped_query.Query`
-
-[Source](../tests/test_alerts_service.py#L128)
-
-Make the query stub awaitable and yield its configured rows.
-
-### `async def fetch() -> list[object]`
-
-**Scope:** `tests/test_alerts_service.py` · `test_alert_page_uses_a_bounded_owner_scoped_query.Query.__await__`
-
-[Source](../tests/test_alerts_service.py#L131)
-
-Return the configured result from the fake query or HTTP client.
-
-### `def filter_alerts(_cls, **query_filters)`
-
-**Scope:** `tests/test_alerts_service.py` · `test_alert_page_uses_a_bounded_owner_scoped_query`
-
-[Source](../tests/test_alerts_service.py#L139)
-
-Filter the fake alert query by the requested accounts and skins.
-
-### `def shop_data(*skin_uuids: str) -> ShopData`
-
-**Scope:** `tests/test_alerts_service.py` · `module`
-
-[Source](../tests/test_alerts_service.py#L158)
-
-Build a shop fixture containing offers for the supplied skin identifiers.
-
-### `async def test_daily_alert_run_preserves_selection_summary_and_batches_alert_presence(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_alerts_service.py` · `module`
-
-[Source](../tests/test_alerts_service.py#L177)
-
-Verify that daily alert run preserves selection summary and batches alert presence.
-
-### `def tracked_filter(cls, **filters)`
-
-**Scope:** `tests/test_alerts_service.py` · `test_daily_alert_run_preserves_selection_summary_and_batches_alert_presence`
-
-[Source](../tests/test_alerts_service.py#L207)
-
-Capture filters used to select accounts that have alerts.
-
-### `class Shop`
-
-**Scope:** `tests/test_alerts_service.py` · `test_daily_alert_run_preserves_selection_summary_and_batches_alert_presence`
-
-[Source](../tests/test_alerts_service.py#L215)
-
-Return deterministic storefront data and record account lookups for alert and command assertions.
-
-### `def __init__(self) -> None`
-
-**Scope:** `tests/test_alerts_service.py` · `test_daily_alert_run_preserves_selection_summary_and_batches_alert_presence.Shop`
-
-[Source](../tests/test_alerts_service.py#L218)
-
-Start storefront-call tracking before the alert job runs.
-
-### `async def storefront(self, account, *, use_cache = True)`
-
-**Scope:** `tests/test_alerts_service.py` · `test_daily_alert_run_preserves_selection_summary_and_batches_alert_presence.Shop`
-
-[Source](../tests/test_alerts_service.py#L222)
-
-Return the configured storefront fixture for the requested account.
-
-### `async def on_shop(user_id, _user, account, _shop, alerts, send_daily_shop)`
-
-**Scope:** `tests/test_alerts_service.py` · `test_daily_alert_run_preserves_selection_summary_and_batches_alert_presence`
-
-[Source](../tests/test_alerts_service.py#L238)
-
-Capture arguments passed to the daily-shop delivery callback.
-
-### `async def on_credentials_expired(user_id)`
-
-**Scope:** `tests/test_alerts_service.py` · `test_daily_alert_run_preserves_selection_summary_and_batches_alert_presence`
-
-[Source](../tests/test_alerts_service.py#L250)
-
-Capture expired-credential callback invocations.
-
-### `async def test_daily_alert_run_cancels_and_awaits_sibling_users_on_failure() -> None`
-
-**Scope:** `tests/test_alerts_service.py` · `module`
-
-[Source](../tests/test_alerts_service.py#L309)
-
-Verify that daily alert run cancels and awaits sibling users on failure.
-
-### `class FailingShop`
-
-**Scope:** `tests/test_alerts_service.py` · `test_daily_alert_run_cancels_and_awaits_sibling_users_on_failure`
-
-[Source](../tests/test_alerts_service.py#L321)
-
-Fail one storefront lookup so the alert job can verify sibling-task cancellation.
-
-### `async def storefront(self, account, *, use_cache = True)`
-
-**Scope:** `tests/test_alerts_service.py` · `test_daily_alert_run_cancels_and_awaits_sibling_users_on_failure.FailingShop`
-
-[Source](../tests/test_alerts_service.py#L324)
-
-Return the configured storefront fixture for the requested account.
-
-### `async def unused_callback(*_args)`
-
-**Scope:** `tests/test_alerts_service.py` · `test_daily_alert_run_cancels_and_awaits_sibling_users_on_failure`
-
-[Source](../tests/test_alerts_service.py#L336)
-
-Fail the test if an unexpected notification callback is invoked.
-
-### `async def test_daily_alert_run_keeps_send_and_delay_order(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_alerts_service.py` · `module`
-
-[Source](../tests/test_alerts_service.py#L355)
-
-Verify that daily alert run keeps send and delay order.
-
-### `class Shop`
-
-**Scope:** `tests/test_alerts_service.py` · `test_daily_alert_run_keeps_send_and_delay_order`
-
-[Source](../tests/test_alerts_service.py#L375)
-
-Return deterministic storefront data and record account lookups for alert and command assertions.
-
-### `async def storefront(self, account, *, use_cache = True)`
-
-**Scope:** `tests/test_alerts_service.py` · `test_daily_alert_run_keeps_send_and_delay_order.Shop`
-
-[Source](../tests/test_alerts_service.py#L378)
-
-Return the configured storefront fixture for the requested account.
-
-### `async def on_shop(user_id, _user, account, _shop, _alerts, _send_daily_shop)`
-
-**Scope:** `tests/test_alerts_service.py` · `test_daily_alert_run_keeps_send_and_delay_order`
-
-[Source](../tests/test_alerts_service.py#L386)
-
-Capture arguments passed to the daily-shop delivery callback.
-
-### `async def on_credentials_expired(user_id)`
-
-**Scope:** `tests/test_alerts_service.py` · `test_daily_alert_run_keeps_send_and_delay_order`
-
-[Source](../tests/test_alerts_service.py#L390)
-
-Capture expired-credential callback invocations.
-
-### `async def record_delay(seconds: float) -> None`
-
-**Scope:** `tests/test_alerts_service.py` · `test_daily_alert_run_keeps_send_and_delay_order`
-
-[Source](../tests/test_alerts_service.py#L394)
-
-Record alert delays so delivery ordering can be asserted.
-
-### `async def test_daily_alert_auth_http_5xx_does_not_request_relogin() -> None`
-
-**Scope:** `tests/test_alerts_service.py` · `module`
-
-[Source](../tests/test_alerts_service.py#L422)
-
-Verify that daily alert auth HTTP 5xx does not request relogin.
-
-### `class UnavailableHTTP`
-
-**Scope:** `tests/test_alerts_service.py` · `test_daily_alert_auth_http_5xx_does_not_request_relogin`
-
-[Source](../tests/test_alerts_service.py#L437)
-
-Return an upstream server error to verify temporary failures do not trigger relogin notices.
-
-### `async def request(self, *args, **kwargs)`
-
-**Scope:** `tests/test_alerts_service.py` · `test_daily_alert_auth_http_5xx_does_not_request_relogin.UnavailableHTTP`
-
-[Source](../tests/test_alerts_service.py#L440)
-
-Record request arguments and return the configured HTTP response.
-
-### `async def unused_callback(*_args) -> None`
-
-**Scope:** `tests/test_alerts_service.py` · `test_daily_alert_auth_http_5xx_does_not_request_relogin`
-
-[Source](../tests/test_alerts_service.py#L444)
-
-Fail the test if an unexpected notification callback is invoked.
-
-### `async def on_credentials_expired(user_id: int) -> None`
-
-**Scope:** `tests/test_alerts_service.py` · `test_daily_alert_auth_http_5xx_does_not_request_relogin`
-
-[Source](../tests/test_alerts_service.py#L448)
-
-Capture expired-credential callback invocations.
-
-### `async def test_daily_alert_run_batches_user_and_alert_lookups(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_alerts_service.py` · `module`
-
-[Source](../tests/test_alerts_service.py#L474)
-
-Verify that daily alert run batches user and alert lookups.
-
-### `async def count_user_get(cls, *args, **filters)`
-
-**Scope:** `tests/test_alerts_service.py` · `test_daily_alert_run_batches_user_and_alert_lookups`
-
-[Source](../tests/test_alerts_service.py#L500)
-
-Count user-record lookups during the alert run.
-
-### `async def count_account_get(cls, *args, **filters)`
-
-**Scope:** `tests/test_alerts_service.py` · `test_daily_alert_run_batches_user_and_alert_lookups`
-
-[Source](../tests/test_alerts_service.py#L505)
-
-Count account-record lookups during the alert run.
-
-### `def count_account_queries(cls, **filters)`
-
-**Scope:** `tests/test_alerts_service.py` · `test_daily_alert_run_batches_user_and_alert_lookups`
-
-[Source](../tests/test_alerts_service.py#L510)
-
-Count account query executions during the alert run.
-
-### `def count_alert_queries(cls, **filters)`
-
-**Scope:** `tests/test_alerts_service.py` · `test_daily_alert_run_batches_user_and_alert_lookups`
-
-[Source](../tests/test_alerts_service.py#L516)
-
-Count alert query executions during the alert run.
-
-### `class Shop`
-
-**Scope:** `tests/test_alerts_service.py` · `test_daily_alert_run_batches_user_and_alert_lookups`
-
-[Source](../tests/test_alerts_service.py#L537)
-
-Return deterministic storefront data and record account lookups for alert and command assertions.
-
-### `async def storefront(self, _account, *, use_cache = True)`
-
-**Scope:** `tests/test_alerts_service.py` · `test_daily_alert_run_batches_user_and_alert_lookups.Shop`
-
-[Source](../tests/test_alerts_service.py#L540)
-
-Return the configured storefront fixture for the requested account.
-
-### `async def unused_callback(*_args)`
-
-**Scope:** `tests/test_alerts_service.py` · `test_daily_alert_run_batches_user_and_alert_lookups`
-
-[Source](../tests/test_alerts_service.py#L544)
-
-Fail the test if an unexpected notification callback is invoked.
-
-## `tests/test_analytics.py`
-
-Tests for command invocation recording and scoped statistics.
-
-### `async def test_record_command_invocation_preserves_dm_context() -> None`
-
-**Scope:** `tests/test_analytics.py` · `module`
-
-[Source](../tests/test_analytics.py#L12)
-
-Verify that record command invocation preserves DM context.
-
-### `async def test_command_stats_are_scoped_and_keep_alphabetical_ties() -> None`
-
-**Scope:** `tests/test_analytics.py` · `module`
-
-[Source](../tests/test_analytics.py#L23)
-
-Verify that command stats are scoped and keep alphabetical ties.
-
-### `async def test_command_stats_returns_empty_result_and_requires_one_scope() -> None`
-
-**Scope:** `tests/test_analytics.py` · `module`
-
-[Source](../tests/test_analytics.py#L45)
-
-Verify that command stats returns empty result and requires one scope.
-
-## `tests/test_config_crypto_monitoring.py`
-
-Tests for settings validation, credential encryption, and privacy filters.
-
-### `def _clear_optional_urls(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_config_crypto_monitoring.py` · `module`
-
-[Source](../tests/test_config_crypto_monitoring.py#L30)
-
-Clear optional URL variables so settings tests use a controlled environment.
-
-### `def test_settings_choose_sqlite_for_development(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_config_crypto_monitoring.py` · `module`
-
-[Source](../tests/test_config_crypto_monitoring.py#L37)
-
-Verify that settings choose SQLite for development.
-
-### `def test_settings_reject_invalid_token_encryption_key(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_config_crypto_monitoring.py` · `module`
-
-[Source](../tests/test_config_crypto_monitoring.py#L50)
-
-Verify that settings reject invalid token encryption key.
-
-### `def test_settings_reject_non_positive_ids(monkeypatch: pytest.MonkeyPatch, name: str, value: str) -> None`
-
-**Scope:** `tests/test_config_crypto_monitoring.py` · `module`
-
-[Source](../tests/test_config_crypto_monitoring.py#L69)
-
-Verify that settings reject zero and negative IDs.
-
-### `def test_settings_treat_blank_optional_urls_as_none(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_config_crypto_monitoring.py` · `module`
-
-[Source](../tests/test_config_crypto_monitoring.py#L80)
-
-Verify that blank optional URLs are treated as unset.
-
-### `def test_settings_accept_http_links(monkeypatch: pytest.MonkeyPatch, name: str, value: str) -> None`
-
-**Scope:** `tests/test_config_crypto_monitoring.py` · `module`
-
-[Source](../tests/test_config_crypto_monitoring.py#L100)
-
-Verify that settings accept HTTP links.
-
-### `def test_settings_reject_invalid_http_links_without_echoing_value(monkeypatch: pytest.MonkeyPatch, name: str, value: str) -> None`
-
-**Scope:** `tests/test_config_crypto_monitoring.py` · `module`
-
-[Source](../tests/test_config_crypto_monitoring.py#L124)
-
-Verify that settings reject invalid HTTP links without echoing value.
-
-### `def test_settings_accept_webhook_urls_supported_by_discord_py(monkeypatch: pytest.MonkeyPatch, host: str) -> None`
-
-**Scope:** `tests/test_config_crypto_monitoring.py` · `module`
-
-[Source](../tests/test_config_crypto_monitoring.py#L138)
-
-Verify that settings accept webhook URLs supported by discord.py.
-
-### `def test_settings_reject_invalid_webhook_urls_without_echoing_token(monkeypatch: pytest.MonkeyPatch, value: str) -> None`
-
-**Scope:** `tests/test_config_crypto_monitoring.py` · `module`
-
-[Source](../tests/test_config_crypto_monitoring.py#L168)
-
-Verify that settings reject invalid webhook urls without echoing token.
-
-### `def test_settings_load_glitchtip_tracking(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_config_crypto_monitoring.py` · `module`
-
-[Source](../tests/test_config_crypto_monitoring.py#L181)
-
-Verify that settings load GlitchTip tracking.
-
-### `def test_production_requires_database_url(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_config_crypto_monitoring.py` · `module`
-
-[Source](../tests/test_config_crypto_monitoring.py#L192)
-
-Verify that production requires database URL.
-
-### `def test_error_tracking_scrubs_riot_credentials() -> None`
-
-**Scope:** `tests/test_config_crypto_monitoring.py` · `module`
-
-[Source](../tests/test_config_crypto_monitoring.py#L202)
-
-Verify that error tracking scrubs Riot credentials.
-
-### `def test_error_tracking_scrubs_compact_auth_fields_and_raw_tokens() -> None`
-
-**Scope:** `tests/test_config_crypto_monitoring.py` · `module`
-
-[Source](../tests/test_config_crypto_monitoring.py#L212)
-
-Verify that error tracking scrubs compact auth fields and raw tokens.
-
-### `def test_error_tracking_scrubs_riot_puuids() -> None`
-
-**Scope:** `tests/test_config_crypto_monitoring.py` · `module`
-
-[Source](../tests/test_config_crypto_monitoring.py#L248)
-
-Verify that error tracking scrubs Riot PUUIDs.
-
-### `def test_structured_logs_include_safe_extra_fields() -> None`
-
-**Scope:** `tests/test_config_crypto_monitoring.py` · `module`
-
-[Source](../tests/test_config_crypto_monitoring.py#L259)
-
-Verify that structured logs include safe extra fields.
-
-### `def test_discord_log_handler_uses_the_scrubbed_structured_formatter() -> None`
-
-**Scope:** `tests/test_config_crypto_monitoring.py` · `module`
-
-[Source](../tests/test_config_crypto_monitoring.py#L281)
-
-Verify that Discord log handler uses the scrubbed structured formatter.
-
-### `def test_http_log_urls_remove_account_ids_credentials_and_queries() -> None`
-
-**Scope:** `tests/test_config_crypto_monitoring.py` · `module`
-
-[Source](../tests/test_config_crypto_monitoring.py#L303)
-
-Verify that HTTP log urls remove account IDs credentials and queries.
-
-### `def test_error_tracking_ignores_http_breadcrumbs_and_handles_null_category() -> None`
-
-**Scope:** `tests/test_config_crypto_monitoring.py` · `module`
-
-[Source](../tests/test_config_crypto_monitoring.py#L317)
-
-Verify that error tracking ignores HTTP breadcrumbs and handles null category.
-
-### `def test_glitchtip_logs_keep_botfragg_events_and_drop_unrelated_or_url_data() -> None`
-
-**Scope:** `tests/test_config_crypto_monitoring.py` · `module`
-
-[Source](../tests/test_config_crypto_monitoring.py#L326)
-
-Verify that GlitchTip logs keep BotFragg events and drop unrelated or URL data.
-
-### `def test_glitchtip_enables_supported_telemetry(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_config_crypto_monitoring.py` · `module`
-
-[Source](../tests/test_config_crypto_monitoring.py#L364)
-
-Verify that GlitchTip enables supported telemetry.
-
-### `def test_transaction_tracking_removes_request_data() -> None`
-
-**Scope:** `tests/test_config_crypto_monitoring.py` · `module`
-
-[Source](../tests/test_config_crypto_monitoring.py#L390)
-
-Verify that transaction tracking removes request data.
-
-### `def test_error_tracking_removes_request_data() -> None`
-
-**Scope:** `tests/test_config_crypto_monitoring.py` · `module`
-
-[Source](../tests/test_config_crypto_monitoring.py#L402)
-
-Verify that error tracking removes request data.
-
-### `def test_error_tracking_flushes_on_shutdown(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_config_crypto_monitoring.py` · `module`
-
-[Source](../tests/test_config_crypto_monitoring.py#L417)
-
-Verify that error tracking flushes on shutdown.
-
-### `def test_auth_vault_round_trip_and_wrong_key() -> None`
-
-**Scope:** `tests/test_config_crypto_monitoring.py` · `module`
-
-[Source](../tests/test_config_crypto_monitoring.py#L434)
-
-Verify that credential encryption round-trips and rejects the wrong key.
-
-### `def test_jwt_decode_and_expiry() -> None`
-
-**Scope:** `tests/test_config_crypto_monitoring.py` · `module`
-
-[Source](../tests/test_config_crypto_monitoring.py#L445)
-
-Verify that JWT decode and expiry.
-
-## `tests/test_migration.py`
-
-Tests for schema migrations and database connection setup.
-
-### `def test_sqlite_in_memory_url_is_preserved() -> None`
-
-**Scope:** `tests/test_migration.py` · `module`
-
-[Source](../tests/test_migration.py#L16)
-
-Verify that the SQLite in-memory URL is preserved.
-
-### `def test_native_initial_migration_matches_current_models() -> None`
-
-**Scope:** `tests/test_migration.py` · `module`
-
-[Source](../tests/test_migration.py#L21)
-
-Verify that native initial migration matches current models.
-
-### `async def test_connect_database_uses_passed_settings(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_migration.py` · `module`
-
-[Source](../tests/test_migration.py#L90)
-
-Verify that connect database uses passed settings.
-
-### `class Runtime`
-
-**Scope:** `tests/test_migration.py` · `test_connect_database_uses_passed_settings`
-
-[Source](../tests/test_migration.py#L100)
-
-Stub Tortoise's model registry and schema-generation call during database setup.
-
-### `async def init(*, config: dict[str, object]) -> None`
-
-**Scope:** `tests/test_migration.py` · `test_connect_database_uses_passed_settings.Runtime`
-
-[Source](../tests/test_migration.py#L104)
-
-Record the ORM configuration passed to database initialization.
-
-### `async def generate_schemas(*, safe: bool) -> None`
-
-**Scope:** `tests/test_migration.py` · `test_connect_database_uses_passed_settings.Runtime`
-
-[Source](../tests/test_migration.py#L109)
-
-Record whether schema generation was requested.
-
-### `async def test_ping_database_queries_the_default_connection(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_migration.py` · `module`
-
-[Source](../tests/test_migration.py#L123)
-
-Verify that ping database queries the default connection.
-
-### `class Connection`
-
-**Scope:** `tests/test_migration.py` · `test_ping_database_queries_the_default_connection`
-
-[Source](../tests/test_migration.py#L129)
-
-Capture the health-check SQL sent to Tortoise's default database connection.
-
-### `async def execute_query(self, query: str) -> None`
-
-**Scope:** `tests/test_migration.py` · `test_ping_database_queries_the_default_connection.Connection`
-
-[Source](../tests/test_migration.py#L132)
-
-Record the query and return the configured fake database result.
-
-### `def get_connection(alias: str) -> Connection`
-
-**Scope:** `tests/test_migration.py` · `test_ping_database_queries_the_default_connection`
-
-[Source](../tests/test_migration.py#L136)
-
-Return the fake default database connection.
-
-## `tests/test_models_services.py`
-
-Tests for model invariants and account, authentication, shop, and catalog services.
-
-### `def _fake_access_token(expires_in: int = 3600) -> str`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L58)
-
-Create a JWT-shaped access token with the requested expiry.
-
-### `def _fake_jwt(**claims: object) -> str`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L69)
-
-Create a JWT-shaped token containing the supplied claims.
-
-### `async def test_account_selection_preserves_invariant() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L76)
-
-Verify that account selection preserves invariant.
-
-### `async def test_selected_account_updates_user_timestamp() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L94)
-
-Verify that selected account updates user timestamp.
-
-### `async def test_user_preference_updates_user_timestamp() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L109)
-
-Verify that user preference updates user timestamp.
-
-### `async def test_select_account_updates_user_timestamp() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L123)
-
-Verify that select account updates user timestamp.
-
-### `async def test_user_preference_service_validates_and_updates_fields() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L138)
-
-Verify that user preference service validates and updates fields.
-
-### `async def test_selected_account_does_not_overwrite_concurrent_selection(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L154)
-
-Verify that selected account does not overwrite concurrent selection.
-
-### `async def paused_lookup(cls, *args, **kwargs)`
-
-**Scope:** `tests/test_models_services.py` · `test_selected_account_does_not_overwrite_concurrent_selection`
-
-[Source](../tests/test_models_services.py#L168)
-
-Pause account selection until the test releases its synchronization gate.
-
-### `async def test_alert_unique_per_account_and_skin() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L194)
-
-Verify that each account can have only one alert for a given skin.
-
-### `async def test_command_analytics_keeps_dm_context_nullable() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L205)
-
-Verify that command analytics keeps DM context nullable.
-
-### `async def test_delete_user_data_removes_personal_records() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L217)
-
-Verify that delete user data removes personal records.
-
-### `async def test_suggestion_followers_are_unique_per_user() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L238)
-
-Verify that suggestion followers are unique per user.
-
-### `async def test_shard_status_message_is_reused_per_channel() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L247)
-
-Verify that shard status message is reused per channel.
-
-### `async def test_cached_shop_requires_active_credentials() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L259)
-
-Verify that cached shop requires active credentials.
-
-### `class LoggedOutAuth`
-
-**Scope:** `tests/test_models_services.py` · `test_cached_shop_requires_active_credentials`
-
-[Source](../tests/test_models_services.py#L262)
-
-Simulate missing credentials to verify cached storefront data is not served after logout.
-
-### `async def auth_headers(self, account)`
-
-**Scope:** `tests/test_models_services.py` · `test_cached_shop_requires_active_credentials.LoggedOutAuth`
-
-[Source](../tests/test_models_services.py#L265)
-
-Return the test authorization headers for the fake account.
-
-### `async def test_expired_shop_cache_entry_is_removed_when_refetch_fails() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L279)
-
-Verify that expired shop cache entry is removed when refetch fails.
-
-### `class Auth`
-
-**Scope:** `tests/test_models_services.py` · `test_expired_shop_cache_entry_is_removed_when_refetch_fails`
-
-[Source](../tests/test_models_services.py#L282)
-
-Stub authentication with controlled Riot credentials and login outcomes for service tests.
-
-### `async def auth_headers(self, _account) -> dict[str, str]`
-
-**Scope:** `tests/test_models_services.py` · `test_expired_shop_cache_entry_is_removed_when_refetch_fails.Auth`
-
-[Source](../tests/test_models_services.py#L285)
-
-Return the test authorization headers for the fake account.
-
-### `async def fail_fetch(_account, _headers)`
-
-**Scope:** `tests/test_models_services.py` · `test_expired_shop_cache_entry_is_removed_when_refetch_fails`
-
-[Source](../tests/test_models_services.py#L293)
-
-Raise the configured failure on a storefront fetch.
-
-### `async def test_expired_shop_cache_entry_is_removed_when_auth_fails() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L306)
-
-Verify that expired shop cache entry is removed when auth fails.
-
-### `class Auth`
-
-**Scope:** `tests/test_models_services.py` · `test_expired_shop_cache_entry_is_removed_when_auth_fails`
-
-[Source](../tests/test_models_services.py#L309)
-
-Stub authentication with controlled Riot credentials and login outcomes for service tests.
-
-### `async def auth_headers(self, _account) -> dict[str, str]`
-
-**Scope:** `tests/test_models_services.py` · `test_expired_shop_cache_entry_is_removed_when_auth_fails.Auth`
-
-[Source](../tests/test_models_services.py#L312)
-
-Return the test authorization headers for the fake account.
-
-### `async def test_featured_bundle_cache_expiry_does_not_change_daily_expiry() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L327)
-
-Verify a bundle expiry refreshes cached data while daily expiry stays intact.
-
-### `class Auth`
-
-**Scope:** `tests/test_models_services.py` · `test_featured_bundle_cache_expiry_does_not_change_daily_expiry`
-
-[Source](../tests/test_models_services.py#L330)
-
-Provide fake Riot credentials for the storefront request.
-
-### `async def auth_headers(self, _account) -> dict[str, str]`
-
-**Scope:** `tests/test_models_services.py` · `test_featured_bundle_cache_expiry_does_not_change_daily_expiry.Auth`
-
-[Source](../tests/test_models_services.py#L333)
-
-Return fake authorization headers.
-
-### `async def fetch(_account, _headers)`
-
-**Scope:** `tests/test_models_services.py` · `test_featured_bundle_cache_expiry_does_not_change_daily_expiry`
-
-[Source](../tests/test_models_services.py#L345)
-
-Replace the stale cache entry with the freshly fetched shop.
-
-### `async def test_shop_service_resolves_accessory_offer_data() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L362)
-
-Verify that shop service resolves accessory offer data.
-
-### `class Catalog`
-
-**Scope:** `tests/test_models_services.py` · `test_shop_service_resolves_accessory_offer_data`
-
-[Source](../tests/test_models_services.py#L366)
-
-Provide controlled accessory metadata for storefront offer normalization.
-
-### `async def accessory(self, item_type: str, item_id: str) -> Accessory | None`
-
-**Scope:** `tests/test_models_services.py` · `test_shop_service_resolves_accessory_offer_data.Catalog`
-
-[Source](../tests/test_models_services.py#L369)
-
-Return the configured catalog accessory fixture.
-
-### `async def test_featured_bundles_keep_prices_account_scoped_and_malformed_data_safe() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L398)
-
-Verify bundle data is normalized, isolated by account, and optional-safe.
-
-### `class Auth`
-
-**Scope:** `tests/test_models_services.py` · `test_featured_bundles_keep_prices_account_scoped_and_malformed_data_safe`
-
-[Source](../tests/test_models_services.py#L403)
-
-Return fake Riot credentials for storefront parsing.
-
-### `async def auth_headers(self, _account) -> dict[str, str]`
-
-**Scope:** `tests/test_models_services.py` · `test_featured_bundles_keep_prices_account_scoped_and_malformed_data_safe.Auth`
-
-[Source](../tests/test_models_services.py#L406)
-
-Return fake credentials for the storefront request.
-
-### `class HTTP`
-
-**Scope:** `tests/test_models_services.py` · `test_featured_bundles_keep_prices_account_scoped_and_malformed_data_safe`
-
-[Source](../tests/test_models_services.py#L410)
-
-Provide account-specific featured bundle fixtures.
-
-### `async def request(self, _method: str, url: str, **_kwargs)`
-
-**Scope:** `tests/test_models_services.py` · `test_featured_bundles_keep_prices_account_scoped_and_malformed_data_safe.HTTP`
-
-[Source](../tests/test_models_services.py#L413)
-
-Return account-specific bundles or a malformed optional section.
-
-### `async def test_concurrent_auth_ensure_serializes_entitlement_repair() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L507)
-
-Verify that concurrent auth ensure serializes entitlement repair.
-
-### `class RejectingHTTP`
-
-**Scope:** `tests/test_models_services.py` · `test_concurrent_auth_ensure_serializes_entitlement_repair`
-
-[Source](../tests/test_models_services.py#L520)
-
-Reject entitlement requests to verify concurrent authentication checks serialize repair.
-
-### `async def request(self, *args, **kwargs)`
-
-**Scope:** `tests/test_models_services.py` · `test_concurrent_auth_ensure_serializes_entitlement_repair.RejectingHTTP`
-
-[Source](../tests/test_models_services.py#L525)
-
-Record request arguments and return the configured HTTP response.
-
-### `async def entitlement(_auth) -> str | None`
-
-**Scope:** `tests/test_models_services.py` · `test_concurrent_auth_ensure_serializes_entitlement_repair`
-
-[Source](../tests/test_models_services.py#L540)
-
-Return the configured fake entitlement response.
-
-### `async def test_auth_refresh_transients_do_not_become_login_required() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L570)
-
-Verify that auth refresh transients do not become login required.
-
-### `class FailingHTTP`
-
-**Scope:** `tests/test_models_services.py` · `test_auth_refresh_transients_do_not_become_login_required`
-
-[Source](../tests/test_models_services.py#L583)
-
-Return controlled Riot API failures for retry and authentication-state assertions.
-
-### `async def request(self, *args, **kwargs)`
-
-**Scope:** `tests/test_models_services.py` · `test_auth_refresh_transients_do_not_become_login_required.FailingHTTP`
-
-[Source](../tests/test_models_services.py#L586)
-
-Record request arguments and return the configured HTTP response.
-
-### `async def test_entitlement_transients_do_not_become_login_required() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L604)
-
-Verify that entitlement transients do not become login required.
-
-### `class FailingHTTP`
-
-**Scope:** `tests/test_models_services.py` · `test_entitlement_transients_do_not_become_login_required`
-
-[Source](../tests/test_models_services.py#L617)
-
-Return controlled Riot API failures for retry and authentication-state assertions.
-
-### `async def request(self, *args, **kwargs)`
-
-**Scope:** `tests/test_models_services.py` · `test_entitlement_transients_do_not_become_login_required.FailingHTTP`
-
-[Source](../tests/test_models_services.py#L620)
-
-Record request arguments and return the configured HTTP response.
-
-### `async def test_auth_refresh_transient_status_does_not_become_login_required(status) -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L639)
-
-Verify that auth refresh transient status does not become login required.
-
-### `class FailingHTTP`
-
-**Scope:** `tests/test_models_services.py` · `test_auth_refresh_transient_status_does_not_become_login_required`
-
-[Source](../tests/test_models_services.py#L654)
-
-Return controlled Riot API failures for retry and authentication-state assertions.
-
-### `async def request(self, *args, **kwargs)`
-
-**Scope:** `tests/test_models_services.py` · `test_auth_refresh_transient_status_does_not_become_login_required.FailingHTTP`
-
-[Source](../tests/test_models_services.py#L657)
-
-Record request arguments and return the configured HTTP response.
-
-### `async def test_entitlement_transient_status_does_not_become_login_required(status) -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L673)
-
-Verify that entitlement transient status does not become login required.
-
-### `class FailingHTTP`
-
-**Scope:** `tests/test_models_services.py` · `test_entitlement_transient_status_does_not_become_login_required`
-
-[Source](../tests/test_models_services.py#L688)
-
-Return controlled Riot API failures for retry and authentication-state assertions.
-
-### `async def request(self, *args, **kwargs)`
-
-**Scope:** `tests/test_models_services.py` · `test_entitlement_transient_status_does_not_become_login_required.FailingHTTP`
-
-[Source](../tests/test_models_services.py#L691)
-
-Record request arguments and return the configured HTTP response.
-
-### `async def test_shop_wallet_normalizes_transient_auth_failures() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L705)
-
-Verify that shop wallet normalizes transient auth failures.
-
-### `class FailingAuth`
-
-**Scope:** `tests/test_models_services.py` · `test_shop_wallet_normalizes_transient_auth_failures`
-
-[Source](../tests/test_models_services.py#L708)
-
-Raise controlled credential errors so dependent services can classify login failures.
-
-### `async def auth_headers(self, _account) -> dict[str, str]`
-
-**Scope:** `tests/test_models_services.py` · `test_shop_wallet_normalizes_transient_auth_failures.FailingAuth`
-
-[Source](../tests/test_models_services.py#L711)
-
-Return the test authorization headers for the fake account.
-
-### `async def test_shop_wallet_normalizes_transient_http_failures() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L721)
-
-Verify that shop wallet normalizes transient HTTP failures.
-
-### `class Auth`
-
-**Scope:** `tests/test_models_services.py` · `test_shop_wallet_normalizes_transient_http_failures`
-
-[Source](../tests/test_models_services.py#L724)
-
-Stub authentication with controlled Riot credentials and login outcomes for service tests.
-
-### `async def auth_headers(self, _account) -> dict[str, str]`
-
-**Scope:** `tests/test_models_services.py` · `test_shop_wallet_normalizes_transient_http_failures.Auth`
-
-[Source](../tests/test_models_services.py#L727)
-
-Return the test authorization headers for the fake account.
-
-### `class FailingHTTP`
-
-**Scope:** `tests/test_models_services.py` · `test_shop_wallet_normalizes_transient_http_failures`
-
-[Source](../tests/test_models_services.py#L731)
-
-Return controlled Riot API failures for retry and authentication-state assertions.
-
-### `async def request(self, *args, **kwargs)`
-
-**Scope:** `tests/test_models_services.py` · `test_shop_wallet_normalizes_transient_http_failures.FailingHTTP`
-
-[Source](../tests/test_models_services.py#L734)
-
-Record request arguments and return the configured HTTP response.
-
-### `async def test_gameplay_normalizes_transient_auth_failures() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L744)
-
-Verify that gameplay normalizes transient auth failures.
-
-### `class FailingAuth`
-
-**Scope:** `tests/test_models_services.py` · `test_gameplay_normalizes_transient_auth_failures`
-
-[Source](../tests/test_models_services.py#L747)
-
-Raise controlled credential errors so dependent services can classify login failures.
-
-### `async def auth_headers(self, _account) -> dict[str, str]`
-
-**Scope:** `tests/test_models_services.py` · `test_gameplay_normalizes_transient_auth_failures.FailingAuth`
-
-[Source](../tests/test_models_services.py#L750)
-
-Return the test authorization headers for the fake account.
-
-### `async def test_gameplay_normalizes_transient_http_failures() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L760)
-
-Verify that gameplay normalizes transient HTTP failures.
-
-### `class Auth`
-
-**Scope:** `tests/test_models_services.py` · `test_gameplay_normalizes_transient_http_failures`
-
-[Source](../tests/test_models_services.py#L763)
-
-Stub authentication with controlled Riot credentials and login outcomes for service tests.
-
-### `async def auth_headers(self, _account) -> dict[str, str]`
-
-**Scope:** `tests/test_models_services.py` · `test_gameplay_normalizes_transient_http_failures.Auth`
-
-[Source](../tests/test_models_services.py#L766)
-
-Return the test authorization headers for the fake account.
-
-### `class FailingHTTP`
-
-**Scope:** `tests/test_models_services.py` · `test_gameplay_normalizes_transient_http_failures`
-
-[Source](../tests/test_models_services.py#L770)
-
-Return controlled Riot API failures for retry and authentication-state assertions.
-
-### `async def request(self, *args, **kwargs)`
-
-**Scope:** `tests/test_models_services.py` · `test_gameplay_normalizes_transient_http_failures.FailingHTTP`
-
-[Source](../tests/test_models_services.py#L773)
-
-Record request arguments and return the configured HTTP response.
-
-### `async def test_gameplay_missions_join_contract_progress_with_catalog_metadata() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L784)
-
-Verify that gameplay missions join contract progress with catalog metadata.
-
-### `class Auth`
-
-**Scope:** `tests/test_models_services.py` · `test_gameplay_missions_join_contract_progress_with_catalog_metadata`
-
-[Source](../tests/test_models_services.py#L788)
-
-Stub authentication with controlled Riot credentials and login outcomes for service tests.
-
-### `async def auth_headers(self, _account) -> dict[str, str]`
-
-**Scope:** `tests/test_models_services.py` · `test_gameplay_missions_join_contract_progress_with_catalog_metadata.Auth`
-
-[Source](../tests/test_models_services.py#L791)
-
-Return the test authorization headers for the fake account.
-
-### `class HTTP`
-
-**Scope:** `tests/test_models_services.py` · `test_gameplay_missions_join_contract_progress_with_catalog_metadata`
-
-[Source](../tests/test_models_services.py#L795)
-
-Stub the shared Riot client so request handling and shutdown can be observed.
-
-### `async def request(self, _method, url, **kwargs)`
-
-**Scope:** `tests/test_models_services.py` · `test_gameplay_missions_join_contract_progress_with_catalog_metadata.HTTP`
-
-[Source](../tests/test_models_services.py#L798)
-
-Record request arguments and return the configured HTTP response.
-
-### `async def test_concurrent_login_callbacks_respect_account_limit() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L853)
-
-Verify that concurrent login callbacks respect account limit.
-
-### `class LoginHTTP`
-
-**Scope:** `tests/test_models_services.py` · `test_concurrent_login_callbacks_respect_account_limit`
-
-[Source](../tests/test_models_services.py#L864)
-
-Provide controlled OAuth responses for concurrent login and account-limit scenarios.
-
-### `async def request(self, method, url, **kwargs)`
-
-**Scope:** `tests/test_models_services.py` · `test_concurrent_login_callbacks_respect_account_limit.LoginHTTP`
-
-[Source](../tests/test_models_services.py#L867)
-
-Record request arguments and return the configured HTTP response.
-
-### `async def test_logout_clears_credentials_saved_during_refresh() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L935)
-
-Verify that logout clears credentials saved during refresh.
-
-### `class RefreshHTTP`
-
-**Scope:** `tests/test_models_services.py` · `test_logout_clears_credentials_saved_during_refresh`
-
-[Source](../tests/test_models_services.py#L948)
-
-Pause token refresh requests so logout can protect credentials updated concurrently.
-
-### `async def request(self, *args, **kwargs)`
-
-**Scope:** `tests/test_models_services.py` · `test_logout_clears_credentials_saved_during_refresh.RefreshHTTP`
-
-[Source](../tests/test_models_services.py#L951)
-
-Record request arguments and return the configured HTTP response.
-
-### `async def entitlement(_auth) -> str`
-
-**Scope:** `tests/test_models_services.py` · `test_logout_clears_credentials_saved_during_refresh`
-
-[Source](../tests/test_models_services.py#L965)
-
-Return the configured fake entitlement response.
-
-### `async def test_concurrent_storefront_requests_share_one_fetch() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L986)
-
-Verify that concurrent storefront requests share one fetch.
-
-### `class Auth`
-
-**Scope:** `tests/test_models_services.py` · `test_concurrent_storefront_requests_share_one_fetch`
-
-[Source](../tests/test_models_services.py#L989)
-
-Stub authentication with controlled Riot credentials and login outcomes for service tests.
-
-### `async def auth_headers(self, _account) -> dict[str, str]`
-
-**Scope:** `tests/test_models_services.py` · `test_concurrent_storefront_requests_share_one_fetch.Auth`
-
-[Source](../tests/test_models_services.py#L992)
-
-Return the test authorization headers for the fake account.
-
-### `async def fetch(_account, _headers) -> SimpleNamespace`
-
-**Scope:** `tests/test_models_services.py` · `test_concurrent_storefront_requests_share_one_fetch`
-
-[Source](../tests/test_models_services.py#L1006)
-
-Return the configured result from the fake query or HTTP client.
-
-### `async def test_shop_service_releases_idle_account_locks() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L1025)
-
-Verify that shop service releases idle account locks.
-
-### `class Auth`
-
-**Scope:** `tests/test_models_services.py` · `test_shop_service_releases_idle_account_locks`
-
-[Source](../tests/test_models_services.py#L1028)
-
-Stub authentication with controlled Riot credentials and login outcomes for service tests.
-
-### `async def auth_headers(self, _account) -> dict[str, str]`
-
-**Scope:** `tests/test_models_services.py` · `test_shop_service_releases_idle_account_locks.Auth`
-
-[Source](../tests/test_models_services.py#L1031)
-
-Return the test authorization headers for the fake account.
-
-### `async def fetch(_account, _headers) -> SimpleNamespace`
-
-**Scope:** `tests/test_models_services.py` · `test_shop_service_releases_idle_account_locks`
-
-[Source](../tests/test_models_services.py#L1038)
-
-Return the configured result from the fake query or HTTP client.
-
-### `async def test_catalog_load_reads_file_off_event_loop(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L1051)
-
-Verify that catalog load reads file off event loop.
-
-### `def track_read(self, *args, **kwargs)`
-
-**Scope:** `tests/test_models_services.py` · `test_catalog_load_reads_file_off_event_loop`
-
-[Source](../tests/test_models_services.py#L1073)
-
-Record the worker thread used to read the catalog snapshot.
-
-### `async def test_catalog_snapshot_round_trips_skin_chromas() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L1085)
-
-Verify skin chromas survive catalog build, save, and load.
-
-### `class CatalogHTTP`
-
-**Scope:** `tests/test_models_services.py` · `test_catalog_snapshot_round_trips_skin_chromas`
-
-[Source](../tests/test_models_services.py#L1090)
-
-Provide deterministic version, skin, and bundle responses.
-
-### `async def request(self, _method: str, url: str)`
-
-**Scope:** `tests/test_models_services.py` · `test_catalog_snapshot_round_trips_skin_chromas.CatalogHTTP`
-
-[Source](../tests/test_models_services.py#L1093)
-
-Return the requested catalog fixture.
-
-### `async def test_catalog_load_refreshes_legacy_snapshot_with_same_manifest() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L1174)
-
-Verify a legacy snapshot refreshes even when Riot's manifest matches.
-
-### `class CatalogHTTP`
-
-**Scope:** `tests/test_models_services.py` · `test_catalog_load_refreshes_legacy_snapshot_with_same_manifest`
-
-[Source](../tests/test_models_services.py#L1197)
-
-Provide manifest and upgraded catalog responses for the test.
-
-### `async def request(self, _method: str, url: str)`
-
-**Scope:** `tests/test_models_services.py` · `test_catalog_load_refreshes_legacy_snapshot_with_same_manifest.CatalogHTTP`
-
-[Source](../tests/test_models_services.py#L1200)
-
-Record requests and return the configured catalog response.
-
-### `async def test_failed_catalog_upgrade_keeps_legacy_data_and_retries() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L1241)
-
-Verify failed bundle refreshes preserve the old catalog and remain retryable.
-
-### `class CatalogHTTP`
-
-**Scope:** `tests/test_models_services.py` · `test_failed_catalog_upgrade_keeps_legacy_data_and_retries`
-
-[Source](../tests/test_models_services.py#L1269)
-
-Return catalog failures while tracking upgrade attempts.
-
-### `async def request(self, _method: str, url: str)`
-
-**Scope:** `tests/test_models_services.py` · `test_failed_catalog_upgrade_keeps_legacy_data_and_retries.CatalogHTTP`
-
-[Source](../tests/test_models_services.py#L1275)
-
-Return valid weapons and an empty bundle catalog.
-
-### `def test_catalog_data_file_uses_the_working_directory() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L1308)
-
-Verify that catalog data file uses the working directory.
-
-### `async def test_concurrent_accessory_lookups_share_one_request() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L1314)
-
-Verify that concurrent accessory lookups share one request.
-
-### `class HTTP`
-
-**Scope:** `tests/test_models_services.py` · `test_concurrent_accessory_lookups_share_one_request`
-
-[Source](../tests/test_models_services.py#L1320)
-
-Stub the shared Riot client so request handling and shutdown can be observed.
-
-### `async def request(self, _method: str, _url: str)`
-
-**Scope:** `tests/test_models_services.py` · `test_concurrent_accessory_lookups_share_one_request.HTTP`
-
-[Source](../tests/test_models_services.py#L1323)
-
-Record request arguments and return the configured HTTP response.
-
-### `async def test_catalog_refresh_writes_a_stable_snapshot_off_event_loop(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L1363)
-
-Verify that catalog refresh writes a stable snapshot off event loop.
-
-### `class CatalogHTTP`
-
-**Scope:** `tests/test_models_services.py` · `test_catalog_refresh_writes_a_stable_snapshot_off_event_loop`
-
-[Source](../tests/test_models_services.py#L1370)
-
-Provide fake version, weapons, and bundle catalog responses.
-
-### `async def request(self, _method, url)`
-
-**Scope:** `tests/test_models_services.py` · `test_catalog_refresh_writes_a_stable_snapshot_off_event_loop.CatalogHTTP`
-
-[Source](../tests/test_models_services.py#L1373)
-
-Return the matching version or catalog fixture.
-
-### `def track_write(self, *args, **kwargs)`
-
-**Scope:** `tests/test_models_services.py` · `test_catalog_refresh_writes_a_stable_snapshot_off_event_loop`
-
-[Source](../tests/test_models_services.py#L1408)
-
-Record the worker thread used to write the catalog snapshot.
-
-### `async def delayed_to_thread(function, *args, **kwargs)`
-
-**Scope:** `tests/test_models_services.py` · `test_catalog_refresh_writes_a_stable_snapshot_off_event_loop`
-
-[Source](../tests/test_models_services.py#L1413)
-
-Wait for the test gate before invoking the worker-thread operation.
-
-### `async def test_catalog_refresh_waits_for_file_worker_after_repeated_cancellation(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L1436)
-
-Verify that catalog refresh waits for file worker after repeated cancellation.
-
-### `class VersionHTTP`
-
-**Scope:** `tests/test_models_services.py` · `test_catalog_refresh_waits_for_file_worker_after_repeated_cancellation`
-
-[Source](../tests/test_models_services.py#L1443)
-
-Provide a stable game version to the catalog refresh test.
-
-### `async def request(self, _method, _url)`
-
-**Scope:** `tests/test_models_services.py` · `test_catalog_refresh_waits_for_file_worker_after_repeated_cancellation.VersionHTTP`
-
-[Source](../tests/test_models_services.py#L1446)
-
-Return the configured version response.
-
-### `async def fetch_weapons(_kind)`
-
-**Scope:** `tests/test_models_services.py` · `test_catalog_refresh_waits_for_file_worker_after_repeated_cancellation`
-
-[Source](../tests/test_models_services.py#L1453)
-
-Return the minimum metadata needed by catalog refresh.
-
-### `async def delayed_to_thread(function, *args, **kwargs)`
-
-**Scope:** `tests/test_models_services.py` · `test_catalog_refresh_waits_for_file_worker_after_repeated_cancellation`
-
-[Source](../tests/test_models_services.py#L1464)
-
-Hold the file worker until cancellation behavior has been observed.
-
-## `tests/test_shard_status_service.py`
-
-Tests for persistent shard-status message reuse and replacement.
-
-### `async def test_shard_status_message_can_be_reused_and_replaced() -> None`
-
-**Scope:** `tests/test_shard_status_service.py` · `module`
-
-[Source](../tests/test_shard_status_service.py#L14)
-
-Verify that shard status message can be reused and replaced.
-
-## `tests/test_suggestions_service.py`
-
-Tests for suggestion persistence, following, and review transitions.
-
-### `async def test_submission_persists_delivery_and_author_follow_atomically() -> None`
-
-**Scope:** `tests/test_suggestions_service.py` · `module`
-
-[Source](../tests/test_suggestions_service.py#L19)
-
-Verify that submission persists delivery and author follow atomically.
-
-### `async def test_follow_suggestion_is_idempotent_and_scoped() -> None`
-
-**Scope:** `tests/test_suggestions_service.py` · `module`
-
-[Source](../tests/test_suggestions_service.py#L33)
-
-Verify that follow suggestion is idempotent and scoped.
-
-### `async def test_unfollow_suggestion_reports_domain_outcomes() -> None`
-
-**Scope:** `tests/test_suggestions_service.py` · `module`
-
-[Source](../tests/test_suggestions_service.py#L44)
-
-Verify that unfollow suggestion reports domain outcomes.
-
-### `async def test_review_updates_pending_suggestion_once_and_returns_followers() -> None`
-
-**Scope:** `tests/test_suggestions_service.py` · `module`
-
-[Source](../tests/test_suggestions_service.py#L56)
-
-Verify that review updates pending suggestion once and returns followers.
-
-## `tests/test_views_commands.py`
-
-Tests for Discord command responses, privacy, component controls, and lifecycle behavior.
-
-### `def test_dynamic_component_ids_fit_discord_limit() -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L49)
-
-Verify that dynamic component IDs fit Discord limit.
-
-### `async def test_unhandled_app_command_error_returns_ephemeral_response() -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L75)
-
-Verify that unhandled app command error returns ephemeral response.
-
-### `class Response`
-
-**Scope:** `tests/test_views_commands.py` · `test_unhandled_app_command_error_returns_ephemeral_response`
-
-[Source](../tests/test_views_commands.py#L79)
-
-Capture whether an interaction was deferred and whether its initial response was private.
-
-### `def is_done(self) -> bool`
-
-**Scope:** `tests/test_views_commands.py` · `test_unhandled_app_command_error_returns_ephemeral_response.Response`
-
-[Source](../tests/test_views_commands.py#L82)
-
-Report whether the fake interaction response has been sent.
-
-### `async def send_message(self, *, embed, ephemeral: bool) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_unhandled_app_command_error_returns_ephemeral_response.Response`
-
-[Source](../tests/test_views_commands.py#L86)
-
-Record the initial message sent through the fake interaction.
-
-### `async def test_unhandled_prefix_command_error_returns_generic_response() -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L100)
-
-Verify that unhandled prefix command error returns generic response.
-
-### `async def send(*, embed: discord.Embed) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_unhandled_prefix_command_error_returns_generic_response`
-
-[Source](../tests/test_views_commands.py#L104)
-
-Record the follow-up message sent through the fake interaction.
-
-### `async def test_links_invite_preserves_zero_permissions() -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L121)
-
-Verify that links invite preserves zero permissions.
-
-### `class Response`
-
-**Scope:** `tests/test_views_commands.py` · `test_links_invite_preserves_zero_permissions`
-
-[Source](../tests/test_views_commands.py#L125)
-
-Capture whether an interaction was deferred and whether its initial response was private.
-
-### `async def defer(self, *, thinking: bool) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_links_invite_preserves_zero_permissions.Response`
-
-[Source](../tests/test_views_commands.py#L128)
-
-Record that the fake interaction response was deferred.
-
-### `class Followup`
-
-**Scope:** `tests/test_views_commands.py` · `test_links_invite_preserves_zero_permissions`
-
-[Source](../tests/test_views_commands.py#L132)
-
-Capture outgoing embeds and privacy flags sent after an interaction's initial response.
-
-### `async def send(self, **kwargs: object) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_links_invite_preserves_zero_permissions.Followup`
-
-[Source](../tests/test_views_commands.py#L135)
-
-Record the follow-up message sent through the fake interaction.
-
-### `async def test_accessory_shop_renders_catalog_item_without_changing_output(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L161)
-
-Verify that accessory shop renders catalog item without changing output.
-
-### `class Shop`
-
-**Scope:** `tests/test_views_commands.py` · `test_accessory_shop_renders_catalog_item_without_changing_output`
-
-[Source](../tests/test_views_commands.py#L183)
-
-Return deterministic storefront data and record account lookups for alert and command assertions.
-
-### `async def storefront(self, _account)`
-
-**Scope:** `tests/test_views_commands.py` · `test_accessory_shop_renders_catalog_item_without_changing_output.Shop`
-
-[Source](../tests/test_views_commands.py#L186)
-
-Return the configured storefront fixture for the requested account.
-
-### `async def accessory_offers(self, shop_data)`
-
-**Scope:** `tests/test_views_commands.py` · `test_accessory_shop_renders_catalog_item_without_changing_output.Shop`
-
-[Source](../tests/test_views_commands.py#L190)
-
-Return the configured accessory-shop offers.
-
-### `class EmojiService`
-
-**Scope:** `tests/test_views_commands.py` · `test_accessory_shop_renders_catalog_item_without_changing_output`
-
-[Source](../tests/test_views_commands.py#L195)
-
-Return deterministic currency and progress markers for embed assertions.
-
-### `async def currency(self, key: str) -> str`
-
-**Scope:** `tests/test_views_commands.py` · `test_accessory_shop_renders_catalog_item_without_changing_output.EmojiService`
-
-[Source](../tests/test_views_commands.py#L198)
-
-Return a stable currency marker for embed assertions.
-
-### `class Response`
-
-**Scope:** `tests/test_views_commands.py` · `test_accessory_shop_renders_catalog_item_without_changing_output`
-
-[Source](../tests/test_views_commands.py#L203)
-
-Capture whether an interaction was deferred and whether its initial response was private.
-
-### `async def defer(self) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_accessory_shop_renders_catalog_item_without_changing_output.Response`
-
-[Source](../tests/test_views_commands.py#L206)
-
-Record that the fake interaction response was deferred.
-
-### `async def account_for_user(_owner_id: int, _puuid: str)`
-
-**Scope:** `tests/test_views_commands.py` · `test_accessory_shop_renders_catalog_item_without_changing_output`
-
-[Source](../tests/test_views_commands.py#L210)
-
-Return the test account only for the matching user and PUUID.
-
-### `async def get_user(_owner_id: int)`
-
-**Scope:** `tests/test_views_commands.py` · `test_accessory_shop_renders_catalog_item_without_changing_output`
-
-[Source](../tests/test_views_commands.py#L214)
-
-Return the configured user fixture for the requested Discord ID.
-
-### `async def list_accounts(_owner_id: int)`
-
-**Scope:** `tests/test_views_commands.py` · `test_accessory_shop_renders_catalog_item_without_changing_output`
-
-[Source](../tests/test_views_commands.py#L218)
-
-Return the configured accounts for the requested Discord user.
-
-### `async def edit_original_response(*, embeds, view) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_accessory_shop_renders_catalog_item_without_changing_output`
-
-[Source](../tests/test_views_commands.py#L222)
-
-Record edits to the fake interaction's original response.
-
-### `def test_glitchtip_groups_subcommands_separately() -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L257)
-
-Verify that GlitchTip groups subcommands separately.
-
-### `def test_shop_offer_layout_uses_tier_colour_and_discount_price() -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L267)
-
-Verify tier colour and Night Market discount formatting.
-
-### `async def test_shop_skin_menu_selects_tiered_skin_and_returns_private_video() -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L291)
-
-Verify tier emoji options and private level/chroma video delivery.
-
-### `class EmojiService`
-
-**Scope:** `tests/test_views_commands.py` · `test_shop_skin_menu_selects_tiered_skin_and_returns_private_video`
-
-[Source](../tests/test_views_commands.py#L316)
-
-Return stable tier emoji labels for the shop selector test.
-
-### `def skin_emoji(self, _tier_uuid: str) -> str`
-
-**Scope:** `tests/test_views_commands.py` · `test_shop_skin_menu_selects_tiered_skin_and_returns_private_video.EmojiService`
-
-[Source](../tests/test_views_commands.py#L319)
-
-Return the fixture's tier emoji.
-
-### `def skin_name(self, name: str, _tier_uuid: str) -> str`
-
-**Scope:** `tests/test_views_commands.py` · `test_shop_skin_menu_selects_tiered_skin_and_returns_private_video.EmojiService`
-
-[Source](../tests/test_views_commands.py#L323)
-
-Prefix the fixture's tier emoji to a displayed name.
-
-### `class Response`
-
-**Scope:** `tests/test_views_commands.py` · `test_shop_skin_menu_selects_tiered_skin_and_returns_private_video`
-
-[Source](../tests/test_views_commands.py#L327)
-
-Capture private interaction replies for response assertions.
-
-### `def __init__(self) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_shop_skin_menu_selects_tiered_skin_and_returns_private_video.Response`
-
-[Source](../tests/test_views_commands.py#L330)
-
-Initialize the captured response list.
-
-### `async def send_message(self, content: str, **kwargs: object) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_shop_skin_menu_selects_tiered_skin_and_returns_private_video.Response`
-
-[Source](../tests/test_views_commands.py#L334)
-
-Record a response's content and keyword arguments.
-
-### `async def test_daily_shop_view_includes_only_its_offers_in_skin_menu(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L386)
-
-Verify the standard daily shop view exposes its current offer choices.
-
-### `async def list_accounts(_owner_id: int) -> list[object]`
-
-**Scope:** `tests/test_views_commands.py` · `test_daily_shop_view_includes_only_its_offers_in_skin_menu`
-
-[Source](../tests/test_views_commands.py#L392)
-
-Return two accounts so selector ordering is visible in the view.
-
-### `class EmojiService`
-
-**Scope:** `tests/test_views_commands.py` · `test_daily_shop_view_includes_only_its_offers_in_skin_menu`
-
-[Source](../tests/test_views_commands.py#L399)
-
-Return stable currency and tier emoji markers for shop cards.
-
-### `async def currency(self, _kind: str) -> str`
-
-**Scope:** `tests/test_views_commands.py` · `test_daily_shop_view_includes_only_its_offers_in_skin_menu.EmojiService`
-
-[Source](../tests/test_views_commands.py#L402)
-
-Return the fixture currency marker.
-
-### `def skin_name(self, name: str, _tier_uuid: str | None) -> str`
-
-**Scope:** `tests/test_views_commands.py` · `test_daily_shop_view_includes_only_its_offers_in_skin_menu.EmojiService`
-
-[Source](../tests/test_views_commands.py#L406)
-
-Return skin names without a tier prefix for this fixture.
-
-### `def skin_emoji(self, _tier_uuid: str | None) -> str`
-
-**Scope:** `tests/test_views_commands.py` · `test_daily_shop_view_includes_only_its_offers_in_skin_menu.EmojiService`
-
-[Source](../tests/test_views_commands.py#L410)
-
-Report that no custom tier emoji is available.
-
-### `async def test_bundles_command_renders_live_prices_and_tiered_skin_names(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L466)
-
-Verify the single current bundle includes exact prices and skin tier labels.
-
-### `async def selected_account(_owner_id: int)`
-
-**Scope:** `tests/test_views_commands.py` · `test_bundles_command_renders_live_prices_and_tiered_skin_names`
-
-[Source](../tests/test_views_commands.py#L494)
-
-Return the account fixture used by the command.
-
-### `class EmojiService`
-
-**Scope:** `tests/test_views_commands.py` · `test_bundles_command_renders_live_prices_and_tiered_skin_names`
-
-[Source](../tests/test_views_commands.py#L500)
-
-Return stable labels for bundle card assertions.
-
-### `async def currency(self, _kind: str) -> str`
-
-**Scope:** `tests/test_views_commands.py` · `test_bundles_command_renders_live_prices_and_tiered_skin_names.EmojiService`
-
-[Source](../tests/test_views_commands.py#L503)
-
-Return the fixture's VP currency label.
-
-### `def skin_name(self, name: str, _tier_uuid: str | None) -> str`
-
-**Scope:** `tests/test_views_commands.py` · `test_bundles_command_renders_live_prices_and_tiered_skin_names.EmojiService`
-
-[Source](../tests/test_views_commands.py#L507)
-
-Prefix skin names with a fixture tier emoji.
-
-### `class Shop`
-
-**Scope:** `tests/test_views_commands.py` · `test_bundles_command_renders_live_prices_and_tiered_skin_names`
-
-[Source](../tests/test_views_commands.py#L511)
-
-Return the configured live bundle data.
-
-### `async def storefront(self, _account)`
-
-**Scope:** `tests/test_views_commands.py` · `test_bundles_command_renders_live_prices_and_tiered_skin_names.Shop`
-
-[Source](../tests/test_views_commands.py#L514)
-
-Return the fixture's one featured bundle.
-
-### `class Response`
-
-**Scope:** `tests/test_views_commands.py` · `test_bundles_command_renders_live_prices_and_tiered_skin_names`
-
-[Source](../tests/test_views_commands.py#L518)
-
-Require the bundle command to defer before fetching the shop.
-
-### `async def defer(self, *, thinking: bool) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_bundles_command_renders_live_prices_and_tiered_skin_names.Response`
-
-[Source](../tests/test_views_commands.py#L521)
-
-Require the command to defer while loading the storefront.
-
-### `class Followup`
-
-**Scope:** `tests/test_views_commands.py` · `test_bundles_command_renders_live_prices_and_tiered_skin_names`
-
-[Source](../tests/test_views_commands.py#L525)
-
-Record the bundle command response.
-
-### `def __init__(self) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_bundles_command_renders_live_prices_and_tiered_skin_names.Followup`
-
-[Source](../tests/test_views_commands.py#L528)
-
-Initialize the captured command response.
-
-### `async def send(self, **kwargs: object) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_bundles_command_renders_live_prices_and_tiered_skin_names.Followup`
-
-[Source](../tests/test_views_commands.py#L532)
-
-Capture the command's embeds and controls.
-
-### `async def test_bundles_reports_missing_account_and_empty_featured_list(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L566)
-
-Verify `/bundles` reports unlinked accounts and accounts with no active offers.
-
-### `class Response`
-
-**Scope:** `tests/test_views_commands.py` · `test_bundles_reports_missing_account_and_empty_featured_list`
-
-[Source](../tests/test_views_commands.py#L571)
-
-Capture command errors and support the normal defer path.
-
-### `def __init__(self) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_bundles_reports_missing_account_and_empty_featured_list.Response`
-
-[Source](../tests/test_views_commands.py#L574)
-
-Initialize the captured response history.
-
-### `async def defer(self, *, thinking: bool) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_bundles_reports_missing_account_and_empty_featured_list.Response`
-
-[Source](../tests/test_views_commands.py#L578)
-
-Require the command to defer before account lookup.
-
-### `def is_done(self) -> bool`
-
-**Scope:** `tests/test_views_commands.py` · `test_bundles_reports_missing_account_and_empty_featured_list.Response`
-
-[Source](../tests/test_views_commands.py#L582)
-
-Report that the initial interaction was already deferred.
-
-### `class Followup`
-
-**Scope:** `tests/test_views_commands.py` · `test_bundles_reports_missing_account_and_empty_featured_list`
-
-[Source](../tests/test_views_commands.py#L586)
-
-Capture the command's follow-up response.
-
-### `def __init__(self) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_bundles_reports_missing_account_and_empty_featured_list.Followup`
-
-[Source](../tests/test_views_commands.py#L589)
-
-Initialize the captured follow-up payload.
-
-### `async def send(self, **kwargs: object) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_bundles_reports_missing_account_and_empty_featured_list.Followup`
-
-[Source](../tests/test_views_commands.py#L593)
-
-Capture the command's success or error response.
-
-### `async def selected_account(_owner_id: int)`
-
-**Scope:** `tests/test_views_commands.py` · `test_bundles_reports_missing_account_and_empty_featured_list`
-
-[Source](../tests/test_views_commands.py#L600)
-
-Report that the caller has no linked account for the first request.
-
-### `async def selected(_owner_id: int)`
-
-**Scope:** `tests/test_views_commands.py` · `test_bundles_reports_missing_account_and_empty_featured_list`
-
-[Source](../tests/test_views_commands.py#L615)
-
-Return the linked account for the empty-list response check.
-
-### `class Shop`
-
-**Scope:** `tests/test_views_commands.py` · `test_bundles_reports_missing_account_and_empty_featured_list`
-
-[Source](../tests/test_views_commands.py#L621)
-
-Return a storefront without active bundle offers.
-
-### `async def storefront(self, _account)`
-
-**Scope:** `tests/test_views_commands.py` · `test_bundles_reports_missing_account_and_empty_featured_list.Shop`
-
-[Source](../tests/test_views_commands.py#L624)
-
-Return a storefront with no active featured bundles.
-
-### `async def test_featured_bundle_view_has_no_account_selector_and_rejects_forged_items()`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L643)
-
-Keep live featured offers owner-scoped without an account selector.
-
-### `class EmojiService`
-
-**Scope:** `tests/test_views_commands.py` · `test_featured_bundle_view_has_no_account_selector_and_rejects_forged_items`
-
-[Source](../tests/test_views_commands.py#L656)
-
-Provide the VP marker needed by the featured-bundle summary.
-
-### `async def currency(self, _kind: str) -> str`
-
-**Scope:** `tests/test_views_commands.py` · `test_featured_bundle_view_has_no_account_selector_and_rejects_forged_items.EmojiService`
-
-[Source](../tests/test_views_commands.py#L659)
-
-Return the fixture's VP label.
-
-### `class Response`
-
-**Scope:** `tests/test_views_commands.py` · `test_featured_bundle_view_has_no_account_selector_and_rejects_forged_items`
-
-[Source](../tests/test_views_commands.py#L694)
-
-Capture private rejections for invalid bundle choices.
-
-### `def __init__(self) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_featured_bundle_view_has_no_account_selector_and_rejects_forged_items.Response`
-
-[Source](../tests/test_views_commands.py#L697)
-
-Initialize the captured messages.
-
-### `async def send_message(self, content: str, **kwargs: object) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_featured_bundle_view_has_no_account_selector_and_rejects_forged_items.Response`
-
-[Source](../tests/test_views_commands.py#L701)
-
-Record a private validation response.
-
-### `async def test_shop_video_selector_rejects_forged_and_mismatched_values() -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L722)
-
-Verify menu values and cached skin ownership gate video delivery.
-
-### `class Response`
-
-**Scope:** `tests/test_views_commands.py` · `test_shop_video_selector_rejects_forged_and_mismatched_values`
-
-[Source](../tests/test_views_commands.py#L741)
-
-Capture invalid selector messages for assertions.
-
-### `def __init__(self) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_shop_video_selector_rejects_forged_and_mismatched_values.Response`
-
-[Source](../tests/test_views_commands.py#L744)
-
-Initialize the response history.
-
-### `async def send_message(self, content: str, **kwargs: object) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_shop_video_selector_rejects_forged_and_mismatched_values.Response`
-
-[Source](../tests/test_views_commands.py#L748)
-
-Record a message and its response options.
-
-### `async def test_nightmarket_command_includes_skin_and_account_menus(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L810)
-
-Verify Night Market slash-command offers receive both selectors.
-
-### `async def selected_account(_owner_id: int) -> SimpleNamespace`
-
-**Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_and_account_menus`
-
-[Source](../tests/test_views_commands.py#L819)
-
-Return the account fixture for the Night Market command.
-
-### `async def get_user(_owner_id: int) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_and_account_menus`
-
-[Source](../tests/test_views_commands.py#L823)
-
-Report default visibility preferences for the fixture user.
-
-### `async def list_accounts(_owner_id: int) -> list[SimpleNamespace]`
-
-**Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_and_account_menus`
-
-[Source](../tests/test_views_commands.py#L827)
-
-Return two accounts so the selector is visible.
-
-### `async def account_for_user(_owner_id: int, puuid: str) -> SimpleNamespace | None`
-
-**Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_and_account_menus`
-
-[Source](../tests/test_views_commands.py#L831)
-
-Return the account selected from the Night Market menu.
-
-### `class EmojiService`
-
-**Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_and_account_menus`
-
-[Source](../tests/test_views_commands.py#L840)
-
-Provide stable currency and tier emoji values for embeds.
-
-### `async def currency(self, _kind: str) -> str`
-
-**Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_and_account_menus.EmojiService`
-
-[Source](../tests/test_views_commands.py#L843)
-
-Return the fixture's VP marker.
-
-### `def skin_name(self, name: str, _tier_uuid: str | None) -> str`
-
-**Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_and_account_menus.EmojiService`
-
-[Source](../tests/test_views_commands.py#L847)
-
-Return a skin name without a tier marker.
-
-### `def skin_emoji(self, _tier_uuid: str | None) -> str`
-
-**Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_and_account_menus.EmojiService`
-
-[Source](../tests/test_views_commands.py#L851)
-
-Report no custom tier emoji for the fixture skin.
-
-### `class Shop`
-
-**Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_and_account_menus`
-
-[Source](../tests/test_views_commands.py#L855)
-
-Return the fixture storefront for command rendering.
-
-### `async def storefront(self, _account: object) -> ShopData`
-
-**Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_and_account_menus.Shop`
-
-[Source](../tests/test_views_commands.py#L858)
-
-Return the configured Night Market data.
-
-### `class Response`
-
-**Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_and_account_menus`
-
-[Source](../tests/test_views_commands.py#L862)
-
-Verify the command defers before sending its follow-up.
-
-### `async def defer(self, *, thinking: bool) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_and_account_menus.Response`
-
-[Source](../tests/test_views_commands.py#L865)
-
-Assert that the command uses a thinking response.
-
-### `class Followup`
-
-**Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_and_account_menus`
-
-[Source](../tests/test_views_commands.py#L869)
-
-Capture the Night Market message and its controls.
-
-### `def __init__(self) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_and_account_menus.Followup`
-
-[Source](../tests/test_views_commands.py#L872)
-
-Initialize the captured follow-up payload.
-
-### `async def send(self, **kwargs: object) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_and_account_menus.Followup`
-
-[Source](../tests/test_views_commands.py#L876)
-
-Store the follow-up message arguments.
-
-### `class SwitchResponse`
-
-**Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_and_account_menus`
-
-[Source](../tests/test_views_commands.py#L908)
-
-Accept the defer used while switching to another account.
-
-### `async def defer(self) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_and_account_menus.SwitchResponse`
-
-[Source](../tests/test_views_commands.py#L911)
-
-Record the component interaction defer.
-
-### `async def edit_original_response(**kwargs: object) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_nightmarket_command_includes_skin_and_account_menus`
-
-[Source](../tests/test_views_commands.py#L916)
-
-Capture the Night Market view rendered after account switching.
-
-### `async def test_daily_shop_dm_includes_skin_video_menu() -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L935)
-
-Verify daily-shop notification DMs include the shared skin selector.
-
-### `class Target`
-
-**Scope:** `tests/test_views_commands.py` · `test_daily_shop_dm_includes_skin_video_menu`
-
-[Source](../tests/test_views_commands.py#L940)
-
-Capture the daily-shop DM sent by the task notification.
-
-### `async def send(self, **kwargs: object) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_daily_shop_dm_includes_skin_video_menu.Target`
-
-[Source](../tests/test_views_commands.py#L943)
-
-Store the DM arguments.
-
-### `class EmojiService`
-
-**Scope:** `tests/test_views_commands.py` · `test_daily_shop_dm_includes_skin_video_menu`
-
-[Source](../tests/test_views_commands.py#L947)
-
-Provide stable currency and tier emoji values for the DM.
-
-### `async def currency(self, _kind: str) -> str`
-
-**Scope:** `tests/test_views_commands.py` · `test_daily_shop_dm_includes_skin_video_menu.EmojiService`
-
-[Source](../tests/test_views_commands.py#L950)
-
-Return the fixture's VP marker.
-
-### `def skin_name(self, name: str, _tier_uuid: str | None) -> str`
-
-**Scope:** `tests/test_views_commands.py` · `test_daily_shop_dm_includes_skin_video_menu.EmojiService`
-
-[Source](../tests/test_views_commands.py#L954)
-
-Return a skin name without a tier marker.
-
-### `def skin_emoji(self, _tier_uuid: str | None) -> str`
-
-**Scope:** `tests/test_views_commands.py` · `test_daily_shop_dm_includes_skin_video_menu.EmojiService`
-
-[Source](../tests/test_views_commands.py#L958)
-
-Report no custom tier emoji for the fixture skin.
-
-### `async def test_shop_account_selector_hides_names_when_requested(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L987)
-
-Verify that shop account selector hides names when requested.
-
-### `async def list_accounts(_: int) -> list[SimpleNamespace]`
-
-**Scope:** `tests/test_views_commands.py` · `test_shop_account_selector_hides_names_when_requested`
-
-[Source](../tests/test_views_commands.py#L996)
-
-Return the configured accounts for the requested Discord user.
-
-### `async def test_shop_hides_full_in_game_name_when_preference_enabled(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L1012)
-
-Verify that shop hides full in game name when preference enabled.
-
-### `async def get_user(_user_id: int) -> SimpleNamespace`
-
-**Scope:** `tests/test_views_commands.py` · `test_shop_hides_full_in_game_name_when_preference_enabled`
-
-[Source](../tests/test_views_commands.py#L1018)
-
-Return the configured user fixture for the requested Discord ID.
-
-### `async def selected_account(_user_id: int) -> SimpleNamespace`
-
-**Scope:** `tests/test_views_commands.py` · `test_shop_hides_full_in_game_name_when_preference_enabled`
-
-[Source](../tests/test_views_commands.py#L1022)
-
-Return the configured active account for the command under test.
-
-### `class Response`
-
-**Scope:** `tests/test_views_commands.py` · `test_shop_hides_full_in_game_name_when_preference_enabled`
-
-[Source](../tests/test_views_commands.py#L1026)
-
-Capture whether an interaction was deferred and whether its initial response was private.
-
-### `async def defer(self, *, thinking: bool) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_shop_hides_full_in_game_name_when_preference_enabled.Response`
-
-[Source](../tests/test_views_commands.py#L1029)
-
-Record that the fake interaction response was deferred.
-
-### `class Followup`
-
-**Scope:** `tests/test_views_commands.py` · `test_shop_hides_full_in_game_name_when_preference_enabled`
-
-[Source](../tests/test_views_commands.py#L1033)
-
-Capture outgoing embeds and privacy flags sent after an interaction's initial response.
-
-### `async def send(self, *, embeds: list[discord.Embed], view: object) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_shop_hides_full_in_game_name_when_preference_enabled.Followup`
-
-[Source](../tests/test_views_commands.py#L1036)
-
-Record the follow-up message sent through the fake interaction.
-
-### `class Shop`
-
-**Scope:** `tests/test_views_commands.py` · `test_shop_hides_full_in_game_name_when_preference_enabled`
-
-[Source](../tests/test_views_commands.py#L1040)
-
-Return deterministic storefront data and record account lookups for alert and command assertions.
-
-### `async def storefront(self, _account: object) -> ShopData`
-
-**Scope:** `tests/test_views_commands.py` · `test_shop_hides_full_in_game_name_when_preference_enabled.Shop`
-
-[Source](../tests/test_views_commands.py#L1043)
-
-Return the configured storefront fixture for the requested account.
-
-### `async def shop_view(_data, username, _owner_id, _puuid, *, hide_ign = False)`
-
-**Scope:** `tests/test_views_commands.py` · `test_shop_hides_full_in_game_name_when_preference_enabled`
-
-[Source](../tests/test_views_commands.py#L1056)
-
-Return the expected shop embeds and interactive controls.
-
-### `async def test_account_switch_hides_name_when_preference_enabled(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L1075)
-
-Verify that account switch hides name when preference enabled.
-
-### `async def list_accounts(_user_id: int) -> list[SimpleNamespace]`
-
-**Scope:** `tests/test_views_commands.py` · `test_account_switch_hides_name_when_preference_enabled`
-
-[Source](../tests/test_views_commands.py#L1083)
-
-Return the configured accounts for the requested Discord user.
-
-### `async def resolve_account(_user_id: int, _value: str) -> SimpleNamespace`
-
-**Scope:** `tests/test_views_commands.py` · `test_account_switch_hides_name_when_preference_enabled`
-
-[Source](../tests/test_views_commands.py#L1087)
-
-Resolve the requested account from the fixture list.
-
-### `async def get_user(_user_id: int) -> SimpleNamespace`
-
-**Scope:** `tests/test_views_commands.py` · `test_account_switch_hides_name_when_preference_enabled`
-
-[Source](../tests/test_views_commands.py#L1091)
-
-Return the configured user fixture for the requested Discord ID.
-
-### `async def select_account(_user_id: int, _account: object) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_account_switch_hides_name_when_preference_enabled`
-
-[Source](../tests/test_views_commands.py#L1095)
-
-Record the account selected by the command under test.
-
-### `class Response`
-
-**Scope:** `tests/test_views_commands.py` · `test_account_switch_hides_name_when_preference_enabled`
-
-[Source](../tests/test_views_commands.py#L1099)
-
-Capture whether an interaction was deferred and whether its initial response was private.
-
-### `async def defer(self, *, thinking: bool) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_account_switch_hides_name_when_preference_enabled.Response`
-
-[Source](../tests/test_views_commands.py#L1102)
-
-Record that the fake interaction response was deferred.
-
-### `class Followup`
-
-**Scope:** `tests/test_views_commands.py` · `test_account_switch_hides_name_when_preference_enabled`
-
-[Source](../tests/test_views_commands.py#L1106)
-
-Capture outgoing embeds and privacy flags sent after an interaction's initial response.
-
-### `async def send(self, *, embed: discord.Embed) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_account_switch_hides_name_when_preference_enabled.Followup`
-
-[Source](../tests/test_views_commands.py#L1109)
-
-Record the follow-up message sent through the fake interaction.
-
-### `async def test_battlepass_hides_name_when_preference_enabled(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L1129)
-
-Verify that battlepass hides name when preference enabled.
-
-### `async def selected_account(_user_id: int) -> SimpleNamespace`
-
-**Scope:** `tests/test_views_commands.py` · `test_battlepass_hides_name_when_preference_enabled`
-
-[Source](../tests/test_views_commands.py#L1144)
-
-Return the configured active account for the command under test.
-
-### `async def get_user(_user_id: int) -> SimpleNamespace`
-
-**Scope:** `tests/test_views_commands.py` · `test_battlepass_hides_name_when_preference_enabled`
-
-[Source](../tests/test_views_commands.py#L1148)
-
-Return the configured user fixture for the requested Discord ID.
-
-### `class Response`
-
-**Scope:** `tests/test_views_commands.py` · `test_battlepass_hides_name_when_preference_enabled`
-
-[Source](../tests/test_views_commands.py#L1152)
-
-Capture whether an interaction was deferred and whether its initial response was private.
-
-### `async def defer(self, *, thinking: bool) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_battlepass_hides_name_when_preference_enabled.Response`
-
-[Source](../tests/test_views_commands.py#L1155)
-
-Record that the fake interaction response was deferred.
-
-### `class Followup`
-
-**Scope:** `tests/test_views_commands.py` · `test_battlepass_hides_name_when_preference_enabled`
-
-[Source](../tests/test_views_commands.py#L1159)
-
-Capture outgoing embeds and privacy flags sent after an interaction's initial response.
-
-### `async def send(self, *, embed: discord.Embed) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_battlepass_hides_name_when_preference_enabled.Followup`
-
-[Source](../tests/test_views_commands.py#L1162)
-
-Record the follow-up message sent through the fake interaction.
-
-### `class Gameplay`
-
-**Scope:** `tests/test_views_commands.py` · `test_battlepass_hides_name_when_preference_enabled`
-
-[Source](../tests/test_views_commands.py#L1166)
-
-Return controlled battlepass or mission data without making Riot requests.
-
-### `async def battlepass(self, _account: object) -> dict[str, object]`
-
-**Scope:** `tests/test_views_commands.py` · `test_battlepass_hides_name_when_preference_enabled.Gameplay`
-
-[Source](../tests/test_views_commands.py#L1169)
-
-Return the configured battlepass progression fixture.
-
-### `class EmojiService`
-
-**Scope:** `tests/test_views_commands.py` · `test_battlepass_hides_name_when_preference_enabled`
-
-[Source](../tests/test_views_commands.py#L1173)
-
-Return deterministic currency and progress markers for embed assertions.
-
-### `async def battlepass_bars(self) -> tuple[str, str]`
-
-**Scope:** `tests/test_views_commands.py` · `test_battlepass_hides_name_when_preference_enabled.EmojiService`
-
-[Source](../tests/test_views_commands.py#L1176)
-
-Return progress-bar markers used by embed assertions.
-
-### `async def test_missions_command_shows_weekly_progress_privately(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L1200)
-
-Verify that missions command shows weekly progress privately.
-
-### `async def selected_account(_user_id: int) -> SimpleNamespace`
-
-**Scope:** `tests/test_views_commands.py` · `test_missions_command_shows_weekly_progress_privately`
-
-[Source](../tests/test_views_commands.py#L1207)
-
-Return the configured active account for the command under test.
-
-### `class Response`
-
-**Scope:** `tests/test_views_commands.py` · `test_missions_command_shows_weekly_progress_privately`
-
-[Source](../tests/test_views_commands.py#L1211)
-
-Capture whether an interaction was deferred and whether its initial response was private.
-
-### `async def defer(self, *, thinking: bool, ephemeral: bool) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_missions_command_shows_weekly_progress_privately.Response`
-
-[Source](../tests/test_views_commands.py#L1214)
-
-Record that the fake interaction response was deferred.
-
-### `class Followup`
-
-**Scope:** `tests/test_views_commands.py` · `test_missions_command_shows_weekly_progress_privately`
-
-[Source](../tests/test_views_commands.py#L1218)
-
-Capture outgoing embeds and privacy flags sent after an interaction's initial response.
-
-### `async def send(self, *, embed: discord.Embed, ephemeral: bool) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_missions_command_shows_weekly_progress_privately.Followup`
-
-[Source](../tests/test_views_commands.py#L1221)
-
-Record the follow-up message sent through the fake interaction.
-
-### `class Gameplay`
-
-**Scope:** `tests/test_views_commands.py` · `test_missions_command_shows_weekly_progress_privately`
-
-[Source](../tests/test_views_commands.py#L1225)
-
-Return controlled battlepass or mission data without making Riot requests.
-
-### `async def missions(self, selected: object) -> list[dict[str, object]]`
-
-**Scope:** `tests/test_views_commands.py` · `test_missions_command_shows_weekly_progress_privately.Gameplay`
-
-[Source](../tests/test_views_commands.py#L1228)
-
-Return the configured mission-progress fixture.
-
-### `class EmojiService`
-
-**Scope:** `tests/test_views_commands.py` · `test_missions_command_shows_weekly_progress_privately`
-
-[Source](../tests/test_views_commands.py#L1284)
-
-Return deterministic currency and progress markers for embed assertions.
-
-### `async def battlepass_bars(self) -> tuple[str, str]`
-
-**Scope:** `tests/test_views_commands.py` · `test_missions_command_shows_weekly_progress_privately.EmojiService`
-
-[Source](../tests/test_views_commands.py#L1287)
-
-Return progress-bar markers used by embed assertions.
-
-### `async def test_testalerts_reports_temporary_auth_failure(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L1327)
-
-Verify that testalerts reports temporary auth failure.
-
-### `async def selected_account(_user_id: int) -> SimpleNamespace`
-
-**Scope:** `tests/test_views_commands.py` · `test_testalerts_reports_temporary_auth_failure`
-
-[Source](../tests/test_views_commands.py#L1335)
-
-Return the configured active account for the command under test.
-
-### `async def first_alert(_user_id: int) -> SimpleNamespace`
-
-**Scope:** `tests/test_views_commands.py` · `test_testalerts_reports_temporary_auth_failure`
-
-[Source](../tests/test_views_commands.py#L1339)
-
-Return the alert fixture used by the command under test.
-
-### `class Response`
-
-**Scope:** `tests/test_views_commands.py` · `test_testalerts_reports_temporary_auth_failure`
-
-[Source](../tests/test_views_commands.py#L1343)
-
-Capture whether an interaction was deferred and whether its initial response was private.
-
-### `async def defer(self, *, thinking: bool, ephemeral: bool) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_testalerts_reports_temporary_auth_failure.Response`
-
-[Source](../tests/test_views_commands.py#L1346)
-
-Record that the fake interaction response was deferred.
-
-### `def is_done(self) -> bool`
-
-**Scope:** `tests/test_views_commands.py` · `test_testalerts_reports_temporary_auth_failure.Response`
-
-[Source](../tests/test_views_commands.py#L1350)
-
-Report whether the fake interaction response has been sent.
-
-### `class Followup`
-
-**Scope:** `tests/test_views_commands.py` · `test_testalerts_reports_temporary_auth_failure`
-
-[Source](../tests/test_views_commands.py#L1354)
-
-Capture outgoing embeds and privacy flags sent after an interaction's initial response.
-
-### `async def send(self, *, embed: discord.Embed, ephemeral: bool) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_testalerts_reports_temporary_auth_failure.Followup`
-
-[Source](../tests/test_views_commands.py#L1357)
-
-Record the follow-up message sent through the fake interaction.
-
-### `class Auth`
-
-**Scope:** `tests/test_views_commands.py` · `test_testalerts_reports_temporary_auth_failure`
-
-[Source](../tests/test_views_commands.py#L1362)
-
-Stub authentication with controlled Riot credentials and login outcomes for service tests.
-
-### `async def ensure(self, _account: object) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_testalerts_reports_temporary_auth_failure.Auth`
-
-[Source](../tests/test_views_commands.py#L1365)
-
-Return the configured fake authentication result.
-
-### `def test_accounts_layout_marks_selected_account() -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L1383)
-
-Verify that accounts layout marks selected account.
-
-### `def test_accounts_paginate_after_discord_embed_field_limit() -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L1391)
-
-Verify that accounts paginate after Discord embed field limit.
-
-### `def test_battlepass_uses_qotix_progress_hierarchy() -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L1407)
-
-Verify that battlepass uses Qotix progress hierarchy.
-
-### `def test_alert_keeps_qotix_direct_skin_input() -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L1436)
-
-Verify that alert keeps Qotix direct skin input.
-
-### `def test_alert_removal_control_fits_a_persistent_dm() -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L1442)
-
-Verify that alert removal control fits a persistent DM.
-
-### `def test_bot_preserves_discord_http_client(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L1448)
-
-Verify that bot preserves Discord HTTP client.
-
-### `async def test_bot_stops_extensions_before_closing_shared_resources(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L1459)
-
-Verify that bot stops extensions before closing shared resources.
-
-### `class HTTP`
-
-**Scope:** `tests/test_views_commands.py` · `test_bot_stops_extensions_before_closing_shared_resources`
-
-[Source](../tests/test_views_commands.py#L1468)
-
-Stub the shared Riot client so request handling and shutdown can be observed.
-
-### `async def close(self) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_bot_stops_extensions_before_closing_shared_resources.HTTP`
-
-[Source](../tests/test_views_commands.py#L1471)
-
-Record that the fake client or database connection was closed.
-
-### `async def close_database() -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_bot_stops_extensions_before_closing_shared_resources`
-
-[Source](../tests/test_views_commands.py#L1477)
-
-Record database shutdown during bot cleanup.
-
-### `async def close_discord(_bot) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_bot_stops_extensions_before_closing_shared_resources`
-
-[Source](../tests/test_views_commands.py#L1481)
-
-Record Discord client shutdown during bot cleanup.
-
-### `async def test_deletedata_clears_cached_shops_after_database_delete(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L1495)
-
-Verify that deletedata clears cached shops after database delete.
-
-### `async def list_accounts(user_id: int) -> list[SimpleNamespace]`
-
-**Scope:** `tests/test_views_commands.py` · `test_deletedata_clears_cached_shops_after_database_delete`
-
-[Source](../tests/test_views_commands.py#L1502)
-
-Return the configured accounts for the requested Discord user.
-
-### `async def delete_user_data(user_id: int) -> bool`
-
-**Scope:** `tests/test_views_commands.py` · `test_deletedata_clears_cached_shops_after_database_delete`
-
-[Source](../tests/test_views_commands.py#L1507)
-
-Record deletion of the user's stored data.
-
-### `class Shop`
-
-**Scope:** `tests/test_views_commands.py` · `test_deletedata_clears_cached_shops_after_database_delete`
-
-[Source](../tests/test_views_commands.py#L1512)
-
-Return deterministic storefront data and record account lookups for alert and command assertions.
-
-### `async def clear_cached_storefront(self, account_id: str) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_deletedata_clears_cached_shops_after_database_delete.Shop`
-
-[Source](../tests/test_views_commands.py#L1515)
-
-Record removal of the account's cached storefront.
-
-### `class Response`
-
-**Scope:** `tests/test_views_commands.py` · `test_deletedata_clears_cached_shops_after_database_delete`
-
-[Source](../tests/test_views_commands.py#L1519)
-
-Capture whether an interaction was deferred and whether its initial response was private.
-
-### `async def defer(self, *, thinking: bool, ephemeral: bool) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_deletedata_clears_cached_shops_after_database_delete.Response`
-
-[Source](../tests/test_views_commands.py#L1522)
-
-Record that the fake interaction response was deferred.
-
-### `class Followup`
-
-**Scope:** `tests/test_views_commands.py` · `test_deletedata_clears_cached_shops_after_database_delete`
-
-[Source](../tests/test_views_commands.py#L1526)
-
-Capture outgoing embeds and privacy flags sent after an interaction's initial response.
-
-### `async def send(self, *, embed: discord.Embed, ephemeral: bool) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_deletedata_clears_cached_shops_after_database_delete.Followup`
-
-[Source](../tests/test_views_commands.py#L1529)
-
-Record the follow-up message sent through the fake interaction.
-
-### `async def test_shop_deletion_cleanup_waits_for_storefront_headers_in_flight() -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L1552)
-
-Verify that shop deletion cleanup waits for storefront headers in flight.
-
-### `class Auth`
-
-**Scope:** `tests/test_views_commands.py` · `test_shop_deletion_cleanup_waits_for_storefront_headers_in_flight`
-
-[Source](../tests/test_views_commands.py#L1557)
-
-Stub authentication with controlled Riot credentials and login outcomes for service tests.
-
-### `async def auth_headers(self, _account) -> dict[str, str]`
-
-**Scope:** `tests/test_views_commands.py` · `test_shop_deletion_cleanup_waits_for_storefront_headers_in_flight.Auth`
-
-[Source](../tests/test_views_commands.py#L1560)
-
-Return the test authorization headers for the fake account.
-
-### `async def fetch(_account, _headers)`
-
-**Scope:** `tests/test_views_commands.py` · `test_shop_deletion_cleanup_waits_for_storefront_headers_in_flight`
-
-[Source](../tests/test_views_commands.py#L1570)
-
-Return the configured result from the fake query or HTTP client.
-
-### `async def test_tasks_cog_awaits_cancelled_background_loops() -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L1590)
-
-Verify that tasks cog awaits cancelled background loops.
-
-### `async def worker() -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_tasks_cog_awaits_cancelled_background_loops`
-
-[Source](../tests/test_views_commands.py#L1594)
-
-Simulate the cancellable background task used by the test.
-
-### `class Loop`
-
-**Scope:** `tests/test_views_commands.py` · `test_tasks_cog_awaits_cancelled_background_loops`
-
-[Source](../tests/test_views_commands.py#L1602)
-
-Expose a running task and record cancellation for cog-shutdown assertions.
-
-### `def __init__(self, task: asyncio.Task[None]) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_tasks_cog_awaits_cancelled_background_loops.Loop`
-
-[Source](../tests/test_views_commands.py#L1605)
-
-Retain the worker task whose shutdown and cancellation are asserted.
-
-### `def get_task(self) -> asyncio.Task[None]`
-
-**Scope:** `tests/test_views_commands.py` · `test_tasks_cog_awaits_cancelled_background_loops.Loop`
-
-[Source](../tests/test_views_commands.py#L1609)
-
-Return the fake background loop's current task.
-
-### `def cancel(self) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_tasks_cog_awaits_cancelled_background_loops.Loop`
-
-[Source](../tests/test_views_commands.py#L1613)
-
-Cancel the fake task and record the cancellation.
-
-### `async def test_task_notifications_handle_http_errors_while_fetching_user(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L1634)
-
-Verify that task notifications handle HTTP errors while fetching user.
-
-### `async def fetch_user(user_id: int) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_task_notifications_handle_http_errors_while_fetching_user`
-
-[Source](../tests/test_views_commands.py#L1640)
-
-Return the configured Discord user fixture.
-
-### `async def currency(_name: str) -> str`
-
-**Scope:** `tests/test_views_commands.py` · `test_task_notifications_handle_http_errors_while_fetching_user`
-
-[Source](../tests/test_views_commands.py#L1647)
-
-Return a stable currency marker for embed assertions.
-
-### `async def test_extra_cog_awaits_cancelled_background_loop() -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L1683)
-
-Verify that extra cog awaits cancelled background loop.
-
-### `async def worker() -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_extra_cog_awaits_cancelled_background_loop`
-
-[Source](../tests/test_views_commands.py#L1687)
-
-Simulate the cancellable background task used by the test.
-
-### `class Loop`
-
-**Scope:** `tests/test_views_commands.py` · `test_extra_cog_awaits_cancelled_background_loop`
-
-[Source](../tests/test_views_commands.py#L1697)
-
-Expose a running task and record cancellation for cog-shutdown assertions.
-
-### `def get_task(self) -> asyncio.Task[None]`
-
-**Scope:** `tests/test_views_commands.py` · `test_extra_cog_awaits_cancelled_background_loop.Loop`
-
-[Source](../tests/test_views_commands.py#L1700)
-
-Return the fake background loop's current task.
-
-### `def cancel(self) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_extra_cog_awaits_cancelled_background_loop.Loop`
-
-[Source](../tests/test_views_commands.py#L1704)
-
-Cancel the fake task and record the cancellation.
-
-### `async def test_initial_release_command_contract(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L1715)
-
-Verify that the initial release command groups remain available.
-
-### `async def test_ping_uses_database_probe_and_keeps_latency_embed(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L1764)
-
-Verify that ping uses database probe and keeps latency embed.
-
-### `class Response`
-
-**Scope:** `tests/test_views_commands.py` · `test_ping_uses_database_probe_and_keeps_latency_embed`
-
-[Source](../tests/test_views_commands.py#L1771)
-
-Capture whether an interaction was deferred and whether its initial response was private.
-
-### `async def defer(self, *, thinking: bool) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_ping_uses_database_probe_and_keeps_latency_embed.Response`
-
-[Source](../tests/test_views_commands.py#L1774)
-
-Record that the fake interaction response was deferred.
-
-### `class Followup`
-
-**Scope:** `tests/test_views_commands.py` · `test_ping_uses_database_probe_and_keeps_latency_embed`
-
-[Source](../tests/test_views_commands.py#L1778)
-
-Capture outgoing embeds and privacy flags sent after an interaction's initial response.
-
-### `async def send(self, *, embed: discord.Embed) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_ping_uses_database_probe_and_keeps_latency_embed.Followup`
-
-[Source](../tests/test_views_commands.py#L1781)
-
-Record the follow-up message sent through the fake interaction.
-
-### `async def ping_database() -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_ping_uses_database_probe_and_keeps_latency_embed`
-
-[Source](../tests/test_views_commands.py#L1785)
-
-Stub and record the database health check.
-
-### `async def test_setup_hook_passes_bot_settings_to_database(monkeypatch: pytest.MonkeyPatch) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `module`
-
-[Source](../tests/test_views_commands.py#L1815)
-
-Verify that setup hook passes bot settings to database.
-
-### `async def connect_database(settings: Settings, *, generate_schemas: bool) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_setup_hook_passes_bot_settings_to_database`
-
-[Source](../tests/test_views_commands.py#L1825)
-
-Capture the settings passed to database initialization.
-
-### `async def no_op(*args: object, **kwargs: object) -> None`
-
-**Scope:** `tests/test_views_commands.py` · `test_setup_hook_passes_bot_settings_to_database`
-
-[Source](../tests/test_views_commands.py#L1830)
-
-Provide an intentionally empty callback for this test.
-
-## `tools/generate_api_reference.py`
-
-Generate a browsable API reference from the repository's Python docstrings.
-
-### `def _python_files() -> list[Path]`
-
-**Scope:** `tools/generate_api_reference.py` · `module`
-
-[Source](../tools/generate_api_reference.py#L26)
-
-Return application, test, and documentation-tool modules in stable order.
-
-### `def _definitions(node: ast.AST, scope: tuple[str, ...] = ())`
-
-**Scope:** `tools/generate_api_reference.py` · `module`
-
-[Source](../tools/generate_api_reference.py#L34)
-
-Yield each named class and function, including definitions nested in callables.
-
-### `def _argument_text(argument: ast.arg) -> str`
-
-**Scope:** `tools/generate_api_reference.py` · `module`
-
-[Source](../tools/generate_api_reference.py#L49)
-
-Render one parameter name and its declared type without evaluating defaults.
-
-### `def _signature(node: ast.FunctionDef | ast.AsyncFunctionDef, qualified_name: str) -> str`
-
-**Scope:** `tools/generate_api_reference.py` · `module`
-
-[Source](../tools/generate_api_reference.py#L56)
-
-Render a callable's complete annotated signature for Markdown display.
-
-### `def _render_docstring(docstring: str) -> list[str]`
-
-**Scope:** `tools/generate_api_reference.py` · `module`
-
-[Source](../tools/generate_api_reference.py#L96)
-
-Format a cleaned Python docstring as readable Markdown prose and lists.
-
-### `def render_reference() -> str`
-
-**Scope:** `tools/generate_api_reference.py` · `module`
-
-[Source](../tools/generate_api_reference.py#L119)
-
-Build the complete module, class, and callable reference from source files.
-
-### `def main() -> int`
-
-**Scope:** `tools/generate_api_reference.py` · `module`
-
-[Source](../tools/generate_api_reference.py#L171)
-
-Write the API reference or verify it matches the current source docstrings.

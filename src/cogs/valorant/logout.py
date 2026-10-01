@@ -8,7 +8,7 @@ from discord.ext import commands
 
 from ...bot import BotFraggBot
 from ...services.accounts import delete_user_data, list_accounts, resolve_account
-from ._ui import embed, error
+from ._ui import account_autocomplete_choices, embed, error
 
 
 class LogoutCog(commands.Cog):
@@ -22,13 +22,9 @@ class LogoutCog(commands.Cog):
         self, interaction: discord.Interaction, current: str
     ) -> list[app_commands.Choice[str]]:
         """Return the caller's linked accounts for the logout command."""
-        return [
-            app_commands.Choice(
-                name=f"{index}. {account.username}", value=account.puuid
-            )
-            for index, account in enumerate(await list_accounts(interaction.user.id), 1)
-            if current.casefold() in account.username.casefold()
-        ][:25]
+        return account_autocomplete_choices(
+            await list_accounts(interaction.user.id), current
+        )
 
     @app_commands.command(
         name="logout", description="Delete credentials but keep alerts and settings."

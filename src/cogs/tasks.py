@@ -16,7 +16,7 @@ from ..monitoring import StructuredFormatter, transaction
 from ..services.accounts import run_daily_alerts
 from ..services.shop import Offer, ShopData
 from ..views import OwnedActionButton, timestamp
-from .valorant._ui import embed
+from .valorant._ui import embed, view
 from .valorant.shop import add_skin_selector, offer_cards
 
 log = logging.getLogger(__name__)
@@ -125,19 +125,15 @@ class TasksCog(commands.Cog):
 
     async def _send_alert(self, user_id: int, alert: Alert, offer: Offer) -> None:
         """DM a matching skin alert with a control owned by the recipient."""
-        format_name = getattr(self.bot.emoji_service, "skin_name", None)
-        skin_name = (
-            format_name(offer.skin.name, getattr(offer.skin, "tier_uuid", None))
-            if format_name
-            else offer.skin.name
+        skin_name = self.bot.emoji_service.skin_name(
+            offer.skin.name, offer.skin.tier_uuid
         )
         card = embed(
             f"The **{skin_name}** is in **{alert.account.username}**'s daily shop.\nIt will be gone {timestamp(offer.expires)}.",
         )
         if offer.skin.icon:
             card.set_thumbnail(url=offer.skin.icon)
-        view = discord.ui.View(timeout=None)
-        view.add_item(
+        controls = view(
             OwnedActionButton(
                 "remove_alert",
                 user_id,
@@ -148,7 +144,7 @@ class TasksCog(commands.Cog):
         )
         try:
             user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
-            await user.send(embed=card, view=view)
+            await user.send(embed=card, view=controls)
         except discord.HTTPException:
             log.warning("Could not deliver alert notification")
 

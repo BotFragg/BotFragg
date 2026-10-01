@@ -275,7 +275,6 @@ async def test_cached_shop_requires_active_credentials() -> None:
         await service.storefront(SimpleNamespace(puuid="account"))
 
 
-@pytest.mark.asyncio
 async def test_expired_shop_cache_entry_is_removed_when_refetch_fails() -> None:
     """Verify that expired shop cache entry is removed when refetch fails."""
 
@@ -302,7 +301,6 @@ async def test_expired_shop_cache_entry_is_removed_when_refetch_fails() -> None:
     assert account.puuid not in service._cache
 
 
-@pytest.mark.asyncio
 async def test_expired_shop_cache_entry_is_removed_when_auth_fails() -> None:
     """Verify that expired shop cache entry is removed when auth fails."""
 
@@ -323,7 +321,6 @@ async def test_expired_shop_cache_entry_is_removed_when_auth_fails() -> None:
     assert account.puuid not in service._cache
 
 
-@pytest.mark.asyncio
 async def test_featured_bundle_cache_expiry_does_not_change_daily_expiry() -> None:
     """Verify a bundle expiry refreshes cached data while daily expiry stays intact."""
 
@@ -358,7 +355,6 @@ async def test_featured_bundle_cache_expiry_does_not_change_daily_expiry() -> No
     assert result.cache_expires < result.expires
 
 
-@pytest.mark.asyncio
 async def test_shop_service_resolves_accessory_offer_data() -> None:
     """Verify that shop service resolves accessory offer data."""
     item = Accessory("Buddy", "https://example.com/buddy.png", "Limited edition")
@@ -394,7 +390,6 @@ async def test_shop_service_resolves_accessory_offer_data() -> None:
     assert await service.accessory_offers(data) == [AccessoryOffer(item, 1500)]
 
 
-@pytest.mark.asyncio
 async def test_featured_bundles_keep_prices_account_scoped_and_malformed_data_safe() -> (
     None
 ):
@@ -780,7 +775,6 @@ async def test_gameplay_normalizes_transient_http_failures() -> None:
         await service.battlepass(SimpleNamespace(puuid="gameplay", region="na"))
 
 
-@pytest.mark.asyncio
 async def test_gameplay_missions_join_contract_progress_with_catalog_metadata() -> None:
     """Verify that gameplay missions join contract progress with catalog metadata."""
     urls: list[str] = []
@@ -982,7 +976,6 @@ async def test_logout_clears_credentials_saved_during_refresh() -> None:
     assert saved.auth_blob is None
 
 
-@pytest.mark.asyncio
 async def test_concurrent_storefront_requests_share_one_fetch() -> None:
     """Verify that concurrent storefront requests share one fetch."""
 
@@ -1021,7 +1014,6 @@ async def test_concurrent_storefront_requests_share_one_fetch() -> None:
     assert results == [data, data]
 
 
-@pytest.mark.asyncio
 async def test_shop_service_releases_idle_account_locks() -> None:
     """Verify that shop service releases idle account locks."""
 
@@ -1047,7 +1039,6 @@ async def test_shop_service_releases_idle_account_locks() -> None:
     assert account.puuid not in service._locks
 
 
-@pytest.mark.asyncio
 async def test_catalog_load_reads_file_off_event_loop(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1081,7 +1072,6 @@ async def test_catalog_load_reads_file_off_event_loop(
         assert read_threads and read_threads[0] != caller_thread
 
 
-@pytest.mark.asyncio
 async def test_catalog_snapshot_round_trips_skin_chromas() -> None:
     """Verify skin chromas survive catalog build, save, and load."""
     with tempfile.TemporaryDirectory(prefix=".catalog-test-", dir=Path.cwd()) as folder:
@@ -1170,7 +1160,6 @@ async def test_catalog_snapshot_round_trips_skin_chromas() -> None:
         )
 
 
-@pytest.mark.asyncio
 async def test_catalog_load_refreshes_legacy_snapshot_with_same_manifest() -> None:
     """Verify a legacy snapshot refreshes even when Riot's manifest matches."""
     with tempfile.TemporaryDirectory(prefix=".catalog-test-", dir=Path.cwd()) as folder:
@@ -1237,7 +1226,6 @@ async def test_catalog_load_refreshes_legacy_snapshot_with_same_manifest() -> No
         assert service.get_skin("skin").chromas == [{"uuid": "chroma"}]
 
 
-@pytest.mark.asyncio
 async def test_failed_catalog_upgrade_keeps_legacy_data_and_retries() -> None:
     """Verify failed bundle refreshes preserve the old catalog and remain retryable."""
     with tempfile.TemporaryDirectory(prefix=".catalog-test-", dir=Path.cwd()) as folder:
@@ -1310,7 +1298,6 @@ def test_catalog_data_file_uses_the_working_directory() -> None:
     assert CatalogService(SimpleNamespace()).path == Path.cwd() / "data" / "skins.json"
 
 
-@pytest.mark.asyncio
 async def test_concurrent_accessory_lookups_share_one_request() -> None:
     """Verify that concurrent accessory lookups share one request."""
     started = asyncio.Event()
@@ -1359,7 +1346,60 @@ async def test_concurrent_accessory_lookups_share_one_request() -> None:
     assert results[0] == results[1]
 
 
-@pytest.mark.asyncio
+async def test_accessory_lookup_retries_after_a_transient_response() -> None:
+    """Verify that temporary accessory API failures are not cached as missing items."""
+
+    class HTTP:
+        """Return a temporary failure followed by a valid accessory response."""
+
+        calls = 0
+
+        async def request(self, _method: str, _url: str):
+            """Return the next configured accessory response."""
+            self.calls += 1
+            if self.calls == 1:
+                return SimpleNamespace(status=503, data={})
+            if self.calls == 2:
+                return SimpleNamespace(status=200, data={"data": []})
+            return SimpleNamespace(
+                status=200,
+                data={"data": {"displayName": "Spray", "displayIcon": None}},
+            )
+
+    http = HTTP()
+    service = CatalogService(http)
+    item_type = "d5f120f8-ff8c-4aac-92ea-f2b5acbe9475"
+
+    assert await service.accessory(item_type, "spray-id") is None
+    assert await service.accessory(item_type, "spray-id") is None
+    item = await service.accessory(item_type, "spray-id")
+
+    assert item is not None and item.name == "Spray"
+    assert http.calls == 3
+
+
+async def test_missing_accessory_404_is_negative_cached() -> None:
+    """Verify confirmed missing catalog items do not trigger repeated HTTP requests."""
+
+    class HTTP:
+        """Count missing-item requests for the cache assertion."""
+
+        calls = 0
+
+        async def request(self, _method: str, _url: str):
+            """Return a confirmed not-found response."""
+            self.calls += 1
+            return SimpleNamespace(status=404, data={"status": 404})
+
+    http = HTTP()
+    service = CatalogService(http)
+    item_type = "d5f120f8-ff8c-4aac-92ea-f2b5acbe9475"
+
+    assert await service.accessory(item_type, "missing-spray") is None
+    assert await service.accessory(item_type, "missing-spray") is None
+    assert http.calls == 1
+
+
 async def test_catalog_refresh_writes_a_stable_snapshot_off_event_loop(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1432,7 +1472,6 @@ async def test_catalog_refresh_writes_a_stable_snapshot_off_event_loop(
         assert service.skins["skin"].price == 1775
 
 
-@pytest.mark.asyncio
 async def test_catalog_refresh_waits_for_file_worker_after_repeated_cancellation(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

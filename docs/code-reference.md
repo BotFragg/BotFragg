@@ -1,9 +1,9 @@
 # Repository code reference
 
 This guide describes every tracked project file and how the application is
-organized. The [API reference](api-reference.md) lists every Python module,
-class, function, and method with its signature, source link, and source
-docstring. Regenerate it after code documentation changes with
+organized. The [API reference](api-reference.md) lists every application Python
+module, class, function, and method with its signature, source link, and source
+docstring. Regenerate it after application documentation changes with
 `uv run --frozen python tools/generate_api_reference.py`.
 
 ## Runtime flow
@@ -32,7 +32,7 @@ docstring. Regenerate it after code documentation changes with
 | [.python-version](../.python-version) | Selects the Python version used by uv and local tooling. |
 | [CHANGELOG.md](../CHANGELOG.md) | Records user-visible release changes. |
 | [CONTRIBUTING.md](../CONTRIBUTING.md) | Documents the development environment and required checks. |
-| [docs/api-reference.md](api-reference.md) | Lists all Python modules, classes, and callables with their signatures, source links, and docstrings. |
+| [docs/api-reference.md](api-reference.md) | Lists application modules, classes, and callables with their signatures, source links, and docstrings. |
 | [docs/code-reference.md](code-reference.md) | Maps tracked files and summarizes how runtime components work together. |
 | [Dockerfile](../Dockerfile) | Builds the Python 3.14 BotFragg image and runs it as an unprivileged user. |
 | [LICENSE](../LICENSE) | Contains the GNU GPLv3 license text. |
@@ -42,7 +42,7 @@ docstring. Regenerate it after code documentation changes with
 | [docker-compose.yml](../docker-compose.yml) | Defines the local production-style BotFragg service and persistent data volume. |
 | [main.py](../main.py) | Invokes the application entry point for `python main.py` startup. |
 | [pyproject.toml](../pyproject.toml) | Defines package metadata, dependencies, entry point, Ruff rules, and test settings. |
-| [tools/generate_api_reference.py](../tools/generate_api_reference.py) | Generates the exhaustive API reference from Python source docstrings and signatures. |
+| [tools/generate_api_reference.py](../tools/generate_api_reference.py) | Generates the application API reference from source docstrings and signatures. |
 | [uv.lock](../uv.lock) | Pins the resolved dependency graph for reproducible installs. |
 
 ## Packaged assets
@@ -112,4 +112,5 @@ docstring. Regenerate it after code documentation changes with
 | [tests/test_models_services.py](../tests/test_models_services.py) | Data invariants, concurrency, authentication, catalog, shop, and gameplay services. |
 | [tests/test_shard_status_service.py](../tests/test_shard_status_service.py) | Reuse and replacement of saved shard-status messages. |
 | [tests/test_suggestions_service.py](../tests/test_suggestions_service.py) | Suggestion delivery, follower uniqueness, and review outcomes. |
+| [tests/test_staff.py](../tests/test_staff.py) | Owner-only user and server diagnostics with incomplete member caches. |
 | [tests/test_views_commands.py](../tests/test_views_commands.py) | Command output, component ownership, privacy, and cog shutdown behavior. |

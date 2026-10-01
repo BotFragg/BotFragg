@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import discord
+from discord import app_commands
+
+from ...models import Account
 
 RED = 0xFD4553
 DARK = 0x202225
@@ -11,6 +14,17 @@ DARK = 0x202225
 def _account_display_name(username: str, *, hide_ign: bool) -> str:
     """Return a generic account label when the user has chosen to hide their name."""
     return "Account" if hide_ign else username
+
+
+def account_autocomplete_choices(
+    accounts: list[Account], current: str
+) -> list[app_commands.Choice[str]]:
+    """Format account-name matches for Discord's bounded autocomplete menu."""
+    return [
+        app_commands.Choice(name=f"{index}. {account.username}", value=account.puuid)
+        for index, account in enumerate(accounts, 1)
+        if current.casefold() in account.username.casefold()
+    ][:25]
 
 
 def view(*items: discord.ui.Item) -> discord.ui.View:

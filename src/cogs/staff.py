@@ -37,17 +37,34 @@ class StaffCog(commands.Cog):
         await interaction.response.defer(thinking=True, ephemeral=True)
         command_count, favorite = await command_stats(user_id=user.id)
         suggestion_count = await count_suggestions_by_author(user.id)
-        shared_guilds = [
-            guild for guild in self.bot.guilds if guild.get_member(user.id)
-        ]
-        owned_guilds = sum(guild.owner_id == user.id for guild in shared_guilds)
+        shared_guilds = 0
+        owned_guilds = 0
+        for guild in self.bot.guilds:
+            if guild.owner_id == user.id:
+                shared_guilds += 1
+                owned_guilds += 1
+                continue
+            if guild.get_member(user.id):
+                shared_guilds += 1
+                continue
+            try:
+                await guild.fetch_member(user.id)
+            except discord.NotFound:
+                continue
+            except discord.HTTPException:
+                await error(
+                    interaction,
+                    "Couldn't check shared servers right now. Try again later.",
+                )
+                return
+            shared_guilds += 1
         card = embed(title=f"{user}'s information", colour=0x9C84EF)
         card.description = "\n".join(
             (
                 f"**Full username:** [{user}](https://discord.com/users/{user.id})",
                 f"**ID:** {user.id}",
                 f"**Avatar URL:** [Click here]({user.display_avatar.url})",
-                f"**Shared servers:** {len(shared_guilds)}",
+                f"**Shared servers:** {shared_guilds}",
                 f"**Owned servers:** {owned_guilds}",
                 f"**Commands used:** {command_count}",
                 f"**Suggestions made:** {suggestion_count}",
@@ -64,7 +81,7 @@ class StaffCog(commands.Cog):
     async def serverinfo(
         self, interaction: discord.Interaction, server_id: str
     ) -> None:
-        """Show analytics and membership details for a server BotFragg has joined."""
+        """Show analytics and Discord's cached membership count for a server."""
         if not await self._owner_only(interaction):
             return
         if not server_id.isdecimal() or not (
@@ -74,23 +91,16 @@ class StaffCog(commands.Cog):
             return
         await interaction.response.defer(thinking=True, ephemeral=True)
         command_count, favorite = await command_stats(guild_id=server.id)
-        members = server.member_count or 0
-        bots = sum(member.bot for member in server.members)
-        humans = max(members - bots, 0)
-        bot_ratio = bots / members if members else 0
-        colour = (
-            discord.Color.red().value
-            if bot_ratio > 0.75 and members > 100
-            else discord.Color.green().value
-        )
-        card = embed(title="Server information", colour=colour)
+        members = server.member_count
+        member_count = str(members) if members is not None else "Unknown"
+        card = embed(title="Server information", colour=discord.Color.blurple().value)
         card.add_field(
             name="Important information",
             value="\n".join(
                 (
                     f"**Server name:** {server.name}",
                     f"**Server ID:** {server.id}",
-                    f"**Total members:** {members} ({humans} humans / {bots} bots; ratio: {bot_ratio:.0%})",
+                    f"**Total members (cached; may be stale):** {member_count}",
                     f"**Server owner:** <@{server.owner_id}> ({server.owner_id})",
                 )
             ),

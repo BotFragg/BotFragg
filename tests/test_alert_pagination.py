@@ -18,7 +18,7 @@ async def test_alert_manager_preserves_order_and_page_wrapping() -> None:
     account = await Account.create(puuid="alerts", user=user, username="One#NA")
     skin_uuids = [UUID(int=index) for index in range(1, 6)]
     skins = {
-        str(skin_uuid): SimpleNamespace(name=f"Skin {index}", icon=None)
+        str(skin_uuid): SimpleNamespace(name=f"Skin {index}", icon=None, tier_uuid=None)
         for index, skin_uuid in enumerate(skin_uuids, start=1)
     }
     for skin_uuid in skin_uuids:
@@ -27,6 +27,10 @@ async def test_alert_manager_preserves_order_and_page_wrapping() -> None:
     bot = SimpleNamespace(
         config=SimpleNamespace(alerts_per_page=2),
         catalog=SimpleNamespace(get_skin=skins.get),
+        emoji_service=SimpleNamespace(
+            skin_name=lambda name, _tier_uuid: name,
+            skin_emoji=lambda _tier_uuid: "",
+        ),
         register_component=lambda *_args: None,
     )
     cog = AlertsCog(bot)
@@ -60,7 +64,6 @@ async def test_alert_manager_preserves_order_and_page_wrapping() -> None:
     assert empty_controls is None
 
 
-@pytest.mark.asyncio
 async def test_alert_manager_handles_deletion_between_count_and_fetch(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

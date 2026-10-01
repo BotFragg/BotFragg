@@ -45,7 +45,6 @@ class FeaturedBundleItem:
     item_type_id: str
     item_id: str
     amount: int
-    currency_uuid: str | None
     base_price: int | None
     discounted_price: int | None
 
@@ -56,13 +55,11 @@ class FeaturedBundle:
 
     id: str
     data_asset_id: str
-    currency_uuid: str | None
     items: list[FeaturedBundleItem]
     total_base_cost: int | None
     total_discounted_cost: int | None
     total_discount_percent: int | None
     expires: int | None
-    wholesale_only: bool
 
 
 @dataclass(slots=True)
@@ -147,7 +144,7 @@ class ShopService:
 
         if response.status != 200 or not raw.get("SkinsPanelLayout"):
             if raw.get("errorCode") == "SCHEDULED_DOWNTIME":
-                raise Maintenance("VALORANT is undergoing scheduled maintenance")
+                raise ShopUnavailable("VALORANT is undergoing scheduled maintenance")
             raise ShopUnavailable("Riot returned an invalid storefront response")
         now = int(time.time())
         panel = raw["SkinsPanelLayout"]
@@ -230,7 +227,6 @@ class ShopService:
                             or item.get("Amount")
                         )
                         or 1,
-                        currency_uuid=item_currency,
                         base_price=_vp_price(raw_item.get("BasePrice"), item_currency),
                         discounted_price=_vp_price(
                             raw_item.get("DiscountedPrice"), item_currency
@@ -241,7 +237,6 @@ class ShopService:
                 FeaturedBundle(
                     id=bundle_id,
                     data_asset_id=data_asset_id,
-                    currency_uuid=currency_uuid,
                     items=items,
                     total_base_cost=_vp_price(
                         entry.get("TotalBaseCost"), currency_uuid
@@ -253,7 +248,6 @@ class ShopService:
                         entry.get("TotalDiscountPercent")
                     ),
                     expires=min(expiry_candidates) if expiry_candidates else None,
-                    wholesale_only=bool(entry.get("WholesaleOnly", False)),
                 )
             )
         cache_expiries = [expires]
@@ -277,16 +271,13 @@ class ShopService:
     async def _storefront_request(
         self, account: Account, headers: dict[str, str]
     ) -> HTTPResult:
-        """Request one account's regional storefront and normalize transport failures."""
-        try:
-            return await self.http.request(
-                "POST",
-                f"https://pd.{riot_region(account.region)}.a.pvp.net/store/v3/storefront/{account.puuid}",
-                headers=headers,
-                json={},
-            )
-        except HTTPFailure as exc:
-            raise ShopUnavailable(str(exc)) from exc
+        """Request one account's regional storefront."""
+        return await self.http.request(
+            "POST",
+            f"https://pd.{riot_region(account.region)}.a.pvp.net/store/v3/storefront/{account.puuid}",
+            headers=headers,
+            json={},
+        )
 
     async def wallet(self, account: Account) -> dict[str, int]:
         """Return VP, Radianite, and Kingdom Credit balances for an account."""
@@ -349,10 +340,6 @@ class ShopService:
 
 class ShopUnavailable(RuntimeError):
     """Raised when Riot does not return a usable storefront or wallet."""
-
-
-class Maintenance(ShopUnavailable):
-    """Raised when VALORANT reports scheduled downtime."""
 
 
 def _positive_int(value: Any) -> int | None:

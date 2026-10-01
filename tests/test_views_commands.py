@@ -36,7 +36,6 @@ from src.services.catalog import Accessory, Bundle, Skin
 from src.services.http import HTTPFailure
 from src.services.shop import (
     KC_UUID,
-    VP_UUID,
     FeaturedBundle,
     FeaturedBundleItem,
     Offer,
@@ -71,7 +70,6 @@ def test_dynamic_component_ids_fit_discord_limit() -> None:
     )
 
 
-@pytest.mark.asyncio
 async def test_unhandled_app_command_error_returns_ephemeral_response() -> None:
     """Verify that unhandled app command error returns ephemeral response."""
     sent: list[tuple[object, bool]] = []
@@ -96,7 +94,6 @@ async def test_unhandled_app_command_error_returns_ephemeral_response() -> None:
     assert sent[0][1] is True
 
 
-@pytest.mark.asyncio
 async def test_unhandled_prefix_command_error_returns_generic_response() -> None:
     """Verify that unhandled prefix command error returns generic response."""
     sent: list[discord.Embed] = []
@@ -117,7 +114,6 @@ async def test_unhandled_prefix_command_error_returns_generic_response() -> None
     assert "private detail" not in sent[0].description
 
 
-@pytest.mark.asyncio
 async def test_links_invite_preserves_zero_permissions() -> None:
     """Verify that links invite preserves zero permissions."""
     sent: dict[str, object] = {}
@@ -157,7 +153,6 @@ async def test_links_invite_preserves_zero_permissions() -> None:
     assert query["permissions"] == ["0"]
 
 
-@pytest.mark.asyncio
 async def test_accessory_shop_renders_catalog_item_without_changing_output(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -287,7 +282,6 @@ def test_shop_offer_layout_uses_tier_colour_and_discount_price() -> None:
     assert discounted[1].description == "VP **1,000** ~~1,775~~ (-44%)"
 
 
-@pytest.mark.asyncio
 async def test_shop_skin_menu_selects_tiered_skin_and_returns_private_video() -> None:
     """Verify tier emoji options and private level/chroma video delivery."""
     skin = Skin(
@@ -382,7 +376,6 @@ async def test_shop_skin_menu_selects_tiered_skin_and_returns_private_video() ->
     }
 
 
-@pytest.mark.asyncio
 async def test_daily_shop_view_includes_only_its_offers_in_skin_menu(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -429,13 +422,11 @@ async def test_daily_shop_view_includes_only_its_offers_in_skin_menu(
                 FeaturedBundle(
                     "featured-id",
                     "bundle-id",
-                    VP_UUID,
                     [],
                     1000,
                     800,
                     20,
                     4_000_000_000,
-                    False,
                 )
             ],
         ),
@@ -462,7 +453,6 @@ async def test_daily_shop_view_includes_only_its_offers_in_skin_menu(
     assert controls.children[3].item.custom_id.endswith(":bundles,account")
 
 
-@pytest.mark.asyncio
 async def test_bundles_command_renders_live_prices_and_tiered_skin_names(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -480,13 +470,11 @@ async def test_bundles_command_renders_live_prices_and_tiered_skin_names(
             FeaturedBundle(
                 "offer-id",
                 "bundle-uuid",
-                VP_UUID,
-                [FeaturedBundleItem("weapon", "skin", 2, VP_UUID, 1000, 600)],
+                [FeaturedBundleItem("weapon", "skin", 2, 1000, 600)],
                 2000,
                 1200,
                 40,
                 4_000_000_000,
-                False,
             )
         ],
     )
@@ -562,7 +550,6 @@ async def test_bundles_command_renders_live_prices_and_tiered_skin_names(
     assert controls.children == []
 
 
-@pytest.mark.asyncio
 async def test_bundles_reports_missing_account_and_empty_featured_list(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -639,13 +626,10 @@ async def test_bundles_reports_missing_account_and_empty_featured_list(
     assert "no featured bundles" in empty_followup.message["embeds"][0].description
 
 
-@pytest.mark.asyncio
 async def test_featured_bundle_view_has_no_account_selector_and_rejects_forged_items():
     """Keep live featured offers owner-scoped without an account selector."""
     offers = [
-        FeaturedBundle(
-            f"offer-{index}", f"asset-{index}", VP_UUID, [], 1000, 800, 20, None, False
-        )
+        FeaturedBundle(f"offer-{index}", f"asset-{index}", [], 1000, 800, 20, None)
         for index in (1, 2)
     ]
     metadata = {
@@ -718,7 +702,6 @@ async def test_featured_bundle_view_has_no_account_selector_and_rejects_forged_i
     assert response.messages[-1]["ephemeral"] is True
 
 
-@pytest.mark.asyncio
 async def test_shop_video_selector_rejects_forged_and_mismatched_values() -> None:
     """Verify menu values and cached skin ownership gate video delivery."""
     skin = Skin("skin", "offer", "Skin", None, None, levels=[])
@@ -806,7 +789,6 @@ async def test_shop_video_selector_rejects_forged_and_mismatched_values() -> Non
     assert "no longer available" in str(interaction.response.messages[-1]["content"])
 
 
-@pytest.mark.asyncio
 async def test_nightmarket_command_includes_skin_and_account_menus(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -931,7 +913,6 @@ async def test_nightmarket_command_includes_skin_and_account_menus(
     assert switched_controls.children[1].item.custom_id.endswith(":nightmarket")
 
 
-@pytest.mark.asyncio
 async def test_daily_shop_dm_includes_skin_video_menu() -> None:
     """Verify daily-shop notification DMs include the shared skin selector."""
     skin = Skin("skin", "offer", "Prime Vandal", None, None)
@@ -983,7 +964,6 @@ async def test_daily_shop_dm_includes_skin_video_menu() -> None:
     assert [option.value for option in selector.item.options] == ["skin"]
 
 
-@pytest.mark.asyncio
 async def test_shop_account_selector_hides_names_when_requested(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1008,7 +988,6 @@ async def test_shop_account_selector_hides_names_when_requested(
     ]
 
 
-@pytest.mark.asyncio
 async def test_shop_hides_full_in_game_name_when_preference_enabled(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1071,7 +1050,6 @@ async def test_shop_hides_full_in_game_name_when_preference_enabled(
     assert rendered == {"username": "Account", "hide_ign": True}
 
 
-@pytest.mark.asyncio
 async def test_account_switch_hides_name_when_preference_enabled(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1125,7 +1103,6 @@ async def test_account_switch_hides_name_when_preference_enabled(
     assert "Account" in sent[0].description
 
 
-@pytest.mark.asyncio
 async def test_battlepass_hides_name_when_preference_enabled(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1196,7 +1173,6 @@ async def test_battlepass_hides_name_when_preference_enabled(
     assert "SecretName" not in sent[0].title
 
 
-@pytest.mark.asyncio
 async def test_missions_command_shows_weekly_progress_privately(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1323,7 +1299,6 @@ async def test_missions_command_shows_weekly_progress_privately(
     assert "Expires" not in card.fields[0].value
 
 
-@pytest.mark.asyncio
 async def test_testalerts_reports_temporary_auth_failure(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1455,7 +1430,6 @@ def test_bot_preserves_discord_http_client(monkeypatch: pytest.MonkeyPatch) -> N
     assert not bot.intents.message_content
 
 
-@pytest.mark.asyncio
 async def test_bot_stops_extensions_before_closing_shared_resources(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1491,7 +1465,6 @@ async def test_bot_stops_extensions_before_closing_shared_resources(
     assert events == ["extensions", "http", "database", "monitoring"]
 
 
-@pytest.mark.asyncio
 async def test_deletedata_clears_cached_shops_after_database_delete(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1548,7 +1521,6 @@ async def test_deletedata_clears_cached_shops_after_database_delete(
     ]
 
 
-@pytest.mark.asyncio
 async def test_shop_deletion_cleanup_waits_for_storefront_headers_in_flight() -> None:
     """Verify that shop deletion cleanup waits for storefront headers in flight."""
     headers_started = asyncio.Event()
@@ -1586,7 +1558,6 @@ async def test_shop_deletion_cleanup_waits_for_storefront_headers_in_flight() ->
     assert account.puuid not in service._cache
 
 
-@pytest.mark.asyncio
 async def test_tasks_cog_awaits_cancelled_background_loops() -> None:
     """Verify that tasks cog awaits cancelled background loops."""
     finished = 0
@@ -1630,7 +1601,6 @@ async def test_tasks_cog_awaits_cancelled_background_loops() -> None:
     assert all(loop.get_task().done() for loop in loops)
 
 
-@pytest.mark.asyncio
 async def test_task_notifications_handle_http_errors_while_fetching_user(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1651,7 +1621,9 @@ async def test_task_notifications_handle_http_errors_while_fetching_user(
     bot = SimpleNamespace(
         get_user=lambda _user_id: None,
         fetch_user=fetch_user,
-        emoji_service=SimpleNamespace(currency=currency),
+        emoji_service=SimpleNamespace(
+            currency=currency, skin_name=lambda name, _tier_uuid: name
+        ),
         config=SimpleNamespace(link_item_image=False),
     )
     cog = SimpleNamespace(bot=bot)
@@ -1664,8 +1636,7 @@ async def test_task_notifications_handle_http_errors_while_fetching_user(
         user_id,
         SimpleNamespace(id=1, account=SimpleNamespace(username="Player#NA")),
         SimpleNamespace(
-            skin=SimpleNamespace(name="Skin", icon=None),
-            expires=0,
+            skin=SimpleNamespace(name="Skin", icon=None, tier_uuid=None), expires=0
         ),
     )
     await TasksCog._send_daily_shop(
@@ -1679,7 +1650,6 @@ async def test_task_notifications_handle_http_errors_while_fetching_user(
     assert fetched_ids == [user_id, user_id, user_id]
 
 
-@pytest.mark.asyncio
 async def test_extra_cog_awaits_cancelled_background_loop() -> None:
     """Verify that extra cog awaits cancelled background loop."""
     finished = asyncio.Event()
@@ -1711,7 +1681,6 @@ async def test_extra_cog_awaits_cancelled_background_loop() -> None:
     assert task.done()
 
 
-@pytest.mark.asyncio
 async def test_initial_release_command_contract(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1760,7 +1729,6 @@ async def test_initial_release_command_contract(
     }
 
 
-@pytest.mark.asyncio
 async def test_ping_uses_database_probe_and_keeps_latency_embed(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1811,7 +1779,6 @@ async def test_ping_uses_database_probe_and_keeps_latency_embed(
     assert card.fields[1].value.endswith("ms")
 
 
-@pytest.mark.asyncio
 async def test_setup_hook_passes_bot_settings_to_database(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

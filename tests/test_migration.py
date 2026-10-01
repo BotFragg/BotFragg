@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-import importlib.util
-from pathlib import Path
+import importlib
 from types import SimpleNamespace
 
 import pytest
@@ -20,11 +19,7 @@ def test_sqlite_in_memory_url_is_preserved() -> None:
 
 def test_native_initial_migration_matches_current_models() -> None:
     """Verify that native initial migration matches current models."""
-    path = Path(__file__).parents[1] / "src" / "migrations" / "0001_initial.py"
-    spec = importlib.util.spec_from_file_location("initial_migration", path)
-    module = importlib.util.module_from_spec(spec)
-    assert spec and spec.loader
-    spec.loader.exec_module(module)
+    module = importlib.import_module("src.migrations.0001_initial")
 
     assert TORTOISE_CONFIG["apps"]["models"]["migrations"] == "src.migrations"
     assert module.Migration.initial is True
@@ -34,32 +29,15 @@ def test_native_initial_migration_matches_current_models() -> None:
         "Alert",
     }
 
-    analytics = (
-        Path(__file__).parents[1]
-        / "src"
-        / "migrations"
-        / "0002_add_command_analytics.py"
+    analytics_module = importlib.import_module(
+        "src.migrations.0002_add_command_analytics"
     )
-    analytics_spec = importlib.util.spec_from_file_location(
-        "analytics_migration", analytics
-    )
-    analytics_module = importlib.util.module_from_spec(analytics_spec)
-    assert analytics_spec and analytics_spec.loader
-    analytics_spec.loader.exec_module(analytics_module)
     assert analytics_module.Migration.dependencies == [("models", "0001_initial")]
     assert [operation.name for operation in analytics_module.Migration.operations] == [
         "CommandInvocation"
     ]
 
-    suggestions = (
-        Path(__file__).parents[1] / "src" / "migrations" / "0003_add_suggestions.py"
-    )
-    suggestions_spec = importlib.util.spec_from_file_location(
-        "suggestions_migration", suggestions
-    )
-    suggestions_module = importlib.util.module_from_spec(suggestions_spec)
-    assert suggestions_spec and suggestions_spec.loader
-    suggestions_spec.loader.exec_module(suggestions_module)
+    suggestions_module = importlib.import_module("src.migrations.0003_add_suggestions")
     assert suggestions_module.Migration.dependencies == [
         ("models", "0002_add_command_analytics")
     ]
@@ -70,23 +48,15 @@ def test_native_initial_migration_matches_current_models() -> None:
         "SuggestionFollower",
     }
 
-    status = (
-        Path(__file__).parents[1]
-        / "src"
-        / "migrations"
-        / "0004_add_shard_status_message.py"
+    status_module = importlib.import_module(
+        "src.migrations.0004_add_shard_status_message"
     )
-    status_spec = importlib.util.spec_from_file_location("status_migration", status)
-    status_module = importlib.util.module_from_spec(status_spec)
-    assert status_spec and status_spec.loader
-    status_spec.loader.exec_module(status_module)
     assert status_module.Migration.dependencies == [("models", "0003_add_suggestions")]
     assert [operation.name for operation in status_module.Migration.operations] == [
         "ShardStatusMessage"
     ]
 
 
-@pytest.mark.asyncio
 async def test_connect_database_uses_passed_settings(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -119,7 +89,6 @@ async def test_connect_database_uses_passed_settings(
     assert generated == {"safe": True}
 
 
-@pytest.mark.asyncio
 async def test_ping_database_queries_the_default_connection(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

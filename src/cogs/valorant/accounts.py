@@ -15,7 +15,13 @@ from ...services.accounts import (
     select_account,
 )
 from ...views import OwnedActionButton
-from ._ui import _account_display_name, embed, error
+from ._ui import (
+    _account_display_name,
+    account_autocomplete_choices,
+    embed,
+    error,
+    view,
+)
 
 ACCOUNTS_PER_PAGE = 25
 
@@ -32,13 +38,9 @@ class AccountsCog(commands.Cog):
         self, interaction: discord.Interaction, current: str
     ) -> list[app_commands.Choice[str]]:
         """Return up to 25 of the caller's accounts matching the typed name."""
-        return [
-            app_commands.Choice(
-                name=f"{index}. {account.username}", value=account.puuid
-            )
-            for index, account in enumerate(await list_accounts(interaction.user.id), 1)
-            if current.casefold() in account.username.casefold()
-        ][:25]
+        return account_autocomplete_choices(
+            await list_accounts(interaction.user.id), current
+        )
 
     @staticmethod
     def _accounts_embed(
@@ -70,14 +72,10 @@ class AccountsCog(commands.Cog):
         pages = (account_count + ACCOUNTS_PER_PAGE - 1) // ACCOUNTS_PER_PAGE
         if pages < 2:
             return None
-        view = discord.ui.View(timeout=None)
-        view.add_item(
-            OwnedActionButton("accounts_page", user_id, str(page - 1), emoji="◀")
+        return view(
+            OwnedActionButton("accounts_page", user_id, str(page - 1), emoji="◀"),
+            OwnedActionButton("accounts_page", user_id, str(page + 1), emoji="▶"),
         )
-        view.add_item(
-            OwnedActionButton("accounts_page", user_id, str(page + 1), emoji="▶")
-        )
-        return view
 
     @app_commands.command(
         name="account",

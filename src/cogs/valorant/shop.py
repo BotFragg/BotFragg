@@ -64,9 +64,10 @@ def offer_cards(
     *,
     link_item_image: bool,
     emoji_service: ApplicationEmojiService | None = None,
+    header_colour: int = 0x202225,
 ) -> list[discord.Embed]:
     """Render a heading and one tier-coloured embed for each skin offer."""
-    result = [embed(header, colour=0x202225)]
+    result = [embed(header, colour=header_colour)]
     for offer in offers:
         price = _price_line(
             currency,
@@ -839,30 +840,14 @@ class NightMarketCog(commands.Cog):
             )
             return
         vp = await self.bot.emoji_service.currency("vp") or "VP"
-        cards = [
-            embed(
-                f"Night Market for **{username}** (ends {timestamp(data.night_market_expires or data.expires)})",
-                colour=0xEAEEB2,
-            )
-        ]
-        for offer in data.night_market:
-            card = embed(
-                _price_line(
-                    vp,
-                    offer.discount_price
-                    if offer.discount_price is not None
-                    else offer.price,
-                    offer.price,
-                    offer.discount_percent,
-                ),
-                title=self.bot.emoji_service.skin_name(
-                    offer.skin.name, offer.skin.tier_uuid
-                ),
-                colour=TIER_COLOURS.get(offer.skin.tier_uuid, 0),
-            )
-            if offer.skin.icon:
-                card.set_thumbnail(url=offer.skin.icon)
-            cards.append(card)
+        cards = offer_cards(
+            f"Night Market for **{username}** (ends {timestamp(data.night_market_expires or data.expires)})",
+            data.night_market,
+            vp,
+            link_item_image=False,
+            emoji_service=self.bot.emoji_service,
+            header_colour=0xEAEEB2,
+        )
         controls = view()
         add_skin_selector(
             controls,
