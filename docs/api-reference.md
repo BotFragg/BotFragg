@@ -398,19 +398,11 @@ Show the owner's stored account statistics and shared-server details.
 
 Show analytics and membership details for a server BotFragg has joined.
 
-### `async def _favorite_command(self, *, user_id: int | None = None, guild_id: int | None = None) -> str | None`
-
-**Scope:** `src/cogs/staff.py` · `StaffCog`
-
-[Source](../src/cogs/staff.py#L115)
-
-Return the most-used command for exactly one user or server scope.
-
 ### `async def setup(bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/staff.py` · `module`
 
-[Source](../src/cogs/staff.py#L123)
+[Source](../src/cogs/staff.py#L116)
 
 Register the owner-only diagnostics cog with the bot.
 
@@ -2319,7 +2311,7 @@ Cache Discord application emojis and create them from bundled image assets.
 
 **Scope:** `src/services/emojis.py` · `module`
 
-[Source](../src/services/emojis.py#L24)
+[Source](../src/services/emojis.py#L29)
 
 Application emoji cache with safe text fallbacks.
 
@@ -2327,7 +2319,7 @@ Application emoji cache with safe text fallbacks.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L27)
+[Source](../src/services/emojis.py#L32)
 
 Bind the Discord client and initialize the serialized emoji cache.
 
@@ -2335,7 +2327,7 @@ Bind the Discord client and initialize the serialized emoji cache.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L33)
+[Source](../src/services/emojis.py#L38)
 
 Load existing application emojis and create any bundled assets that are missing.
 
@@ -2343,7 +2335,7 @@ Load existing application emojis and create any bundled assets that are missing.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L52)
+[Source](../src/services/emojis.py#L55)
 
 Return the emoji for VP, Radianite, or Kingdom Credits, if available.
 
@@ -2351,7 +2343,7 @@ Return the emoji for VP, Radianite, or Kingdom Credits, if available.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L62)
+[Source](../src/services/emojis.py#L60)
 
 Return the filled and empty battlepass progress-bar emoji strings.
 
@@ -2359,7 +2351,7 @@ Return the filled and empty battlepass progress-bar emoji strings.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L69)
+[Source](../src/services/emojis.py#L67)
 
 Return a cached application emoji for a skin tier, if available.
 
@@ -2367,7 +2359,7 @@ Return a cached application emoji for a skin tier, if available.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L77)
+[Source](../src/services/emojis.py#L75)
 
 Prefix a skin name with its cached tier emoji when available.
 
@@ -2375,7 +2367,7 @@ Prefix a skin name with its cached tier emoji when available.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L82)
+[Source](../src/services/emojis.py#L80)
 
 Resolve or create one application emoji, returning empty text on failure.
 
@@ -2534,14 +2526,14 @@ Send a request, decode its body, and apply per-host rate-limit backoff.
 
 **Raises**
 - **`RuntimeError`** — If the client has not been started.
-- **`RateLimited`** — If the host is still in its retry window or responds with 429.
-- **`HTTPFailure`** — If the request times out or fails at the transport layer.
+- **`HTTPFailure`** — If the request is rate-limited, times out, or fails at the
+  transport layer.
 
 ### `def _retry_after(self, value: str | None) -> int`
 
 **Scope:** `src/services/http.py` · `HTTPClient`
 
-[Source](../src/services/http.py#L111)
+[Source](../src/services/http.py#L113)
 
 Parse and clamp a Retry-After value to the configured backoff limit.
 
@@ -2549,25 +2541,9 @@ Parse and clamp a Retry-After value to the configured backoff limit.
 
 **Scope:** `src/services/http.py` · `module`
 
-[Source](../src/services/http.py#L120)
+[Source](../src/services/http.py#L122)
 
-Raised for transport failures and bounded request timeouts.
-
-### `class RateLimited(HTTPFailure)`
-
-**Scope:** `src/services/http.py` · `module`
-
-[Source](../src/services/http.py#L124)
-
-Signal that a host is inside a retry window and expose its delay.
-
-### `def __init__(self, retry_after: float) -> None`
-
-**Scope:** `src/services/http.py` · `RateLimited`
-
-[Source](../src/services/http.py#L127)
-
-Store the delay until the host can be called again.
+Raised for rate limits, transport failures, and bounded request timeouts.
 
 ## `src/services/shop.py`
 
@@ -3617,7 +3593,7 @@ Tests for model invariants and account, authentication, shop, and catalog servic
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L59)
+[Source](../tests/test_models_services.py#L58)
 
 Create a JWT-shaped access token with the requested expiry.
 
@@ -3625,7 +3601,7 @@ Create a JWT-shaped access token with the requested expiry.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L70)
+[Source](../tests/test_models_services.py#L69)
 
 Create a JWT-shaped token containing the supplied claims.
 
@@ -3633,7 +3609,7 @@ Create a JWT-shaped token containing the supplied claims.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L77)
+[Source](../tests/test_models_services.py#L76)
 
 Verify that account selection preserves invariant.
 
@@ -3641,7 +3617,7 @@ Verify that account selection preserves invariant.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L95)
+[Source](../tests/test_models_services.py#L94)
 
 Verify that selected account updates user timestamp.
 
@@ -3649,7 +3625,7 @@ Verify that selected account updates user timestamp.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L110)
+[Source](../tests/test_models_services.py#L109)
 
 Verify that user preference updates user timestamp.
 
@@ -3657,7 +3633,7 @@ Verify that user preference updates user timestamp.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L124)
+[Source](../tests/test_models_services.py#L123)
 
 Verify that select account updates user timestamp.
 
@@ -3665,7 +3641,7 @@ Verify that select account updates user timestamp.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L139)
+[Source](../tests/test_models_services.py#L138)
 
 Verify that user preference service validates and updates fields.
 
@@ -3673,7 +3649,7 @@ Verify that user preference service validates and updates fields.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L155)
+[Source](../tests/test_models_services.py#L154)
 
 Verify that selected account does not overwrite concurrent selection.
 
@@ -3681,7 +3657,7 @@ Verify that selected account does not overwrite concurrent selection.
 
 **Scope:** `tests/test_models_services.py` · `test_selected_account_does_not_overwrite_concurrent_selection`
 
-[Source](../tests/test_models_services.py#L169)
+[Source](../tests/test_models_services.py#L168)
 
 Pause account selection until the test releases its synchronization gate.
 
@@ -3689,7 +3665,7 @@ Pause account selection until the test releases its synchronization gate.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L195)
+[Source](../tests/test_models_services.py#L194)
 
 Verify that each account can have only one alert for a given skin.
 
@@ -3697,7 +3673,7 @@ Verify that each account can have only one alert for a given skin.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L206)
+[Source](../tests/test_models_services.py#L205)
 
 Verify that command analytics keeps DM context nullable.
 
@@ -3705,7 +3681,7 @@ Verify that command analytics keeps DM context nullable.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L218)
+[Source](../tests/test_models_services.py#L217)
 
 Verify that delete user data removes personal records.
 
@@ -3713,7 +3689,7 @@ Verify that delete user data removes personal records.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L239)
+[Source](../tests/test_models_services.py#L238)
 
 Verify that suggestion followers are unique per user.
 
@@ -3721,23 +3697,15 @@ Verify that suggestion followers are unique per user.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L248)
+[Source](../tests/test_models_services.py#L247)
 
 Verify that shard status message is reused per channel.
-
-### `async def test_staff_favorite_command_uses_the_highest_count() -> None`
-
-**Scope:** `tests/test_models_services.py` · `module`
-
-[Source](../tests/test_models_services.py#L261)
-
-Verify that staff favorite command uses the highest count.
 
 ### `async def test_cached_shop_requires_active_credentials() -> None`
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L273)
+[Source](../tests/test_models_services.py#L259)
 
 Verify that cached shop requires active credentials.
 
@@ -3745,7 +3713,7 @@ Verify that cached shop requires active credentials.
 
 **Scope:** `tests/test_models_services.py` · `test_cached_shop_requires_active_credentials`
 
-[Source](../tests/test_models_services.py#L276)
+[Source](../tests/test_models_services.py#L262)
 
 Simulate missing credentials to verify cached storefront data is not served after logout.
 
@@ -3753,7 +3721,7 @@ Simulate missing credentials to verify cached storefront data is not served afte
 
 **Scope:** `tests/test_models_services.py` · `test_cached_shop_requires_active_credentials.LoggedOutAuth`
 
-[Source](../tests/test_models_services.py#L279)
+[Source](../tests/test_models_services.py#L265)
 
 Return the test authorization headers for the fake account.
 
@@ -3761,7 +3729,7 @@ Return the test authorization headers for the fake account.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L293)
+[Source](../tests/test_models_services.py#L279)
 
 Verify that expired shop cache entry is removed when refetch fails.
 
@@ -3769,7 +3737,7 @@ Verify that expired shop cache entry is removed when refetch fails.
 
 **Scope:** `tests/test_models_services.py` · `test_expired_shop_cache_entry_is_removed_when_refetch_fails`
 
-[Source](../tests/test_models_services.py#L296)
+[Source](../tests/test_models_services.py#L282)
 
 Stub authentication with controlled Riot credentials and login outcomes for service tests.
 
@@ -3777,7 +3745,7 @@ Stub authentication with controlled Riot credentials and login outcomes for serv
 
 **Scope:** `tests/test_models_services.py` · `test_expired_shop_cache_entry_is_removed_when_refetch_fails.Auth`
 
-[Source](../tests/test_models_services.py#L299)
+[Source](../tests/test_models_services.py#L285)
 
 Return the test authorization headers for the fake account.
 
@@ -3785,7 +3753,7 @@ Return the test authorization headers for the fake account.
 
 **Scope:** `tests/test_models_services.py` · `test_expired_shop_cache_entry_is_removed_when_refetch_fails`
 
-[Source](../tests/test_models_services.py#L307)
+[Source](../tests/test_models_services.py#L293)
 
 Raise the configured failure on a storefront fetch.
 
@@ -3793,7 +3761,7 @@ Raise the configured failure on a storefront fetch.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L320)
+[Source](../tests/test_models_services.py#L306)
 
 Verify that expired shop cache entry is removed when auth fails.
 
@@ -3801,7 +3769,7 @@ Verify that expired shop cache entry is removed when auth fails.
 
 **Scope:** `tests/test_models_services.py` · `test_expired_shop_cache_entry_is_removed_when_auth_fails`
 
-[Source](../tests/test_models_services.py#L323)
+[Source](../tests/test_models_services.py#L309)
 
 Stub authentication with controlled Riot credentials and login outcomes for service tests.
 
@@ -3809,7 +3777,7 @@ Stub authentication with controlled Riot credentials and login outcomes for serv
 
 **Scope:** `tests/test_models_services.py` · `test_expired_shop_cache_entry_is_removed_when_auth_fails.Auth`
 
-[Source](../tests/test_models_services.py#L326)
+[Source](../tests/test_models_services.py#L312)
 
 Return the test authorization headers for the fake account.
 
@@ -3817,7 +3785,7 @@ Return the test authorization headers for the fake account.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L341)
+[Source](../tests/test_models_services.py#L327)
 
 Verify a bundle expiry refreshes cached data while daily expiry stays intact.
 
@@ -3825,7 +3793,7 @@ Verify a bundle expiry refreshes cached data while daily expiry stays intact.
 
 **Scope:** `tests/test_models_services.py` · `test_featured_bundle_cache_expiry_does_not_change_daily_expiry`
 
-[Source](../tests/test_models_services.py#L344)
+[Source](../tests/test_models_services.py#L330)
 
 Provide fake Riot credentials for the storefront request.
 
@@ -3833,7 +3801,7 @@ Provide fake Riot credentials for the storefront request.
 
 **Scope:** `tests/test_models_services.py` · `test_featured_bundle_cache_expiry_does_not_change_daily_expiry.Auth`
 
-[Source](../tests/test_models_services.py#L347)
+[Source](../tests/test_models_services.py#L333)
 
 Return fake authorization headers.
 
@@ -3841,7 +3809,7 @@ Return fake authorization headers.
 
 **Scope:** `tests/test_models_services.py` · `test_featured_bundle_cache_expiry_does_not_change_daily_expiry`
 
-[Source](../tests/test_models_services.py#L359)
+[Source](../tests/test_models_services.py#L345)
 
 Replace the stale cache entry with the freshly fetched shop.
 
@@ -3849,7 +3817,7 @@ Replace the stale cache entry with the freshly fetched shop.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L376)
+[Source](../tests/test_models_services.py#L362)
 
 Verify that shop service resolves accessory offer data.
 
@@ -3857,7 +3825,7 @@ Verify that shop service resolves accessory offer data.
 
 **Scope:** `tests/test_models_services.py` · `test_shop_service_resolves_accessory_offer_data`
 
-[Source](../tests/test_models_services.py#L380)
+[Source](../tests/test_models_services.py#L366)
 
 Provide controlled accessory metadata for storefront offer normalization.
 
@@ -3865,7 +3833,7 @@ Provide controlled accessory metadata for storefront offer normalization.
 
 **Scope:** `tests/test_models_services.py` · `test_shop_service_resolves_accessory_offer_data.Catalog`
 
-[Source](../tests/test_models_services.py#L383)
+[Source](../tests/test_models_services.py#L369)
 
 Return the configured catalog accessory fixture.
 
@@ -3873,7 +3841,7 @@ Return the configured catalog accessory fixture.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L412)
+[Source](../tests/test_models_services.py#L398)
 
 Verify bundle data is normalized, isolated by account, and optional-safe.
 
@@ -3881,7 +3849,7 @@ Verify bundle data is normalized, isolated by account, and optional-safe.
 
 **Scope:** `tests/test_models_services.py` · `test_featured_bundles_keep_prices_account_scoped_and_malformed_data_safe`
 
-[Source](../tests/test_models_services.py#L417)
+[Source](../tests/test_models_services.py#L403)
 
 Return fake Riot credentials for storefront parsing.
 
@@ -3889,7 +3857,7 @@ Return fake Riot credentials for storefront parsing.
 
 **Scope:** `tests/test_models_services.py` · `test_featured_bundles_keep_prices_account_scoped_and_malformed_data_safe.Auth`
 
-[Source](../tests/test_models_services.py#L420)
+[Source](../tests/test_models_services.py#L406)
 
 Return fake credentials for the storefront request.
 
@@ -3897,7 +3865,7 @@ Return fake credentials for the storefront request.
 
 **Scope:** `tests/test_models_services.py` · `test_featured_bundles_keep_prices_account_scoped_and_malformed_data_safe`
 
-[Source](../tests/test_models_services.py#L424)
+[Source](../tests/test_models_services.py#L410)
 
 Provide account-specific featured bundle fixtures.
 
@@ -3905,7 +3873,7 @@ Provide account-specific featured bundle fixtures.
 
 **Scope:** `tests/test_models_services.py` · `test_featured_bundles_keep_prices_account_scoped_and_malformed_data_safe.HTTP`
 
-[Source](../tests/test_models_services.py#L427)
+[Source](../tests/test_models_services.py#L413)
 
 Return account-specific bundles or a malformed optional section.
 
@@ -3913,7 +3881,7 @@ Return account-specific bundles or a malformed optional section.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L521)
+[Source](../tests/test_models_services.py#L507)
 
 Verify that concurrent auth ensure serializes entitlement repair.
 
@@ -3921,7 +3889,7 @@ Verify that concurrent auth ensure serializes entitlement repair.
 
 **Scope:** `tests/test_models_services.py` · `test_concurrent_auth_ensure_serializes_entitlement_repair`
 
-[Source](../tests/test_models_services.py#L534)
+[Source](../tests/test_models_services.py#L520)
 
 Reject entitlement requests to verify concurrent authentication checks serialize repair.
 
@@ -3929,7 +3897,7 @@ Reject entitlement requests to verify concurrent authentication checks serialize
 
 **Scope:** `tests/test_models_services.py` · `test_concurrent_auth_ensure_serializes_entitlement_repair.RejectingHTTP`
 
-[Source](../tests/test_models_services.py#L539)
+[Source](../tests/test_models_services.py#L525)
 
 Record request arguments and return the configured HTTP response.
 
@@ -3937,15 +3905,15 @@ Record request arguments and return the configured HTTP response.
 
 **Scope:** `tests/test_models_services.py` · `test_concurrent_auth_ensure_serializes_entitlement_repair`
 
-[Source](../tests/test_models_services.py#L554)
+[Source](../tests/test_models_services.py#L540)
 
 Return the configured fake entitlement response.
 
-### `async def test_auth_refresh_transients_do_not_become_login_required(failure) -> None`
+### `async def test_auth_refresh_transients_do_not_become_login_required() -> None`
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L587)
+[Source](../tests/test_models_services.py#L570)
 
 Verify that auth refresh transients do not become login required.
 
@@ -3953,7 +3921,7 @@ Verify that auth refresh transients do not become login required.
 
 **Scope:** `tests/test_models_services.py` · `test_auth_refresh_transients_do_not_become_login_required`
 
-[Source](../tests/test_models_services.py#L600)
+[Source](../tests/test_models_services.py#L583)
 
 Return controlled Riot API failures for retry and authentication-state assertions.
 
@@ -3961,15 +3929,15 @@ Return controlled Riot API failures for retry and authentication-state assertion
 
 **Scope:** `tests/test_models_services.py` · `test_auth_refresh_transients_do_not_become_login_required.FailingHTTP`
 
-[Source](../tests/test_models_services.py#L603)
+[Source](../tests/test_models_services.py#L586)
 
 Record request arguments and return the configured HTTP response.
 
-### `async def test_entitlement_transients_do_not_become_login_required(failure) -> None`
+### `async def test_entitlement_transients_do_not_become_login_required() -> None`
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L624)
+[Source](../tests/test_models_services.py#L604)
 
 Verify that entitlement transients do not become login required.
 
@@ -3977,7 +3945,7 @@ Verify that entitlement transients do not become login required.
 
 **Scope:** `tests/test_models_services.py` · `test_entitlement_transients_do_not_become_login_required`
 
-[Source](../tests/test_models_services.py#L637)
+[Source](../tests/test_models_services.py#L617)
 
 Return controlled Riot API failures for retry and authentication-state assertions.
 
@@ -3985,7 +3953,7 @@ Return controlled Riot API failures for retry and authentication-state assertion
 
 **Scope:** `tests/test_models_services.py` · `test_entitlement_transients_do_not_become_login_required.FailingHTTP`
 
-[Source](../tests/test_models_services.py#L640)
+[Source](../tests/test_models_services.py#L620)
 
 Record request arguments and return the configured HTTP response.
 
@@ -3993,7 +3961,7 @@ Record request arguments and return the configured HTTP response.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L659)
+[Source](../tests/test_models_services.py#L639)
 
 Verify that auth refresh transient status does not become login required.
 
@@ -4001,7 +3969,7 @@ Verify that auth refresh transient status does not become login required.
 
 **Scope:** `tests/test_models_services.py` · `test_auth_refresh_transient_status_does_not_become_login_required`
 
-[Source](../tests/test_models_services.py#L674)
+[Source](../tests/test_models_services.py#L654)
 
 Return controlled Riot API failures for retry and authentication-state assertions.
 
@@ -4009,7 +3977,7 @@ Return controlled Riot API failures for retry and authentication-state assertion
 
 **Scope:** `tests/test_models_services.py` · `test_auth_refresh_transient_status_does_not_become_login_required.FailingHTTP`
 
-[Source](../tests/test_models_services.py#L677)
+[Source](../tests/test_models_services.py#L657)
 
 Record request arguments and return the configured HTTP response.
 
@@ -4017,7 +3985,7 @@ Record request arguments and return the configured HTTP response.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L693)
+[Source](../tests/test_models_services.py#L673)
 
 Verify that entitlement transient status does not become login required.
 
@@ -4025,7 +3993,7 @@ Verify that entitlement transient status does not become login required.
 
 **Scope:** `tests/test_models_services.py` · `test_entitlement_transient_status_does_not_become_login_required`
 
-[Source](../tests/test_models_services.py#L708)
+[Source](../tests/test_models_services.py#L688)
 
 Return controlled Riot API failures for retry and authentication-state assertions.
 
@@ -4033,15 +4001,15 @@ Return controlled Riot API failures for retry and authentication-state assertion
 
 **Scope:** `tests/test_models_services.py` · `test_entitlement_transient_status_does_not_become_login_required.FailingHTTP`
 
-[Source](../tests/test_models_services.py#L711)
+[Source](../tests/test_models_services.py#L691)
 
 Record request arguments and return the configured HTTP response.
 
-### `async def test_shop_wallet_normalizes_transient_auth_failures(failure) -> None`
+### `async def test_shop_wallet_normalizes_transient_auth_failures() -> None`
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L728)
+[Source](../tests/test_models_services.py#L705)
 
 Verify that shop wallet normalizes transient auth failures.
 
@@ -4049,7 +4017,7 @@ Verify that shop wallet normalizes transient auth failures.
 
 **Scope:** `tests/test_models_services.py` · `test_shop_wallet_normalizes_transient_auth_failures`
 
-[Source](../tests/test_models_services.py#L731)
+[Source](../tests/test_models_services.py#L708)
 
 Raise controlled credential errors so dependent services can classify login failures.
 
@@ -4057,15 +4025,15 @@ Raise controlled credential errors so dependent services can classify login fail
 
 **Scope:** `tests/test_models_services.py` · `test_shop_wallet_normalizes_transient_auth_failures.FailingAuth`
 
-[Source](../tests/test_models_services.py#L734)
+[Source](../tests/test_models_services.py#L711)
 
 Return the test authorization headers for the fake account.
 
-### `async def test_shop_wallet_normalizes_transient_http_failures(failure) -> None`
+### `async def test_shop_wallet_normalizes_transient_http_failures() -> None`
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L747)
+[Source](../tests/test_models_services.py#L721)
 
 Verify that shop wallet normalizes transient HTTP failures.
 
@@ -4073,7 +4041,7 @@ Verify that shop wallet normalizes transient HTTP failures.
 
 **Scope:** `tests/test_models_services.py` · `test_shop_wallet_normalizes_transient_http_failures`
 
-[Source](../tests/test_models_services.py#L750)
+[Source](../tests/test_models_services.py#L724)
 
 Stub authentication with controlled Riot credentials and login outcomes for service tests.
 
@@ -4081,7 +4049,7 @@ Stub authentication with controlled Riot credentials and login outcomes for serv
 
 **Scope:** `tests/test_models_services.py` · `test_shop_wallet_normalizes_transient_http_failures.Auth`
 
-[Source](../tests/test_models_services.py#L753)
+[Source](../tests/test_models_services.py#L727)
 
 Return the test authorization headers for the fake account.
 
@@ -4089,7 +4057,7 @@ Return the test authorization headers for the fake account.
 
 **Scope:** `tests/test_models_services.py` · `test_shop_wallet_normalizes_transient_http_failures`
 
-[Source](../tests/test_models_services.py#L757)
+[Source](../tests/test_models_services.py#L731)
 
 Return controlled Riot API failures for retry and authentication-state assertions.
 
@@ -4097,15 +4065,15 @@ Return controlled Riot API failures for retry and authentication-state assertion
 
 **Scope:** `tests/test_models_services.py` · `test_shop_wallet_normalizes_transient_http_failures.FailingHTTP`
 
-[Source](../tests/test_models_services.py#L760)
+[Source](../tests/test_models_services.py#L734)
 
 Record request arguments and return the configured HTTP response.
 
-### `async def test_gameplay_normalizes_transient_auth_failures(failure) -> None`
+### `async def test_gameplay_normalizes_transient_auth_failures() -> None`
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L773)
+[Source](../tests/test_models_services.py#L744)
 
 Verify that gameplay normalizes transient auth failures.
 
@@ -4113,7 +4081,7 @@ Verify that gameplay normalizes transient auth failures.
 
 **Scope:** `tests/test_models_services.py` · `test_gameplay_normalizes_transient_auth_failures`
 
-[Source](../tests/test_models_services.py#L776)
+[Source](../tests/test_models_services.py#L747)
 
 Raise controlled credential errors so dependent services can classify login failures.
 
@@ -4121,15 +4089,15 @@ Raise controlled credential errors so dependent services can classify login fail
 
 **Scope:** `tests/test_models_services.py` · `test_gameplay_normalizes_transient_auth_failures.FailingAuth`
 
-[Source](../tests/test_models_services.py#L779)
+[Source](../tests/test_models_services.py#L750)
 
 Return the test authorization headers for the fake account.
 
-### `async def test_gameplay_normalizes_transient_http_failures(failure) -> None`
+### `async def test_gameplay_normalizes_transient_http_failures() -> None`
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L792)
+[Source](../tests/test_models_services.py#L760)
 
 Verify that gameplay normalizes transient HTTP failures.
 
@@ -4137,7 +4105,7 @@ Verify that gameplay normalizes transient HTTP failures.
 
 **Scope:** `tests/test_models_services.py` · `test_gameplay_normalizes_transient_http_failures`
 
-[Source](../tests/test_models_services.py#L795)
+[Source](../tests/test_models_services.py#L763)
 
 Stub authentication with controlled Riot credentials and login outcomes for service tests.
 
@@ -4145,7 +4113,7 @@ Stub authentication with controlled Riot credentials and login outcomes for serv
 
 **Scope:** `tests/test_models_services.py` · `test_gameplay_normalizes_transient_http_failures.Auth`
 
-[Source](../tests/test_models_services.py#L798)
+[Source](../tests/test_models_services.py#L766)
 
 Return the test authorization headers for the fake account.
 
@@ -4153,7 +4121,7 @@ Return the test authorization headers for the fake account.
 
 **Scope:** `tests/test_models_services.py` · `test_gameplay_normalizes_transient_http_failures`
 
-[Source](../tests/test_models_services.py#L802)
+[Source](../tests/test_models_services.py#L770)
 
 Return controlled Riot API failures for retry and authentication-state assertions.
 
@@ -4161,7 +4129,7 @@ Return controlled Riot API failures for retry and authentication-state assertion
 
 **Scope:** `tests/test_models_services.py` · `test_gameplay_normalizes_transient_http_failures.FailingHTTP`
 
-[Source](../tests/test_models_services.py#L805)
+[Source](../tests/test_models_services.py#L773)
 
 Record request arguments and return the configured HTTP response.
 
@@ -4169,7 +4137,7 @@ Record request arguments and return the configured HTTP response.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L816)
+[Source](../tests/test_models_services.py#L784)
 
 Verify that gameplay missions join contract progress with catalog metadata.
 
@@ -4177,7 +4145,7 @@ Verify that gameplay missions join contract progress with catalog metadata.
 
 **Scope:** `tests/test_models_services.py` · `test_gameplay_missions_join_contract_progress_with_catalog_metadata`
 
-[Source](../tests/test_models_services.py#L820)
+[Source](../tests/test_models_services.py#L788)
 
 Stub authentication with controlled Riot credentials and login outcomes for service tests.
 
@@ -4185,7 +4153,7 @@ Stub authentication with controlled Riot credentials and login outcomes for serv
 
 **Scope:** `tests/test_models_services.py` · `test_gameplay_missions_join_contract_progress_with_catalog_metadata.Auth`
 
-[Source](../tests/test_models_services.py#L823)
+[Source](../tests/test_models_services.py#L791)
 
 Return the test authorization headers for the fake account.
 
@@ -4193,7 +4161,7 @@ Return the test authorization headers for the fake account.
 
 **Scope:** `tests/test_models_services.py` · `test_gameplay_missions_join_contract_progress_with_catalog_metadata`
 
-[Source](../tests/test_models_services.py#L827)
+[Source](../tests/test_models_services.py#L795)
 
 Stub the shared Riot client so request handling and shutdown can be observed.
 
@@ -4201,7 +4169,7 @@ Stub the shared Riot client so request handling and shutdown can be observed.
 
 **Scope:** `tests/test_models_services.py` · `test_gameplay_missions_join_contract_progress_with_catalog_metadata.HTTP`
 
-[Source](../tests/test_models_services.py#L830)
+[Source](../tests/test_models_services.py#L798)
 
 Record request arguments and return the configured HTTP response.
 
@@ -4209,7 +4177,7 @@ Record request arguments and return the configured HTTP response.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L885)
+[Source](../tests/test_models_services.py#L853)
 
 Verify that concurrent login callbacks respect account limit.
 
@@ -4217,7 +4185,7 @@ Verify that concurrent login callbacks respect account limit.
 
 **Scope:** `tests/test_models_services.py` · `test_concurrent_login_callbacks_respect_account_limit`
 
-[Source](../tests/test_models_services.py#L896)
+[Source](../tests/test_models_services.py#L864)
 
 Provide controlled OAuth responses for concurrent login and account-limit scenarios.
 
@@ -4225,7 +4193,7 @@ Provide controlled OAuth responses for concurrent login and account-limit scenar
 
 **Scope:** `tests/test_models_services.py` · `test_concurrent_login_callbacks_respect_account_limit.LoginHTTP`
 
-[Source](../tests/test_models_services.py#L899)
+[Source](../tests/test_models_services.py#L867)
 
 Record request arguments and return the configured HTTP response.
 
@@ -4233,7 +4201,7 @@ Record request arguments and return the configured HTTP response.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L967)
+[Source](../tests/test_models_services.py#L935)
 
 Verify that logout clears credentials saved during refresh.
 
@@ -4241,7 +4209,7 @@ Verify that logout clears credentials saved during refresh.
 
 **Scope:** `tests/test_models_services.py` · `test_logout_clears_credentials_saved_during_refresh`
 
-[Source](../tests/test_models_services.py#L980)
+[Source](../tests/test_models_services.py#L948)
 
 Pause token refresh requests so logout can protect credentials updated concurrently.
 
@@ -4249,7 +4217,7 @@ Pause token refresh requests so logout can protect credentials updated concurren
 
 **Scope:** `tests/test_models_services.py` · `test_logout_clears_credentials_saved_during_refresh.RefreshHTTP`
 
-[Source](../tests/test_models_services.py#L983)
+[Source](../tests/test_models_services.py#L951)
 
 Record request arguments and return the configured HTTP response.
 
@@ -4257,7 +4225,7 @@ Record request arguments and return the configured HTTP response.
 
 **Scope:** `tests/test_models_services.py` · `test_logout_clears_credentials_saved_during_refresh`
 
-[Source](../tests/test_models_services.py#L997)
+[Source](../tests/test_models_services.py#L965)
 
 Return the configured fake entitlement response.
 
@@ -4265,7 +4233,7 @@ Return the configured fake entitlement response.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L1018)
+[Source](../tests/test_models_services.py#L986)
 
 Verify that concurrent storefront requests share one fetch.
 
@@ -4273,7 +4241,7 @@ Verify that concurrent storefront requests share one fetch.
 
 **Scope:** `tests/test_models_services.py` · `test_concurrent_storefront_requests_share_one_fetch`
 
-[Source](../tests/test_models_services.py#L1021)
+[Source](../tests/test_models_services.py#L989)
 
 Stub authentication with controlled Riot credentials and login outcomes for service tests.
 
@@ -4281,7 +4249,7 @@ Stub authentication with controlled Riot credentials and login outcomes for serv
 
 **Scope:** `tests/test_models_services.py` · `test_concurrent_storefront_requests_share_one_fetch.Auth`
 
-[Source](../tests/test_models_services.py#L1024)
+[Source](../tests/test_models_services.py#L992)
 
 Return the test authorization headers for the fake account.
 
@@ -4289,7 +4257,7 @@ Return the test authorization headers for the fake account.
 
 **Scope:** `tests/test_models_services.py` · `test_concurrent_storefront_requests_share_one_fetch`
 
-[Source](../tests/test_models_services.py#L1038)
+[Source](../tests/test_models_services.py#L1006)
 
 Return the configured result from the fake query or HTTP client.
 
@@ -4297,7 +4265,7 @@ Return the configured result from the fake query or HTTP client.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L1057)
+[Source](../tests/test_models_services.py#L1025)
 
 Verify that shop service releases idle account locks.
 
@@ -4305,7 +4273,7 @@ Verify that shop service releases idle account locks.
 
 **Scope:** `tests/test_models_services.py` · `test_shop_service_releases_idle_account_locks`
 
-[Source](../tests/test_models_services.py#L1060)
+[Source](../tests/test_models_services.py#L1028)
 
 Stub authentication with controlled Riot credentials and login outcomes for service tests.
 
@@ -4313,7 +4281,7 @@ Stub authentication with controlled Riot credentials and login outcomes for serv
 
 **Scope:** `tests/test_models_services.py` · `test_shop_service_releases_idle_account_locks.Auth`
 
-[Source](../tests/test_models_services.py#L1063)
+[Source](../tests/test_models_services.py#L1031)
 
 Return the test authorization headers for the fake account.
 
@@ -4321,7 +4289,7 @@ Return the test authorization headers for the fake account.
 
 **Scope:** `tests/test_models_services.py` · `test_shop_service_releases_idle_account_locks`
 
-[Source](../tests/test_models_services.py#L1070)
+[Source](../tests/test_models_services.py#L1038)
 
 Return the configured result from the fake query or HTTP client.
 
@@ -4329,7 +4297,7 @@ Return the configured result from the fake query or HTTP client.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L1083)
+[Source](../tests/test_models_services.py#L1051)
 
 Verify that catalog load reads file off event loop.
 
@@ -4337,7 +4305,7 @@ Verify that catalog load reads file off event loop.
 
 **Scope:** `tests/test_models_services.py` · `test_catalog_load_reads_file_off_event_loop`
 
-[Source](../tests/test_models_services.py#L1105)
+[Source](../tests/test_models_services.py#L1073)
 
 Record the worker thread used to read the catalog snapshot.
 
@@ -4345,7 +4313,7 @@ Record the worker thread used to read the catalog snapshot.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L1117)
+[Source](../tests/test_models_services.py#L1085)
 
 Verify skin chromas survive catalog build, save, and load.
 
@@ -4353,7 +4321,7 @@ Verify skin chromas survive catalog build, save, and load.
 
 **Scope:** `tests/test_models_services.py` · `test_catalog_snapshot_round_trips_skin_chromas`
 
-[Source](../tests/test_models_services.py#L1122)
+[Source](../tests/test_models_services.py#L1090)
 
 Provide deterministic version, skin, and bundle responses.
 
@@ -4361,7 +4329,7 @@ Provide deterministic version, skin, and bundle responses.
 
 **Scope:** `tests/test_models_services.py` · `test_catalog_snapshot_round_trips_skin_chromas.CatalogHTTP`
 
-[Source](../tests/test_models_services.py#L1125)
+[Source](../tests/test_models_services.py#L1093)
 
 Return the requested catalog fixture.
 
@@ -4369,7 +4337,7 @@ Return the requested catalog fixture.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L1206)
+[Source](../tests/test_models_services.py#L1174)
 
 Verify a legacy snapshot refreshes even when Riot's manifest matches.
 
@@ -4377,7 +4345,7 @@ Verify a legacy snapshot refreshes even when Riot's manifest matches.
 
 **Scope:** `tests/test_models_services.py` · `test_catalog_load_refreshes_legacy_snapshot_with_same_manifest`
 
-[Source](../tests/test_models_services.py#L1229)
+[Source](../tests/test_models_services.py#L1197)
 
 Provide manifest and upgraded catalog responses for the test.
 
@@ -4385,7 +4353,7 @@ Provide manifest and upgraded catalog responses for the test.
 
 **Scope:** `tests/test_models_services.py` · `test_catalog_load_refreshes_legacy_snapshot_with_same_manifest.CatalogHTTP`
 
-[Source](../tests/test_models_services.py#L1232)
+[Source](../tests/test_models_services.py#L1200)
 
 Record requests and return the configured catalog response.
 
@@ -4393,7 +4361,7 @@ Record requests and return the configured catalog response.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L1273)
+[Source](../tests/test_models_services.py#L1241)
 
 Verify failed bundle refreshes preserve the old catalog and remain retryable.
 
@@ -4401,7 +4369,7 @@ Verify failed bundle refreshes preserve the old catalog and remain retryable.
 
 **Scope:** `tests/test_models_services.py` · `test_failed_catalog_upgrade_keeps_legacy_data_and_retries`
 
-[Source](../tests/test_models_services.py#L1301)
+[Source](../tests/test_models_services.py#L1269)
 
 Return catalog failures while tracking upgrade attempts.
 
@@ -4409,7 +4377,7 @@ Return catalog failures while tracking upgrade attempts.
 
 **Scope:** `tests/test_models_services.py` · `test_failed_catalog_upgrade_keeps_legacy_data_and_retries.CatalogHTTP`
 
-[Source](../tests/test_models_services.py#L1307)
+[Source](../tests/test_models_services.py#L1275)
 
 Return valid weapons and an empty bundle catalog.
 
@@ -4417,7 +4385,7 @@ Return valid weapons and an empty bundle catalog.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L1340)
+[Source](../tests/test_models_services.py#L1308)
 
 Verify that catalog data file uses the working directory.
 
@@ -4425,7 +4393,7 @@ Verify that catalog data file uses the working directory.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L1346)
+[Source](../tests/test_models_services.py#L1314)
 
 Verify that concurrent accessory lookups share one request.
 
@@ -4433,7 +4401,7 @@ Verify that concurrent accessory lookups share one request.
 
 **Scope:** `tests/test_models_services.py` · `test_concurrent_accessory_lookups_share_one_request`
 
-[Source](../tests/test_models_services.py#L1352)
+[Source](../tests/test_models_services.py#L1320)
 
 Stub the shared Riot client so request handling and shutdown can be observed.
 
@@ -4441,7 +4409,7 @@ Stub the shared Riot client so request handling and shutdown can be observed.
 
 **Scope:** `tests/test_models_services.py` · `test_concurrent_accessory_lookups_share_one_request.HTTP`
 
-[Source](../tests/test_models_services.py#L1355)
+[Source](../tests/test_models_services.py#L1323)
 
 Record request arguments and return the configured HTTP response.
 
@@ -4449,7 +4417,7 @@ Record request arguments and return the configured HTTP response.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L1395)
+[Source](../tests/test_models_services.py#L1363)
 
 Verify that catalog refresh writes a stable snapshot off event loop.
 
@@ -4457,7 +4425,7 @@ Verify that catalog refresh writes a stable snapshot off event loop.
 
 **Scope:** `tests/test_models_services.py` · `test_catalog_refresh_writes_a_stable_snapshot_off_event_loop`
 
-[Source](../tests/test_models_services.py#L1402)
+[Source](../tests/test_models_services.py#L1370)
 
 Provide fake version, weapons, and bundle catalog responses.
 
@@ -4465,7 +4433,7 @@ Provide fake version, weapons, and bundle catalog responses.
 
 **Scope:** `tests/test_models_services.py` · `test_catalog_refresh_writes_a_stable_snapshot_off_event_loop.CatalogHTTP`
 
-[Source](../tests/test_models_services.py#L1405)
+[Source](../tests/test_models_services.py#L1373)
 
 Return the matching version or catalog fixture.
 
@@ -4473,7 +4441,7 @@ Return the matching version or catalog fixture.
 
 **Scope:** `tests/test_models_services.py` · `test_catalog_refresh_writes_a_stable_snapshot_off_event_loop`
 
-[Source](../tests/test_models_services.py#L1440)
+[Source](../tests/test_models_services.py#L1408)
 
 Record the worker thread used to write the catalog snapshot.
 
@@ -4481,7 +4449,7 @@ Record the worker thread used to write the catalog snapshot.
 
 **Scope:** `tests/test_models_services.py` · `test_catalog_refresh_writes_a_stable_snapshot_off_event_loop`
 
-[Source](../tests/test_models_services.py#L1445)
+[Source](../tests/test_models_services.py#L1413)
 
 Wait for the test gate before invoking the worker-thread operation.
 
@@ -4489,7 +4457,7 @@ Wait for the test gate before invoking the worker-thread operation.
 
 **Scope:** `tests/test_models_services.py` · `module`
 
-[Source](../tests/test_models_services.py#L1468)
+[Source](../tests/test_models_services.py#L1436)
 
 Verify that catalog refresh waits for file worker after repeated cancellation.
 
@@ -4497,7 +4465,7 @@ Verify that catalog refresh waits for file worker after repeated cancellation.
 
 **Scope:** `tests/test_models_services.py` · `test_catalog_refresh_waits_for_file_worker_after_repeated_cancellation`
 
-[Source](../tests/test_models_services.py#L1475)
+[Source](../tests/test_models_services.py#L1443)
 
 Provide a stable game version to the catalog refresh test.
 
@@ -4505,7 +4473,7 @@ Provide a stable game version to the catalog refresh test.
 
 **Scope:** `tests/test_models_services.py` · `test_catalog_refresh_waits_for_file_worker_after_repeated_cancellation.VersionHTTP`
 
-[Source](../tests/test_models_services.py#L1478)
+[Source](../tests/test_models_services.py#L1446)
 
 Return the configured version response.
 
@@ -4513,7 +4481,7 @@ Return the configured version response.
 
 **Scope:** `tests/test_models_services.py` · `test_catalog_refresh_waits_for_file_worker_after_repeated_cancellation`
 
-[Source](../tests/test_models_services.py#L1485)
+[Source](../tests/test_models_services.py#L1453)
 
 Return the minimum metadata needed by catalog refresh.
 
@@ -4521,7 +4489,7 @@ Return the minimum metadata needed by catalog refresh.
 
 **Scope:** `tests/test_models_services.py` · `test_catalog_refresh_waits_for_file_worker_after_repeated_cancellation`
 
-[Source](../tests/test_models_services.py#L1496)
+[Source](../tests/test_models_services.py#L1464)
 
 Hold the file worker until cancellation behavior has been observed.
 

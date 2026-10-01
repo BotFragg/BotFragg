@@ -12,7 +12,7 @@ from ..config import Settings
 from ..models import Account
 from .auth import AuthenticationRequired, AuthService, riot_region
 from .catalog import Accessory, CatalogService, Skin
-from .http import HTTPClient, HTTPFailure, HTTPResult, RateLimited
+from .http import HTTPClient, HTTPFailure, HTTPResult
 
 VP_UUID = "85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741"
 RP_UUID = "e59aa87c-4cbf-517a-5983-6e81511be9b7"
@@ -285,7 +285,7 @@ class ShopService:
                 headers=headers,
                 json={},
             )
-        except (HTTPFailure, RateLimited) as exc:
+        except HTTPFailure as exc:
             raise ShopUnavailable(str(exc)) from exc
 
     async def wallet(self, account: Account) -> dict[str, int]:

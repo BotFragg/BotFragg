@@ -19,7 +19,6 @@ import pytest
 from cryptography.fernet import Fernet
 from tortoise.exceptions import IntegrityError
 
-from src.cogs.staff import StaffCog
 from src.models import (
     Account,
     Alert,
@@ -45,7 +44,7 @@ from src.services.auth import AuthenticationRequired, AuthService, decode_jwt
 from src.services.catalog import Accessory, Bundle, CatalogService
 from src.services.crypto import AuthVault
 from src.services.gameplay import GameplayService, GameplayUnavailable
-from src.services.http import HTTPFailure, RateLimited
+from src.services.http import HTTPFailure
 from src.services.shop import (
     KC_UUID,
     VP_UUID,
@@ -255,19 +254,6 @@ async def test_shard_status_message_is_reused_per_channel() -> None:
         channel_id=123, defaults={"message_id": 789}
     )
     assert (message.message_id, created) == (789, False)
-
-
-@pytest.mark.usefixtures("database")
-async def test_staff_favorite_command_uses_the_highest_count() -> None:
-    """Verify that staff favorite command uses the highest count."""
-    await CommandInvocation.bulk_create(
-        [
-            CommandInvocation(command="shop", user_id=123),
-            CommandInvocation(command="shop", user_id=123),
-            CommandInvocation(command="balance", user_id=123),
-        ]
-    )
-    assert await StaffCog._favorite_command(None, user_id=123) == "shop"
 
 
 async def test_cached_shop_requires_active_credentials() -> None:
@@ -580,11 +566,8 @@ async def test_concurrent_auth_ensure_serializes_entitlement_repair() -> None:
     assert vault.decrypt(saved.auth_blob)["ent"] == "entitlement"
 
 
-@pytest.mark.parametrize(
-    "failure", [HTTPFailure("transport unavailable"), RateLimited(5)]
-)
 @pytest.mark.usefixtures("database")
-async def test_auth_refresh_transients_do_not_become_login_required(failure) -> None:
+async def test_auth_refresh_transients_do_not_become_login_required() -> None:
     """Verify that auth refresh transients do not become login required."""
     user = await User.create(id=655)
     vault = AuthVault(Fernet.generate_key().decode())
@@ -602,7 +585,7 @@ async def test_auth_refresh_transients_do_not_become_login_required(failure) -> 
 
         async def request(self, *args, **kwargs):
             """Record request arguments and return the configured HTTP response."""
-            raise failure
+            raise HTTPFailure("transport unavailable")
 
     service = AuthService(
         SimpleNamespace(token_refresh_buffer_minutes=5, auto_refresh_tokens=True),
@@ -610,18 +593,15 @@ async def test_auth_refresh_transients_do_not_become_login_required(failure) -> 
         vault,
     )
 
-    with pytest.raises(type(failure)):
+    with pytest.raises(HTTPFailure):
         await service.auth_headers(account)
 
     saved = await Account.get(puuid=account.puuid)
     assert vault.decrypt(saved.auth_blob).get("refresh_token")
 
 
-@pytest.mark.parametrize(
-    "failure", [HTTPFailure("transport unavailable"), RateLimited(5)]
-)
 @pytest.mark.usefixtures("database")
-async def test_entitlement_transients_do_not_become_login_required(failure) -> None:
+async def test_entitlement_transients_do_not_become_login_required() -> None:
     """Verify that entitlement transients do not become login required."""
     user = await User.create(id=657)
     vault = AuthVault(Fernet.generate_key().decode())
@@ -639,7 +619,7 @@ async def test_entitlement_transients_do_not_become_login_required(failure) -> N
 
         async def request(self, *args, **kwargs):
             """Record request arguments and return the configured HTTP response."""
-            raise failure
+            raise HTTPFailure("transport unavailable")
 
     service = AuthService(
         SimpleNamespace(token_refresh_buffer_minutes=5, auto_refresh_tokens=True),
@@ -647,7 +627,7 @@ async def test_entitlement_transients_do_not_become_login_required(failure) -> N
         vault,
     )
 
-    with pytest.raises(type(failure)):
+    with pytest.raises(HTTPFailure):
         await service.auth_headers(account)
 
     saved = await Account.get(puuid=account.puuid)
@@ -722,10 +702,7 @@ async def test_entitlement_transient_status_does_not_become_login_required(
         await service.auth_headers(account)
 
 
-@pytest.mark.parametrize(
-    "failure", [HTTPFailure("transport unavailable"), RateLimited(5)]
-)
-async def test_shop_wallet_normalizes_transient_auth_failures(failure) -> None:
+async def test_shop_wallet_normalizes_transient_auth_failures() -> None:
     """Verify that shop wallet normalizes transient auth failures."""
 
     class FailingAuth:
@@ -733,7 +710,7 @@ async def test_shop_wallet_normalizes_transient_auth_failures(failure) -> None:
 
         async def auth_headers(self, _account) -> dict[str, str]:
             """Return the test authorization headers for the fake account."""
-            raise failure
+            raise HTTPFailure("transport unavailable")
 
     service = ShopService(SimpleNamespace(), None, FailingAuth(), None)
 
@@ -741,10 +718,7 @@ async def test_shop_wallet_normalizes_transient_auth_failures(failure) -> None:
         await service.wallet(SimpleNamespace(puuid="wallet-auth"))
 
 
-@pytest.mark.parametrize(
-    "failure", [HTTPFailure("transport unavailable"), RateLimited(5)]
-)
-async def test_shop_wallet_normalizes_transient_http_failures(failure) -> None:
+async def test_shop_wallet_normalizes_transient_http_failures() -> None:
     """Verify that shop wallet normalizes transient HTTP failures."""
 
     class Auth:
@@ -759,7 +733,7 @@ async def test_shop_wallet_normalizes_transient_http_failures(failure) -> None:
 
         async def request(self, *args, **kwargs):
             """Record request arguments and return the configured HTTP response."""
-            raise failure
+            raise HTTPFailure("transport unavailable")
 
     service = ShopService(SimpleNamespace(), FailingHTTP(), Auth(), None)
 
@@ -767,10 +741,7 @@ async def test_shop_wallet_normalizes_transient_http_failures(failure) -> None:
         await service.wallet(SimpleNamespace(puuid="wallet-http", region="na"))
 
 
-@pytest.mark.parametrize(
-    "failure", [HTTPFailure("transport unavailable"), RateLimited(5)]
-)
-async def test_gameplay_normalizes_transient_auth_failures(failure) -> None:
+async def test_gameplay_normalizes_transient_auth_failures() -> None:
     """Verify that gameplay normalizes transient auth failures."""
 
     class FailingAuth:
@@ -778,7 +749,7 @@ async def test_gameplay_normalizes_transient_auth_failures(failure) -> None:
 
         async def auth_headers(self, _account) -> dict[str, str]:
             """Return the test authorization headers for the fake account."""
-            raise failure
+            raise HTTPFailure("transport unavailable")
 
     service = GameplayService(None, FailingAuth(), None)
 
@@ -786,10 +757,7 @@ async def test_gameplay_normalizes_transient_auth_failures(failure) -> None:
         await service.battlepass(SimpleNamespace(puuid="gameplay", region="na"))
 
 
-@pytest.mark.parametrize(
-    "failure", [HTTPFailure("transport unavailable"), RateLimited(5)]
-)
-async def test_gameplay_normalizes_transient_http_failures(failure) -> None:
+async def test_gameplay_normalizes_transient_http_failures() -> None:
     """Verify that gameplay normalizes transient HTTP failures."""
 
     class Auth:
@@ -804,7 +772,7 @@ async def test_gameplay_normalizes_transient_http_failures(failure) -> None:
 
         async def request(self, *args, **kwargs):
             """Record request arguments and return the configured HTTP response."""
-            raise failure
+            raise HTTPFailure("transport unavailable")
 
     service = GameplayService(FailingHTTP(), Auth(), None)
 

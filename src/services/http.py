@@ -77,15 +77,17 @@ class HTTPClient:
 
         Raises:
             RuntimeError: If the client has not been started.
-            RateLimited: If the host is still in its retry window or responds with 429.
-            HTTPFailure: If the request times out or fails at the transport layer.
+            HTTPFailure: If the request is rate-limited, times out, or fails at the
+                transport layer.
         """
         if not self.session:
             raise RuntimeError("HTTP client is not started")
         host = urlsplit(url).hostname or "unknown"
         retry_at = self._limited_until.get(host, 0)
         if retry_at > time.monotonic():
-            raise RateLimited(retry_at - time.monotonic())
+            raise HTTPFailure(
+                f"Rate limited for {retry_at - time.monotonic():.0f} seconds"
+            )
         if self.config.log_urls:
             log.info("%s %s", method, _safe_log_url(url))
         try:
@@ -101,7 +103,7 @@ class HTTPClient:
                 ):
                     seconds = self._retry_after(response.headers.get("Retry-After"))
                     self._limited_until[host] = time.monotonic() + seconds
-                    raise RateLimited(seconds)
+                    raise HTTPFailure(f"Rate limited for {seconds:.0f} seconds")
                 return HTTPResult(response.status, body, response.headers)
         except TimeoutError as exc:
             raise HTTPFailure("Request timed out") from exc
@@ -118,13 +120,4 @@ class HTTPClient:
 
 
 class HTTPFailure(RuntimeError):
-    """Raised for transport failures and bounded request timeouts."""
-
-
-class RateLimited(HTTPFailure):
-    """Signal that a host is inside a retry window and expose its delay."""
-
-    def __init__(self, retry_after: float) -> None:
-        """Store the delay until the host can be called again."""
-        super().__init__(f"Rate limited for {retry_after:.0f} seconds")
-        self.retry_after = retry_after
+    """Raised for rate limits, transport failures, and bounded request timeouts."""

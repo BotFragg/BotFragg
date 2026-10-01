@@ -19,7 +19,7 @@ from tortoise.transactions import in_transaction
 from ..config import Settings
 from ..models import Account, User
 from .crypto import AuthVault
-from .http import HTTPClient, HTTPFailure, RateLimited
+from .http import HTTPClient, HTTPFailure
 
 CLIENT_ID = "riot-client"
 REDIRECT_URI = "http://localhost/redirect"
@@ -112,7 +112,7 @@ class AuthService:
                     }
                 ),
             )
-        except HTTPFailure, RateLimited:
+        except HTTPFailure:
             return AuthResult(
                 False, error="Riot authentication is temporarily unavailable."
             )
@@ -146,7 +146,7 @@ class AuthService:
             user_info, entitlement, region = await asyncio.gather(
                 self._user_info(auth), self._entitlement(auth), self._region(auth)
             )
-        except HTTPFailure, RateLimited:
+        except HTTPFailure:
             return AuthResult(
                 False, error="Riot account details are temporarily unavailable."
             )

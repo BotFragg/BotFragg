@@ -19,6 +19,11 @@ SKIN_TIER_EMOJIS = {
     "12683d76-48d7-84a3-4e09-6985794f0445": ("tier_select", "select.png"),
     "411e4a55-4e59-7757-41f0-86a53f101bb5": ("tier_ultra", "ultra.png"),
 }
+CURRENCY_EMOJIS = {
+    "vp": ("ValPointsIcon", "vp.png"),
+    "rp": ("RadianiteIcon", "rad.png"),
+    "kc": ("KingdomCreditIcon", "kc.png"),
+}
 
 
 class ApplicationEmojiService:
@@ -38,9 +43,7 @@ class ApplicationEmojiService:
                 for emoji in await self.client.fetch_application_emojis()
             }
             for name, filename in (
-                ("ValPointsIcon", "vp.png"),
-                ("RadianiteIcon", "rad.png"),
-                ("KingdomCreditIcon", "kc.png"),
+                *CURRENCY_EMOJIS.values(),
                 ("fbar", "fbar.png"),
                 ("ebar", "ebar.png"),
                 *SKIN_TIER_EMOJIS.values(),
@@ -51,13 +54,8 @@ class ApplicationEmojiService:
 
     async def currency(self, kind: str) -> str:
         """Return the emoji for VP, Radianite, or Kingdom Credits, if available."""
-        names = {
-            "vp": "ValPointsIcon",
-            "rp": "RadianiteIcon",
-            "kc": "KingdomCreditIcon",
-        }
-        filenames = {"vp": "vp.png", "rp": "rad.png", "kc": "kc.png"}
-        return await self._get_or_create(names[kind], ROOT / "assets" / filenames[kind])
+        name, filename = CURRENCY_EMOJIS[kind]
+        return await self._get_or_create(name, ROOT / "assets" / filename)
 
     async def battlepass_bars(self) -> tuple[str, str]:
         """Return the filled and empty battlepass progress-bar emoji strings."""

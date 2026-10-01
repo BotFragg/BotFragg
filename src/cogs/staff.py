@@ -112,13 +112,6 @@ class StaffCog(commands.Cog):
             card.set_thumbnail(url=server.icon.url)
         await interaction.followup.send(embed=card, ephemeral=True)
 
-    async def _favorite_command(
-        self, *, user_id: int | None = None, guild_id: int | None = None
-    ) -> str | None:
-        """Return the most-used command for exactly one user or server scope."""
-        _, favorite = await command_stats(user_id=user_id, guild_id=guild_id)
-        return favorite
-
 
 async def setup(bot: BotFraggBot) -> None:
     """Register the owner-only diagnostics cog with the bot."""
