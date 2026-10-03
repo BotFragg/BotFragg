@@ -234,16 +234,16 @@ class ExtraCog(commands.Cog):
             self._latest_updates_expires = monotonic() + GITHUB_CACHE_SECONDS
             return self._latest_updates
 
-    def _public_links(self, user: discord.ClientUser) -> tuple[str, discord.ui.View]:
-        """Build the configured public links for embeds and link buttons."""
+    def _public_links(self, user: discord.ClientUser) -> discord.ui.View:
+        """Build link buttons for the configured public URLs."""
         invite_url = discord.utils.oauth_url(
             user.id,
             permissions=discord.Permissions.none(),
             scopes=("bot", "applications.commands"),
         )
-        links = [("Invite BotFragg", "Invite me", invite_url)]
+        links = [("Invite BotFragg", invite_url)]
         links.extend(
-            (label, label, url)
+            (label, url)
             for label, url in (
                 ("Support server", self.bot.config.support_url),
                 ("Vote", self.bot.config.vote_url),
@@ -252,16 +252,7 @@ class ExtraCog(commands.Cog):
             )
             if url
         )
-        inline_links = " | ".join(
-            f"[{inline_label}]({url})" for _, inline_label, url in links
-        )
-        controls = view(
-            *(
-                discord.ui.Button(label=button_label, url=url)
-                for button_label, _, url in links
-            )
-        )
-        return inline_links, controls
+        return view(*(discord.ui.Button(label=label, url=url) for label, url in links))
 
     @staticmethod
     def _help_category(command: app_commands.Command) -> str:
@@ -298,7 +289,7 @@ class ExtraCog(commands.Cog):
 
     @app_commands.command(name="help", description="Show BotFragg's slash commands")
     async def help(self, interaction: discord.Interaction) -> None:
-        """List registered slash commands by category with clickable mentions."""
+        """List registered slash commands by category in the embed description."""
         await interaction.response.defer(thinking=True)
         user = self.bot.user
         if not user:
@@ -323,34 +314,15 @@ class ExtraCog(commands.Cog):
                 f"{command_name} - {description}"
             )
 
-        card = embed(
-            "Commands are only available through slash commands.\n\n"
-            "If you can't see the buttons, use these links below.",
-            title="BotFragg Help",
-        )
-        card.set_thumbnail(url=user.display_avatar.url)
+        description = [
+            "Commands are only available through slash commands.",
+        ]
         for category, entries in categories.items():
-            value = ""
-            part = 0
-            for entry in entries:
-                if value and len(value) + len(entry) + 1 > 1024:
-                    card.add_field(
-                        name=category if part == 0 else f"{category} (continued)",
-                        value=value,
-                        inline=False,
-                    )
-                    value = ""
-                    part += 1
-                value = f"{value}\n{entry}" if value else entry
-            if value:
-                card.add_field(
-                    name=category if part == 0 else f"{category} (continued)",
-                    value=value,
-                    inline=False,
-                )
+            description.extend(("", f"**{category}**", *entries))
 
-        inline_links, controls = self._public_links(user)
-        card.description = f"{card.description}\n{inline_links}"
+        controls = self._public_links(user)
+        card = embed("\n".join(description), title="BotFragg Help")
+        card.set_thumbnail(url=user.display_avatar.url)
         await interaction.followup.send(
             embed=card,
             view=controls,
@@ -367,7 +339,7 @@ class ExtraCog(commands.Cog):
                 interaction, "BotFragg is still starting up. Try again shortly."
             )
             return
-        _, controls = self._public_links(user)
+        controls = self._public_links(user)
         card = embed("Use the buttons below to find BotFragg online.", title="🔗 Links")
         card.set_thumbnail(url=user.display_avatar.url)
         await interaction.followup.send(embed=card, view=controls)

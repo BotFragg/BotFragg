@@ -274,19 +274,19 @@ Show recent public updates and BotFragg runtime information.
 
 Fetch and cache five public repository commits for the bot info embed.
 
-### `def _public_links(self, user: discord.ClientUser) -> tuple[str, discord.ui.View]`
+### `def _public_links(self, user: discord.ClientUser) -> discord.ui.View`
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
 [Source](../src/cogs/extra.py#L237)
 
-Build the configured public links for embeds and link buttons.
+Build link buttons for the configured public URLs.
 
 ### `def _help_category(command: app_commands.Command) -> str`
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L267)
+[Source](../src/cogs/extra.py#L258)
 
 Use each command's cog module to place it in a help category.
 
@@ -294,7 +294,7 @@ Use each command's cog module to place it in a help category.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L278)
+[Source](../src/cogs/extra.py#L269)
 
 Return Discord-formatted mentions for all synced commands and subcommands.
 
@@ -302,15 +302,15 @@ Return Discord-formatted mentions for all synced commands and subcommands.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L300)
+[Source](../src/cogs/extra.py#L291)
 
-List registered slash commands by category with clickable mentions.
+List registered slash commands by category in the embed description.
 
 ### `async def links(self, interaction: discord.Interaction) -> None`
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L361)
+[Source](../src/cogs/extra.py#L333)
 
 Show an invite link and any configured support, vote, and website links.
 
@@ -318,7 +318,7 @@ Show an invite link and any configured support, vote, and website links.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L377)
+[Source](../src/cogs/extra.py#L349)
 
 Persist a feature suggestion and publish it to the configured log channel.
 
@@ -326,7 +326,7 @@ Persist a feature suggestion and publish it to the configured log channel.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L423)
+[Source](../src/cogs/extra.py#L395)
 
 Follow an existing suggestion so the caller receives its review result.
 
@@ -334,7 +334,7 @@ Follow an existing suggestion so the caller receives its review result.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L441)
+[Source](../src/cogs/extra.py#L413)
 
 Remove the caller's follow from another user's suggestion.
 
@@ -342,7 +342,7 @@ Remove the caller's follow from another user's suggestion.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L462)
+[Source](../src/cogs/extra.py#L434)
 
 Submit an owner-only approval review for the selected suggestion.
 
@@ -350,7 +350,7 @@ Submit an owner-only approval review for the selected suggestion.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L470)
+[Source](../src/cogs/extra.py#L442)
 
 Submit an owner-only denial review for the selected suggestion.
 
@@ -358,7 +358,7 @@ Submit an owner-only denial review for the selected suggestion.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L476)
+[Source](../src/cogs/extra.py#L448)
 
 Authorize a review, update its record, and notify its followers.
 
@@ -366,7 +366,7 @@ Authorize a review, update its record, and notify its followers.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L512)
+[Source](../src/cogs/extra.py#L484)
 
 Edit the original suggestion post with the final status and review reason.
 
@@ -374,7 +374,7 @@ Edit the original suggestion post with the final status and review reason.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L532)
+[Source](../src/cogs/extra.py#L504)
 
 Update or recreate the persistent embed containing per-shard health.
 
@@ -382,7 +382,7 @@ Update or recreate the persistent embed containing per-shard health.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L567)
+[Source](../src/cogs/extra.py#L539)
 
 Wait for Discord readiness before the first shard-status update.
 
@@ -390,7 +390,7 @@ Wait for Discord readiness before the first shard-status update.
 
 **Scope:** `src/cogs/extra.py` · `module`
 
-[Source](../src/cogs/extra.py#L572)
+[Source](../src/cogs/extra.py#L544)
 
 Register the general utility and suggestion cog with the bot.
 
