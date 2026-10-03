@@ -1,6 +1,6 @@
 [project]
 name = "botfragg"
-version = "1.0.0"
+version = "1.1.0"
 description = "A privacy-conscious VALORANT companion for Discord"
 readme = "README.md"
 requires-python = ">=3.14"
