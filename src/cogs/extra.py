@@ -234,6 +234,129 @@ class ExtraCog(commands.Cog):
             self._latest_updates_expires = monotonic() + GITHUB_CACHE_SECONDS
             return self._latest_updates
 
+    def _public_links(self, user: discord.ClientUser) -> tuple[str, discord.ui.View]:
+        """Build the configured public links for embeds and link buttons."""
+        invite_url = discord.utils.oauth_url(
+            user.id,
+            permissions=discord.Permissions.none(),
+            scopes=("bot", "applications.commands"),
+        )
+        links = [("Invite BotFragg", "Invite me", invite_url)]
+        links.extend(
+            (label, label, url)
+            for label, url in (
+                ("Support server", self.bot.config.support_url),
+                ("Vote", self.bot.config.vote_url),
+                ("Website", self.bot.config.website_url),
+                ("GitHub", GITHUB_REPOSITORY_URL),
+            )
+            if url
+        )
+        inline_links = " | ".join(
+            f"[{inline_label}]({url})" for _, inline_label, url in links
+        )
+        controls = view(
+            *(
+                discord.ui.Button(label=button_label, url=url)
+                for button_label, _, url in links
+            )
+        )
+        return inline_links, controls
+
+    @staticmethod
+    def _help_category(command: app_commands.Command) -> str:
+        """Use each command's cog module to place it in a help category."""
+        module = command.module or ""
+        component = module.partition("src.cogs.")[2].split(".", 1)[0]
+        category = {
+            "extra": "Misc",
+            "valorant": "VALORANT",
+        }.get(component, component.replace("_", " ").title() or "Other")
+        return f"{category} Commands"
+
+    @staticmethod
+    def _command_mentions(commands: list[discord.AppCommand]) -> dict[str, str]:
+        """Return Discord-formatted mentions for all synced commands and subcommands."""
+        mentions: dict[str, str] = {}
+        pending: list[app_commands.AppCommandGroup] = []
+        for command in commands:
+            mentions[command.name] = command.mention
+            pending.extend(
+                option
+                for option in command.options
+                if isinstance(option, app_commands.AppCommandGroup)
+            )
+        while pending:
+            command = pending.pop()
+            mentions[command.qualified_name] = command.mention
+            pending.extend(
+                option
+                for option in command.options
+                if isinstance(option, app_commands.AppCommandGroup)
+            )
+        return mentions
+
+    @app_commands.command(name="help", description="Show BotFragg's slash commands")
+    async def help(self, interaction: discord.Interaction) -> None:
+        """List registered slash commands by category with clickable mentions."""
+        await interaction.response.defer(thinking=True)
+        user = self.bot.user
+        if not user:
+            await error(
+                interaction, "BotFragg is still starting up. Try again shortly."
+            )
+            return
+
+        try:
+            mentions = self._command_mentions(await self.bot.tree.fetch_commands())
+        except discord.HTTPException:
+            mentions = {}
+
+        categories: dict[str, list[str]] = {}
+        for command in self.bot.tree.walk_commands():
+            if not isinstance(command, app_commands.Command):
+                continue
+            mention = mentions.get(command.qualified_name)
+            command_name = mention or f"`/{command.qualified_name}`"
+            description = discord.utils.escape_markdown(command.description)
+            categories.setdefault(self._help_category(command), []).append(
+                f"{command_name} - {description}"
+            )
+
+        card = embed(
+            "Commands are only available through slash commands.\n\n"
+            "If you can't see the buttons, use these links below.",
+            title="BotFragg Help",
+        )
+        card.set_thumbnail(url=user.display_avatar.url)
+        for category, entries in categories.items():
+            value = ""
+            part = 0
+            for entry in entries:
+                if value and len(value) + len(entry) + 1 > 1024:
+                    card.add_field(
+                        name=category if part == 0 else f"{category} (continued)",
+                        value=value,
+                        inline=False,
+                    )
+                    value = ""
+                    part += 1
+                value = f"{value}\n{entry}" if value else entry
+            if value:
+                card.add_field(
+                    name=category if part == 0 else f"{category} (continued)",
+                    value=value,
+                    inline=False,
+                )
+
+        inline_links, controls = self._public_links(user)
+        card.description = f"{card.description}\n{inline_links}"
+        await interaction.followup.send(
+            embed=card,
+            view=controls,
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+
     @app_commands.command(name="links", description="Show BotFragg's public links")
     async def links(self, interaction: discord.Interaction) -> None:
         """Show an invite link and any configured support, vote, and website links."""
@@ -244,29 +367,10 @@ class ExtraCog(commands.Cog):
                 interaction, "BotFragg is still starting up. Try again shortly."
             )
             return
-        invite_url = discord.utils.oauth_url(
-            user.id,
-            permissions=discord.Permissions.none(),
-            scopes=("bot", "applications.commands"),
-        )
-        buttons = [
-            discord.ui.Button(
-                label="Invite BotFragg",
-                url=invite_url,
-                style=discord.ButtonStyle.link,
-            )
-        ]
-        for label, url in (
-            ("Support server", self.bot.config.support_url),
-            ("Vote", self.bot.config.vote_url),
-            ("Website", self.bot.config.website_url),
-            ("GitHub", GITHUB_REPOSITORY_URL),
-        ):
-            if url:
-                buttons.append(discord.ui.Button(label=label, url=url))
+        _, controls = self._public_links(user)
         card = embed("Use the buttons below to find BotFragg online.", title="🔗 Links")
         card.set_thumbnail(url=user.display_avatar.url)
-        await interaction.followup.send(embed=card, view=view(*buttons))
+        await interaction.followup.send(embed=card, view=controls)
 
     @app_commands.command(name="suggest", description="Suggest a feature for BotFragg")
     @app_commands.guild_only()

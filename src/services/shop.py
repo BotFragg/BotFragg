@@ -183,8 +183,8 @@ class ShopService:
                 )
         featured = raw.get("FeaturedBundle")
         featured = featured if isinstance(featured, dict) else {}
-        bundle_remaining = _nonnegative_int(
-            featured.get("BundlesRemainingDurationInSeconds")
+        bundle_remaining = _int_at_least(
+            featured.get("BundlesRemainingDurationInSeconds"), 0
         )
         bundle_expiry = now + bundle_remaining if bundle_remaining is not None else None
         featured_bundles: list[FeaturedBundle] = []
@@ -196,7 +196,7 @@ class ShopService:
             if not bundle_id:
                 continue
             currency_uuid = str(entry.get("CurrencyID") or VP_UUID)
-            duration = _nonnegative_int(entry.get("DurationRemainingInSeconds"))
+            duration = _int_at_least(entry.get("DurationRemainingInSeconds"), 0)
             expiry_candidates = [
                 expiry
                 for expiry in (
@@ -221,10 +221,11 @@ class ShopService:
                     FeaturedBundleItem(
                         item_type_id=item_type_id,
                         item_id=item_id,
-                        amount=_positive_int(
+                        amount=_int_at_least(
                             raw_item.get("Quantity")
                             or raw_item.get("BundleItemQty")
-                            or item.get("Amount")
+                            or item.get("Amount"),
+                            1,
                         )
                         or 1,
                         base_price=_vp_price(raw_item.get("BasePrice"), item_currency),
@@ -244,8 +245,8 @@ class ShopService:
                     total_discounted_cost=_vp_price(
                         entry.get("TotalDiscountedCost"), currency_uuid
                     ),
-                    total_discount_percent=_nonnegative_int(
-                        entry.get("TotalDiscountPercent")
+                    total_discount_percent=_int_at_least(
+                        entry.get("TotalDiscountPercent"), 0
                     ),
                     expires=min(expiry_candidates) if expiry_candidates else None,
                 )
@@ -342,22 +343,13 @@ class ShopUnavailable(RuntimeError):
     """Raised when Riot does not return a usable storefront or wallet."""
 
 
-def _positive_int(value: Any) -> int | None:
-    """Parse a positive storefront number without rejecting the whole payload."""
+def _int_at_least(value: Any, minimum: int) -> int | None:
+    """Parse an integer only when it meets the requested minimum."""
     try:
         result = int(value)
     except TypeError, ValueError:
         return None
-    return result if result > 0 else None
-
-
-def _nonnegative_int(value: Any) -> int | None:
-    """Parse a duration where zero means that the offer has already expired."""
-    try:
-        result = int(value)
-    except TypeError, ValueError:
-        return None
-    return result if result >= 0 else None
+    return result if result >= minimum else None
 
 
 def _vp_price(value: Any, currency_uuid: str) -> int | None:
@@ -366,8 +358,4 @@ def _vp_price(value: Any, currency_uuid: str) -> int | None:
         return None
     if isinstance(value, dict):
         value = value.get(VP_UUID)
-    try:
-        result = int(value)
-    except TypeError, ValueError:
-        return None
-    return result if result >= 0 else None
+    return _int_at_least(value, 0)

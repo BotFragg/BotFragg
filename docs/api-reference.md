@@ -274,11 +274,43 @@ Show recent public updates and BotFragg runtime information.
 
 Fetch and cache five public repository commits for the bot info embed.
 
+### `def _public_links(self, user: discord.ClientUser) -> tuple[str, discord.ui.View]`
+
+**Scope:** `src/cogs/extra.py` · `ExtraCog`
+
+[Source](../src/cogs/extra.py#L237)
+
+Build the configured public links for embeds and link buttons.
+
+### `def _help_category(command: app_commands.Command) -> str`
+
+**Scope:** `src/cogs/extra.py` · `ExtraCog`
+
+[Source](../src/cogs/extra.py#L267)
+
+Use each command's cog module to place it in a help category.
+
+### `def _command_mentions(commands: list[discord.AppCommand]) -> dict[str, str]`
+
+**Scope:** `src/cogs/extra.py` · `ExtraCog`
+
+[Source](../src/cogs/extra.py#L278)
+
+Return Discord-formatted mentions for all synced commands and subcommands.
+
+### `async def help(self, interaction: discord.Interaction) -> None`
+
+**Scope:** `src/cogs/extra.py` · `ExtraCog`
+
+[Source](../src/cogs/extra.py#L300)
+
+List registered slash commands by category with clickable mentions.
+
 ### `async def links(self, interaction: discord.Interaction) -> None`
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L238)
+[Source](../src/cogs/extra.py#L361)
 
 Show an invite link and any configured support, vote, and website links.
 
@@ -286,7 +318,7 @@ Show an invite link and any configured support, vote, and website links.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L273)
+[Source](../src/cogs/extra.py#L377)
 
 Persist a feature suggestion and publish it to the configured log channel.
 
@@ -294,7 +326,7 @@ Persist a feature suggestion and publish it to the configured log channel.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L319)
+[Source](../src/cogs/extra.py#L423)
 
 Follow an existing suggestion so the caller receives its review result.
 
@@ -302,7 +334,7 @@ Follow an existing suggestion so the caller receives its review result.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L337)
+[Source](../src/cogs/extra.py#L441)
 
 Remove the caller's follow from another user's suggestion.
 
@@ -310,7 +342,7 @@ Remove the caller's follow from another user's suggestion.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L358)
+[Source](../src/cogs/extra.py#L462)
 
 Submit an owner-only approval review for the selected suggestion.
 
@@ -318,7 +350,7 @@ Submit an owner-only approval review for the selected suggestion.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L366)
+[Source](../src/cogs/extra.py#L470)
 
 Submit an owner-only denial review for the selected suggestion.
 
@@ -326,7 +358,7 @@ Submit an owner-only denial review for the selected suggestion.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L372)
+[Source](../src/cogs/extra.py#L476)
 
 Authorize a review, update its record, and notify its followers.
 
@@ -334,7 +366,7 @@ Authorize a review, update its record, and notify its followers.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L408)
+[Source](../src/cogs/extra.py#L512)
 
 Edit the original suggestion post with the final status and review reason.
 
@@ -342,7 +374,7 @@ Edit the original suggestion post with the final status and review reason.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L428)
+[Source](../src/cogs/extra.py#L532)
 
 Update or recreate the persistent embed containing per-shard health.
 
@@ -350,7 +382,7 @@ Update or recreate the persistent embed containing per-shard health.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L463)
+[Source](../src/cogs/extra.py#L567)
 
 Wait for Discord readiness before the first shard-status update.
 
@@ -358,7 +390,7 @@ Wait for Discord readiness before the first shard-status update.
 
 **Scope:** `src/cogs/extra.py` · `module`
 
-[Source](../src/cogs/extra.py#L468)
+[Source](../src/cogs/extra.py#L572)
 
 Register the general utility and suggestion cog with the bot.
 
@@ -2709,7 +2741,7 @@ Fetch, repair claims, normalize all shop offers, and cache the result.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L271)
+[Source](../src/services/shop.py#L272)
 
 Request one account's regional storefront.
 
@@ -2717,7 +2749,7 @@ Request one account's regional storefront.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L282)
+[Source](../src/services/shop.py#L283)
 
 Return VP, Radianite, and Kingdom Credit balances for an account.
 
@@ -2725,7 +2757,7 @@ Return VP, Radianite, and Kingdom Credit balances for an account.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L302)
+[Source](../src/services/shop.py#L303)
 
 Resolve the storefront's accessory rewards and their Kingdom Credit prices.
 
@@ -2733,7 +2765,7 @@ Resolve the storefront's accessory rewards and their Kingdom Credit prices.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L318)
+[Source](../src/services/shop.py#L319)
 
 Extract the raw single-item store offers across Riot response shapes.
 
@@ -2741,7 +2773,7 @@ Extract the raw single-item store offers across Riot response shapes.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L325)
+[Source](../src/services/shop.py#L326)
 
 Build a skin-offer-to-VP-price lookup from the storefront payload.
 
@@ -2749,31 +2781,23 @@ Build a skin-offer-to-VP-price lookup from the storefront payload.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L341)
+[Source](../src/services/shop.py#L342)
 
 Raised when Riot does not return a usable storefront or wallet.
 
-### `def _positive_int(value: Any) -> int | None`
+### `def _int_at_least(value: Any, minimum: int) -> int | None`
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L345)
+[Source](../src/services/shop.py#L346)
 
-Parse a positive storefront number without rejecting the whole payload.
-
-### `def _nonnegative_int(value: Any) -> int | None`
-
-**Scope:** `src/services/shop.py` · `module`
-
-[Source](../src/services/shop.py#L354)
-
-Parse a duration where zero means that the offer has already expired.
+Parse an integer only when it meets the requested minimum.
 
 ### `def _vp_price(value: Any, currency_uuid: str) -> int | None`
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L363)
+[Source](../src/services/shop.py#L355)
 
 Return a price only when the source entry explicitly uses VALORANT Points.
 

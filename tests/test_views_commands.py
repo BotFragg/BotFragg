@@ -1724,6 +1724,7 @@ async def test_initial_release_command_contract(
         "penalties",
         "ping",
         "botinfo",
+        "help",
         "links",
         "suggest",
         "suggestion",

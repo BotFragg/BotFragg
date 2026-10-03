@@ -27,7 +27,7 @@ SQLite for local development and PostgreSQL in production.
 | VALORANT | `/shop`, `/bundles`, `/nightmarket`, `/balance`, `/battlepass`, `/penalties` |
 | Alerts | `/alert`, `/alerts`, `/testalerts` |
 | Settings | `/settings view`, `/settings set` |
-| Community | `/ping`, `/botinfo`, `/links`, `/suggest`, `/suggestion` |
+| Community | `/help`, `/ping`, `/botinfo`, `/links`, `/suggest`, `/suggestion` |
 
 `/userinfo` and `/serverinfo` are owner-only operational commands.
 
