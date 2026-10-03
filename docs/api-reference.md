@@ -222,7 +222,7 @@ General BotFragg commands for status, links, suggestions, and shard health.
 
 **Scope:** `src/cogs/extra.py` · `module`
 
-[Source](../src/cogs/extra.py#L33)
+[Source](../src/cogs/extra.py#L45)
 
 Provide public utility commands and owner-managed suggestion workflows.
 
@@ -230,7 +230,7 @@ Provide public utility commands and owner-managed suggestion workflows.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L40)
+[Source](../src/cogs/extra.py#L52)
 
 Store the bot and record when this cog started for the info command.
 
@@ -238,7 +238,7 @@ Store the bot and record when this cog started for the info command.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L45)
+[Source](../src/cogs/extra.py#L67)
 
 Start shard-status updates when their destination is configured.
 
@@ -246,7 +246,7 @@ Start shard-status updates when their destination is configured.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L50)
+[Source](../src/cogs/extra.py#L72)
 
 Cancel and await the shard-status task during extension shutdown.
 
@@ -254,7 +254,7 @@ Cancel and await the shard-status task during extension shutdown.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L59)
+[Source](../src/cogs/extra.py#L81)
 
 Report Discord gateway latency and a live database probe duration.
 
@@ -262,15 +262,23 @@ Report Discord gateway latency and a live database probe duration.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L78)
+[Source](../src/cogs/extra.py#L100)
 
-Show runtime, deployment, library, and registered-user information.
+Show recent public updates and BotFragg runtime information.
+
+### `async def _latest_commit_summary(self) -> str`
+
+**Scope:** `src/cogs/extra.py` · `ExtraCog`
+
+[Source](../src/cogs/extra.py#L174)
+
+Fetch and cache five public repository commits for the bot info embed.
 
 ### `async def links(self, interaction: discord.Interaction) -> None`
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L105)
+[Source](../src/cogs/extra.py#L238)
 
 Show an invite link and any configured support, vote, and website links.
 
@@ -278,7 +286,7 @@ Show an invite link and any configured support, vote, and website links.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L139)
+[Source](../src/cogs/extra.py#L273)
 
 Persist a feature suggestion and publish it to the configured log channel.
 
@@ -286,7 +294,7 @@ Persist a feature suggestion and publish it to the configured log channel.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L185)
+[Source](../src/cogs/extra.py#L319)
 
 Follow an existing suggestion so the caller receives its review result.
 
@@ -294,7 +302,7 @@ Follow an existing suggestion so the caller receives its review result.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L203)
+[Source](../src/cogs/extra.py#L337)
 
 Remove the caller's follow from another user's suggestion.
 
@@ -302,7 +310,7 @@ Remove the caller's follow from another user's suggestion.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L224)
+[Source](../src/cogs/extra.py#L358)
 
 Submit an owner-only approval review for the selected suggestion.
 
@@ -310,7 +318,7 @@ Submit an owner-only approval review for the selected suggestion.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L232)
+[Source](../src/cogs/extra.py#L366)
 
 Submit an owner-only denial review for the selected suggestion.
 
@@ -318,7 +326,7 @@ Submit an owner-only denial review for the selected suggestion.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L238)
+[Source](../src/cogs/extra.py#L372)
 
 Authorize a review, update its record, and notify its followers.
 
@@ -326,7 +334,7 @@ Authorize a review, update its record, and notify its followers.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L274)
+[Source](../src/cogs/extra.py#L408)
 
 Edit the original suggestion post with the final status and review reason.
 
@@ -334,7 +342,7 @@ Edit the original suggestion post with the final status and review reason.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L294)
+[Source](../src/cogs/extra.py#L428)
 
 Update or recreate the persistent embed containing per-shard health.
 
@@ -342,7 +350,7 @@ Update or recreate the persistent embed containing per-shard health.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L329)
+[Source](../src/cogs/extra.py#L463)
 
 Wait for Discord readiness before the first shard-status update.
 
@@ -350,7 +358,7 @@ Wait for Discord readiness before the first shard-status update.
 
 **Scope:** `src/cogs/extra.py` · `module`
 
-[Source](../src/cogs/extra.py#L334)
+[Source](../src/cogs/extra.py#L468)
 
 Register the general utility and suggestion cog with the bot.
 

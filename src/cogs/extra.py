@@ -3,15 +3,19 @@
 from __future__ import annotations
 
 import asyncio
+import platform
+import re
 from datetime import UTC, datetime
 from time import monotonic
 from typing import Literal
 
 import discord
+import psutil
 from discord import app_commands
 from discord.ext import commands, tasks
 
 from ..bot import BotFraggBot
+from ..config import ROOT
 from ..database import (
     get_shard_status_message_id,
     ping_database,
@@ -27,7 +31,15 @@ from ..services.accounts import (
     review_suggestion,
     unfollow_suggestion,
 )
+from ..services.http import HTTPFailure
+from ..views import timestamp
 from .valorant._ui import embed, error, view
+
+GITHUB_COMMITS_URL = "https://api.github.com/repos/BotFragg/BotFragg/commits?per_page=5"
+GITHUB_REPOSITORY_URL = "https://github.com/BotFragg/BotFragg"
+GITHUB_COMMIT_URL = f"{GITHUB_REPOSITORY_URL}/commit/{{}}"
+GITHUB_CACHE_SECONDS = 1800
+COMMIT_SHA = re.compile(r"[0-9a-f]{40,64}", re.IGNORECASE)
 
 
 class ExtraCog(commands.Cog):
@@ -41,6 +53,16 @@ class ExtraCog(commands.Cog):
         """Store the bot and record when this cog started for the info command."""
         self.bot = bot
         self.started_at = datetime.now(UTC)
+        self._latest_updates = "Commit history is temporarily unavailable."
+        self._latest_updates_expires = 0.0
+        self._latest_updates_lock = asyncio.Lock()
+        try:
+            self.source_line_count = sum(
+                len(path.read_text(encoding="utf-8").splitlines())
+                for path in (ROOT / "src").rglob("*.py")
+            )
+        except OSError:
+            self.source_line_count = None
 
     async def cog_load(self) -> None:
         """Start shard-status updates when their destination is configured."""
@@ -76,7 +98,7 @@ class ExtraCog(commands.Cog):
     @app_commands.command(name="botinfo", description="Show information about BotFragg")
     @app_commands.guild_only()
     async def botinfo(self, interaction: discord.Interaction) -> None:
-        """Show runtime, deployment, library, and registered-user information."""
+        """Show recent public updates and BotFragg runtime information."""
         await interaction.response.defer(thinking=True)
         user = self.bot.user
         if not user:
@@ -86,20 +108,131 @@ class ExtraCog(commands.Cog):
             return
         registered_users = await count_registered_users()
         members = sum(guild.member_count or 0 for guild in self.bot.guilds)
+        channels = sum(len(guild.channels) for guild in self.bot.guilds)
+        try:
+            process = psutil.Process()
+            cpu_percent = await asyncio.to_thread(process.cpu_percent, 0.1)
+            memory_mb = process.memory_info().rss / (1024 * 1024)
+            system_started = psutil.boot_time()
+        except psutil.Error:
+            cpu_percent = memory_mb = system_started = None
+        source_lines = (
+            f"{self.source_line_count:,}"
+            if self.source_line_count is not None
+            else "Unavailable"
+        )
+        system_uptime = (
+            timestamp(system_started) if system_started is not None else "Unavailable"
+        )
+        cpu_usage = f"{cpu_percent:.1f}%" if cpu_percent is not None else "Unavailable"
+        memory_usage = f"{memory_mb:.2f} MB" if memory_mb is not None else "Unavailable"
         card = embed(
             "BotFragg is a VALORANT companion for personal shops, balances, battlepass progress, and alerts.",
             title=f"About {user.name}",
         )
-        card.add_field(name="Commands", value=str(len(self.bot.tree.get_commands())))
-        card.add_field(name="Registered users", value=f"{registered_users:,}")
-        card.add_field(name="Servers", value=f"{len(self.bot.guilds):,}")
-        card.add_field(name="Members", value=f"{members:,}")
-        card.add_field(name="Library", value=f"discord.py {discord.__version__}")
         card.add_field(
-            name="Started", value=f"<t:{int(self.started_at.timestamp())}:R>"
+            name="Recent commits",
+            value=await self._latest_commit_summary(),
+            inline=False,
+        )
+        card.add_field(
+            name="Community",
+            value=(
+                f"**Servers:** {len(self.bot.guilds):,}\n"
+                f"**Registered users:** {registered_users:,}\n"
+                f"**Members:** {members:,}\n"
+                f"**Channels:** {channels:,}\n"
+                f"**Commands:** {len(self.bot.tree.get_commands()):,}"
+            ),
+            inline=True,
+        )
+        card.add_field(
+            name="Software",
+            value=(
+                f"**Source lines:** {source_lines}\n"
+                f"**Python:** {platform.python_version()}\n"
+                f"**discord.py:** {discord.__version__}"
+            ),
+            inline=True,
+        )
+        card.add_field(
+            name="Process",
+            value=(
+                f"**OS:** {platform.system()}\n"
+                f"**Bot uptime:** {timestamp(self.started_at)}\n"
+                f"**System uptime:** {system_uptime}\n"
+                f"**Process CPU:** {cpu_usage}\n"
+                f"**Memory:** {memory_usage}"
+            ),
+            inline=False,
         )
         card.set_thumbnail(url=user.display_avatar.url)
-        await interaction.followup.send(embed=card)
+        await interaction.followup.send(
+            embed=card, allowed_mentions=discord.AllowedMentions.none()
+        )
+
+    async def _latest_commit_summary(self) -> str:
+        """Fetch and cache five public repository commits for the bot info embed."""
+        if monotonic() < self._latest_updates_expires:
+            return self._latest_updates
+        async with self._latest_updates_lock:
+            if monotonic() < self._latest_updates_expires:
+                return self._latest_updates
+            try:
+                response = await self.bot.riot_http.request(
+                    "GET",
+                    GITHUB_COMMITS_URL,
+                    headers={
+                        "Accept": "application/vnd.github+json",
+                        "User-Agent": "BotFragg",
+                        "X-GitHub-Api-Version": "2022-11-28",
+                    },
+                )
+            except HTTPFailure:
+                response = None
+            if response and response.status == 200 and isinstance(response.data, list):
+                updates = []
+                for commit in response.data[:5]:
+                    if not isinstance(commit, dict):
+                        continue
+                    sha = commit.get("sha")
+                    details = commit.get("commit")
+                    if (
+                        not isinstance(sha, str)
+                        or not COMMIT_SHA.fullmatch(sha)
+                        or not isinstance(details, dict)
+                    ):
+                        continue
+                    message = details.get("message")
+                    subject = (
+                        discord.utils.escape_markdown(message.splitlines()[0].strip())
+                        if isinstance(message, str) and message.strip()
+                        else "Commit"
+                    )
+                    if len(subject) > 100:
+                        subject = subject[:97] + "..."
+                    author = details.get("author") or details.get("committer")
+                    commit_date = (
+                        author.get("date") if isinstance(author, dict) else None
+                    )
+                    age = ""
+                    if isinstance(commit_date, str):
+                        try:
+                            committed = datetime.fromisoformat(
+                                commit_date.replace("Z", "+00:00")
+                            )
+                            age = f" · {timestamp(committed)}"
+                        except ValueError:
+                            pass
+                    updates.append(
+                        f"[`{sha[:7]}`]({GITHUB_COMMIT_URL.format(sha)}) {subject}{age}"
+                    )
+                if updates:
+                    self._latest_updates = "\n".join(updates)
+                elif not response.data:
+                    self._latest_updates = "No commits found."
+            self._latest_updates_expires = monotonic() + GITHUB_CACHE_SECONDS
+            return self._latest_updates
 
     @app_commands.command(name="links", description="Show BotFragg's public links")
     async def links(self, interaction: discord.Interaction) -> None:
@@ -127,6 +260,7 @@ class ExtraCog(commands.Cog):
             ("Support server", self.bot.config.support_url),
             ("Vote", self.bot.config.vote_url),
             ("Website", self.bot.config.website_url),
+            ("GitHub", GITHUB_REPOSITORY_URL),
         ):
             if url:
                 buttons.append(discord.ui.Button(label=label, url=url))
