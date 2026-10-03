@@ -77,6 +77,7 @@ docstring. Regenerate it after application documentation changes with
 | [src/cogs/valorant/battlepass.py](../src/cogs/valorant/battlepass.py) | Displays battlepass and mission progress using Riot gameplay data. |
 | [src/cogs/valorant/login.py](../src/cogs/valorant/login.py) | Handles nonce-bound Riot sign-in through a private Discord modal. |
 | [src/cogs/valorant/logout.py](../src/cogs/valorant/logout.py) | Clears Riot credentials or deletes the caller's stored data. |
+| [src/cogs/valorant/penalties.py](../src/cogs/valorant/penalties.py) | Displays paginated private matchmaking-penalty summaries for the selected Riot account. |
 | [src/cogs/valorant/settings.py](../src/cogs/valorant/settings.py) | Displays and updates user privacy and notification preferences. |
 | [src/cogs/valorant/shop.py](../src/cogs/valorant/shop.py) | Displays daily and accessory shops, featured bundles, Night Markets, and wallet balances. |
 | [src/migrations/__init__.py](../src/migrations/__init__.py) | Exposes the Tortoise migration package. |
@@ -92,7 +93,7 @@ docstring. Regenerate it after application documentation changes with
 | [src/services/catalog.py](../src/services/catalog.py) | Loads, searches, refreshes, and caches skin, bundle, accessory, and mission metadata. |
 | [src/services/crypto.py](../src/services/crypto.py) | Encrypts and decrypts stored Riot credentials with Fernet. |
 | [src/services/emojis.py](../src/services/emojis.py) | Caches application emojis and creates missing ones from packaged assets. |
-| [src/services/gameplay.py](../src/services/gameplay.py) | Normalizes VALORANT battlepass and mission progress. |
+| [src/services/gameplay.py](../src/services/gameplay.py) | Normalizes VALORANT battlepass, mission, and matchmaking-penalty data. |
 | [src/services/http.py](../src/services/http.py) | Provides shared Riot HTTP requests, URL redaction, and rate-limit handling. |
 | [src/services/shop.py](../src/services/shop.py) | Retrieves and normalizes account-scoped skin, bundle, accessory, Night Market, and wallet data. |
 | [src/views/__init__.py](../src/views/__init__.py) | Re-exports common timestamps and persistent interactive controls. |
@@ -110,6 +111,7 @@ docstring. Regenerate it after application documentation changes with
 | [tests/test_config_crypto_monitoring.py](../tests/test_config_crypto_monitoring.py) | Configuration validation, credential encryption, and privacy scrubbing. |
 | [tests/test_migration.py](../tests/test_migration.py) | Migration/model parity and database initialization behavior. |
 | [tests/test_models_services.py](../tests/test_models_services.py) | Data invariants, concurrency, authentication, catalog, shop, and gameplay services. |
+| [tests/test_penalties.py](../tests/test_penalties.py) | Private matchmaking-penalties command output, privacy, pagination, and account ownership. |
 | [tests/test_shard_status_service.py](../tests/test_shard_status_service.py) | Reuse and replacement of saved shard-status messages. |
 | [tests/test_suggestions_service.py](../tests/test_suggestions_service.py) | Suggestion delivery, follower uniqueness, and review outcomes. |
 | [tests/test_staff.py](../tests/test_staff.py) | Owner-only user and server diagnostics with incomplete member caches. |

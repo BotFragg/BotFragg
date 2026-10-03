@@ -1,4 +1,4 @@
-"""Fetch VALORANT battlepass and mission progression for linked accounts."""
+"""Fetch VALORANT progression and matchmaking penalties for linked accounts."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from .http import HTTPClient, HTTPFailure
 
 
 class GameplayService:
-    """Riot progression API used by the initial-release battlepass command."""
+    """Riot gameplay APIs used by battlepass, mission, and penalty commands."""
 
     def __init__(
         self,
@@ -123,6 +123,108 @@ class GameplayService:
             for row in rows
             if (mission := self._mission_progress(row, definitions)) is not None
         ]
+
+    async def penalties(self, account: Account) -> list[dict[str, Any]]:
+        """Fetch and normalize an account's current Riot matchmaking penalties."""
+        try:
+            headers = await self.auth.auth_headers(account)
+            response = await self.http.request(
+                "GET",
+                f"https://pd.{riot_region(account.region)}.a.pvp.net/restrictions/v3/penalties",
+                headers=headers,
+            )
+        except HTTPFailure as exc:
+            raise GameplayUnavailable("Could not fetch penalty data") from exc
+        payload = response.data
+        if response.status != 200 or not isinstance(payload, dict):
+            raise GameplayUnavailable("Could not fetch penalty data")
+        subject = payload.get("Subject")
+        if (
+            not isinstance(subject, str)
+            or subject.casefold() != account.puuid.casefold()
+        ):
+            raise GameplayUnavailable("Riot returned penalties for a different account")
+        rows = payload.get("Penalties")
+        infractions = payload.get("Infractions")
+        if (
+            not isinstance(rows, list)
+            or not isinstance(infractions, list)
+            or any(not isinstance(row, dict) for row in [*rows, *infractions])
+        ):
+            raise GameplayUnavailable("Riot returned malformed penalty data")
+
+        infraction_by_id = {
+            str(infraction["ID"]): infraction
+            for infraction in infractions
+            if isinstance(infraction.get("ID"), str) and infraction["ID"]
+        }
+        effect_labels = (
+            ("DelayedPenaltyEffect", "Delayed penalty"),
+            ("GameBanEffect", "Game ban"),
+            ("QueueDelayEffect", "Queue delay"),
+            ("QueueRestrictionEffect", "Queue restriction"),
+            ("RankedRatingPenaltyEffect", "Ranked rating penalty"),
+            ("RiotRestrictionEffect", "Riot restriction"),
+            ("RMSNotifyEffect", "Riot notification"),
+            ("XPMultiplierEffect", "XP multiplier"),
+            ("PremierRestrictionEffect", "Premier restriction"),
+        )
+        result = []
+        for row in rows:
+            infraction_id = str(row.get("InfractionID") or "")
+            infraction = infraction_by_id.get(infraction_id, {})
+            name = next(
+                (
+                    value.strip()
+                    for value in (infraction.get("Name"), infraction.get("RatingName"))
+                    if isinstance(value, str) and value.strip()
+                ),
+                infraction_id or "Unknown infraction",
+            )
+            platform_values = []
+            if row.get("ApplyToAllPlatforms") is not True:
+                for field in ("ApplyToPlatforms", "ApplyToPlatformGroups"):
+                    values = row.get(field)
+                    if isinstance(values, list):
+                        platform_values.extend(
+                            value.strip()
+                            for value in values
+                            if isinstance(value, str) and value.strip()
+                        )
+            platform_scope = (
+                "All platforms"
+                if row.get("ApplyToAllPlatforms") is True
+                else ", ".join(dict.fromkeys(platform_values)) or "Not specified"
+            )
+            effects = [
+                label for field, label in effect_labels if row.get(field) is not None
+            ]
+            warning = row.get("WarningEffect")
+            warning_type = (
+                warning.get("WarningType")
+                if isinstance(warning, dict)
+                and isinstance(warning.get("WarningType"), str)
+                else None
+            )
+            warning_tier = (
+                _nonnegative_int(warning.get("WarningTier"))
+                if isinstance(warning, dict)
+                else None
+            )
+            if warning is not None:
+                effects.append("Warning")
+            result.append(
+                {
+                    "infraction": name,
+                    "expires": _parse_datetime(row.get("Expiry")),
+                    "games_remaining": _nonnegative_int(row.get("GamesRemaining")),
+                    "platform_scope": platform_scope,
+                    "effects": effects,
+                    "warning_type": warning_type,
+                    "warning_tier": warning_tier,
+                }
+            )
+        return result
 
     @staticmethod
     def _mission_progress(
@@ -254,7 +356,7 @@ def _api_data(value: Any) -> list[dict[str, Any]]:
 
 
 class GameplayUnavailable(RuntimeError):
-    """Riot did not return usable battlepass data."""
+    """Riot did not return usable gameplay data."""
 
 
 def _nonnegative_int(value: Any) -> int | None:

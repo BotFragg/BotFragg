@@ -2,7 +2,7 @@
 
 BotFragg is a privacy-conscious VALORANT companion for Discord. Link a Riot
 account to view the daily shop, featured bundles, Night Market, balances,
-battlepass progress, and receive direct-message skin alerts.
+battlepass progress, matchmaking penalties, and direct-message skin alerts.
 
 BotFragg is written in Python 3.14 with discord.py, Tortoise ORM, and uv. It uses
 SQLite for local development and PostgreSQL in production.
@@ -11,7 +11,7 @@ SQLite for local development and PostgreSQL in production.
 
 - Riot account login with encrypted credentials and multi-account switching.
 - Daily and accessory shops, featured bundle browsing, Night Market, balances,
-  and battlepass progress.
+  battlepass progress, and matchmaking penalties.
 - DM-only daily-shop delivery and skin alerts.
 - Per-user privacy controls for in-game names and shop sharing.
 - Persistent interactive controls, restart-safe alert removal, and application
@@ -24,7 +24,7 @@ SQLite for local development and PostgreSQL in production.
 | Area | Commands |
 | --- | --- |
 | Account | `/login`, `/logout`, `/deletedata`, `/account`, `/accounts` |
-| VALORANT | `/shop`, `/bundles`, `/nightmarket`, `/balance`, `/battlepass` |
+| VALORANT | `/shop`, `/bundles`, `/nightmarket`, `/balance`, `/battlepass`, `/penalties` |
 | Alerts | `/alert`, `/alerts`, `/testalerts` |
 | Settings | `/settings view`, `/settings set` |
 | Community | `/ping`, `/botinfo`, `/links`, `/suggest`, `/suggestion` |

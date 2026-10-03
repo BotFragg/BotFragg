@@ -106,7 +106,7 @@ Initialize shared resources, load extensions, and optionally sync commands.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L200)
+[Source](../src/bot.py#L201)
 
 Set the online activity and log the connected shard and guild counts.
 
@@ -114,7 +114,7 @@ Set the online activity and log the connected shard and guild counts.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L213)
+[Source](../src/bot.py#L214)
 
 Close Discord, Riot HTTP, database, and monitoring resources in order.
 
@@ -989,6 +989,58 @@ Permanently delete the caller's records and clear cached storefronts.
 [Source](../src/cogs/valorant/logout.py#L81)
 
 Register the account logout and personal data deletion commands.
+
+## `src/cogs/valorant/penalties.py`
+
+Private command for viewing Riot matchmaking penalties.
+
+### `class PenaltiesCog(commands.Cog)`
+
+**Scope:** `src/cogs/valorant/penalties.py` · `module`
+
+[Source](../src/cogs/valorant/penalties.py#L22)
+
+Display matchmaking penalties for the caller's selected VALORANT account.
+
+### `def __init__(self, bot: BotFraggBot) -> None`
+
+**Scope:** `src/cogs/valorant/penalties.py` · `PenaltiesCog`
+
+[Source](../src/cogs/valorant/penalties.py#L25)
+
+Bind the gameplay service and register pagination handling.
+
+### `async def penalties(self, interaction: discord.Interaction) -> None`
+
+**Scope:** `src/cogs/valorant/penalties.py` · `PenaltiesCog`
+
+[Source](../src/cogs/valorant/penalties.py#L33)
+
+Show Riot penalties privately for the caller's selected account.
+
+### `async def penalties_page(self, interaction: discord.Interaction, payload: str) -> None`
+
+**Scope:** `src/cogs/valorant/penalties.py` · `PenaltiesCog`
+
+[Source](../src/cogs/valorant/penalties.py#L59)
+
+Validate pagination data, reload its owned account, and edit the page.
+
+### `def _penalties_page(owner_id: int, account: Account, player: str, penalties: list[dict], page: int) -> tuple[discord.Embed, discord.ui.View | None]`
+
+**Scope:** `src/cogs/valorant/penalties.py` · `module`
+
+[Source](../src/cogs/valorant/penalties.py#L98)
+
+Build one five-penalty embed page and owner-bound navigation controls.
+
+### `async def setup(bot: BotFraggBot) -> None`
+
+**Scope:** `src/cogs/valorant/penalties.py` · `module`
+
+[Source](../src/cogs/valorant/penalties.py#L171)
+
+Register the private matchmaking-penalties command.
 
 ## `src/cogs/valorant/settings.py`
 
@@ -2373,7 +2425,7 @@ Resolve or create one application emoji, returning empty text on failure.
 
 ## `src/services/gameplay.py`
 
-Fetch VALORANT battlepass and mission progression for linked accounts.
+Fetch VALORANT progression and matchmaking penalties for linked accounts.
 
 ### `class GameplayService`
 
@@ -2381,7 +2433,7 @@ Fetch VALORANT battlepass and mission progression for linked accounts.
 
 [Source](../src/services/gameplay.py#L15)
 
-Riot progression API used by the initial-release battlepass command.
+Riot gameplay APIs used by battlepass, mission, and penalty commands.
 
 ### `def __init__(self, http: HTTPClient, auth: AuthService, catalog: CatalogService) -> None`
 
@@ -2407,11 +2459,19 @@ Return the active battlepass level, XP, expiry, and next reward.
 
 Join the account's live mission progress with cached catalog definitions.
 
+### `async def penalties(self, account: Account) -> list[dict[str, Any]]`
+
+**Scope:** `src/services/gameplay.py` · `GameplayService`
+
+[Source](../src/services/gameplay.py#L127)
+
+Fetch and normalize an account's current Riot matchmaking penalties.
+
 ### `def _mission_progress(row: Any, definitions: dict[str, dict[str, Any]]) -> dict[str, Any] | None`
 
 **Scope:** `src/services/gameplay.py` · `GameplayService`
 
-[Source](../src/services/gameplay.py#L128)
+[Source](../src/services/gameplay.py#L230)
 
 Normalize one Riot mission row and its objective progress for display.
 
@@ -2419,7 +2479,7 @@ Normalize one Riot mission row and its objective progress for display.
 
 **Scope:** `src/services/gameplay.py` · `GameplayService`
 
-[Source](../src/services/gameplay.py#L207)
+[Source](../src/services/gameplay.py#L309)
 
 Resolve the next battlepass reward to display data, including its icon.
 
@@ -2427,7 +2487,7 @@ Resolve the next battlepass reward to display data, including its icon.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L247)
+[Source](../src/services/gameplay.py#L349)
 
 Return a validated API response's data list or an empty list.
 
@@ -2435,15 +2495,15 @@ Return a validated API response's data list or an empty list.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L256)
+[Source](../src/services/gameplay.py#L358)
 
-Riot did not return usable battlepass data.
+Riot did not return usable gameplay data.
 
 ### `def _nonnegative_int(value: Any) -> int | None`
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L260)
+[Source](../src/services/gameplay.py#L362)
 
 Convert a non-Boolean value to a nonnegative integer when possible.
 
@@ -2451,7 +2511,7 @@ Convert a non-Boolean value to a nonnegative integer when possible.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L271)
+[Source](../src/services/gameplay.py#L373)
 
 Convert a value to a positive integer or return ``None``.
 
@@ -2459,7 +2519,7 @@ Convert a value to a positive integer or return ``None``.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L277)
+[Source](../src/services/gameplay.py#L379)
 
 Parse an ISO timestamp and attach UTC when the input has no timezone.
 

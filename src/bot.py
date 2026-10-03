@@ -188,6 +188,7 @@ class BotFraggBot(commands.AutoShardedBot):
             "src.cogs.valorant.shop",
             "src.cogs.valorant.alerts",
             "src.cogs.valorant.battlepass",
+            "src.cogs.valorant.penalties",
             "src.cogs.events",
             "src.cogs.extra",
             "src.cogs.staff",
