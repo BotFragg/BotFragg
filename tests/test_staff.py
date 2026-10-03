@@ -39,31 +39,21 @@ def interaction() -> SimpleNamespace:
     )
 
 
-async def test_userinfo_fetches_uncached_guild_membership(monkeypatch) -> None:
-    """Verify uncached guild membership is checked through Discord's API."""
+async def test_userinfo_uses_cached_guild_membership(monkeypatch) -> None:
+    """Verify userinfo avoids REST lookups and labels its cached server count."""
     user_id = 123
-    fetched: list[int] = []
 
     class Guild:
-        """Represent a guild with no cached member and a configured API result."""
+        """Represent a guild with a configured cached member and owner."""
 
         def __init__(self, member_id: int | None, owner_id: int = 1) -> None:
             """Configure member lookup and server ownership results."""
             self.member_id = member_id
             self.owner_id = owner_id
 
-        def get_member(self, _user_id: int) -> None:
-            """Model an incomplete member cache with no matching entry."""
-            return None
-
-        async def fetch_member(self, requested_id: int) -> object:
-            """Return the configured member or raise Discord's not-found error."""
-            fetched.append(requested_id)
-            if self.member_id == requested_id:
-                return object()
-            raise discord.NotFound(
-                SimpleNamespace(status=404, reason="Not Found"), "member missing"
-            )
+        def get_member(self, requested_id: int) -> object | None:
+            """Return the configured cached member when IDs match."""
+            return object() if self.member_id == requested_id else None
 
     owned_guild = Guild(member_id=None, owner_id=user_id)
     shared_guild = Guild(member_id=user_id)
@@ -102,9 +92,8 @@ async def test_userinfo_fetches_uncached_guild_membership(monkeypatch) -> None:
 
     card = command_interaction.followup.embed
     assert card is not None
-    assert "**Shared servers:** 2" in card.description
+    assert "**Shared servers (cached; may be incomplete):** 2" in card.description
     assert "**Owned servers:** 1" in card.description
-    assert fetched == [user_id, user_id]
     assert command_interaction.followup.ephemeral
 
 

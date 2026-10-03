@@ -394,7 +394,7 @@ Show the owner's stored account statistics and shared-server details.
 
 **Scope:** `src/cogs/staff.py` · `StaffCog`
 
-[Source](../src/cogs/staff.py#L81)
+[Source](../src/cogs/staff.py#L68)
 
 Show analytics and Discord's cached membership count for a server.
 
@@ -402,7 +402,7 @@ Show analytics and Discord's cached membership count for a server.
 
 **Scope:** `src/cogs/staff.py` · `module`
 
-[Source](../src/cogs/staff.py#L126)
+[Source](../src/cogs/staff.py#L113)
 
 Register the owner-only diagnostics cog with the bot.
 

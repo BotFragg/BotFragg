@@ -43,28 +43,15 @@ class StaffCog(commands.Cog):
             if guild.owner_id == user.id:
                 shared_guilds += 1
                 owned_guilds += 1
-                continue
-            if guild.get_member(user.id):
+            elif guild.get_member(user.id):
                 shared_guilds += 1
-                continue
-            try:
-                await guild.fetch_member(user.id)
-            except discord.NotFound:
-                continue
-            except discord.HTTPException:
-                await error(
-                    interaction,
-                    "Couldn't check shared servers right now. Try again later.",
-                )
-                return
-            shared_guilds += 1
         card = embed(title=f"{user}'s information", colour=0x9C84EF)
         card.description = "\n".join(
             (
                 f"**Full username:** [{user}](https://discord.com/users/{user.id})",
                 f"**ID:** {user.id}",
                 f"**Avatar URL:** [Click here]({user.display_avatar.url})",
-                f"**Shared servers:** {shared_guilds}",
+                f"**Shared servers (cached; may be incomplete):** {shared_guilds}",
                 f"**Owned servers:** {owned_guilds}",
                 f"**Commands used:** {command_count}",
                 f"**Suggestions made:** {suggestion_count}",
