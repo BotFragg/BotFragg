@@ -9,12 +9,15 @@ from discord.ext import commands
 from ...bot import BotFraggBot
 from ...services.accounts import get_user, update_user_preference
 from ...views import OwnedSelect
-from ._ui import DARK, embed, error, view
+from ._ui import DARK, embed, error, localized_embed, translated, view
 
 SETTINGS = {
-    "daily_shop_enabled": "Send your shop every day by DM",
-    "hide_ign": "Hide in-game name",
-    "others_can_view_shop": "Allow others to use /shop with your account",
+    "daily_shop_enabled": ("Send your shop every day by DM", "setting-daily-shop"),
+    "hide_ign": ("Hide in-game name", "setting-hide-ign"),
+    "others_can_view_shop": (
+        "Allow others to use /shop with your account",
+        "setting-share-shop",
+    ),
 }
 
 
@@ -22,7 +25,11 @@ class SettingsCog(commands.Cog):
     """Present user preferences and handle their owner-scoped select menu."""
 
     settings_group = app_commands.Group(
-        name="settings", description="Change or view your bot settings"
+        name=app_commands.locale_str("settings", key="command-settings-name"),
+        description=app_commands.locale_str(
+            "Change or view your bot settings",
+            key="command-settings-description",
+        ),
     )
 
     def __init__(self, bot: BotFraggBot) -> None:
@@ -30,31 +37,48 @@ class SettingsCog(commands.Cog):
         self.bot = bot
         bot.register_component("setting", self.setting_selected)
 
-    @settings_group.command(name="view", description="See your current settings")
+    @settings_group.command(
+        name=app_commands.locale_str("view", key="command-settings-view-name"),
+        description=app_commands.locale_str(
+            "See your current settings", key="command-settings-view-description"
+        ),
+    )
     async def settings_view(self, interaction: discord.Interaction) -> None:
         """Show the caller's saved preferences in an ephemeral response."""
         await interaction.response.defer(thinking=True, ephemeral=True)
         user = await get_user(interaction.user.id)
         if not user:
-            await error(
-                interaction, "You're not registered with the bot! Try `/login`."
-            )
+            await error(interaction, "error-not-registered")
             return
-        result = embed(
-            "Use `/settings set` to change them.",
-            title="All your current settings:",
+        result = localized_embed(
+            interaction,
+            "settings-view-description",
+            title_key="settings-view-title",
         )
-        for field, label in SETTINGS.items():
+        for field, (_, label_key) in SETTINGS.items():
             result.add_field(
-                name=label, value="Yes" if getattr(user, field) else "No", inline=True
+                name=translated(interaction, label_key),
+                value=translated(
+                    interaction,
+                    "common-yes" if getattr(user, field) else "common-no",
+                ),
+                inline=True,
             )
         await interaction.followup.send(embed=result, ephemeral=True)
 
-    @settings_group.command(name="set", description="Change one of your bot settings")
+    @settings_group.command(
+        name=app_commands.locale_str("set", key="command-settings-set-name"),
+        description=app_commands.locale_str(
+            "Change one of your bot settings",
+            key="command-settings-set-description",
+        ),
+    )
     @app_commands.choices(
         setting=[
-            app_commands.Choice(name=label, value=field)
-            for field, label in SETTINGS.items()
+            app_commands.Choice(
+                name=app_commands.locale_str(label, key=label_key), value=field
+            )
+            for field, (label, label_key) in SETTINGS.items()
         ]
     )
     async def settings_set(
@@ -63,21 +87,30 @@ class SettingsCog(commands.Cog):
         """Present Yes/No options for the caller's selected preference."""
         await interaction.response.defer(thinking=True, ephemeral=True)
         if not await get_user(interaction.user.id):
-            await error(interaction, "You're not registered. Try `/login`.")
+            await error(interaction, "error-not-registered")
             return
         choices = [
-            discord.SelectOption(label="Yes", value="true"),
-            discord.SelectOption(label="No", value="false"),
+            discord.SelectOption(
+                label=translated(interaction, "common-yes"), value="true"
+            ),
+            discord.SelectOption(
+                label=translated(interaction, "common-no"), value="false"
+            ),
         ]
         menu = OwnedSelect(
             "setting",
             interaction.user.id,
             setting.value,
-            placeholder=f"Set {setting.name}",
+            placeholder=translated(
+                interaction, "settings-set-placeholder", setting=setting.name
+            ),
             options=choices,
         )
         await interaction.followup.send(
-            embed=embed(f"What do you want to set **{setting.name}** to?", colour=DARK),
+            embed=embed(
+                translated(interaction, "settings-set-prompt", setting=setting.name),
+                colour=DARK,
+            ),
             view=view(menu),
             ephemeral=True,
         )
@@ -89,15 +122,22 @@ class SettingsCog(commands.Cog):
         await interaction.response.defer()
         field, value = payload.split("|", 1)
         if field not in SETTINGS or value not in {"true", "false"}:
-            await error(interaction, "Unknown setting.")
+            await error(interaction, "settings-unknown-setting")
             return
         rendered = value == "true"
         if not await update_user_preference(interaction.user.id, field, rendered):
-            await error(interaction, "You're not registered. Try `/login`.")
+            await error(interaction, "error-not-registered")
             return
         await interaction.edit_original_response(
             embed=embed(
-                f"**{SETTINGS[field]}** is now set to **{'Yes' if rendered else 'No'}**."
+                translated(
+                    interaction,
+                    "settings-updated",
+                    setting=translated(interaction, SETTINGS[field][1]),
+                    value=translated(
+                        interaction, "common-yes" if rendered else "common-no"
+                    ),
+                )
             ),
             view=None,
         )

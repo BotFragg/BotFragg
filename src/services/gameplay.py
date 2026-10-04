@@ -159,15 +159,15 @@ class GameplayService:
             if isinstance(infraction.get("ID"), str) and infraction["ID"]
         }
         effect_labels = (
-            ("DelayedPenaltyEffect", "Delayed penalty"),
-            ("GameBanEffect", "Game ban"),
-            ("QueueDelayEffect", "Queue delay"),
-            ("QueueRestrictionEffect", "Queue restriction"),
-            ("RankedRatingPenaltyEffect", "Ranked rating penalty"),
-            ("RiotRestrictionEffect", "Riot restriction"),
-            ("RMSNotifyEffect", "Riot notification"),
-            ("XPMultiplierEffect", "XP multiplier"),
-            ("PremierRestrictionEffect", "Premier restriction"),
+            ("DelayedPenaltyEffect", "delayed-penalty"),
+            ("GameBanEffect", "game-ban"),
+            ("QueueDelayEffect", "queue-delay"),
+            ("QueueRestrictionEffect", "queue-restriction"),
+            ("RankedRatingPenaltyEffect", "ranked-rating-penalty"),
+            ("RiotRestrictionEffect", "riot-restriction"),
+            ("RMSNotifyEffect", "riot-notification"),
+            ("XPMultiplierEffect", "xp-multiplier"),
+            ("PremierRestrictionEffect", "premier-restriction"),
         )
         result = []
         for row in rows:
@@ -197,7 +197,7 @@ class GameplayService:
                 else ", ".join(dict.fromkeys(platform_values)) or "Not specified"
             )
             effects = [
-                label for field, label in effect_labels if row.get(field) is not None
+                key for field, key in effect_labels if row.get(field) is not None
             ]
             warning = row.get("WarningEffect")
             warning_type = (
@@ -212,7 +212,7 @@ class GameplayService:
                 else None
             )
             if warning is not None:
-                effects.append("Warning")
+                effects.append("warning")
             result.append(
                 {
                     "infraction": name,
@@ -372,8 +372,7 @@ def _nonnegative_int(value: Any) -> int | None:
 
 def _positive_int(value: Any) -> int | None:
     """Convert a value to a positive integer or return ``None``."""
-    result = _nonnegative_int(value)
-    return result if result else None
+    return _nonnegative_int(value) or None
 
 
 def _parse_datetime(value: Any) -> datetime | None:

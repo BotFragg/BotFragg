@@ -9,6 +9,7 @@ dependencies = [
     "aiohttp>=3.13.0",
     "cryptography>=50.0.1",
     "discord-py>=2.7.1",
+    "fluent-runtime>=0.4.0",
     "jishaku[procinfo]>=2.7.5",
     "python-dotenv>=1.2.3",
     "rapidfuzz>=3.14.6",
@@ -19,6 +20,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "fluent-syntax>=0.19.0",
     "pytest>=8.4.0",
     "pytest-asyncio>=1.1.0",
     "ruff>=0.14.0",
@@ -36,6 +38,7 @@ packages = ["src"]
 
 [tool.hatch.build.targets.wheel.force-include]
 "assets" = "assets"
+"locales" = "locales"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

@@ -11,6 +11,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from ...bot import BotFraggBot
+from ...localization import BotFraggTranslator
 from ...services.accounts import (
     account_for_user,
     get_user,
@@ -29,7 +30,7 @@ from ...services.shop import (
     ShopUnavailable,
 )
 from ...views import OwnedActionButton, OwnedSelect, timestamp
-from ._ui import _account_display_name, embed, error, view
+from ._ui import _account_display_name, embed, error, translated, view
 
 TIER_COLOURS = {
     "0cebb8be-46d7-c12a-d306-e9907bfc5a25": 0x009984,
@@ -98,6 +99,8 @@ def add_skin_selector(
     offers: list[Offer],
     expires: int,
     emoji_service: ApplicationEmojiService,
+    translator: BotFraggTranslator,
+    locale: discord.Locale,
 ) -> None:
     """Add a menu containing only the skin offers rendered beside it."""
     options: list[discord.SelectOption] = []
@@ -119,7 +122,7 @@ def add_skin_selector(
                 "shop_skin",
                 owner_id,
                 str(expires),
-                placeholder="Choose a skin to view its videos",
+                placeholder=translator.text(locale, "shop-skin-select-placeholder"),
                 options=options,
             )
         )
@@ -132,6 +135,8 @@ async def add_account_selector(
     current: str,
     *,
     hide_ign: bool = False,
+    translator: BotFraggTranslator,
+    locale: discord.Locale,
 ) -> None:
     """Add a private account selector when the owner has multiple accounts."""
     accounts = await list_accounts(owner_id)
@@ -141,10 +146,14 @@ async def add_account_selector(
                 "shop_account",
                 owner_id,
                 mode,
-                placeholder="Switch account",
+                placeholder=translator.text(locale, "shop-account-select-placeholder"),
                 options=[
                     discord.SelectOption(
-                        label=(f"Account {index}" if hide_ign else item.username)[:100],
+                        label=(
+                            translator.text(locale, "shop-account-label", number=index)
+                            if hide_ign
+                            else item.username
+                        )[:100],
                         value=item.puuid,
                         default=item.puuid == current,
                     )
@@ -166,7 +175,12 @@ class ShopCog(commands.Cog):
         bot.register_component("shop_variant", self.shop_variant)
         bot.register_component("shop_bundle", self.shop_bundle)
 
-    @app_commands.command(name="shop", description="Show your current daily shop!")
+    @app_commands.command(
+        name=app_commands.locale_str("shop", key="command-shop-name"),
+        description=app_commands.locale_str(
+            "Show your current daily shop!", key="command-shop-description"
+        ),
+    )
     async def shop(
         self, interaction: discord.Interaction, user: discord.User | None = None
     ) -> None:
@@ -177,21 +191,24 @@ class ShopCog(commands.Cog):
         if target.id != interaction.user.id and (
             not settings or not settings.others_can_view_shop
         ):
-            await error(
-                interaction, "That user is not registered or does not share their shop."
-            )
+            await error(interaction, "shop-user-not-sharing")
             return
         account = await selected_account(target.id)
         if not account:
-            await error(interaction, "That account is not registered. Try `/login`.")
+            await error(interaction, "error-not-registered")
             return
         try:
             data = await self.bot.shop.storefront(account)
         except (AuthenticationRequired, ShopUnavailable) as exc:
-            await error(interaction, str(exc))
+            await error(interaction, exc)
             return
         hide_ign = bool(settings and settings.hide_ign)
-        username = _account_display_name(account.username, hide_ign=hide_ign)
+        username = _account_display_name(
+            account.username,
+            hide_ign=hide_ign,
+            translator=self.bot.translator,
+            locale=interaction.locale,
+        )
         if target.id != interaction.user.id:
             controls = view()
             add_skin_selector(
@@ -200,10 +217,17 @@ class ShopCog(commands.Cog):
                 data.offers,
                 data.expires,
                 self.bot.emoji_service,
+                self.bot.translator,
+                interaction.locale,
             )
             await interaction.followup.send(
                 embeds=offer_cards(
-                    f"Daily shop for **{username}** (new shop {timestamp(data.expires)})",
+                    self.bot.translator.text(
+                        interaction.locale,
+                        "shop-daily-header",
+                        username=username,
+                        timestamp=timestamp(data.expires),
+                    ),
                     data.offers,
                     await self.bot.emoji_service.currency("vp") or "VP",
                     link_item_image=self.bot.config.link_item_image,
@@ -218,6 +242,7 @@ class ShopCog(commands.Cog):
             interaction.user.id,
             account.puuid,
             hide_ign=hide_ign,
+            locale=interaction.locale,
         )
         await interaction.followup.send(embeds=embeds, view=controls)
 
@@ -229,14 +254,27 @@ class ShopCog(commands.Cog):
         puuid: str,
         *,
         hide_ign: bool = False,
+        locale: discord.Locale,
     ) -> tuple[list[discord.Embed], discord.ui.View]:
         """Build daily shop embeds, owned selectors, and available shop controls."""
         controls = view()
         add_skin_selector(
-            controls, owner_id, data.offers, data.expires, self.bot.emoji_service
+            controls,
+            owner_id,
+            data.offers,
+            data.expires,
+            self.bot.emoji_service,
+            self.bot.translator,
+            locale,
         )
         await add_account_selector(
-            controls, owner_id, "daily", puuid, hide_ign=hide_ign
+            controls,
+            owner_id,
+            "daily",
+            puuid,
+            hide_ign=hide_ign,
+            translator=self.bot.translator,
+            locale=locale,
         )
         if data.night_market:
             controls.add_item(
@@ -244,7 +282,7 @@ class ShopCog(commands.Cog):
                     "shop_mode",
                     owner_id,
                     f"night,{puuid}",
-                    label="Night Market",
+                    label=self.bot.translator.text(locale, "shop-night-market-button"),
                 )
             )
         if data.featured_bundles:
@@ -253,7 +291,9 @@ class ShopCog(commands.Cog):
                     "shop_mode",
                     owner_id,
                     f"bundles,{puuid}",
-                    label="Featured Bundles",
+                    label=self.bot.translator.text(
+                        locale, "shop-featured-bundles-button"
+                    ),
                 )
             )
         controls.add_item(
@@ -261,13 +301,18 @@ class ShopCog(commands.Cog):
                 "shop_mode",
                 owner_id,
                 f"accessory,{puuid}",
-                label="Accessory shop",
+                label=self.bot.translator.text(locale, "shop-accessory-button"),
             )
         )
         vp = await self.bot.emoji_service.currency("vp") or "VP"
         return (
             offer_cards(
-                f"Daily shop for **{username}** (new shop {timestamp(data.expires)})",
+                self.bot.translator.text(
+                    locale,
+                    "shop-daily-header",
+                    username=username,
+                    timestamp=timestamp(data.expires),
+                ),
                 data.offers,
                 vp,
                 link_item_image=self.bot.config.link_item_image,
@@ -277,22 +322,26 @@ class ShopCog(commands.Cog):
         )
 
     @app_commands.command(
-        name="bundles", description="Show bundles currently featured in your store."
+        name=app_commands.locale_str("bundles", key="command-bundles-name"),
+        description=app_commands.locale_str(
+            "Show bundles currently featured in your store.",
+            key="command-bundles-description",
+        ),
     )
     async def bundles(self, interaction: discord.Interaction) -> None:
         """Show the selected account's current featured bundle offers and controls."""
         await interaction.response.defer(thinking=True)
         account = await selected_account(interaction.user.id)
         if not account:
-            await error(interaction, "You're not registered. Try `/login`.")
+            await error(interaction, "error-not-registered")
             return
         try:
             data = await self.bot.shop.storefront(account)
         except (AuthenticationRequired, ShopUnavailable) as exc:
-            await error(interaction, str(exc))
+            await error(interaction, exc)
             return
         embeds, controls = await self.featured_bundles_view(
-            data, interaction.user.id, account.puuid
+            data, interaction.user.id, account.puuid, locale=interaction.locale
         )
         await interaction.followup.send(embeds=embeds, view=controls)
 
@@ -302,6 +351,7 @@ class ShopCog(commands.Cog):
         owner_id: int,
         puuid: str,
         *,
+        locale: discord.Locale,
         selected_id: str | None = None,
         show_shop_button: bool = False,
     ) -> tuple[list[discord.Embed], discord.ui.View]:
@@ -309,34 +359,38 @@ class ShopCog(commands.Cog):
         offers = data.featured_bundles
         selected = next((offer for offer in offers if offer.id == selected_id), None)
         if selected or len(offers) == 1:
-            cards = await self._featured_bundle_embeds(selected or offers[0])
+            cards = await self._featured_bundle_embeds(selected or offers[0], locale)
         elif offers:
             vp = await self.bot.emoji_service.currency("vp") or "VP"
             cards = [
                 embed(
-                    "Bundles currently featured in the store.",
-                    title="Featured Bundles",
+                    self.bot.translator.text(locale, "bundles-currently-featured"),
+                    title=self.bot.translator.text(locale, "bundles-title"),
                     colour=0x202225,
                 )
             ]
             for offer in offers[:9]:
-                metadata = self._bundle_metadata(offer)
-                details = self._featured_price(offer, vp)
+                metadata = self._bundle_metadata(offer, locale)
+                details = self._featured_price(offer, vp, locale)
                 if offer.expires:
-                    details += f"\nAvailable until {timestamp(offer.expires)}"
+                    details += "\n" + self.bot.translator.text(
+                        locale,
+                        "shop-available-until",
+                        timestamp=timestamp(offer.expires),
+                    )
                 card = embed(details, title=metadata.name[:256], colour=0x202225)
                 if metadata.icon:
                     card.set_thumbnail(url=metadata.icon)
                 cards.append(card)
             if len(offers) > 9:
-                cards[
-                    0
-                ].description += f"\n{len(offers) - 9} additional bundles are omitted."
+                cards[0].description += "\n" + self.bot.translator.text(
+                    locale, "bundles-omitted", count=len(offers) - 9
+                )
         else:
             cards = [
                 embed(
-                    "There are no featured bundles right now.",
-                    title="Featured Bundles",
+                    self.bot.translator.text(locale, "bundles-none-featured"),
+                    title=self.bot.translator.text(locale, "bundles-title"),
                     colour=0x202225,
                 )
             ]
@@ -349,10 +403,12 @@ class ShopCog(commands.Cog):
                     "shop_bundle",
                     owner_id,
                     f"{puuid}|{source}",
-                    placeholder="Choose a featured bundle",
+                    placeholder=self.bot.translator.text(
+                        locale, "bundles-select-placeholder"
+                    ),
                     options=[
                         discord.SelectOption(
-                            label=self._bundle_metadata(offer).name[:100],
+                            label=self._bundle_metadata(offer, locale).name[:100],
                             value=offer.id,
                             default=offer.id == selected_id,
                         )
@@ -366,30 +422,41 @@ class ShopCog(commands.Cog):
                     "shop_mode",
                     owner_id,
                     f"daily,{puuid}",
-                    label="Skin shop",
+                    label=self.bot.translator.text(locale, "shop-skin-button"),
                 )
             )
         return cards, controls
 
-    def _bundle_metadata(self, offer: FeaturedBundle) -> Bundle:
+    def _bundle_metadata(self, offer: FeaturedBundle, locale: discord.Locale) -> Bundle:
         """Resolve static bundle metadata or provide a safe live-offer fallback."""
         return (
             self.bot.catalog.get_bundle(offer.data_asset_id)
             or self.bot.catalog.get_bundle(offer.id)
-            or Bundle(offer.data_asset_id, "Featured bundle", None, None, None)
+            or Bundle(
+                offer.data_asset_id,
+                self.bot.translator.text(locale, "shop-featured-bundle"),
+                None,
+                None,
+                None,
+            )
         )
 
-    @staticmethod
-    def _featured_price(offer: FeaturedBundle, vp: str) -> str:
+    def _featured_price(
+        self, offer: FeaturedBundle, vp: str, locale: discord.Locale
+    ) -> str:
         """Format only Riot-supplied VP totals, retaining exact discount values."""
         base = offer.total_base_cost
         discounted = offer.total_discounted_cost
         if discounted is None:
-            return f"{vp} **{base:,}**" if base is not None else "Price unavailable"
+            return (
+                f"{vp} **{base:,}**"
+                if base is not None
+                else self.bot.translator.text(locale, "shop-price-unavailable")
+            )
         return _price_line(vp, discounted, base, offer.total_discount_percent)
 
     async def _featured_item_embed(
-        self, item: FeaturedBundleItem, vp: str
+        self, item: FeaturedBundleItem, vp: str, locale: discord.Locale
     ) -> discord.Embed | None:
         """Render one live bundle item in the shop's card, tier, and price style."""
         colour = 0x202225
@@ -433,7 +500,7 @@ class ShopCog(commands.Cog):
         price = (
             _price_line(vp, final_price, item.base_price)
             if final_price is not None
-            else "Price unavailable"
+            else self.bot.translator.text(locale, "shop-price-unavailable")
         )
         card = embed(extra + price, title=name[:256], colour=colour)
         if icon:
@@ -443,10 +510,10 @@ class ShopCog(commands.Cog):
         return card
 
     async def _featured_bundle_embeds(
-        self, offer: FeaturedBundle
+        self, offer: FeaturedBundle, locale: discord.Locale
     ) -> list[discord.Embed]:
         """Render a bundle summary and up to nine shop-style item cards."""
-        metadata = self._bundle_metadata(offer)
+        metadata = self._bundle_metadata(offer, locale)
         vp = await self.bot.emoji_service.currency("vp") or "VP"
         title = metadata.name.strip().casefold()
         description = [
@@ -456,9 +523,21 @@ class ShopCog(commands.Cog):
             for value in (metadata.subtitle, metadata.description)
             if value
         ]
-        description.append(f"Bundle price: {self._featured_price(offer, vp)}")
+        description.append(
+            self.bot.translator.text(
+                locale,
+                "bundles-price",
+                price=self._featured_price(offer, vp, locale),
+            )
+        )
         if offer.expires:
-            description.append(f"Available until {timestamp(offer.expires)}")
+            description.append(
+                self.bot.translator.text(
+                    locale,
+                    "shop-available-until",
+                    timestamp=timestamp(offer.expires),
+                )
+            )
         card = embed(
             "\n".join(value for value in description if value)[:1000],
             title=metadata.name[:256],
@@ -469,22 +548,24 @@ class ShopCog(commands.Cog):
         max_items = 9
         visible_items = offer.items[:max_items]
         item_cards = await asyncio.gather(
-            *(self._featured_item_embed(item, vp) for item in visible_items)
+            *(self._featured_item_embed(item, vp, locale) for item in visible_items)
         )
         displayed = [item_card for item_card in item_cards if item_card is not None]
         unresolved = len(visible_items) - len(displayed)
         hidden = len(offer.items) - len(visible_items)
         if unresolved:
-            item_word = "item" if unresolved == 1 else "items"
-            card.description = (card.description or "") + (
-                f"\nCould not match {unresolved} bundle {item_word} "
-                "to catalog metadata."
+            card.description = (
+                (card.description or "")
+                + "\n"
+                + self.bot.translator.text(
+                    locale, "bundles-unmatched-items", count=unresolved
+                )
             )
         if hidden:
-            item_word = "item" if hidden == 1 else "items"
-            card.description = (card.description or "") + (
-                f"\n{hidden} additional bundle {item_word} not shown "
-                "due Discord's 10-embed message limit."
+            card.description = (
+                (card.description or "")
+                + "\n"
+                + self.bot.translator.text(locale, "bundles-hidden-items", count=hidden)
             )
         return [card, *displayed]
 
@@ -497,20 +578,25 @@ class ShopCog(commands.Cog):
             or mode not in {"daily", "night", "nightmarket", "accessory", "bundles"}
             or not puuid
         ):
-            await error(interaction, "That shop control is invalid.")
+            await error(interaction, "shop-control-invalid")
             return
         account = await account_for_user(interaction.user.id, puuid)
         if not account:
-            await error(interaction, "That account is no longer available.")
+            await error(interaction, "error-account-unavailable")
             return
         try:
             data = await self.bot.shop.storefront(account)
         except (AuthenticationRequired, ShopUnavailable) as exc:
-            await error(interaction, str(exc))
+            await error(interaction, exc)
             return
         user = await get_user(interaction.user.id)
         hide_ign = bool(user and user.hide_ign)
-        username = _account_display_name(account.username, hide_ign=hide_ign)
+        username = _account_display_name(
+            account.username,
+            hide_ign=hide_ign,
+            translator=self.bot.translator,
+            locale=interaction.locale,
+        )
         if mode == "daily":
             embeds, controls = await self.shop_view(
                 data,
@@ -518,18 +604,25 @@ class ShopCog(commands.Cog):
                 interaction.user.id,
                 puuid,
                 hide_ign=hide_ign,
+                locale=interaction.locale,
             )
         elif mode == "bundles":
             embeds, controls = await self.featured_bundles_view(
                 data,
                 interaction.user.id,
                 puuid,
+                locale=interaction.locale,
                 show_shop_button=True,
             )
         elif mode in {"night", "nightmarket"}:
             vp = await self.bot.emoji_service.currency("vp") or "VP"
             embeds = offer_cards(
-                f"Night Market for **{username}** (ends {timestamp(data.night_market_expires or data.expires)})",
+                self.bot.translator.text(
+                    interaction.locale,
+                    "shop-night-market-header",
+                    username=username,
+                    timestamp=timestamp(data.night_market_expires or data.expires),
+                ),
                 data.night_market,
                 vp,
                 link_item_image=self.bot.config.link_item_image,
@@ -542,6 +635,8 @@ class ShopCog(commands.Cog):
                 data.night_market,
                 data.night_market_expires or data.expires,
                 self.bot.emoji_service,
+                self.bot.translator,
+                interaction.locale,
             )
             await add_account_selector(
                 controls,
@@ -549,6 +644,8 @@ class ShopCog(commands.Cog):
                 mode,
                 puuid,
                 hide_ign=hide_ign,
+                translator=self.bot.translator,
+                locale=interaction.locale,
             )
             if mode == "night":
                 controls.add_item(
@@ -556,14 +653,21 @@ class ShopCog(commands.Cog):
                         "shop_mode",
                         interaction.user.id,
                         f"daily,{puuid}",
-                        label="Skin shop",
+                        label=self.bot.translator.text(
+                            interaction.locale, "shop-skin-button"
+                        ),
                     )
                 )
         else:
             kc = await self.bot.emoji_service.currency("kc") or "KC"
             embeds = [
                 embed(
-                    f"Accessory shop for **{username}** (new shop {timestamp(data.expires)})",
+                    self.bot.translator.text(
+                        interaction.locale,
+                        "shop-accessory-header",
+                        username=username,
+                        timestamp=timestamp(data.expires),
+                    ),
                 )
             ]
             for accessory_offer in await self.bot.shop.accessory_offers(data):
@@ -579,7 +683,9 @@ class ShopCog(commands.Cog):
                     card.set_thumbnail(url=item.icon)
                 embeds.append(card)
             if len(embeds) == 1:
-                embeds[0].description += "\n\nYou've already got all the swagger!"
+                embeds[0].description += "\n\n" + self.bot.translator.text(
+                    interaction.locale, "shop-accessory-all-owned"
+                )
             controls = view()
             await add_account_selector(
                 controls,
@@ -587,13 +693,17 @@ class ShopCog(commands.Cog):
                 "accessory",
                 puuid,
                 hide_ign=hide_ign,
+                translator=self.bot.translator,
+                locale=interaction.locale,
             )
             controls.add_item(
                 OwnedActionButton(
                     "shop_mode",
                     interaction.user.id,
                     f"daily,{puuid}",
-                    label="Skin shop",
+                    label=self.bot.translator.text(
+                        interaction.locale, "shop-skin-button"
+                    ),
                 )
             )
         await interaction.edit_original_response(embeds=embeds, view=controls)
@@ -634,40 +744,46 @@ class ShopCog(commands.Cog):
             or bundle_id not in self._selection_values(interaction, custom_id)
         ):
             await interaction.response.send_message(
-                "That bundle selection is no longer available. Run `/bundles` again.",
+                translated(interaction, "shop-bundle-selection-invalid"),
                 ephemeral=True,
             )
             return
         account = await account_for_user(interaction.user.id, puuid)
         if not account:
             await interaction.response.send_message(
-                "That account is no longer available.", ephemeral=True
+                translated(interaction, "error-account-unavailable"), ephemeral=True
             )
             return
         await interaction.response.defer()
         try:
             data = await self.bot.shop.storefront(account)
         except (AuthenticationRequired, ShopUnavailable) as exc:
-            await error(interaction, str(exc))
+            await error(interaction, exc)
             return
         if not any(offer.id == bundle_id for offer in data.featured_bundles):
-            await error(interaction, "That featured bundle is no longer available.")
+            await error(interaction, "shop-featured-bundle-unavailable")
             return
         embeds, controls = await self.featured_bundles_view(
             data,
             interaction.user.id,
             puuid,
+            locale=interaction.locale,
             selected_id=bundle_id,
             show_shop_button=source == "shop",
         )
         await interaction.edit_original_response(embeds=embeds, view=controls)
 
     @staticmethod
-    def _video_options(skin: Skin) -> list[discord.SelectOption]:
+    def _video_options(
+        skin: Skin, translator: BotFraggTranslator, locale: discord.Locale
+    ) -> list[discord.SelectOption]:
         """List playable levels and chromas within Discord's select-menu limit."""
         options: list[discord.SelectOption] = []
         seen: set[str] = set()
-        for kind, items in (("Level", skin.levels), ("Chroma", skin.chromas)):
+        for kind, items in (
+            (translator.text(locale, "shop-level"), skin.levels),
+            (translator.text(locale, "shop-chroma"), skin.chromas),
+        ):
             for item in items:
                 uuid = str(item.get("uuid") or "")
                 video = item.get("streamedVideo")
@@ -702,21 +818,21 @@ class ShopCog(commands.Cog):
             or skin_uuid not in self._selection_values(interaction, skin_menu_id)
         ):
             await interaction.response.send_message(
-                "That skin selection is no longer available. Run `/shop` again.",
+                translated(interaction, "shop-skin-selection-invalid"),
                 ephemeral=True,
             )
             return
         skin = self.bot.catalog.get_skin(skin_uuid)
         if skin is None:
             await interaction.response.send_message(
-                "That skin is no longer in the catalog. Run `/shop` again.",
+                translated(interaction, "shop-skin-unavailable"),
                 ephemeral=True,
             )
             return
-        options = self._video_options(skin)
+        options = self._video_options(skin, self.bot.translator, interaction.locale)
         if not options:
             await interaction.response.send_message(
-                "No level or chroma videos are available for this skin.",
+                translated(interaction, "shop-no-variants"),
                 ephemeral=True,
             )
             return
@@ -725,13 +841,13 @@ class ShopCog(commands.Cog):
                 "shop_variant",
                 interaction.user.id,
                 f"{expires}|{skin.uuid}",
-                placeholder="Choose a level or chroma",
+                placeholder=translated(interaction, "shop-variant-select-placeholder"),
                 options=options,
             )
         )
         skin_name = self.bot.emoji_service.skin_name(skin.name, skin.tier_uuid)
         await interaction.response.send_message(
-            f"Choose a level or chroma video for {skin_name}.",
+            translated(interaction, "shop-variant-prompt", skin=skin_name),
             view=controls,
             ephemeral=True,
         )
@@ -758,7 +874,7 @@ class ShopCog(commands.Cog):
             or variant_uuid not in self._selection_values(interaction, variant_menu_id)
         ):
             await interaction.response.send_message(
-                "That video selection is no longer available. Run `/shop` again.",
+                translated(interaction, "shop-video-selection-invalid"),
                 ephemeral=True,
             )
             return
@@ -781,7 +897,7 @@ class ShopCog(commands.Cog):
             or not selected[1]["streamedVideo"].startswith("https://")
         ):
             await interaction.response.send_message(
-                "That level or chroma video is no longer available.", ephemeral=True
+                translated(interaction, "shop-video-unavailable"), ephemeral=True
             )
             return
         kind, item = selected
@@ -804,7 +920,7 @@ class ShopCog(commands.Cog):
             or not puuid
         ):
             await interaction.response.defer()
-            await error(interaction, "That account selection is invalid.")
+            await error(interaction, "shop-account-selection-invalid")
             return
         await self.shop_mode(interaction, f"{mode},{puuid}")
 
@@ -817,31 +933,45 @@ class NightMarketCog(commands.Cog):
         self.bot = bot
 
     @app_commands.command(
-        name="nightmarket", description="Show your Night Market if there is one."
+        name=app_commands.locale_str("nightmarket", key="command-nightmarket-name"),
+        description=app_commands.locale_str(
+            "Show your Night Market if there is one.",
+            key="command-nightmarket-description",
+        ),
     )
     async def nightmarket(self, interaction: discord.Interaction) -> None:
         """Fetch and render Night Market offers or report that none are active."""
         await interaction.response.defer(thinking=True)
         account = await selected_account(interaction.user.id)
         if not account:
-            await error(interaction, "You're not registered. Try `/login`.")
+            await error(interaction, "error-not-registered")
             return
         try:
             data = await self.bot.shop.storefront(account)
         except (AuthenticationRequired, ShopUnavailable) as exc:
-            await error(interaction, str(exc))
+            await error(interaction, exc)
             return
         user = await get_user(interaction.user.id)
         hide_ign = bool(user and user.hide_ign)
-        username = _account_display_name(account.username, hide_ign=hide_ign)
+        username = _account_display_name(
+            account.username,
+            hide_ign=hide_ign,
+            translator=self.bot.translator,
+            locale=interaction.locale,
+        )
         if not data.night_market:
             await interaction.followup.send(
-                embed=embed("**There is no Night Market currently!**")
+                embed=embed(translated(interaction, "shop-night-market-none"))
             )
             return
         vp = await self.bot.emoji_service.currency("vp") or "VP"
         cards = offer_cards(
-            f"Night Market for **{username}** (ends {timestamp(data.night_market_expires or data.expires)})",
+            self.bot.translator.text(
+                interaction.locale,
+                "shop-night-market-header",
+                username=username,
+                timestamp=timestamp(data.night_market_expires or data.expires),
+            ),
             data.night_market,
             vp,
             link_item_image=False,
@@ -855,6 +985,8 @@ class NightMarketCog(commands.Cog):
             data.night_market,
             data.night_market_expires or data.expires,
             self.bot.emoji_service,
+            self.bot.translator,
+            interaction.locale,
         )
         await add_account_selector(
             controls,
@@ -862,6 +994,8 @@ class NightMarketCog(commands.Cog):
             "nightmarket",
             account.puuid,
             hide_ign=hide_ign,
+            translator=self.bot.translator,
+            locale=interaction.locale,
         )
         await interaction.followup.send(
             embeds=cards, view=controls if controls.children else None
@@ -876,29 +1010,52 @@ class BalanceCog(commands.Cog):
         self.bot = bot
 
     @app_commands.command(
-        name="balance",
-        description="Show your VALORANT Points, Radianite, and Kingdom Credits",
+        name=app_commands.locale_str("balance", key="command-balance-name"),
+        description=app_commands.locale_str(
+            "Show your VALORANT Points, Radianite, and Kingdom Credits",
+            key="command-balance-description",
+        ),
     )
     async def balance(self, interaction: discord.Interaction) -> None:
         """Fetch and display VP, Radianite, and Kingdom Credit balances."""
         await interaction.response.defer(thinking=True)
         account = await selected_account(interaction.user.id)
         if not account:
-            await error(interaction, "You're not registered. Try `/login`.")
+            await error(interaction, "error-not-registered")
             return
         try:
             wallet = await self.bot.shop.wallet(account)
         except (AuthenticationRequired, ShopUnavailable) as exc:
-            await error(interaction, str(exc))
+            await error(interaction, exc)
             return
         user = await get_user(interaction.user.id)
         hide_ign = bool(user and user.hide_ign)
-        username = _account_display_name(account.username, hide_ign=hide_ign)
-        card = embed("Your current balance", title=username)
+        username = _account_display_name(
+            account.username,
+            hide_ign=hide_ign,
+            translator=self.bot.translator,
+            locale=interaction.locale,
+        )
+        card = embed(
+            translated(interaction, "balance-summary"),
+            title=username,
+        )
         for name, key, value in (
-            ("VALORANT Points", "vp", wallet["vp"]),
-            ("Radianite Points", "rp", wallet["rp"]),
-            ("Kingdom Credits", "kc", wallet["kc"]),
+            (
+                translated(interaction, "balance-vp"),
+                "vp",
+                wallet["vp"],
+            ),
+            (
+                translated(interaction, "balance-rp"),
+                "rp",
+                wallet["rp"],
+            ),
+            (
+                translated(interaction, "balance-kc"),
+                "kc",
+                wallet["kc"],
+            ),
         ):
             card.add_field(
                 name=name,

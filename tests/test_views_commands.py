@@ -33,6 +33,7 @@ from src.cogs.valorant.shop import (
     offer_cards,
 )
 from src.config import Settings
+from src.localization import BotFraggTranslator
 from src.services.catalog import Accessory, Bundle, Skin
 from src.services.http import HTTPFailure
 from src.services.shop import (
@@ -44,6 +45,23 @@ from src.services.shop import (
     ShopService,
 )
 from src.views import OwnedActionButton, OwnedSelect
+
+TEST_TRANSLATOR = BotFraggTranslator()
+TEST_LOCALE = discord.Locale.american_english
+
+
+def _localized_bot(**attributes: object) -> SimpleNamespace:
+    """Build a fake bot with the runtime translator used by command cogs."""
+    return SimpleNamespace(translator=TEST_TRANSLATOR, **attributes)
+
+
+def _localized_interaction(**attributes: object) -> SimpleNamespace:
+    """Build a fake interaction with its Discord locale and client translator."""
+    return SimpleNamespace(
+        client=SimpleNamespace(translator=TEST_TRANSLATOR),
+        locale=TEST_LOCALE,
+        **attributes,
+    )
 
 
 def test_dynamic_component_ids_fit_discord_limit() -> None:
@@ -86,12 +104,19 @@ async def test_unhandled_app_command_error_returns_ephemeral_response() -> None:
             """Record the initial message sent through the fake interaction."""
             sent.append((embed, ephemeral))
 
-    interaction = SimpleNamespace(command=None, data={}, response=Response())
+    interaction = _localized_interaction(command=None, data={}, response=Response())
     await BotFraggCommandTree.on_error(
-        object.__new__(BotFraggCommandTree), interaction, RuntimeError("unexpected")
+        SimpleNamespace(
+            client=SimpleNamespace(translator=TEST_TRANSLATOR),
+            _command_name=BotFraggCommandTree._command_name,
+        ),
+        interaction,
+        RuntimeError("unexpected"),
     )
 
-    assert sent[0][0].description.startswith("Something went wrong")
+    assert sent[0][0].description == TEST_TRANSLATOR.text(
+        TEST_LOCALE, "error-command-failed"
+    )
     assert sent[0][1] is True
 
 
@@ -109,9 +134,13 @@ async def test_unhandled_prefix_command_error_returns_generic_response() -> None
     error = commands.CommandInvokeError(RuntimeError("private detail"))
 
     assert "on_command_error" in BotFraggBot.__dict__
-    await BotFraggBot.on_command_error(object.__new__(BotFraggBot), context, error)
+    await BotFraggBot.on_command_error(
+        SimpleNamespace(translator=TEST_TRANSLATOR), context, error
+    )
 
-    assert sent[0].description.startswith("Something went wrong")
+    assert sent[0].description == TEST_TRANSLATOR.text(
+        TEST_LOCALE, "error-command-failed"
+    )
     assert "private detail" not in sent[0].description
 
 
@@ -138,11 +167,11 @@ async def test_links_invite_preserves_zero_permissions() -> None:
         name="BotFragg",
         display_avatar=SimpleNamespace(url="https://example.com/avatar.png"),
     )
-    bot = SimpleNamespace(
+    bot = _localized_bot(
         user=user,
         config=SimpleNamespace(support_url=None, vote_url=None, website_url=None),
     )
-    interaction = SimpleNamespace(response=Response(), followup=Followup())
+    interaction = _localized_interaction(response=Response(), followup=Followup())
 
     cog = ExtraCog(bot)
     await ExtraCog.links.callback(cog, interaction)
@@ -223,13 +252,13 @@ async def test_accessory_shop_renders_catalog_item_without_changing_output(
     monkeypatch.setattr(shop_module, "account_for_user", account_for_user)
     monkeypatch.setattr(shop_module, "get_user", get_user)
     monkeypatch.setattr(shop_module, "list_accounts", list_accounts)
-    bot = SimpleNamespace(
+    bot = _localized_bot(
         shop=Shop(),
         emoji_service=EmojiService(),
         config=SimpleNamespace(link_item_image=True),
         register_component=lambda *_args: None,
     )
-    interaction = SimpleNamespace(
+    interaction = _localized_interaction(
         user=SimpleNamespace(id=123),
         response=Response(),
         edit_original_response=edit_original_response,
@@ -330,7 +359,7 @@ async def test_shop_skin_menu_selects_tiered_skin_and_returns_private_video() ->
             """Record a response's content and keyword arguments."""
             self.messages.append({"content": content, **kwargs})
 
-    bot = SimpleNamespace(
+    bot = _localized_bot(
         register_component=lambda *_args: None,
         catalog=SimpleNamespace(get_skin=lambda uuid: skin if uuid == "skin" else None),
         emoji_service=EmojiService(),
@@ -338,14 +367,20 @@ async def test_shop_skin_menu_selects_tiered_skin_and_returns_private_video() ->
     cog = ShopCog(bot)
     controls = discord.ui.View(timeout=None)
     add_skin_selector(
-        controls, 123, [Offer(skin, 1775, 1)], 4_000_000_000, bot.emoji_service
+        controls,
+        123,
+        [Offer(skin, 1775, 1)],
+        4_000_000_000,
+        bot.emoji_service,
+        TEST_TRANSLATOR,
+        TEST_LOCALE,
     )
     selector = controls.children[0]
 
     assert selector.item.options[0].label == "Prime Vandal"
     assert str(selector.item.options[0].emoji) == "<:tier_deluxe:123456>"
 
-    interaction = SimpleNamespace(
+    interaction = _localized_interaction(
         user=SimpleNamespace(id=123),
         message=SimpleNamespace(components=[SimpleNamespace(children=[selector.item])]),
         response=Response(),
@@ -406,7 +441,7 @@ async def test_daily_shop_view_includes_only_its_offers_in_skin_menu(
             return ""
 
     monkeypatch.setattr("src.cogs.valorant.shop.list_accounts", list_accounts)
-    bot = SimpleNamespace(
+    bot = _localized_bot(
         register_component=lambda *_args: None,
         emoji_service=EmojiService(),
         config=SimpleNamespace(link_item_image=False),
@@ -434,6 +469,7 @@ async def test_daily_shop_view_includes_only_its_offers_in_skin_menu(
         "Player",
         123,
         "account",
+        locale=TEST_LOCALE,
     )
 
     selector = next(
@@ -526,14 +562,14 @@ async def test_bundles_command_renders_live_prices_and_tiered_skin_names(
         get_bundle=lambda uuid: bundle if uuid == bundle.uuid else None,
         get_skin=lambda uuid: skin if uuid == skin.uuid else None,
     )
-    bot = SimpleNamespace(
+    bot = _localized_bot(
         register_component=lambda *_args: None,
         catalog=catalog,
         config=SimpleNamespace(link_item_image=False),
         emoji_service=EmojiService(),
         shop=Shop(),
     )
-    interaction = SimpleNamespace(
+    interaction = _localized_interaction(
         user=SimpleNamespace(id=123), response=Response(), followup=Followup()
     )
 
@@ -590,10 +626,10 @@ async def test_bundles_reports_missing_account_and_empty_featured_list(
         return None
 
     monkeypatch.setattr(shop_module, "selected_account", selected_account)
-    unregistered = SimpleNamespace(
+    unregistered = _localized_interaction(
         user=SimpleNamespace(id=123), response=response, followup=followup
     )
-    cog = ShopCog(SimpleNamespace(register_component=lambda *_args: None))
+    cog = ShopCog(_localized_bot(register_component=lambda *_args: None))
     await cog.bundles.callback(cog, unregistered)
     assert "`/login`" in followup.message["embed"].description
     assert followup.message["ephemeral"] is True
@@ -614,17 +650,20 @@ async def test_bundles_reports_missing_account_and_empty_featured_list(
             return ShopData([], [], [], 4_000_000_000, None)
 
     empty_followup = Followup()
-    empty_interaction = SimpleNamespace(
+    empty_interaction = _localized_interaction(
         user=SimpleNamespace(id=123), response=Response(), followup=empty_followup
     )
     empty_cog = ShopCog(
-        SimpleNamespace(
+        _localized_bot(
             register_component=lambda *_args: None,
             shop=Shop(),
         )
     )
     await empty_cog.bundles.callback(empty_cog, empty_interaction)
-    assert "no featured bundles" in empty_followup.message["embeds"][0].description
+    assert (
+        empty_followup.message["embeds"][0].description
+        == "No bundles are currently featured."
+    )
 
 
 async def test_featured_bundle_view_has_no_account_selector_and_rejects_forged_items():
@@ -646,14 +685,17 @@ async def test_featured_bundle_view_has_no_account_selector_and_rejects_forged_i
             return "VP"
 
     cog = ShopCog(
-        SimpleNamespace(
+        _localized_bot(
             register_component=lambda *_args: None,
             catalog=SimpleNamespace(get_bundle=metadata.get),
             emoji_service=EmojiService(),
         )
     )
     embeds, controls = await cog.featured_bundles_view(
-        ShopData([], [], [], 0, None, featured_bundles=offers), 123, "account"
+        ShopData([], [], [], 0, None, featured_bundles=offers),
+        123,
+        "account",
+        locale=TEST_LOCALE,
     )
 
     assert [item.title for item in embeds] == [
@@ -668,6 +710,7 @@ async def test_featured_bundle_view_has_no_account_selector_and_rejects_forged_i
         ShopData([], [], [], 0, None, featured_bundles=offers),
         123,
         "account",
+        locale=TEST_LOCALE,
         show_shop_button=True,
     )
     assert [child.item.custom_id.split(":")[1] for child in shop_controls.children] == [
@@ -694,7 +737,7 @@ async def test_featured_bundle_view_has_no_account_selector_and_rejects_forged_i
         options=[discord.SelectOption(label="Bundle One", value="offer-1")],
     )
     response = Response()
-    interaction = SimpleNamespace(
+    interaction = _localized_interaction(
         user=SimpleNamespace(id=123),
         message=SimpleNamespace(components=[SimpleNamespace(children=[selector.item])]),
         response=response,
@@ -733,7 +776,7 @@ async def test_shop_video_selector_rejects_forged_and_mismatched_values() -> Non
             """Record a message and its response options."""
             self.messages.append({"content": content, **kwargs})
 
-    bot = SimpleNamespace(
+    bot = _localized_bot(
         register_component=lambda *_args: None,
         catalog=SimpleNamespace(
             get_skin=lambda uuid: {"skin": skin, "other": other, "empty": empty}.get(
@@ -755,7 +798,7 @@ async def test_shop_video_selector_rejects_forged_and_mismatched_values() -> Non
             discord.SelectOption(label="Empty Skin", value="empty"),
         ],
     )
-    interaction = SimpleNamespace(
+    interaction = _localized_interaction(
         user=SimpleNamespace(id=123),
         message=SimpleNamespace(components=[SimpleNamespace(children=[selector.item])]),
         response=Response(),
@@ -860,13 +903,13 @@ async def test_nightmarket_command_includes_skin_and_account_menus(
             """Store the follow-up message arguments."""
             self.message.update(kwargs)
 
-    bot = SimpleNamespace(
+    bot = _localized_bot(
         shop=Shop(),
         emoji_service=EmojiService(),
         config=SimpleNamespace(link_item_image=False),
         register_component=lambda *_args: None,
     )
-    interaction = SimpleNamespace(
+    interaction = _localized_interaction(
         user=SimpleNamespace(id=123),
         response=Response(),
         followup=Followup(),
@@ -900,7 +943,7 @@ async def test_nightmarket_command_includes_skin_and_account_menus(
         """Capture the Night Market view rendered after account switching."""
         switched.update(kwargs)
 
-    switch_interaction = SimpleNamespace(
+    switch_interaction = _localized_interaction(
         user=SimpleNamespace(id=123),
         response=SwitchResponse(),
         edit_original_response=edit_original_response,
@@ -922,6 +965,8 @@ async def test_daily_shop_dm_includes_skin_video_menu() -> None:
     class Target:
         """Capture the daily-shop DM sent by the task notification."""
 
+        locale = TEST_LOCALE
+
         async def send(self, **kwargs: object) -> None:
             """Store the DM arguments."""
             sent.update(kwargs)
@@ -942,7 +987,7 @@ async def test_daily_shop_dm_includes_skin_video_menu() -> None:
             return ""
 
     target = Target()
-    bot = SimpleNamespace(
+    bot = _localized_bot(
         get_user=lambda _user_id: target,
         emoji_service=EmojiService(),
         config=SimpleNamespace(link_item_image=False),
@@ -980,7 +1025,15 @@ async def test_shop_account_selector_hides_names_when_requested(
 
     monkeypatch.setattr("src.cogs.valorant.shop.list_accounts", list_accounts)
     controls = discord.ui.View(timeout=None)
-    await shop_module.add_account_selector(controls, 123, "daily", "one", hide_ign=True)
+    await shop_module.add_account_selector(
+        controls,
+        123,
+        "daily",
+        "one",
+        hide_ign=True,
+        translator=TEST_TRANSLATOR,
+        locale=TEST_LOCALE,
+    )
 
     selector = controls.children[0]
     assert [option.label for option in selector.item.options] == [
@@ -1026,21 +1079,23 @@ async def test_shop_hides_full_in_game_name_when_preference_enabled(
 
     monkeypatch.setattr("src.cogs.valorant.shop.get_user", get_user)
     monkeypatch.setattr("src.cogs.valorant.shop.selected_account", selected_account)
-    bot = SimpleNamespace(
+    bot = _localized_bot(
         shop=Shop(),
         register_component=lambda *_args: None,
     )
     cog = ShopCog(bot)
     rendered: dict[str, object] = {}
 
-    async def shop_view(_data, username, _owner_id, _puuid, *, hide_ign=False):
+    async def shop_view(
+        _data, username, _owner_id, _puuid, *, hide_ign=False, locale=None
+    ):
         """Return the expected shop embeds and interactive controls."""
         rendered["username"] = username
         rendered["hide_ign"] = hide_ign
         return [], None
 
     cog.shop_view = shop_view
-    interaction = SimpleNamespace(
+    interaction = _localized_interaction(
         user=SimpleNamespace(id=123),
         response=Response(),
         followup=Followup(),
@@ -1093,11 +1148,11 @@ async def test_account_switch_hides_name_when_preference_enabled(
     monkeypatch.setattr("src.cogs.valorant.accounts.resolve_account", resolve_account)
     monkeypatch.setattr("src.cogs.valorant.accounts.get_user", get_user)
     monkeypatch.setattr("src.cogs.valorant.accounts.select_account", select_account)
-    interaction = SimpleNamespace(
+    interaction = _localized_interaction(
         user=SimpleNamespace(id=123), response=Response(), followup=Followup()
     )
 
-    cog = AccountsCog(SimpleNamespace(register_component=lambda *_args: None))
+    cog = AccountsCog(_localized_bot(register_component=lambda *_args: None))
     await AccountsCog.account.callback(cog, interaction, "target")
 
     assert "SecretName" not in sent[0].description
@@ -1159,13 +1214,13 @@ async def test_battlepass_hides_name_when_preference_enabled(
         "src.cogs.valorant.battlepass.selected_account", selected_account
     )
     monkeypatch.setattr("src.cogs.valorant.battlepass.get_user", get_user)
-    interaction = SimpleNamespace(
+    interaction = _localized_interaction(
         user=SimpleNamespace(id=123), response=Response(), followup=Followup()
     )
 
     await BattlepassCog.battlepass.callback(
         BattlepassCog(
-            SimpleNamespace(gameplay=Gameplay(), emoji_service=EmojiService())
+            _localized_bot(gameplay=Gameplay(), emoji_service=EmojiService())
         ),
         interaction,
     )
@@ -1268,13 +1323,13 @@ async def test_missions_command_shows_weekly_progress_privately(
     monkeypatch.setattr(
         "src.cogs.valorant.battlepass.selected_account", selected_account
     )
-    interaction = SimpleNamespace(
+    interaction = _localized_interaction(
         user=SimpleNamespace(id=123), response=Response(), followup=Followup()
     )
 
     await BattlepassCog.missions.callback(
         BattlepassCog(
-            SimpleNamespace(gameplay=Gameplay(), emoji_service=EmojiService())
+            _localized_bot(gameplay=Gameplay(), emoji_service=EmojiService())
         ),
         interaction,
     )
@@ -1344,23 +1399,27 @@ async def test_testalerts_reports_temporary_auth_failure(
 
     monkeypatch.setattr("src.cogs.valorant.alerts.selected_account", selected_account)
     monkeypatch.setattr("src.cogs.valorant.alerts.first_alert", first_alert)
-    interaction = SimpleNamespace(
+    interaction = _localized_interaction(
         user=SimpleNamespace(id=123), response=Response(), followup=Followup()
     )
 
     await AlertsCog.testalerts.callback(
-        AlertsCog(SimpleNamespace(auth=Auth(), register_component=lambda *_args: None)),
+        AlertsCog(_localized_bot(auth=Auth(), register_component=lambda *_args: None)),
         interaction,
     )
 
-    assert "temporarily unavailable" in sent[0].description.lower()
+    assert sent[0].description == (
+        "Riot authentication is currently unavailable. Please try again later."
+    )
 
 
 def test_accounts_layout_marks_selected_account() -> None:
     """Verify that accounts layout marks selected account."""
     first = type("Account", (), {"puuid": "one", "username": "One#NA"})()
     second = type("Account", (), {"puuid": "two", "username": "Two#EU"})()
-    card = AccountsCog._accounts_embed([first, second], "two")
+    card = AccountsCog._accounts_embed(
+        [first, second], "two", TEST_TRANSLATOR, TEST_LOCALE
+    )
     assert (card.description, card.fields) == ("1. One#NA\n2. **Two#EU**", [])
 
 
@@ -1370,10 +1429,10 @@ def test_accounts_paginate_after_discord_embed_field_limit() -> None:
         type("Account", (), {"puuid": str(index), "username": f"Account {index}"})()
         for index in range(26)
     ]
-    card = AccountsCog._accounts_embed(accounts, "25", 1)
+    card = AccountsCog._accounts_embed(accounts, "25", TEST_TRANSLATOR, TEST_LOCALE, 1)
     controls = AccountsCog._accounts_view(1, len(accounts), 1)
     assert (card.title, card.description, card.footer.text, controls is not None) == (
-        "All your accounts with the bot:",
+        "Your linked accounts",
         "26. **Account 25**",
         "Page 2/2",
         True,
@@ -1398,6 +1457,8 @@ def test_battlepass_uses_qotix_progress_hierarchy() -> None:
         },
         "<:fbar:1>",
         "<:ebar:2>",
+        translator=TEST_TRANSLATOR,
+        locale=TEST_LOCALE,
     )
     assert [field.name for field in card.fields] == [
         "Current Tier",
@@ -1506,12 +1567,12 @@ async def test_deletedata_clears_cached_shops_after_database_delete(
 
     monkeypatch.setattr("src.cogs.valorant.logout.list_accounts", list_accounts)
     monkeypatch.setattr("src.cogs.valorant.logout.delete_user_data", delete_user_data)
-    interaction = SimpleNamespace(
+    interaction = _localized_interaction(
         user=SimpleNamespace(id=123), response=Response(), followup=Followup()
     )
 
     await LogoutCog.deletedata.callback(
-        LogoutCog(SimpleNamespace(shop=Shop())), interaction, True
+        LogoutCog(_localized_bot(shop=Shop())), interaction, True
     )
 
     assert events == [
@@ -1619,7 +1680,7 @@ async def test_task_notifications_handle_http_errors_while_fetching_user(
         """Return a stable currency marker for embed assertions."""
         return "VP"
 
-    bot = SimpleNamespace(
+    bot = _localized_bot(
         get_user=lambda _user_id: None,
         fetch_user=fetch_user,
         emoji_service=SimpleNamespace(
@@ -1760,10 +1821,10 @@ async def test_ping_uses_database_probe_and_keeps_latency_embed(
         probed = True
 
     monkeypatch.setattr("src.cogs.extra.ping_database", ping_database)
-    bot = SimpleNamespace(
+    bot = _localized_bot(
         get_shard=lambda shard_id: SimpleNamespace(latency=0.041), latency=0.2
     )
-    interaction = SimpleNamespace(
+    interaction = _localized_interaction(
         response=Response(),
         followup=Followup(),
         guild=SimpleNamespace(shard_id=3),

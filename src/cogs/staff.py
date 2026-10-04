@@ -9,7 +9,7 @@ from discord.ext import commands
 from ..bot import BotFraggBot
 from ..services.accounts import command_stats, count_suggestions_by_author
 from ..views import timestamp
-from .valorant._ui import embed, error
+from .valorant._ui import embed, error, translated
 
 
 class StaffCog(commands.Cog):
@@ -23,10 +23,15 @@ class StaffCog(commands.Cog):
         """Authorize the bot owner and privately reject all other callers."""
         if await self.bot.is_owner(interaction.user):
             return True
-        await error(interaction, "Only BotFragg's owner can use this command.")
+        await error(interaction, "staff-owner-only")
         return False
 
-    @app_commands.command(name="userinfo", description="Show BotFragg data for a user")
+    @app_commands.command(
+        name=app_commands.locale_str("userinfo", key="command-userinfo-name"),
+        description=app_commands.locale_str(
+            "Show BotFragg data for a user", key="command-userinfo-description"
+        ),
+    )
     @app_commands.guild_only()
     async def userinfo(
         self, interaction: discord.Interaction, user: discord.User
@@ -45,24 +50,48 @@ class StaffCog(commands.Cog):
                 owned_guilds += 1
             elif guild.get_member(user.id):
                 shared_guilds += 1
-        card = embed(title=f"{user}'s information", colour=0x9C84EF)
+        card = embed(
+            title=translated(interaction, "staff-userinfo-title", username=str(user)),
+            colour=0x9C84EF,
+        )
         card.description = "\n".join(
             (
-                f"**Full username:** [{user}](https://discord.com/users/{user.id})",
-                f"**ID:** {user.id}",
-                f"**Avatar URL:** [Click here]({user.display_avatar.url})",
-                f"**Shared servers (cached; may be incomplete):** {shared_guilds}",
-                f"**Owned servers:** {owned_guilds}",
-                f"**Commands used:** {command_count}",
-                f"**Suggestions made:** {suggestion_count}",
-                f"**Favorite command:** {favorite or 'None'}",
+                translated(
+                    interaction,
+                    "staff-userinfo-full-username",
+                    username=f"[{user}](https://discord.com/users/{user.id})",
+                ),
+                translated(interaction, "staff-userinfo-id", value=str(user.id)),
+                translated(
+                    interaction,
+                    "staff-userinfo-avatar",
+                    link=f"[Click here]({user.display_avatar.url})",
+                ),
+                translated(
+                    interaction, "staff-userinfo-shared-servers", count=shared_guilds
+                ),
+                translated(
+                    interaction, "staff-userinfo-owned-servers", count=owned_guilds
+                ),
+                translated(interaction, "staff-userinfo-commands", count=command_count),
+                translated(
+                    interaction, "staff-userinfo-suggestions", count=suggestion_count
+                ),
+                translated(
+                    interaction,
+                    "staff-userinfo-favorite-command",
+                    command=favorite or translated(interaction, "common-none"),
+                ),
             )
         )
         card.set_thumbnail(url=user.display_avatar.url)
         await interaction.followup.send(embed=card, ephemeral=True)
 
     @app_commands.command(
-        name="serverinfo", description="Show BotFragg data for a server"
+        name=app_commands.locale_str("serverinfo", key="command-serverinfo-name"),
+        description=app_commands.locale_str(
+            "Show BotFragg data for a server", key="command-serverinfo-description"
+        ),
     )
     @app_commands.guild_only()
     async def serverinfo(
@@ -74,33 +103,59 @@ class StaffCog(commands.Cog):
         if not server_id.isdecimal() or not (
             server := self.bot.get_guild(int(server_id))
         ):
-            await error(interaction, "Provide the ID of a server BotFragg is in.")
+            await error(interaction, "staff-server-id-required")
             return
         await interaction.response.defer(thinking=True, ephemeral=True)
         command_count, favorite = await command_stats(guild_id=server.id)
         members = server.member_count
-        member_count = str(members) if members is not None else "Unknown"
-        card = embed(title="Server information", colour=discord.Color.blurple().value)
+        member_count = (
+            members
+            if members is not None
+            else translated(interaction, "common-unknown")
+        )
+        card = embed(
+            title=translated(interaction, "staff-serverinfo-title"),
+            colour=discord.Color.blurple().value,
+        )
         card.add_field(
-            name="Important information",
+            name=translated(interaction, "staff-server-important-information"),
             value="\n".join(
                 (
-                    f"**Server name:** {server.name}",
-                    f"**Server ID:** {server.id}",
-                    f"**Total members (cached; may be stale):** {member_count}",
-                    f"**Server owner:** <@{server.owner_id}> ({server.owner_id})",
+                    translated(interaction, "staff-server-name", name=server.name),
+                    translated(interaction, "staff-server-id", value=str(server.id)),
+                    translated(interaction, "staff-server-members", count=member_count),
+                    translated(
+                        interaction,
+                        "staff-server-owner",
+                        owner=f"<@{server.owner_id}> ({server.owner_id})",
+                    ),
                 )
             ),
             inline=False,
         )
         card.add_field(
-            name="Other information",
+            name=translated(interaction, "staff-server-other-information"),
             value="\n".join(
                 (
-                    f"**Created:** {timestamp(server.created_at)}",
-                    f"**Commands used:** {command_count}",
-                    f"**Most used command:** {favorite or 'None'}",
-                    f"**Channels / roles:** {len(server.channels)} / {len(server.roles)}",
+                    translated(
+                        interaction,
+                        "staff-server-created",
+                        timestamp=timestamp(server.created_at),
+                    ),
+                    translated(
+                        interaction, "staff-server-commands", count=command_count
+                    ),
+                    translated(
+                        interaction,
+                        "staff-server-most-used-command",
+                        command=favorite or translated(interaction, "common-none"),
+                    ),
+                    translated(
+                        interaction,
+                        "staff-server-channels-roles",
+                        channels=len(server.channels),
+                        roles=len(server.roles),
+                    ),
                 )
             ),
             inline=False,

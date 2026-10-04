@@ -5,9 +5,11 @@ from __future__ import annotations
 from types import SimpleNamespace
 from uuid import UUID
 
+import discord
 import pytest
 
 from src.cogs.valorant.alerts import AlertsCog
+from src.localization import BotFraggTranslator
 from src.models import Account, Alert, User
 
 
@@ -27,6 +29,7 @@ async def test_alert_manager_preserves_order_and_page_wrapping() -> None:
     bot = SimpleNamespace(
         config=SimpleNamespace(alerts_per_page=2),
         catalog=SimpleNamespace(get_skin=skins.get),
+        translator=BotFraggTranslator(),
         emoji_service=SimpleNamespace(
             skin_name=lambda name, _tier_uuid: name,
             skin_emoji=lambda _tier_uuid: "",
@@ -35,7 +38,7 @@ async def test_alert_manager_preserves_order_and_page_wrapping() -> None:
     )
     cog = AlertsCog(bot)
 
-    page, controls = await cog.manager_view(user.id, 1)
+    page, controls = await cog.manager_view(user.id, 1, discord.Locale.american_english)
     assert page.description == "**3.** **Skin 3**\n**4.** **Skin 4**"
     assert controls is not None
     assert [
@@ -45,13 +48,19 @@ async def test_alert_manager_preserves_order_and_page_wrapping() -> None:
         "2",
     ]
 
-    wrapped_back, _ = await cog.manager_view(user.id, -1)
-    wrapped_forward, _ = await cog.manager_view(user.id, 3)
+    wrapped_back, _ = await cog.manager_view(
+        user.id, -1, discord.Locale.american_english
+    )
+    wrapped_forward, _ = await cog.manager_view(
+        user.id, 3, discord.Locale.american_english
+    )
     assert wrapped_back.description == "**5.** **Skin 5**"
     assert wrapped_forward.description == "**1.** **Skin 1**\n**2.** **Skin 2**"
 
     bot.config.alerts_per_page = 5
-    single_page, single_controls = await cog.manager_view(user.id, 0)
+    single_page, single_controls = await cog.manager_view(
+        user.id, 0, discord.Locale.american_english
+    )
     assert single_page.description == "\n".join(
         f"**{index}.** **Skin {index}**" for index in range(1, 6)
     )
@@ -59,8 +68,10 @@ async def test_alert_manager_preserves_order_and_page_wrapping() -> None:
     assert len(single_controls.children) == 5
 
     empty_user = await User.create(id=456)
-    empty_page, empty_controls = await cog.manager_view(empty_user.id, 0)
-    assert empty_page.description == "You don't have any alerts."
+    empty_page, empty_controls = await cog.manager_view(
+        empty_user.id, 0, discord.Locale.american_english
+    )
+    assert empty_page.description == "You have no active alerts."
     assert empty_controls is None
 
 
@@ -105,10 +116,13 @@ async def test_alert_manager_handles_deletion_between_count_and_fetch(
     bot = SimpleNamespace(
         config=SimpleNamespace(alerts_per_page=10),
         catalog=SimpleNamespace(get_skin=lambda _uuid: None),
+        translator=BotFraggTranslator(),
         register_component=lambda *_args: None,
     )
 
-    card, controls = await AlertsCog(bot).manager_view(123, 0)
+    card, controls = await AlertsCog(bot).manager_view(
+        123, 0, discord.Locale.american_english
+    )
 
-    assert card.description == "You don't have any alerts."
+    assert card.description == "You have no active alerts."
     assert controls is None

@@ -910,7 +910,7 @@ async def test_gameplay_penalties_join_infractions_and_normalize_effects() -> No
             "expires": datetime(2026, 11, 3, tzinfo=UTC),
             "games_remaining": 2,
             "platform_scope": "PC, Competitive",
-            "effects": ["Queue restriction", "Ranked rating penalty", "Warning"],
+            "effects": ["queue-restriction", "ranked-rating-penalty", "warning"],
             "warning_type": "QUEUE_DODGING",
             "warning_tier": 2,
         }

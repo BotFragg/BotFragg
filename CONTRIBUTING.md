@@ -19,11 +19,29 @@ Use Python 3.14 and [uv](https://docs.astral.sh/uv/).
    uv run --frozen python tools/generate_api_reference.py --check
    ```
 
-5. When changing Python modules, classes, callables, or their docstrings,
-   regenerate the browsable API reference:
+When changing Python modules, classes, callables, or their docstrings,
+regenerate the browsable API reference:
 
-   ```sh
-   uv run --frozen python tools/generate_api_reference.py
-   ```
+```sh
+uv run --frozen python tools/generate_api_reference.py
+```
+
+## Adding a translation
+
+English (`locales/en-US/messages.ftl`) is the source catalog. To add a language,
+create `locales/<Discord locale>/messages.ftl` using the exact locale code that
+Discord uses, then translate the English messages while keeping their IDs
+unchanged. For example, Discord's French locale code is `fr`.
+
+Keep every Fluent variable such as `{ $username }` in the translated message;
+the values are supplied by the bot and must remain visible. Missing messages
+fall back to English, so translations can be contributed in smaller batches.
+Command names and descriptions use the same catalog and should follow Discord's
+slash-command naming limits. Keep VALORANT/Riot names, player names, and commit
+subjects as provided by their source.
+
+Run `uv run --frozen python tools/check_locales.py` to validate Fluent syntax,
+Discord locale codes, message IDs, and placeholder names before opening a pull
+request.
 
 Keep changes focused, preserve Discord interaction ownership checks, never log Riot credentials or callback URLs, and add a focused regression test for changed behaviour. Do not commit `.env`, databases, compiled catalogs, or API secrets.

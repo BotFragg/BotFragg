@@ -71,7 +71,9 @@ class OwnedActionButton(discord.ui.DynamicItem[discord.ui.Button], template=ACTI
             return True
         await interaction.response.send_message(
             embed=_error_embed(
-                "That control belongs to someone else. Run the command yourself."
+                interaction.client.translator.text(
+                    interaction.locale, "component-button-other-owner"
+                )
             ),
             ephemeral=True,
         )
@@ -82,7 +84,11 @@ class OwnedActionButton(discord.ui.DynamicItem[discord.ui.Button], template=ACTI
         handler = getattr(interaction.client, "component_handlers", {}).get(self.action)
         if handler is None:
             await interaction.response.send_message(
-                embed=_error_embed("This control is no longer available."),
+                embed=_error_embed(
+                    interaction.client.translator.text(
+                        interaction.locale, "component-button-unavailable"
+                    )
+                ),
                 ephemeral=True,
             )
             return
@@ -137,7 +143,12 @@ class OwnedSelect(discord.ui.DynamicItem[discord.ui.Select], template=SELECT_RE)
         if interaction.user.id == self.owner_id:
             return True
         await interaction.response.send_message(
-            embed=_error_embed("That menu belongs to someone else."), ephemeral=True
+            embed=_error_embed(
+                interaction.client.translator.text(
+                    interaction.locale, "component-select-other-owner"
+                )
+            ),
+            ephemeral=True,
         )
         return False
 
@@ -146,7 +157,12 @@ class OwnedSelect(discord.ui.DynamicItem[discord.ui.Select], template=SELECT_RE)
         handler = getattr(interaction.client, "component_handlers", {}).get(self.action)
         if handler is None:
             await interaction.response.send_message(
-                embed=_error_embed("This menu is no longer available."), ephemeral=True
+                embed=_error_embed(
+                    interaction.client.translator.text(
+                        interaction.locale, "component-select-unavailable"
+                    )
+                ),
+                ephemeral=True,
             )
             return
         selected = self.item.values[0] if self.item.values else ""

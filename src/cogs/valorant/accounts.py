@@ -7,6 +7,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from ...bot import BotFraggBot
+from ...localization import BotFraggTranslator
 from ...models import Account
 from ...services.accounts import (
     get_user,
@@ -20,6 +21,7 @@ from ._ui import (
     account_autocomplete_choices,
     embed,
     error,
+    translated,
     view,
 )
 
@@ -44,24 +46,38 @@ class AccountsCog(commands.Cog):
 
     @staticmethod
     def _accounts_embed(
-        accounts: list[Account], current_account_id: str | None, page: int = 0
+        accounts: list[Account],
+        current_account_id: str | None,
+        translator: BotFraggTranslator,
+        locale: discord.Locale,
+        page: int = 0,
     ) -> discord.Embed:
         """Render one bounded account page and mark the currently selected entry."""
         pages = max(1, (len(accounts) + ACCOUNTS_PER_PAGE - 1) // ACCOUNTS_PER_PAGE)
         page %= pages
-        title = "All your accounts with the bot:"
+        title = translator.text(locale, "accounts-title")
         start = page * ACCOUNTS_PER_PAGE
         entries = []
         for index, account in enumerate(
             accounts[start : start + ACCOUNTS_PER_PAGE], start + 1
         ):
-            username = account.username or "[No username]"
+            username = account.username or translator.text(
+                locale, "account-no-username"
+            )
             if account.puuid == current_account_id:
                 username = f"**{username}**"
-            entries.append(f"{index}. {username}")
+            entries.append(
+                translator.text(
+                    locale, "accounts-entry", number=index, username=username
+                )
+            )
         result = embed("\n".join(entries), title=title)
         if pages > 1:
-            result.set_footer(text=f"Page {page + 1}/{pages}")
+            result.set_footer(
+                text=translator.text(
+                    locale, "accounts-page", page=page + 1, pages=pages
+                )
+            )
         return result
 
     @staticmethod
@@ -78,8 +94,11 @@ class AccountsCog(commands.Cog):
         )
 
     @app_commands.command(
-        name="account",
-        description="Switch the VALORANT account you are currently using",
+        name=app_commands.locale_str("account", key="command-account-name"),
+        description=app_commands.locale_str(
+            "Switch the VALORANT account you are currently using",
+            key="command-account-description",
+        ),
     )
     @app_commands.autocomplete(account=account_autocomplete)
     async def account(self, interaction: discord.Interaction, account: str) -> None:
@@ -90,18 +109,21 @@ class AccountsCog(commands.Cog):
         if not accounts or not target:
             await error(
                 interaction,
-                "Couldn't find that account in your registered accounts. Try `/accounts`.",
+                "account-not-found",
             )
             return
         user = await get_user(interaction.user.id)
         if not user:
-            await error(
-                interaction, "You're not registered with the bot! Try `/login`."
-            )
+            await error(interaction, "error-not-registered")
             return
-        username = _account_display_name(target.username, hide_ign=user.hide_ign)
+        username = _account_display_name(
+            target.username,
+            hide_ign=user.hide_ign,
+            translator=self.bot.translator,
+            locale=interaction.locale,
+        )
         if user.current_account_id == target.puuid:
-            await error(interaction, f"**{username}** is already selected!")
+            await error(interaction, "account-already-selected", username=username)
             return
         await select_account(interaction.user.id, target)
         number = next(
@@ -110,11 +132,22 @@ class AccountsCog(commands.Cog):
             if item.puuid == target.puuid
         )
         await interaction.followup.send(
-            embed=embed(f"Switched to account number **{number}. {username}**")
+            embed=embed(
+                translated(
+                    interaction,
+                    "account-switched",
+                    number=number,
+                    username=username,
+                )
+            )
         )
 
     @app_commands.command(
-        name="accounts", description="Show all of your VALORANT accounts"
+        name=app_commands.locale_str("accounts", key="command-accounts-name"),
+        description=app_commands.locale_str(
+            "Show all of your VALORANT accounts",
+            key="command-accounts-description",
+        ),
     )
     async def accounts(self, interaction: discord.Interaction) -> None:
         """Show the caller's accounts privately when their name-hiding preference is on."""
@@ -124,13 +157,16 @@ class AccountsCog(commands.Cog):
             thinking=True, ephemeral=bool(user and user.hide_ign)
         )
         if not user or not accounts:
-            await error(
-                interaction, "You're not registered with the bot! Try `/login`."
-            )
+            await error(interaction, "error-not-registered")
             return
         controls = self._accounts_view(interaction.user.id, len(accounts), 0)
         kwargs: dict[str, object] = {
-            "embed": self._accounts_embed(accounts, user.current_account_id),
+            "embed": self._accounts_embed(
+                accounts,
+                user.current_account_id,
+                self.bot.translator,
+                interaction.locale,
+            ),
             "ephemeral": user.hide_ign,
         }
         if controls is not None:
@@ -145,15 +181,21 @@ class AccountsCog(commands.Cog):
         try:
             page = int(payload)
         except ValueError:
-            await error(interaction, "Invalid account page.")
+            await error(interaction, "accounts-page-invalid")
             return
         user = await get_user(interaction.user.id)
         accounts = await list_accounts(interaction.user.id)
         if not user or not accounts:
-            await error(interaction, "You no longer have any accounts.")
+            await error(interaction, "accounts-none-left")
             return
         await interaction.edit_original_response(
-            embed=self._accounts_embed(accounts, user.current_account_id, page),
+            embed=self._accounts_embed(
+                accounts,
+                user.current_account_id,
+                self.bot.translator,
+                interaction.locale,
+                page,
+            ),
             view=self._accounts_view(interaction.user.id, len(accounts), page),
         )
 

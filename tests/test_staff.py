@@ -8,6 +8,9 @@ from types import SimpleNamespace
 import discord
 
 from src.cogs.staff import StaffCog
+from src.localization import BotFraggTranslator
+
+TEST_TRANSLATOR = BotFraggTranslator()
 
 
 class Response:
@@ -35,7 +38,11 @@ class Followup:
 def interaction() -> SimpleNamespace:
     """Create the private interaction surface used by owner diagnostics."""
     return SimpleNamespace(
-        user=SimpleNamespace(id=1), response=Response(), followup=Followup()
+        user=SimpleNamespace(id=1),
+        response=Response(),
+        followup=Followup(),
+        client=SimpleNamespace(translator=TEST_TRANSLATOR),
+        locale=discord.Locale.american_english,
     )
 
 
@@ -127,7 +134,7 @@ async def test_serverinfo_labels_discord_member_count_as_cached(monkeypatch) -> 
 
     card = command_interaction.followup.embed
     assert card is not None
-    assert "**Total members (cached; may be stale):** 40" in card.fields[0].value
+    assert "**Members (cached; may be outdated):** 40" in card.fields[0].value
     assert "humans" not in card.fields[0].value
     assert "bots" not in card.fields[0].value
     assert command_interaction.followup.ephemeral

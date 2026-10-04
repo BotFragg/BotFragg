@@ -17,6 +17,7 @@ jobs:
         with:
           python-version: "3.14"
       - run: uv sync --all-groups --frozen
+      - run: uv run --frozen python tools/check_locales.py
       - run: uv run --frozen python tools/generate_api_reference.py --check
       - run: uv run --frozen pytest -q
       - run: uv run --frozen ruff check .

@@ -17,6 +17,7 @@ RUN uv sync --frozen --no-dev --no-install-project
 
 COPY --chown=botfragg:botfragg src ./src
 COPY --chown=botfragg:botfragg assets ./assets
+COPY --chown=botfragg:botfragg locales ./locales
 RUN uv sync --frozen --no-dev \
     && mkdir -p /app/data /tmp/uv-cache \
     && chown botfragg:botfragg /app/data \

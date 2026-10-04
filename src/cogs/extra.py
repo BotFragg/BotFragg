@@ -21,6 +21,7 @@ from ..database import (
     ping_database,
     save_shard_status_message,
 )
+from ..localization import BotFraggTranslator
 from ..models import Suggestion
 from ..services.accounts import (
     count_registered_users,
@@ -33,7 +34,7 @@ from ..services.accounts import (
 )
 from ..services.http import HTTPFailure
 from ..views import timestamp
-from .valorant._ui import embed, error, view
+from .valorant._ui import embed, error, translated, view
 
 GITHUB_COMMITS_URL = "https://api.github.com/repos/BotFragg/BotFragg/commits?per_page=5"
 GITHUB_REPOSITORY_URL = "https://github.com/BotFragg/BotFragg"
@@ -46,14 +47,19 @@ class ExtraCog(commands.Cog):
     """Provide public utility commands and owner-managed suggestion workflows."""
 
     suggestions = app_commands.Group(
-        name="suggestion", description="Track or review feature suggestions"
+        name=app_commands.locale_str("suggestion", key="group-suggestion-name"),
+        description=app_commands.locale_str(
+            "Track or review feature suggestions",
+            key="group-suggestion-description",
+        ),
     )
 
     def __init__(self, bot: BotFraggBot) -> None:
         """Store the bot and record when this cog started for the info command."""
         self.bot = bot
         self.started_at = datetime.now(UTC)
-        self._latest_updates = "Commit history is temporarily unavailable."
+        self._latest_updates: list[tuple[str, str | None, str | None]] | None = None
+        self._latest_updates_unavailable = True
         self._latest_updates_expires = 0.0
         self._latest_updates_lock = asyncio.Lock()
         try:
@@ -76,7 +82,12 @@ class ExtraCog(commands.Cog):
         if task is not None and task is not asyncio.current_task():
             await asyncio.gather(task, return_exceptions=True)
 
-    @app_commands.command(name="ping", description="Show BotFragg's current latency")
+    @app_commands.command(
+        name=app_commands.locale_str("ping", key="command-ping-name"),
+        description=app_commands.locale_str(
+            "Show BotFragg's current latency", key="command-ping-description"
+        ),
+    )
     @app_commands.guild_only()
     async def ping(self, interaction: discord.Interaction) -> None:
         """Report Discord gateway latency and a live database probe duration."""
@@ -90,21 +101,30 @@ class ExtraCog(commands.Cog):
             else None
         )
         websocket_ms = (shard.latency if shard else self.bot.latency) * 1000
-        card = embed(title="🏓 Pong")
-        card.add_field(name="Websocket latency", value=f"{websocket_ms:.0f}ms")
-        card.add_field(name="Database latency", value=f"{database_ms:.0f}ms")
+        card = embed(title=translated(interaction, "ping-title"))
+        card.add_field(
+            name=translated(interaction, "ping-websocket-latency"),
+            value=f"{websocket_ms:.0f}ms",
+        )
+        card.add_field(
+            name=translated(interaction, "ping-database-latency"),
+            value=f"{database_ms:.0f}ms",
+        )
         await interaction.followup.send(embed=card)
 
-    @app_commands.command(name="botinfo", description="Show information about BotFragg")
+    @app_commands.command(
+        name=app_commands.locale_str("botinfo", key="command-botinfo-name"),
+        description=app_commands.locale_str(
+            "Show information about BotFragg", key="command-botinfo-description"
+        ),
+    )
     @app_commands.guild_only()
     async def botinfo(self, interaction: discord.Interaction) -> None:
         """Show recent public updates and BotFragg runtime information."""
         await interaction.response.defer(thinking=True)
         user = self.bot.user
         if not user:
-            await error(
-                interaction, "BotFragg is still starting up. Try again shortly."
-            )
+            await error(interaction, "error-bot-starting")
             return
         registered_users = await count_registered_users()
         members = sum(guild.member_count or 0 for guild in self.bot.guilds)
@@ -119,50 +139,86 @@ class ExtraCog(commands.Cog):
         source_lines = (
             f"{self.source_line_count:,}"
             if self.source_line_count is not None
-            else "Unavailable"
+            else translated(interaction, "common-unavailable")
         )
         system_uptime = (
-            timestamp(system_started) if system_started is not None else "Unavailable"
+            timestamp(system_started)
+            if system_started is not None
+            else translated(interaction, "common-unavailable")
         )
-        cpu_usage = f"{cpu_percent:.1f}%" if cpu_percent is not None else "Unavailable"
-        memory_usage = f"{memory_mb:.2f} MB" if memory_mb is not None else "Unavailable"
+        cpu_usage = (
+            f"{cpu_percent:.1f}%"
+            if cpu_percent is not None
+            else translated(interaction, "common-unavailable")
+        )
+        memory_usage = (
+            f"{memory_mb:.2f} MB"
+            if memory_mb is not None
+            else translated(interaction, "common-unavailable")
+        )
         card = embed(
-            "BotFragg is a VALORANT companion for personal shops, balances, battlepass progress, and alerts.",
-            title=f"About {user.name}",
+            translated(interaction, "botinfo-description"),
+            title=translated(interaction, "botinfo-title", name=user.name),
         )
         card.add_field(
-            name="Recent commits",
-            value=await self._latest_commit_summary(),
+            name=translated(interaction, "botinfo-recent-commits"),
+            value=await self._latest_commit_summary(interaction.locale),
             inline=False,
         )
         card.add_field(
-            name="Community",
+            name=translated(interaction, "botinfo-community"),
             value=(
-                f"**Servers:** {len(self.bot.guilds):,}\n"
-                f"**Registered users:** {registered_users:,}\n"
-                f"**Members:** {members:,}\n"
-                f"**Channels:** {channels:,}\n"
-                f"**Commands:** {len(self.bot.tree.get_commands()):,}"
+                translated(interaction, "botinfo-servers", count=len(self.bot.guilds))
+                + "\n"
+                + translated(
+                    interaction, "botinfo-registered-users", count=registered_users
+                )
+                + "\n"
+                + translated(interaction, "botinfo-members", count=members)
+                + "\n"
+                + translated(interaction, "botinfo-channels", count=channels)
+                + "\n"
+                + translated(
+                    interaction,
+                    "botinfo-commands",
+                    count=len(self.bot.tree.get_commands()),
+                )
             ),
             inline=True,
         )
         card.add_field(
-            name="Software",
+            name=translated(interaction, "botinfo-software"),
             value=(
-                f"**Source lines:** {source_lines}\n"
-                f"**Python:** {platform.python_version()}\n"
-                f"**discord.py:** {discord.__version__}"
+                translated(interaction, "botinfo-source-lines", count=source_lines)
+                + "\n"
+                + translated(
+                    interaction, "botinfo-python", version=platform.python_version()
+                )
+                + "\n"
+                + translated(
+                    interaction, "botinfo-discord-py", version=discord.__version__
+                )
             ),
             inline=True,
         )
         card.add_field(
-            name="Process",
+            name=translated(interaction, "botinfo-process"),
             value=(
-                f"**OS:** {platform.system()}\n"
-                f"**Bot uptime:** {timestamp(self.started_at)}\n"
-                f"**System uptime:** {system_uptime}\n"
-                f"**Process CPU:** {cpu_usage}\n"
-                f"**Memory:** {memory_usage}"
+                translated(interaction, "botinfo-os", name=platform.system())
+                + "\n"
+                + translated(
+                    interaction,
+                    "botinfo-bot-uptime",
+                    timestamp=timestamp(self.started_at),
+                )
+                + "\n"
+                + translated(
+                    interaction, "botinfo-system-uptime", timestamp=system_uptime
+                )
+                + "\n"
+                + translated(interaction, "botinfo-process-cpu", value=cpu_usage)
+                + "\n"
+                + translated(interaction, "botinfo-memory", value=memory_usage)
             ),
             inline=False,
         )
@@ -171,99 +227,137 @@ class ExtraCog(commands.Cog):
             embed=card, allowed_mentions=discord.AllowedMentions.none()
         )
 
-    async def _latest_commit_summary(self) -> str:
-        """Fetch and cache five public repository commits for the bot info embed."""
-        if monotonic() < self._latest_updates_expires:
-            return self._latest_updates
-        async with self._latest_updates_lock:
-            if monotonic() < self._latest_updates_expires:
-                return self._latest_updates
-            try:
-                response = await self.bot.riot_http.request(
-                    "GET",
-                    GITHUB_COMMITS_URL,
-                    headers={
-                        "Accept": "application/vnd.github+json",
-                        "User-Agent": "BotFragg",
-                        "X-GitHub-Api-Version": "2022-11-28",
-                    },
-                )
-            except HTTPFailure:
-                response = None
-            if response and response.status == 200 and isinstance(response.data, list):
-                updates = []
-                for commit in response.data[:5]:
-                    if not isinstance(commit, dict):
-                        continue
-                    sha = commit.get("sha")
-                    details = commit.get("commit")
+    async def _latest_commit_summary(self, locale: discord.Locale) -> str:
+        """Fetch and cache five public commits, formatting them per request locale."""
+        if monotonic() >= self._latest_updates_expires:
+            async with self._latest_updates_lock:
+                if monotonic() >= self._latest_updates_expires:
+                    self._latest_updates = None
+                    self._latest_updates_unavailable = True
+                    try:
+                        response = await self.bot.riot_http.request(
+                            "GET",
+                            GITHUB_COMMITS_URL,
+                            headers={
+                                "Accept": "application/vnd.github+json",
+                                "User-Agent": "BotFragg",
+                                "X-GitHub-Api-Version": "2022-11-28",
+                            },
+                        )
+                    except HTTPFailure:
+                        response = None
                     if (
-                        not isinstance(sha, str)
-                        or not COMMIT_SHA.fullmatch(sha)
-                        or not isinstance(details, dict)
+                        response
+                        and response.status == 200
+                        and isinstance(response.data, list)
                     ):
-                        continue
-                    message = details.get("message")
-                    subject = (
-                        discord.utils.escape_markdown(message.splitlines()[0].strip())
-                        if isinstance(message, str) and message.strip()
-                        else "Commit"
-                    )
-                    if len(subject) > 100:
-                        subject = subject[:97] + "..."
-                    author = details.get("author") or details.get("committer")
-                    commit_date = (
-                        author.get("date") if isinstance(author, dict) else None
-                    )
-                    age = ""
-                    if isinstance(commit_date, str):
-                        try:
-                            committed = datetime.fromisoformat(
-                                commit_date.replace("Z", "+00:00")
+                        updates = []
+                        for commit in response.data[:5]:
+                            if not isinstance(commit, dict):
+                                continue
+                            sha = commit.get("sha")
+                            details = commit.get("commit")
+                            if (
+                                not isinstance(sha, str)
+                                or not COMMIT_SHA.fullmatch(sha)
+                                or not isinstance(details, dict)
+                            ):
+                                continue
+                            message = details.get("message")
+                            subject = (
+                                discord.utils.escape_markdown(
+                                    message.splitlines()[0].strip()
+                                )
+                                if isinstance(message, str) and message.strip()
+                                else None
                             )
-                            age = f" · {timestamp(committed)}"
-                        except ValueError:
-                            pass
-                    updates.append(
-                        f"[`{sha[:7]}`]({GITHUB_COMMIT_URL.format(sha)}) {subject}{age}"
-                    )
-                if updates:
-                    self._latest_updates = "\n".join(updates)
-                elif not response.data:
-                    self._latest_updates = "No commits found."
-            self._latest_updates_expires = monotonic() + GITHUB_CACHE_SECONDS
-            return self._latest_updates
+                            if subject and len(subject) > 100:
+                                subject = subject[:97] + "..."
+                            author = details.get("author") or details.get("committer")
+                            commit_date = (
+                                author.get("date") if isinstance(author, dict) else None
+                            )
+                            updates.append((sha, subject, commit_date))
+                        if updates or not response.data:
+                            self._latest_updates = updates
+                            self._latest_updates_unavailable = False
+                    self._latest_updates_expires = monotonic() + GITHUB_CACHE_SECONDS
 
-    def _public_links(self, user: discord.ClientUser) -> discord.ui.View:
+        if self._latest_updates_unavailable or self._latest_updates is None:
+            return self.bot.translator.text(locale, "botinfo-commits-unavailable")
+        if not self._latest_updates:
+            return self.bot.translator.text(locale, "botinfo-no-commits")
+
+        lines = []
+        for sha, subject, commit_date in self._latest_updates:
+            age = ""
+            if isinstance(commit_date, str):
+                try:
+                    committed = datetime.fromisoformat(
+                        commit_date.replace("Z", "+00:00")
+                    )
+                    age = " · " + self.bot.translator.text(
+                        locale, "botinfo-commit-date", timestamp=timestamp(committed)
+                    )
+                except ValueError:
+                    pass
+            lines.append(
+                f"[`{sha[:7]}`]({GITHUB_COMMIT_URL.format(sha)}) "
+                f"{subject or self.bot.translator.text(locale, 'botinfo-commit')}{age}"
+            )
+        return "\n".join(lines)
+
+    def _public_links(
+        self, user: discord.ClientUser, locale: discord.Locale
+    ) -> discord.ui.View:
         """Build link buttons for the configured public URLs."""
         invite_url = discord.utils.oauth_url(
             user.id,
             permissions=discord.Permissions.none(),
             scopes=("bot", "applications.commands"),
         )
-        links = [("Invite BotFragg", invite_url)]
+        links = [("link-invite", invite_url)]
         links.extend(
             (label, url)
             for label, url in (
-                ("Support server", self.bot.config.support_url),
-                ("Vote", self.bot.config.vote_url),
-                ("Website", self.bot.config.website_url),
-                ("GitHub", GITHUB_REPOSITORY_URL),
+                ("link-support", self.bot.config.support_url),
+                ("link-vote", self.bot.config.vote_url),
+                ("link-website", self.bot.config.website_url),
+                ("link-github", GITHUB_REPOSITORY_URL),
             )
             if url
         )
-        return view(*(discord.ui.Button(label=label, url=url) for label, url in links))
+        return view(
+            *(
+                discord.ui.Button(
+                    label=self.bot.translator.text(locale, key)
+                    if key.startswith("link-")
+                    else key,
+                    url=url,
+                )
+                for key, url in links
+            )
+        )
 
     @staticmethod
-    def _help_category(command: app_commands.Command) -> str:
+    def _help_category(
+        command: app_commands.Command,
+        translator: BotFraggTranslator,
+        locale: discord.Locale,
+    ) -> str:
         """Use each command's cog module to place it in a help category."""
         module = command.module or ""
         component = module.partition("src.cogs.")[2].split(".", 1)[0]
         category = {
-            "extra": "Misc",
-            "valorant": "VALORANT",
+            "extra": "help-category-misc",
+            "valorant": "help-category-valorant",
         }.get(component, component.replace("_", " ").title() or "Other")
-        return f"{category} Commands"
+        category_name = (
+            translator.text(locale, category)
+            if category.startswith("help-category-")
+            else category
+        )
+        return translator.text(locale, "help-category-commands", category=category_name)
 
     @staticmethod
     def _command_mentions(commands: list[discord.AppCommand]) -> dict[str, str]:
@@ -287,15 +381,18 @@ class ExtraCog(commands.Cog):
             )
         return mentions
 
-    @app_commands.command(name="help", description="Show BotFragg's slash commands")
+    @app_commands.command(
+        name=app_commands.locale_str("help", key="command-help-name"),
+        description=app_commands.locale_str(
+            "Show BotFragg's slash commands", key="command-help-description"
+        ),
+    )
     async def help(self, interaction: discord.Interaction) -> None:
         """List registered slash commands by category in the embed description."""
         await interaction.response.defer(thinking=True)
         user = self.bot.user
         if not user:
-            await error(
-                interaction, "BotFragg is still starting up. Try again shortly."
-            )
+            await error(interaction, "error-bot-starting")
             return
 
         try:
@@ -309,19 +406,33 @@ class ExtraCog(commands.Cog):
                 continue
             mention = mentions.get(command.qualified_name)
             command_name = mention or f"`/{command.qualified_name}`"
-            description = discord.utils.escape_markdown(command.description)
-            categories.setdefault(self._help_category(command), []).append(
-                f"{command_name} - {description}"
+            description_key = (
+                "command-" + command.qualified_name.replace(" ", "-") + "-description"
+            )
+            description = discord.utils.escape_markdown(
+                self.bot.translator.text(interaction.locale, description_key)
+            )
+            category = self._help_category(
+                command, self.bot.translator, interaction.locale
+            )
+            categories.setdefault(category, []).append(
+                self.bot.translator.text(
+                    interaction.locale,
+                    "help-command-entry",
+                    command=command_name,
+                    description=description,
+                )
             )
 
-        description = [
-            "Commands are only available through slash commands.",
-        ]
+        description = [translated(interaction, "help-intro")]
         for category, entries in categories.items():
             description.extend(("", f"**{category}**", *entries))
 
-        controls = self._public_links(user)
-        card = embed("\n".join(description), title="BotFragg Help")
+        controls = self._public_links(user, interaction.locale)
+        card = embed(
+            "\n".join(description),
+            title=translated(interaction, "help-title"),
+        )
         card.set_thumbnail(url=user.display_avatar.url)
         await interaction.followup.send(
             embed=card,
@@ -329,22 +440,33 @@ class ExtraCog(commands.Cog):
             allowed_mentions=discord.AllowedMentions.none(),
         )
 
-    @app_commands.command(name="links", description="Show BotFragg's public links")
+    @app_commands.command(
+        name=app_commands.locale_str("links", key="command-links-name"),
+        description=app_commands.locale_str(
+            "Show BotFragg's public links", key="command-links-description"
+        ),
+    )
     async def links(self, interaction: discord.Interaction) -> None:
         """Show an invite link and any configured support, vote, and website links."""
         await interaction.response.defer(thinking=True)
         user = self.bot.user
         if not user:
-            await error(
-                interaction, "BotFragg is still starting up. Try again shortly."
-            )
+            await error(interaction, "error-bot-starting")
             return
-        controls = self._public_links(user)
-        card = embed("Use the buttons below to find BotFragg online.", title="🔗 Links")
+        controls = self._public_links(user, interaction.locale)
+        card = embed(
+            translated(interaction, "links-description"),
+            title=translated(interaction, "links-title"),
+        )
         card.set_thumbnail(url=user.display_avatar.url)
         await interaction.followup.send(embed=card, view=controls)
 
-    @app_commands.command(name="suggest", description="Suggest a feature for BotFragg")
+    @app_commands.command(
+        name=app_commands.locale_str("suggest", key="command-suggest-name"),
+        description=app_commands.locale_str(
+            "Suggest a feature for BotFragg", key="command-suggest-description"
+        ),
+    )
     @app_commands.guild_only()
     async def suggest(
         self,
@@ -355,59 +477,80 @@ class ExtraCog(commands.Cog):
         await interaction.response.defer(thinking=True)
         channel_id = self.bot.config.suggestion_log_channel_id
         if not channel_id:
-            await error(interaction, "Suggestions are not configured yet.")
+            await error(interaction, "suggestions-not-configured")
             return
         channel = self.bot.get_channel(channel_id)
         if channel is None:
             try:
                 channel = await self.bot.fetch_channel(channel_id)
             except discord.HTTPException:
-                await error(interaction, "The suggestion channel is unavailable.")
+                await error(interaction, "suggestion-channel-unavailable")
                 return
         if not isinstance(channel, discord.abc.Messageable):
-            await error(interaction, "The suggestion channel is not messageable.")
+            await error(interaction, "suggestion-channel-not-messageable")
             return
         record = await create_suggestion(interaction.user.id, suggestion, channel_id)
-        card = embed(f"> {suggestion}", title=f"Suggestion #{record.id}")
+        card = embed(
+            f"> {suggestion}",
+            title=translated(interaction, "suggestion-title", number=record.id),
+        )
         card.set_author(
             name=str(interaction.user), icon_url=interaction.user.display_avatar.url
         )
         card.set_footer(
-            text=interaction.guild.name if interaction.guild else "Direct message"
+            text=interaction.guild.name
+            if interaction.guild
+            else translated(interaction, "common-direct-message")
         )
         try:
             message = await channel.send(embed=card)
         except discord.HTTPException:
             await delete_suggestion(record.id)
-            await error(
-                interaction, "I couldn't deliver your suggestion. Try again later."
-            )
+            await error(interaction, "suggestion-delivery-failed")
             return
         await record_suggestion_delivery(record, message.id)
         await interaction.followup.send(
             embed=embed(
-                f"Suggestion **#{record.id}** was submitted. You will receive a DM when it is reviewed."
+                translated(
+                    interaction,
+                    "suggestion-submitted",
+                    number=record.id,
+                )
             )
         )
 
-    @suggestions.command(name="track", description="Follow a feature suggestion")
+    @suggestions.command(
+        name=app_commands.locale_str("track", key="command-suggestion-track-name"),
+        description=app_commands.locale_str(
+            "Follow a feature suggestion",
+            key="command-suggestion-track-description",
+        ),
+    )
     @app_commands.guild_only()
     async def track(self, interaction: discord.Interaction, id: int) -> None:
         """Follow an existing suggestion so the caller receives its review result."""
         await interaction.response.defer(thinking=True, ephemeral=True)
         created = await follow_suggestion(id, interaction.user.id)
         if created is None:
-            await error(interaction, f"Suggestion **#{id}** does not exist.")
+            await error(interaction, "suggestion-not-found", number=id)
             return
         message = (
-            f"You are now following suggestion **#{id}**."
+            self.bot.translator.text(
+                interaction.locale, "suggestion-following", number=id
+            )
             if created
-            else f"You are already following suggestion **#{id}**."
+            else self.bot.translator.text(
+                interaction.locale, "suggestion-already-following", number=id
+            )
         )
         await interaction.followup.send(embed=embed(message), ephemeral=True)
 
     @suggestions.command(
-        name="untrack", description="Stop following a feature suggestion"
+        name=app_commands.locale_str("untrack", key="command-suggestion-untrack-name"),
+        description=app_commands.locale_str(
+            "Stop following a feature suggestion",
+            key="command-suggestion-untrack-description",
+        ),
     )
     @app_commands.guild_only()
     async def untrack(self, interaction: discord.Interaction, id: int) -> None:
@@ -415,21 +558,31 @@ class ExtraCog(commands.Cog):
         await interaction.response.defer(thinking=True, ephemeral=True)
         result = await unfollow_suggestion(id, interaction.user.id)
         if result == "missing":
-            await error(interaction, f"Suggestion **#{id}** does not exist.")
+            await error(interaction, "suggestion-not-found", number=id)
             return
         if result == "own":
-            await error(interaction, "You cannot stop following your own suggestion.")
+            await error(interaction, "suggestion-cannot-unfollow-own")
             return
         await interaction.followup.send(
             embed=embed(
-                f"You stopped following suggestion **#{id}**."
+                self.bot.translator.text(
+                    interaction.locale, "suggestion-unfollowed", number=id
+                )
                 if result == "removed"
-                else f"You were not following suggestion **#{id}**."
+                else self.bot.translator.text(
+                    interaction.locale, "suggestion-not-following", number=id
+                )
             ),
             ephemeral=True,
         )
 
-    @suggestions.command(name="approve", description="Approve a feature suggestion")
+    @suggestions.command(
+        name=app_commands.locale_str("approve", key="command-suggestion-approve-name"),
+        description=app_commands.locale_str(
+            "Approve a feature suggestion",
+            key="command-suggestion-approve-description",
+        ),
+    )
     @app_commands.guild_only()
     async def approve(
         self, interaction: discord.Interaction, id: int, reason: str
@@ -437,7 +590,12 @@ class ExtraCog(commands.Cog):
         """Submit an owner-only approval review for the selected suggestion."""
         await self._review_suggestion(interaction, id, reason, "approved")
 
-    @suggestions.command(name="deny", description="Deny a feature suggestion")
+    @suggestions.command(
+        name=app_commands.locale_str("deny", key="command-suggestion-deny-name"),
+        description=app_commands.locale_str(
+            "Deny a feature suggestion", key="command-suggestion-deny-description"
+        ),
+    )
     @app_commands.guild_only()
     async def deny(
         self, interaction: discord.Interaction, id: int, reason: str
@@ -455,13 +613,14 @@ class ExtraCog(commands.Cog):
         """Authorize a review, update its record, and notify its followers."""
         await interaction.response.defer(thinking=True, ephemeral=True)
         if not await self.bot.is_owner(interaction.user):
-            await error(interaction, "Only BotFragg's owner can review suggestions.")
+            await error(interaction, "suggestion-owner-only")
             return
         result = await review_suggestion(id, status, reason)
         if result is None:
             await error(
                 interaction,
-                f"Suggestion **#{id}** is unavailable or already reviewed.",
+                "suggestion-review-unavailable",
+                number=id,
             )
             return
         suggestion, recipient_ids = result
@@ -469,16 +628,36 @@ class ExtraCog(commands.Cog):
         for user_id in recipient_ids:
             try:
                 user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
+                user_locale = getattr(user, "locale", discord.Locale.american_english)
                 await user.send(
                     embed=embed(
-                        f"Suggestion **#{id}** was **{status}**.\n\n**Reason:** {reason}\n\n> {suggestion.content}",
-                        title="Suggestion update",
+                        self.bot.translator.text(
+                            user_locale,
+                            "suggestion-review-dm",
+                            number=id,
+                            status=self.bot.translator.text(
+                                user_locale, f"suggestion-status-{status}"
+                            ),
+                            reason=reason,
+                            content=suggestion.content,
+                        ),
+                        title=self.bot.translator.text(
+                            user_locale, "suggestion-update-title"
+                        ),
                     )
                 )
             except discord.HTTPException:
                 continue
         await interaction.followup.send(
-            embed=embed(f"Suggestion **#{id}** was {status}."), ephemeral=True
+            embed=embed(
+                translated(
+                    interaction,
+                    "suggestion-review-confirmation",
+                    number=id,
+                    status=translated(interaction, f"suggestion-status-{status}"),
+                )
+            ),
+            ephemeral=True,
         )
 
     async def _update_suggestion_log(self, suggestion: Suggestion) -> None:

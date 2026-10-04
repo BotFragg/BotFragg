@@ -7,6 +7,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from ...bot import BotFraggBot
+from ...localization import BotFraggTranslator
 from ...services.accounts import get_user, selected_account
 from ...services.auth import AuthenticationRequired
 from ...services.emojis import ApplicationEmojiService
@@ -22,23 +23,31 @@ class BattlepassCog(commands.Cog):
         """Bind the bot's gameplay, account, and emoji services."""
         self.bot = bot
 
-    @app_commands.command(name="battlepass", description="View battlepass progression.")
+    @app_commands.command(
+        name=app_commands.locale_str("battlepass", key="command-battlepass-name"),
+        description=app_commands.locale_str(
+            "View battlepass progression.", key="command-battlepass-description"
+        ),
+    )
     async def battlepass(self, interaction: discord.Interaction) -> None:
         """Fetch and display the active battlepass for the caller's selected account."""
         await interaction.response.defer(thinking=True)
         account = await selected_account(interaction.user.id)
         if not account:
-            await error(interaction, "You're not registered. Try `/login`.")
+            await error(interaction, "error-not-registered")
             return
         try:
             data = await self.bot.gameplay.battlepass(account)
         except (AuthenticationRequired, GameplayUnavailable) as exc:
-            await error(interaction, str(exc))
+            await error(interaction, exc)
             return
         filled_bar, empty_bar = await self.bot.emoji_service.battlepass_bars()
         user = await get_user(interaction.user.id)
         username = _account_display_name(
-            account.username, hide_ign=bool(user and user.hide_ign)
+            account.username,
+            hide_ign=bool(user and user.hide_ign),
+            translator=self.bot.translator,
+            locale=interaction.locale,
         )
         card = self._battlepass_card(
             username,
@@ -46,38 +55,55 @@ class BattlepassCog(commands.Cog):
             filled_bar or "█",
             empty_bar or "░",
             emoji_service=self.bot.emoji_service,
+            translator=self.bot.translator,
+            locale=interaction.locale,
         )
         await interaction.followup.send(embed=card)
 
     @app_commands.command(
-        name="missions", description="View your daily and weekly mission progress."
+        name=app_commands.locale_str("missions", key="command-missions-name"),
+        description=app_commands.locale_str(
+            "View your daily and weekly mission progress.",
+            key="command-missions-description",
+        ),
     )
     async def missions(self, interaction: discord.Interaction) -> None:
         """Show the selected account's daily and weekly mission progress privately."""
         await interaction.response.defer(thinking=True, ephemeral=True)
         account = await selected_account(interaction.user.id)
         if not account:
-            await error(interaction, "You're not registered. Try `/login`.")
+            await error(interaction, "error-not-registered")
             return
         try:
             data = await self.bot.gameplay.missions(account)
         except (AuthenticationRequired, GameplayUnavailable) as exc:
-            await error(interaction, str(exc))
+            await error(interaction, exc)
             return
         filled_bar, empty_bar = await self.bot.emoji_service.battlepass_bars()
         await interaction.followup.send(
-            embed=self._missions_card(data, filled_bar or "█", empty_bar or "░"),
+            embed=self._missions_card(
+                data,
+                filled_bar or "█",
+                empty_bar or "░",
+                translator=self.bot.translator,
+                locale=interaction.locale,
+            ),
             ephemeral=True,
         )
 
     @staticmethod
     def _missions_card(
-        missions: list[dict], filled_bar: str = "█", empty_bar: str = "░"
+        missions: list[dict],
+        filled_bar: str = "█",
+        empty_bar: str = "░",
+        *,
+        translator: BotFraggTranslator,
+        locale: discord.Locale,
     ) -> discord.Embed:
         """Group mission entries by type and expiry and render progress bars."""
-        card = embed(title="Your Missions")
+        card = embed(title=translator.text(locale, "missions-title"))
         if not missions:
-            card.description = "You don't have any active missions."
+            card.description = translator.text(locale, "missions-empty")
             return card
         groups: dict[tuple[str, object], list[dict]] = {}
         for mission in missions:
@@ -87,17 +113,31 @@ class BattlepassCog(commands.Cog):
         for (kind, expires), group in groups.items():
             name = kind
             if expires:
-                name += f" · Expires {timestamp(expires)}"
+                name = translator.text(
+                    locale,
+                    "missions-group-expires",
+                    kind=kind,
+                    timestamp=timestamp(expires),
+                )
             lines: list[str] = []
             for mission in group:
-                title = " ".join(str(mission.get("title") or "Mission").split())
+                title = " ".join(
+                    str(
+                        mission.get("title")
+                        or translator.text(locale, "mission-default")
+                    ).split()
+                )
                 xp = mission.get("xp")
                 reward = (
-                    f"{xp:,} XP"
+                    translator.text(locale, "missions-xp", xp=xp)
                     if isinstance(xp, int) and not isinstance(xp, bool)
-                    else "XP unavailable"
+                    else translator.text(locale, "missions-xp-unavailable")
                 )
-                lines.append(f"**{title} · {reward}**")
+                lines.append(
+                    translator.text(
+                        locale, "missions-title-reward", title=title, reward=reward
+                    )
+                )
                 complete = bool(mission.get("complete"))
                 tasks = mission.get("tasks") or []
                 for task in tasks:
@@ -114,14 +154,26 @@ class BattlepassCog(commands.Cog):
                         lines.append(filled_bar * 10)
                         continue
                     else:
-                        lines.append("Progress unavailable")
+                        lines.append(
+                            translator.text(locale, "missions-progress-unavailable")
+                        )
                         continue
                     filled = min(10, progress * 10 // target)
                     bar = filled_bar * filled + empty_bar * (10 - filled)
-                    lines.append(f"{bar} `{min(progress, target):,}/{target:,}`")
+                    lines.append(
+                        translator.text(
+                            locale,
+                            "missions-progress",
+                            bar=bar,
+                            progress=f"{min(progress, target):,}",
+                            target=f"{target:,}",
+                        )
+                    )
                 if not tasks:
                     lines.append(
-                        filled_bar * 10 if complete else "Progress unavailable"
+                        filled_bar * 10
+                        if complete
+                        else translator.text(locale, "missions-progress-unavailable")
                     )
             card.add_field(name=name[:256], value="\n".join(lines)[:1024], inline=False)
         return card
@@ -134,24 +186,49 @@ class BattlepassCog(commands.Cog):
         empty_bar: str = "░",
         *,
         emoji_service: ApplicationEmojiService | None = None,
+        translator: BotFraggTranslator,
+        locale: discord.Locale,
     ) -> discord.Embed:
         """Render the active act, current tier, next reward, and XP progress bar."""
         progress = min(10, int(data["progress"] / max(1, data["next_level_xp"]) * 10))
         bar = filled_bar * progress + empty_bar * (10 - progress)
         reward = data["next_reward"]
         card = embed(
-            f"**{data['act']}** ends in {timestamp(data['end'])}",
+            translator.text(
+                locale,
+                "battlepass-summary",
+                act=data["act"],
+                timestamp=timestamp(data["end"]),
+            ),
             title=player,
         )
-        card.add_field(name="Current Tier", value=str(data["level"]), inline=False)
+        card.add_field(
+            name=translator.text(locale, "battlepass-current-tier"),
+            value=str(data["level"]),
+            inline=False,
+        )
         reward_name = reward["name"]
         if (tier_uuid := reward.get("tier_uuid")) and emoji_service:
             reward_name = emoji_service.skin_name(reward_name, tier_uuid)
-        card.add_field(name="Next Reward", value=reward_name, inline=False)
-        card.add_field(name="Type", value=reward["type"], inline=False)
         card.add_field(
-            name="XP",
-            value=f"`{data['progress']:,}/{data['next_level_xp']:,}`\n{bar}",
+            name=translator.text(locale, "battlepass-next-reward"),
+            value=reward_name,
+            inline=False,
+        )
+        card.add_field(
+            name=translator.text(locale, "common-type"),
+            value=reward["type"],
+            inline=False,
+        )
+        card.add_field(
+            name=translator.text(locale, "common-xp"),
+            value=translator.text(
+                locale,
+                "battlepass-xp-progress",
+                progress=f"{data['progress']:,}",
+                target=f"{data['next_level_xp']:,}",
+                bar=bar,
+            ),
             inline=False,
         )
         if reward.get("icon"):

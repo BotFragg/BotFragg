@@ -8,7 +8,7 @@ from discord.ext import commands
 
 from ...bot import BotFraggBot
 from ...services.accounts import delete_user_data, list_accounts, resolve_account
-from ._ui import account_autocomplete_choices, embed, error
+from ._ui import account_autocomplete_choices, error, localized_embed
 
 
 class LogoutCog(commands.Cog):
@@ -27,7 +27,11 @@ class LogoutCog(commands.Cog):
         )
 
     @app_commands.command(
-        name="logout", description="Delete credentials but keep alerts and settings."
+        name=app_commands.locale_str("logout", key="command-logout-name"),
+        description=app_commands.locale_str(
+            "Delete credentials but keep alerts and settings.",
+            key="command-logout-description",
+        ),
     )
     @app_commands.autocomplete(account=account_autocomplete)
     async def logout(
@@ -37,21 +41,24 @@ class LogoutCog(commands.Cog):
         await interaction.response.defer(thinking=True, ephemeral=True)
         target = await resolve_account(interaction.user.id, account)
         if not target:
-            await error(
-                interaction, "Couldn't find that account in your registered accounts!"
-            )
+            await error(interaction, "logout-account-not-found")
             return
         await self.bot.auth.clear_credentials(target)
         await interaction.followup.send(
-            embed=embed(
-                f"Credentials for **{target.username}** were removed. Alerts and settings were kept."
+            embed=localized_embed(
+                interaction,
+                "logout-success",
+                description_args={"username": target.username},
             ),
             ephemeral=True,
         )
 
     @app_commands.command(
-        name="deletedata",
-        description="Permanently delete your BotFragg account and data.",
+        name=app_commands.locale_str("deletedata", key="command-deletedata-name"),
+        description=app_commands.locale_str(
+            "Permanently delete your BotFragg account and data.",
+            key="command-deletedata-description",
+        ),
     )
     async def deletedata(self, interaction: discord.Interaction, confirm: bool) -> None:
         """Permanently delete the caller's records and clear cached storefronts."""
@@ -59,20 +66,21 @@ class LogoutCog(commands.Cog):
         if not confirm:
             await error(
                 interaction,
-                "Set **confirm** to **True** to permanently delete your data.",
+                "deletedata-confirm-required",
             )
             return
         account_ids = [
             account.puuid for account in await list_accounts(interaction.user.id)
         ]
         if not await delete_user_data(interaction.user.id):
-            await error(interaction, "You do not have any BotFragg data to delete.")
+            await error(interaction, "deletedata-no-data")
             return
         for account_id in account_ids:
             await self.bot.shop.clear_cached_storefront(account_id)
         await interaction.followup.send(
-            embed=embed(
-                "Your linked accounts, encrypted credentials, alerts, settings, command analytics, and stored suggestions were permanently deleted."
+            embed=localized_embed(
+                interaction,
+                "deletedata-success",
             ),
             ephemeral=True,
         )

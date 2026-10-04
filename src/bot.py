@@ -11,6 +11,7 @@ from discord.ext import commands
 
 from .config import Settings
 from .database import close_database, connect_database
+from .localization import BotFraggTranslator
 from .monitoring import flush_monitoring, transaction
 from .services.auth import AuthService
 from .services.catalog import CatalogService
@@ -25,10 +26,12 @@ log = logging.getLogger(__name__)
 ComponentHandler = Callable[[discord.Interaction, str], Awaitable[None]]
 
 
-def _command_error_embed() -> discord.Embed:
+def _command_error_embed(
+    translator: BotFraggTranslator, locale: discord.Locale | str | None = "en-US"
+) -> discord.Embed:
     """Build the generic, user-safe response shown after an unhandled command error."""
     return discord.Embed(
-        description="Something went wrong while running that command. Please try again shortly.",
+        description=translator.text(locale, "error-command-failed"),
         colour=0xFD4553,
     )
 
@@ -95,11 +98,17 @@ class BotFraggCommandTree(app_commands.CommandTree):
         try:
             if interaction.response.is_done():
                 await interaction.followup.send(
-                    embed=_command_error_embed(), ephemeral=True
+                    embed=_command_error_embed(
+                        self.client.translator, interaction.locale
+                    ),
+                    ephemeral=True,
                 )
             else:
                 await interaction.response.send_message(
-                    embed=_command_error_embed(), ephemeral=True
+                    embed=_command_error_embed(
+                        self.client.translator, interaction.locale
+                    ),
+                    ephemeral=True,
                 )
         except discord.HTTPException:
             log.warning("Could not deliver application-command error response")
@@ -124,6 +133,7 @@ class BotFraggBot(commands.AutoShardedBot):
             tree_cls=BotFraggCommandTree,
         )
         self.config = config
+        self.translator = BotFraggTranslator()
         self.component_handlers: dict[str, ComponentHandler] = {}
         self.riot_http = HTTPClient(config)
         self.emoji_service = ApplicationEmojiService(self)
@@ -150,7 +160,7 @@ class BotFraggBot(commands.AutoShardedBot):
             extra={"command": command_name},
         )
         try:
-            await context.send(embed=_command_error_embed())
+            await context.send(embed=_command_error_embed(self.translator))
         except discord.HTTPException:
             log.warning(
                 "Could not deliver prefix-command error response",
@@ -195,6 +205,7 @@ class BotFraggBot(commands.AutoShardedBot):
             "src.cogs.tasks",
         ):
             await self.load_extension(extension)
+        await self.tree.set_translator(self.translator)
         if self.config.auto_sync_commands:
             await self.tree.sync()
 

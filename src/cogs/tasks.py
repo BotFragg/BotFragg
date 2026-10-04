@@ -128,22 +128,28 @@ class TasksCog(commands.Cog):
         skin_name = self.bot.emoji_service.skin_name(
             offer.skin.name, offer.skin.tier_uuid
         )
-        card = embed(
-            f"The **{skin_name}** is in **{alert.account.username}**'s daily shop.\nIt will be gone {timestamp(offer.expires)}.",
-        )
-        if offer.skin.icon:
-            card.set_thumbnail(url=offer.skin.icon)
-        controls = view(
-            OwnedActionButton(
-                "remove_alert",
-                user_id,
-                str(alert.id),
-                label="Remove alert",
-                style=discord.ButtonStyle.danger,
-            )
-        )
         try:
             user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
+            card = embed(
+                self.bot.translator.text(
+                    user.locale,
+                    "alert-notification",
+                    skin=skin_name,
+                    username=alert.account.username,
+                    timestamp=timestamp(offer.expires),
+                )
+            )
+            if offer.skin.icon:
+                card.set_thumbnail(url=offer.skin.icon)
+            controls = view(
+                OwnedActionButton(
+                    "remove_alert",
+                    user_id,
+                    str(alert.id),
+                    label=self.bot.translator.text(user.locale, "alerts-remove-button"),
+                    style=discord.ButtonStyle.danger,
+                )
+            )
             await user.send(embed=card, view=controls)
         except discord.HTTPException:
             log.warning("Could not deliver alert notification")
@@ -152,20 +158,31 @@ class TasksCog(commands.Cog):
         self, user: User, account: Account, shop: ShopData
     ) -> None:
         """DM the selected account's daily shop as a set of offer embeds."""
-        vp = await self.bot.emoji_service.currency("vp") or "VP"
-        cards = offer_cards(
-            f"Daily shop for **{account.username}** (new shop {timestamp(shop.expires)})",
-            shop.offers,
-            vp,
-            link_item_image=self.bot.config.link_item_image,
-            emoji_service=self.bot.emoji_service,
-        )
-        controls = discord.ui.View(timeout=None)
-        add_skin_selector(
-            controls, user.id, shop.offers, shop.expires, self.bot.emoji_service
-        )
         try:
             target = self.bot.get_user(user.id) or await self.bot.fetch_user(user.id)
+            vp = await self.bot.emoji_service.currency("vp") or "VP"
+            cards = offer_cards(
+                self.bot.translator.text(
+                    target.locale,
+                    "shop-daily-header",
+                    username=account.username,
+                    timestamp=timestamp(shop.expires),
+                ),
+                shop.offers,
+                vp,
+                link_item_image=self.bot.config.link_item_image,
+                emoji_service=self.bot.emoji_service,
+            )
+            controls = discord.ui.View(timeout=None)
+            add_skin_selector(
+                controls,
+                user.id,
+                shop.offers,
+                shop.expires,
+                self.bot.emoji_service,
+                self.bot.translator,
+                target.locale,
+            )
             await target.send(
                 embeds=cards, view=controls if controls.children else None
             )
@@ -177,7 +194,11 @@ class TasksCog(commands.Cog):
         try:
             target = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
             await target.send(
-                embed=embed("I couldn't check your alerts. Use `/login` again.")
+                embed=embed(
+                    self.bot.translator.text(
+                        target.locale, "alerts-credentials-expired"
+                    )
+                )
             )
         except discord.HTTPException:
             log.warning("Could not notify user about expired Riot credentials")

@@ -8,7 +8,7 @@ import json
 import secrets
 import time
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from urllib.parse import parse_qs, urlencode, urlparse
 
@@ -27,11 +27,13 @@ REDIRECT_URI = "http://localhost/redirect"
 
 @dataclass(slots=True)
 class AuthResult:
-    """Represent an authentication outcome with its account or user-safe error."""
+    """Represent an authentication outcome with legacy and translated error data."""
 
     success: bool
     account: Account | None = None
     error: str | None = None
+    error_key: str | None = None
+    error_arguments: dict[str, Any] = field(default_factory=dict)
 
 
 class AuthService:
@@ -88,12 +90,16 @@ class AuthService:
         code = parse_qs(urlparse(callback_url.strip()).query).get("code", [None])[0]
         if not code:
             return AuthResult(
-                False, error="Could not find an authorization code in that URL."
+                False,
+                error="Could not find an authorization code in that URL.",
+                error_key="login-code-missing",
             )
         pending = self._pending_nonces.pop(discord_id, None)
         if not pending or pending[1] < time.monotonic():
             return AuthResult(
-                False, error="That login attempt expired. Run /login again."
+                False,
+                error="That login attempt expired. Run /login again.",
+                error_key="login-attempt-expired",
             )
         try:
             response = await self.http.request(
@@ -114,7 +120,9 @@ class AuthService:
             )
         except HTTPFailure:
             return AuthResult(
-                False, error="Riot authentication is temporarily unavailable."
+                False,
+                error="Riot authentication is temporarily unavailable.",
+                error_key="error-riot-auth-temporarily-unavailable",
             )
         if (
             response.status != 200
@@ -124,12 +132,15 @@ class AuthService:
             return AuthResult(
                 False,
                 error="Riot rejected that login code. It may have expired or already been used.",
+                error_key="login-code-rejected",
             )
         token_data = response.data
         claims = decode_jwt(token_data.get("id_token"))
         if claims.get("nonce") != pending[0]:
             return AuthResult(
-                False, error="The login response did not match this login attempt."
+                False,
+                error="The login response did not match this login attempt.",
+                error_key="login-nonce-mismatch",
             )
         auth = {
             "rso": token_data["access_token"],
@@ -140,7 +151,9 @@ class AuthService:
         puuid = str(decode_jwt(auth["rso"]).get("sub") or "")
         if not puuid:
             return AuthResult(
-                False, error="Riot returned a token without an account identifier."
+                False,
+                error="Riot returned a token without an account identifier.",
+                error_key="login-token-no-account",
             )
         try:
             user_info, entitlement, region = await asyncio.gather(
@@ -148,11 +161,15 @@ class AuthService:
             )
         except HTTPFailure:
             return AuthResult(
-                False, error="Riot account details are temporarily unavailable."
+                False,
+                error="Riot account details are temporarily unavailable.",
+                error_key="login-account-details-unavailable",
             )
         if not user_info or not entitlement or not region:
             return AuthResult(
-                False, error="Could not load the Riot account details for that login."
+                False,
+                error="Could not load the Riot account details for that login.",
+                error_key="login-account-details-missing",
             )
         auth["ent"] = entitlement
         username = f"{user_info['game_name']}#{user_info['tag_line']}"
@@ -165,6 +182,7 @@ class AuthService:
                     return AuthResult(
                         False,
                         error="That Riot account is already linked to another Discord user.",
+                        error_key="login-account-already-linked",
                     )
                 if not account:
                     count = await Account.filter(user_id=discord_id).count()
@@ -172,6 +190,10 @@ class AuthService:
                         return AuthResult(
                             False,
                             error=f"You can link at most {self.config.max_accounts_per_user} accounts.",
+                            error_key="login-account-limit",
+                            error_arguments={
+                                "max_accounts": self.config.max_accounts_per_user
+                            },
                         )
                     account = await Account.create(
                         puuid=puuid,
@@ -194,6 +216,7 @@ class AuthService:
                 return AuthResult(
                     False,
                     error="That Riot account is already linked to another Discord user.",
+                    error_key="login-account-already-linked",
                 )
             raise
         return AuthResult(True, account=account)

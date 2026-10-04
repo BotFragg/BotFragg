@@ -5,6 +5,9 @@ from types import SimpleNamespace
 import discord
 
 from src.cogs.valorant.penalties import PenaltiesCog
+from src.localization import BotFraggTranslator
+
+TEST_TRANSLATOR = BotFraggTranslator()
 
 
 def _interaction(user_id: int = 123) -> tuple[SimpleNamespace, list[dict[str, object]]]:
@@ -55,6 +58,8 @@ def _interaction(user_id: int = 123) -> tuple[SimpleNamespace, list[dict[str, ob
         followup=Followup(),
         edits=edits,
         edit_original_response=edit_original_response,
+        client=SimpleNamespace(translator=TEST_TRANSLATOR),
+        locale=discord.Locale.american_english,
     )
     return interaction, messages
 
@@ -67,7 +72,7 @@ def _penalties(count: int = 6) -> list[dict[str, object]]:
             "expires": None,
             "games_remaining": index,
             "platform_scope": "PC",
-            "effects": ["Queue restriction"] if index == 0 else [],
+            "effects": ["queue-restriction"] if index == 0 else [],
             "warning_type": "QUEUE_DODGING" if index == 0 else None,
             "warning_tier": 2 if index == 0 else None,
         }
@@ -107,7 +112,11 @@ async def test_penalties_command_shows_five_private_rows_and_hides_ign(
     monkeypatch.setattr("src.cogs.valorant.penalties.get_user", get_user)
     interaction, messages = _interaction()
     cog = PenaltiesCog(
-        SimpleNamespace(gameplay=Gameplay(), register_component=lambda *_args: None)
+        SimpleNamespace(
+            gameplay=Gameplay(),
+            translator=TEST_TRANSLATOR,
+            register_component=lambda *_args: None,
+        )
     )
 
     await PenaltiesCog.penalties.callback(cog, interaction)
@@ -153,7 +162,11 @@ async def test_penalties_command_prompts_unregistered_user_to_log_in(
 
     await PenaltiesCog.penalties.callback(
         PenaltiesCog(
-            SimpleNamespace(gameplay=None, register_component=lambda *_args: None)
+            SimpleNamespace(
+                gameplay=None,
+                translator=TEST_TRANSLATOR,
+                register_component=lambda *_args: None,
+            )
         ),
         interaction,
     )
@@ -191,13 +204,19 @@ async def test_penalties_command_reports_empty_results_without_pagination(
 
     await PenaltiesCog.penalties.callback(
         PenaltiesCog(
-            SimpleNamespace(gameplay=Gameplay(), register_component=lambda *_args: None)
+            SimpleNamespace(
+                gameplay=Gameplay(),
+                translator=TEST_TRANSLATOR,
+                register_component=lambda *_args: None,
+            )
         ),
         interaction,
     )
 
     assert len(messages) == 1 and messages[0]["ephemeral"] is True
-    assert "No matchmaking penalties" in messages[0]["embed"].description
+    assert (
+        messages[0]["embed"].description == "No penalties were found for **Player#NA**."
+    )
     assert "view" not in messages[0]
 
 
@@ -228,7 +247,11 @@ async def test_penalties_command_omits_view_for_a_single_page(monkeypatch) -> No
 
     await PenaltiesCog.penalties.callback(
         PenaltiesCog(
-            SimpleNamespace(gameplay=Gameplay(), register_component=lambda *_args: None)
+            SimpleNamespace(
+                gameplay=Gameplay(),
+                translator=TEST_TRANSLATOR,
+                register_component=lambda *_args: None,
+            )
         ),
         interaction,
     )
@@ -269,7 +292,11 @@ async def test_penalties_page_refetches_original_owned_account_and_edits_message
     monkeypatch.setattr("src.cogs.valorant.penalties.get_user", get_user)
     interaction, messages = _interaction()
     cog = PenaltiesCog(
-        SimpleNamespace(gameplay=Gameplay(), register_component=lambda *_args: None)
+        SimpleNamespace(
+            gameplay=Gameplay(),
+            translator=TEST_TRANSLATOR,
+            register_component=lambda *_args: None,
+        )
     )
 
     await cog.penalties_page(interaction, "player,1")
@@ -301,7 +328,11 @@ async def test_penalties_page_rejects_an_account_owned_by_someone_else(
     )
     interaction, messages = _interaction()
     cog = PenaltiesCog(
-        SimpleNamespace(gameplay=None, register_component=lambda *_args: None)
+        SimpleNamespace(
+            gameplay=None,
+            translator=TEST_TRANSLATOR,
+            register_component=lambda *_args: None,
+        )
     )
 
     await cog.penalties_page(interaction, "other-player,1")
