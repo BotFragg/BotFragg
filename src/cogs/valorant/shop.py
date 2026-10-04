@@ -19,7 +19,7 @@ from ...services.accounts import (
     selected_account,
 )
 from ...services.auth import AuthenticationRequired
-from ...services.catalog import Bundle, Skin
+from ...services.catalog import Bundle, Skin, localized_text
 from ...services.emojis import ApplicationEmojiService
 from ...services.http import HTTPFailure
 from ...services.shop import (
@@ -64,12 +64,15 @@ def offer_cards(
     currency: str,
     *,
     link_item_image: bool,
+    unknown_skin_name: str,
     emoji_service: ApplicationEmojiService | None = None,
     header_colour: int = 0x202225,
+    locale: object | None = None,
 ) -> list[discord.Embed]:
     """Render a heading and one tier-coloured embed for each skin offer."""
     result = [embed(header, colour=header_colour)]
     for offer in offers:
+        skin_name = offer.skin.name_for(locale) or unknown_skin_name
         price = _price_line(
             currency,
             offer.discount_price if offer.discount_price is not None else offer.price,
@@ -79,9 +82,9 @@ def offer_cards(
         item = embed(
             price,
             title=(
-                emoji_service.skin_name(offer.skin.name, offer.skin.tier_uuid)
+                emoji_service.skin_name(skin_name, offer.skin.tier_uuid)
                 if emoji_service
-                else offer.skin.name
+                else skin_name
             ),
             colour=TIER_COLOURS.get(offer.skin.tier_uuid, 0),
         )
@@ -112,7 +115,13 @@ def add_skin_selector(
         seen.add(skin.uuid)
         emoji = emoji_service.skin_emoji(skin.tier_uuid) or None
         options.append(
-            discord.SelectOption(label=skin.name[:100], value=skin.uuid, emoji=emoji)
+            discord.SelectOption(
+                label=(
+                    skin.name_for(locale) or translator.text(locale, "common-unknown")
+                )[:100],
+                value=skin.uuid,
+                emoji=emoji,
+            )
         )
         if len(options) == 25:
             break
@@ -124,6 +133,7 @@ def add_skin_selector(
                 str(expires),
                 placeholder=translator.text(locale, "shop-skin-select-placeholder"),
                 options=options,
+                empty_option_label=translator.text(locale, "common-unavailable"),
             )
         )
 
@@ -159,6 +169,7 @@ async def add_account_selector(
                     )
                     for index, item in enumerate(accounts[:25], start=1)
                 ],
+                empty_option_label=translator.text(locale, "common-unavailable"),
             )
         )
 
@@ -231,7 +242,11 @@ class ShopCog(commands.Cog):
                     data.offers,
                     await self.bot.emoji_service.currency("vp") or "VP",
                     link_item_image=self.bot.config.link_item_image,
+                    unknown_skin_name=self.bot.translator.text(
+                        interaction.locale, "common-unknown"
+                    ),
                     emoji_service=self.bot.emoji_service,
+                    locale=interaction.locale,
                 ),
                 view=controls if controls.children else None,
             )
@@ -316,7 +331,9 @@ class ShopCog(commands.Cog):
                 data.offers,
                 vp,
                 link_item_image=self.bot.config.link_item_image,
+                unknown_skin_name=self.bot.translator.text(locale, "common-unknown"),
                 emoji_service=self.bot.emoji_service,
+                locale=locale,
             ),
             controls,
         )
@@ -378,7 +395,14 @@ class ShopCog(commands.Cog):
                         "shop-available-until",
                         timestamp=timestamp(offer.expires),
                     )
-                card = embed(details, title=metadata.name[:256], colour=0x202225)
+                card = embed(
+                    details,
+                    title=(
+                        metadata.name_for(locale)
+                        or self.bot.translator.text(locale, "common-unknown")
+                    )[:256],
+                    colour=0x202225,
+                )
                 if metadata.icon:
                     card.set_thumbnail(url=metadata.icon)
                 cards.append(card)
@@ -408,12 +432,18 @@ class ShopCog(commands.Cog):
                     ),
                     options=[
                         discord.SelectOption(
-                            label=self._bundle_metadata(offer, locale).name[:100],
+                            label=(
+                                self._bundle_metadata(offer, locale).name_for(locale)
+                                or self.bot.translator.text(locale, "common-unknown")
+                            )[:100],
                             value=offer.id,
                             default=offer.id == selected_id,
                         )
                         for offer in offers[:25]
                     ],
+                    empty_option_label=self.bot.translator.text(
+                        locale, "common-unavailable"
+                    ),
                 )
             )
         if show_shop_button:
@@ -463,7 +493,11 @@ class ShopCog(commands.Cog):
         icon = None
         extra = ""
         if skin := self.bot.catalog.get_skin(item.item_id):
-            name = self.bot.emoji_service.skin_name(skin.name, skin.tier_uuid)
+            name = self.bot.emoji_service.skin_name(
+                skin.name_for(locale)
+                or self.bot.translator.text(locale, "common-unknown"),
+                skin.tier_uuid,
+            )
             colour = TIER_COLOURS.get(skin.tier_uuid, 0)
             icon = skin.icon
         else:
@@ -487,9 +521,11 @@ class ShopCog(commands.Cog):
                     item.item_id,
                 )
                 return None
-            name = accessory.name
+            name = accessory.name_for(locale)
             icon = accessory.icon
-            extra = f"`{accessory.title_text}`\n\n" if accessory.title_text else ""
+            title_text = accessory.title_text_for(locale)
+            extra = f"`{title_text}`\n\n" if title_text else ""
+        name = name or self.bot.translator.text(locale, "common-unknown")
         if item.amount > 1:
             name += f" x{item.amount}"
         final_price = (
@@ -515,12 +551,18 @@ class ShopCog(commands.Cog):
         """Render a bundle summary and up to nine shop-style item cards."""
         metadata = self._bundle_metadata(offer, locale)
         vp = await self.bot.emoji_service.currency("vp") or "VP"
-        title = metadata.name.strip().casefold()
+        bundle_name = metadata.name_for(locale) or self.bot.translator.text(
+            locale, "common-unknown"
+        )
+        title = bundle_name.strip().casefold()
         description = [
             "\n".join(
                 line for line in value.splitlines() if line.strip().casefold() != title
             ).strip()
-            for value in (metadata.subtitle, metadata.description)
+            for value in (
+                metadata.subtitle_for(locale),
+                metadata.description_for(locale),
+            )
             if value
         ]
         description.append(
@@ -540,7 +582,7 @@ class ShopCog(commands.Cog):
             )
         card = embed(
             "\n".join(value for value in description if value)[:1000],
-            title=metadata.name[:256],
+            title=bundle_name[:256],
             colour=0x202225,
         )
         if metadata.icon:
@@ -626,7 +668,11 @@ class ShopCog(commands.Cog):
                 data.night_market,
                 vp,
                 link_item_image=self.bot.config.link_item_image,
+                unknown_skin_name=self.bot.translator.text(
+                    interaction.locale, "common-unknown"
+                ),
                 emoji_service=self.bot.emoji_service,
+                locale=interaction.locale,
             )
             controls = view()
             add_skin_selector(
@@ -672,10 +718,12 @@ class ShopCog(commands.Cog):
             ]
             for accessory_offer in await self.bot.shop.accessory_offers(data):
                 item = accessory_offer.item
-                detail = f"`{item.title_text}`\n\n" if item.title_text else ""
+                title_text = item.title_text_for(interaction.locale)
+                detail = f"`{title_text}`\n\n" if title_text else ""
                 card = embed(
                     f"{detail}{kc} **{accessory_offer.price:,}**",
-                    title=item.name,
+                    title=item.name_for(interaction.locale)
+                    or self.bot.translator.text(interaction.locale, "common-unknown"),
                 )
                 if item.icon:
                     if self.bot.config.link_item_image:
@@ -794,7 +842,11 @@ class ShopCog(commands.Cog):
                     or not video.startswith("https://")
                 ):
                     continue
-                name = str(item.get("displayName") or skin.name)
+                name = (
+                    localized_text(item.get("displayName"), locale)
+                    or skin.name_for(locale)
+                    or translator.text(locale, "common-unknown")
+                )
                 options.append(
                     discord.SelectOption(label=f"{kind}: {name}"[:100], value=uuid)
                 )
@@ -843,9 +895,14 @@ class ShopCog(commands.Cog):
                 f"{expires}|{skin.uuid}",
                 placeholder=translated(interaction, "shop-variant-select-placeholder"),
                 options=options,
+                empty_option_label=translated(interaction, "common-unavailable"),
             )
         )
-        skin_name = self.bot.emoji_service.skin_name(skin.name, skin.tier_uuid)
+        skin_name = self.bot.emoji_service.skin_name(
+            skin.name_for(interaction.locale)
+            or self.bot.translator.text(interaction.locale, "common-unknown"),
+            skin.tier_uuid,
+        )
         await interaction.response.send_message(
             translated(interaction, "shop-variant-prompt", skin=skin_name),
             view=controls,
@@ -902,8 +959,11 @@ class ShopCog(commands.Cog):
             return
         kind, item = selected
         display_name = (
-            skin.name if kind == "level" else str(item.get("displayName") or skin.name)
-        )
+            skin.name_for(interaction.locale)
+            if kind == "level"
+            else localized_text(item.get("displayName"), interaction.locale)
+            or skin.name_for(interaction.locale)
+        ) or self.bot.translator.text(interaction.locale, "common-unknown")
         linked_name = self.bot.emoji_service.skin_name(display_name, skin.tier_uuid)
         await interaction.response.send_message(
             f"[{linked_name}]({item['streamedVideo']})", ephemeral=True
@@ -975,8 +1035,12 @@ class NightMarketCog(commands.Cog):
             data.night_market,
             vp,
             link_item_image=False,
+            unknown_skin_name=self.bot.translator.text(
+                interaction.locale, "common-unknown"
+            ),
             emoji_service=self.bot.emoji_service,
             header_colour=0xEAEEB2,
+            locale=interaction.locale,
         )
         controls = view()
         add_skin_selector(

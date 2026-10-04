@@ -15,6 +15,21 @@ from ...services.gameplay import GameplayUnavailable
 from ...views import timestamp
 from ._ui import _account_display_name, embed, error
 
+MISSION_TYPE_KEYS = {
+    "Daily Missions": "mission-group-daily",
+    "Weekly Missions": "mission-group-weekly",
+    "Missions": "mission-group-other",
+}
+REWARD_TYPE_KEYS = {
+    "EquippableSkinLevel": "battlepass-reward-type-skin",
+    "EquippableCharmLevel": "battlepass-reward-type-buddy",
+    "PlayerCard": "battlepass-reward-type-player-card",
+    "Spray": "battlepass-reward-type-spray",
+    "Totem": "battlepass-reward-type-flex",
+    "Currency": "battlepass-reward-type-currency",
+    "Finished": "battlepass-reward-type-finished",
+}
+
 
 class BattlepassCog(commands.Cog):
     """Display the caller's current battlepass level and mission progress."""
@@ -37,7 +52,9 @@ class BattlepassCog(commands.Cog):
             await error(interaction, "error-not-registered")
             return
         try:
-            data = await self.bot.gameplay.battlepass(account)
+            data = await self.bot.gameplay.battlepass(
+                account, locale=interaction.locale.value
+            )
         except (AuthenticationRequired, GameplayUnavailable) as exc:
             await error(interaction, exc)
             return
@@ -75,7 +92,9 @@ class BattlepassCog(commands.Cog):
             await error(interaction, "error-not-registered")
             return
         try:
-            data = await self.bot.gameplay.missions(account)
+            data = await self.bot.gameplay.missions(
+                account, locale=interaction.locale.value
+            )
         except (AuthenticationRequired, GameplayUnavailable) as exc:
             await error(interaction, exc)
             return
@@ -107,7 +126,10 @@ class BattlepassCog(commands.Cog):
             return card
         groups: dict[tuple[str, object], list[dict]] = {}
         for mission in missions:
-            key = (str(mission.get("type") or "Missions"), mission.get("expires"))
+            kind = str(mission.get("type") or "Missions")
+            if kind_key := MISSION_TYPE_KEYS.get(kind):
+                kind = translator.text(locale, kind_key)
+            key = (kind, mission.get("expires"))
             groups.setdefault(key, []).append(mission)
 
         for (kind, expires), group in groups.items():
@@ -121,12 +143,14 @@ class BattlepassCog(commands.Cog):
                 )
             lines: list[str] = []
             for mission in group:
-                title = " ".join(
-                    str(
+                if mission.get("details_unavailable"):
+                    title = translator.text(locale, "missions-details-unavailable")
+                else:
+                    title = str(
                         mission.get("title")
                         or translator.text(locale, "mission-default")
-                    ).split()
-                )
+                    )
+                title = " ".join(title.split())
                 xp = mission.get("xp")
                 reward = (
                     translator.text(locale, "missions-xp", xp=xp)
@@ -197,7 +221,8 @@ class BattlepassCog(commands.Cog):
             translator.text(
                 locale,
                 "battlepass-summary",
-                act=data["act"],
+                act=data.get("act")
+                or translator.text(locale, "battlepass-current-act"),
                 timestamp=timestamp(data["end"]),
             ),
             title=player,
@@ -207,7 +232,17 @@ class BattlepassCog(commands.Cog):
             value=str(data["level"]),
             inline=False,
         )
-        reward_name = reward["name"]
+        reward_type = str(reward.get("type") or "")
+        reward_name = reward.get("name")
+        if not reward_name:
+            reward_name = translator.text(
+                locale,
+                "battlepass-completed"
+                if reward_type == "Finished"
+                else "battlepass-radianite"
+                if reward_type == "Currency"
+                else "battlepass-unknown-reward",
+            )
         if (tier_uuid := reward.get("tier_uuid")) and emoji_service:
             reward_name = emoji_service.skin_name(reward_name, tier_uuid)
         card.add_field(
@@ -217,7 +252,10 @@ class BattlepassCog(commands.Cog):
         )
         card.add_field(
             name=translator.text(locale, "common-type"),
-            value=reward["type"],
+            value=translator.text(
+                locale,
+                REWARD_TYPE_KEYS.get(reward_type, "battlepass-reward-type-unknown"),
+            ),
             inline=False,
         )
         card.add_field(

@@ -105,6 +105,7 @@ class SettingsCog(commands.Cog):
                 interaction, "settings-set-placeholder", setting=setting.name
             ),
             options=choices,
+            empty_option_label=translated(interaction, "common-unavailable"),
         )
         await interaction.followup.send(
             embed=embed(

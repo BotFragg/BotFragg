@@ -350,6 +350,7 @@ class ExtraCog(commands.Cog):
         component = module.partition("src.cogs.")[2].split(".", 1)[0]
         category = {
             "extra": "help-category-misc",
+            "staff": "help-category-staff",
             "valorant": "help-category-valorant",
         }.get(component, component.replace("_", " ").title() or "Other")
         category_name = (
@@ -490,9 +491,12 @@ class ExtraCog(commands.Cog):
             await error(interaction, "suggestion-channel-not-messageable")
             return
         record = await create_suggestion(interaction.user.id, suggestion, channel_id)
+        log_locale = interaction.guild_locale or interaction.locale
         card = embed(
             f"> {suggestion}",
-            title=translated(interaction, "suggestion-title", number=record.id),
+            title=self.bot.translator.text(
+                log_locale, "suggestion-title", number=record.id
+            ),
         )
         card.set_author(
             name=str(interaction.user), icon_url=interaction.user.display_avatar.url
@@ -617,10 +621,11 @@ class ExtraCog(commands.Cog):
             return
         result = await review_suggestion(id, status, reason)
         if result is None:
-            await error(
-                interaction,
-                "suggestion-review-unavailable",
-                number=id,
+            await interaction.followup.send(
+                embed=embed(
+                    f"Suggestion **#{id}** does not exist or has already been reviewed."
+                ),
+                ephemeral=True,
             )
             return
         suggestion, recipient_ids = result
@@ -649,14 +654,7 @@ class ExtraCog(commands.Cog):
             except discord.HTTPException:
                 continue
         await interaction.followup.send(
-            embed=embed(
-                translated(
-                    interaction,
-                    "suggestion-review-confirmation",
-                    number=id,
-                    status=translated(interaction, f"suggestion-status-{status}"),
-                )
-            ),
+            embed=embed(f"Suggestion **#{id}** has been **{status}**."),
             ephemeral=True,
         )
 
@@ -670,10 +668,12 @@ class ExtraCog(commands.Cog):
             ) or await self.bot.fetch_channel(suggestion.log_channel_id)
             if isinstance(channel, discord.abc.Messageable):
                 message = await channel.fetch_message(suggestion.log_message_id)
+                status = suggestion.status.title()
                 await message.edit(
                     embed=embed(
-                        f"> {suggestion.content}\n\n**{suggestion.status.title()} reason:** {suggestion.reason}",
-                        title=f"Suggestion #{suggestion.id} — {suggestion.status.title()}",
+                        f"> {suggestion.content}\n\n"
+                        f"**{status} reason:** {suggestion.reason}",
+                        title=f"Suggestion #{suggestion.id} — {status}",
                     )
                 )
         except discord.HTTPException:

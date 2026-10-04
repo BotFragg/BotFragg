@@ -41,7 +41,7 @@ from src.services.accounts import (
     update_user_preference,
 )
 from src.services.auth import AuthenticationRequired, AuthService, decode_jwt
-from src.services.catalog import Accessory, Bundle, CatalogService
+from src.services.catalog import Accessory, CatalogService, localized_text
 from src.services.crypto import AuthVault
 from src.services.gameplay import GameplayService, GameplayUnavailable
 from src.services.http import HTTPFailure
@@ -776,7 +776,7 @@ async def test_gameplay_normalizes_transient_http_failures() -> None:
 
 
 async def test_gameplay_missions_join_contract_progress_with_catalog_metadata() -> None:
-    """Verify that gameplay missions join contract progress with catalog metadata."""
+    """Verify mission metadata is localized while joining live progress."""
     urls: list[str] = []
 
     class Auth:
@@ -808,13 +808,17 @@ async def test_gameplay_missions_join_contract_progress_with_catalog_metadata() 
                     },
                 )
             if "/v1/missions?" in url:
+                assert url.endswith("?language=all")
                 return SimpleNamespace(
                     status=200,
                     data={
                         "data": [
                             {
                                 "uuid": "weekly-mission",
-                                "title": "Kill players with headshots",
+                                "title": {
+                                    "en-US": "Kill players with headshots",
+                                    "fr-FR": "Éliminez des joueurs par tirs à la tête",
+                                },
                                 "type": "EAresMissionType::Weekly",
                                 "xpGrant": 20000,
                                 "progressToComplete": 100,
@@ -830,11 +834,13 @@ async def test_gameplay_missions_join_contract_progress_with_catalog_metadata() 
     http = HTTP()
     service = GameplayService(http, Auth(), CatalogService(http))
 
-    missions = await service.missions(SimpleNamespace(puuid="player", region="na"))
+    missions = await service.missions(
+        SimpleNamespace(puuid="player", region="na"), locale="fr"
+    )
 
     assert len(missions) == 1
     assert missions[0]["type"] == "Weekly Missions"
-    assert missions[0]["title"] == "Kill players with headshots"
+    assert missions[0]["title"] == "Éliminez des joueurs par tirs à la tête"
     assert missions[0]["xp"] == 20000
     assert missions[0]["tasks"] == [{"progress": 15, "target": 100}]
     assert missions[0]["expires"] == datetime(2026, 9, 28, tzinfo=UTC)
@@ -1096,9 +1102,9 @@ async def test_concurrent_login_callbacks_respect_account_limit() -> None:
     )
 
     assert sorted((first_result.success, second_result.success)) == [False, True]
-    assert "link at most 1 accounts" in (
-        first_result.error or second_result.error or ""
-    )
+    limit_failure = first_result if not first_result.success else second_result
+    assert limit_failure.error_key == "login-account-limit"
+    assert limit_failure.error_arguments == {"max_accounts": 1}
     assert await Account.filter(user_id=discord_id).count() == 1
 
 
@@ -1250,15 +1256,17 @@ async def test_catalog_load_reads_file_off_event_loop(
 
 
 async def test_catalog_snapshot_round_trips_skin_chromas() -> None:
-    """Verify skin chromas survive catalog build, save, and load."""
+    """Verify localized catalog names and skin chromas survive cache round trips."""
     with tempfile.TemporaryDirectory(prefix=".catalog-test-", dir=Path.cwd()) as folder:
         path = Path(folder) / "skins.json"
+        urls: list[str] = []
 
         class CatalogHTTP:
-            """Provide deterministic version, skin, and bundle responses."""
+            """Provide deterministic multilingual catalog responses."""
 
             async def request(self, _method: str, url: str):
                 """Return the requested catalog fixture."""
+                urls.append(url)
                 if url.endswith("/version"):
                     return SimpleNamespace(
                         status=200, data={"data": {"manifestId": "manifest"}}
@@ -1270,9 +1278,18 @@ async def test_catalog_snapshot_round_trips_skin_chromas() -> None:
                             "data": [
                                 {
                                     "uuid": "bundle",
-                                    "displayName": "Test Bundle",
-                                    "displayNameSubText": "Limited Edition",
-                                    "description": "A test bundle",
+                                    "displayName": {
+                                        "en-US": "Test Bundle",
+                                        "fr-FR": "Pack de test",
+                                    },
+                                    "displayNameSubText": {
+                                        "en-US": "Limited Edition",
+                                        "fr-FR": "Édition limitée",
+                                    },
+                                    "extraDescription": {
+                                        "en-US": "A test bundle",
+                                        "fr-FR": "Un pack de test",
+                                    },
                                     "displayIcon": "https://example.com/bundle.png",
                                     "assetPath": "ShooterGame/Content/Bundles/Test",
                                 }
@@ -1287,18 +1304,28 @@ async def test_catalog_snapshot_round_trips_skin_chromas() -> None:
                                 "skins": [
                                     {
                                         "uuid": "skin",
-                                        "displayName": "Skin",
+                                        "displayName": {
+                                            "en-US": "Test Skin",
+                                            "fr-FR": "Peau de test",
+                                        },
                                         "assetPath": "ShooterGame/Content/Weapons/Skin",
                                         "levels": [
                                             {
                                                 "uuid": "level",
+                                                "displayName": {
+                                                    "en-US": "Test Skin Level 2",
+                                                    "fr-FR": "Peau de test niveau 2",
+                                                },
                                                 "streamedVideo": "https://example.com/level.mp4",
                                             }
                                         ],
                                         "chromas": [
                                             {
                                                 "uuid": "chroma",
-                                                "displayName": "Skin Green",
+                                                "displayName": {
+                                                    "en-US": "Test Skin Green",
+                                                    "fr-FR": "Peau de test verte",
+                                                },
                                                 "streamedVideo": "https://example.com/chroma.mp4",
                                             }
                                         ],
@@ -1317,24 +1344,37 @@ async def test_catalog_snapshot_round_trips_skin_chromas() -> None:
         loaded.path = path
         await loaded.load()
 
+        assert any(url.endswith("/weapons?language=all") for url in urls)
+        assert any(url.endswith("/bundles?language=all") for url in urls)
         skin = loaded.get_skin("skin")
         assert skin is not None
+        assert skin.name == "Test Skin"
+        assert skin.name_for("fr") == "Peau de test"
+        assert skin.name_for("cs") == "Test Skin"
+        assert localized_text(skin.levels[0]["displayName"], "fr") == (
+            "Peau de test niveau 2"
+        )
+        assert localized_text(skin.chromas[0]["displayName"], "fr") == (
+            "Peau de test verte"
+        )
+        assert loaded.search_skins("Peau de test", locale="fr")[0] == skin
+        assert loaded.search_skins("Test Skin", locale="fr")[0] == skin
         assert skin.chromas == [
             {
                 "uuid": "chroma",
-                "displayName": "Skin Green",
+                "displayName": {
+                    "en-US": "Test Skin Green",
+                    "fr-FR": "Peau de test verte",
+                },
                 "streamedVideo": "https://example.com/chroma.mp4",
             }
         ]
         assert skin.levels[0]["streamedVideo"] == "https://example.com/level.mp4"
         bundle = loaded.get_bundle("bundle")
-        assert bundle == Bundle(
-            "bundle",
-            "Test Bundle",
-            "Limited Edition",
-            "A test bundle",
-            "https://example.com/bundle.png",
-        )
+        assert bundle is not None
+        assert bundle.name_for("fr") == "Pack de test"
+        assert bundle.subtitle_for("fr") == "Édition limitée"
+        assert bundle.description_for("fr") == "Un pack de test"
 
 
 async def test_catalog_load_refreshes_legacy_snapshot_with_same_manifest() -> None:
@@ -1480,14 +1520,16 @@ async def test_concurrent_accessory_lookups_share_one_request() -> None:
     started = asyncio.Event()
     release = asyncio.Event()
     calls = 0
+    request_urls: list[str] = []
 
     class HTTP:
         """Stub the shared Riot client so request handling and shutdown can be observed."""
 
-        async def request(self, _method: str, _url: str):
+        async def request(self, _method: str, url: str):
             """Record request arguments and return the configured HTTP response."""
             nonlocal calls
             calls += 1
+            request_urls.append(url)
             started.set()
             await release.wait()
             return SimpleNamespace(
@@ -1496,7 +1538,10 @@ async def test_concurrent_accessory_lookups_share_one_request() -> None:
                     "data": [
                         {
                             "uuid": "buddy-base",
-                            "displayName": "Buddy",
+                            "displayName": {
+                                "en-US": "Buddy",
+                                "fr-FR": "Porte-bonheur",
+                            },
                             "levels": [
                                 {
                                     "uuid": "buddy-id",
@@ -1520,6 +1565,8 @@ async def test_concurrent_accessory_lookups_share_one_request() -> None:
 
     assert calls == 1
     assert results[0] is not None and results[0].name == "Buddy"
+    assert results[0].name_for("fr") == "Porte-bonheur"
+    assert request_urls == ["https://valorant-api.com/v1/buddies?language=all"]
     assert results[0] == results[1]
 
 

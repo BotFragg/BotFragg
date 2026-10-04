@@ -11,6 +11,7 @@ import pytest
 from src.cogs.valorant.alerts import AlertsCog
 from src.localization import BotFraggTranslator
 from src.models import Account, Alert, User
+from src.services.catalog import Skin
 
 
 @pytest.mark.usefixtures("database")
@@ -20,7 +21,9 @@ async def test_alert_manager_preserves_order_and_page_wrapping() -> None:
     account = await Account.create(puuid="alerts", user=user, username="One#NA")
     skin_uuids = [UUID(int=index) for index in range(1, 6)]
     skins = {
-        str(skin_uuid): SimpleNamespace(name=f"Skin {index}", icon=None, tier_uuid=None)
+        str(skin_uuid): Skin(
+            str(skin_uuid), str(skin_uuid), f"Skin {index}", None, None
+        )
         for index, skin_uuid in enumerate(skin_uuids, start=1)
     }
     for skin_uuid in skin_uuids:

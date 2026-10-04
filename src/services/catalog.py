@@ -18,10 +18,60 @@ from .http import HTTPClient, HTTPFailure
 
 ENGLISH_LOCALE = "en-US"
 MISSION_METADATA_TTL = 1800
-CATALOG_FORMAT_VERSION = 3
+CATALOG_FORMAT_VERSION = 4
 BUDDY_ITEM_TYPE_ID = "dd3bf334-87f3-40bd-b043-682a57a8dc3a"
+DISCORD_TO_VALORANT_LOCALE = {
+    "id": "id-ID",
+    "de": "de-DE",
+    "es-ES": "es-ES",
+    "es-419": "es-MX",
+    "fr": "fr-FR",
+    "it": "it-IT",
+    "ja": "ja-JP",
+    "ko": "ko-KR",
+    "pl": "pl-PL",
+    "pt-BR": "pt-BR",
+    "ru": "ru-RU",
+    "th": "th-TH",
+    "tr": "tr-TR",
+    "vi": "vi-VN",
+    "zh-CN": "zh-CN",
+    "zh-TW": "zh-TW",
+}
 
 log = logging.getLogger(__name__)
+
+
+def localized_text(value: Any, locale: object | None = None) -> str:
+    """Resolve VALORANT-API text for a Discord locale with English fallback."""
+    if isinstance(value, str):
+        return value
+    if not isinstance(value, dict):
+        return ""
+
+    locale_code = getattr(locale, "value", locale)
+    locale_code = str(locale_code) if locale_code else ENGLISH_LOCALE
+    if locale_code == "Automatic":
+        locale_code = ENGLISH_LOCALE
+    valorant_locale = DISCORD_TO_VALORANT_LOCALE.get(locale_code, ENGLISH_LOCALE)
+    for key in dict.fromkeys((valorant_locale, ENGLISH_LOCALE)):
+        text = value.get(key)
+        if isinstance(text, str) and text:
+            return text
+    return ""
+
+
+def _localized_values(value: Any) -> dict[str, str]:
+    """Normalize a localized string or locale map into nonempty values."""
+    if isinstance(value, str):
+        return {ENGLISH_LOCALE: value} if value else {}
+    if not isinstance(value, dict):
+        return {}
+    return {
+        locale: text
+        for locale, text in value.items()
+        if isinstance(locale, str) and isinstance(text, str) and text
+    }
 
 
 @dataclass(slots=True)
@@ -36,6 +86,13 @@ class Skin:
     price: int | None = None
     levels: list[dict[str, Any]] = field(default_factory=list)
     chromas: list[dict[str, Any]] = field(default_factory=list)
+    names: dict[str, str] = field(default_factory=dict)
+
+    def name_for(self, locale: object | None = None) -> str:
+        """Return this skin's localized or English name, or empty when missing."""
+        return localized_text(self.names, locale) or (
+            "" if self.name == self.uuid else self.name
+        )
 
 
 @dataclass(slots=True)
@@ -47,6 +104,26 @@ class Bundle:
     subtitle: str | None
     description: str | None
     icon: str | None
+    names: dict[str, str] = field(default_factory=dict)
+    subtitles: dict[str, str] = field(default_factory=dict)
+    descriptions: dict[str, str] = field(default_factory=dict)
+
+    def name_for(self, locale: object | None = None) -> str:
+        """Return this bundle's localized or English name, or empty when missing."""
+        return localized_text(self.names, locale) or (
+            "" if self.name == self.uuid else self.name
+        )
+
+    def subtitle_for(self, locale: object | None = None) -> str | None:
+        """Return this bundle's localized subtitle, if available."""
+        return localized_text(self.subtitles or self.subtitle, locale) or self.subtitle
+
+    def description_for(self, locale: object | None = None) -> str | None:
+        """Return this bundle's localized description, if available."""
+        return (
+            localized_text(self.descriptions or self.description, locale)
+            or self.description
+        )
 
 
 @dataclass(slots=True)
@@ -56,6 +133,19 @@ class Accessory:
     name: str
     icon: str | None
     title_text: str | None = None
+    names: dict[str, str] = field(default_factory=dict)
+    title_texts: dict[str, str] = field(default_factory=dict)
+
+    def name_for(self, locale: object | None = None) -> str:
+        """Return this accessory's localized name, or empty when metadata is missing."""
+        return localized_text(self.names, locale) or self.name
+
+    def title_text_for(self, locale: object | None = None) -> str | None:
+        """Return localized accessory title text, if available."""
+        return (
+            localized_text(self.title_texts or self.title_text, locale)
+            or self.title_text
+        )
 
 
 class CatalogService:
@@ -163,7 +253,7 @@ class CatalogService:
     async def _fetch_data(self, kind: str) -> list[dict[str, Any]]:
         """Fetch one catalog endpoint and return its validated data rows."""
         response = await self.http.request(
-            "GET", f"https://valorant-api.com/v1/{kind}?language={ENGLISH_LOCALE}"
+            "GET", f"https://valorant-api.com/v1/{kind}?language=all"
         )
         if response.status != 200 or not isinstance(response.data, dict):
             raise HTTPFailure(f"Could not fetch the {kind} catalog")
@@ -192,7 +282,7 @@ class CatalogService:
             try:
                 missions = await self.http.request(
                     "GET",
-                    f"https://valorant-api.com/v1/missions?language={ENGLISH_LOCALE}",
+                    "https://valorant-api.com/v1/missions?language=all",
                 )
             except HTTPFailure:
                 log.warning("Could not refresh mission metadata", exc_info=True)
@@ -232,29 +322,40 @@ class CatalogService:
                     (levels[0] if levels else {}).get("uuid") or raw.get("uuid")
                 )
                 uuid = str(raw.get("uuid"))
+                names = _localized_values(raw.get("displayName"))
                 skin_map[uuid] = Skin(
                     uuid=uuid,
                     offer_uuid=offer_uuid,
-                    name=str(raw.get("displayName") or uuid),
+                    name=localized_text(names, ENGLISH_LOCALE) or uuid,
                     icon=raw.get("displayIcon")
                     or (levels[0] if levels else {}).get("displayIcon"),
                     tier_uuid=raw.get("contentTierUuid"),
                     levels=levels,
                     chromas=raw.get("chromas") or [],
+                    names=names,
                 )
-        bundle_map = {
-            str(raw["uuid"]): Bundle(
-                uuid=str(raw["uuid"]),
-                name=str(raw.get("displayName") or raw["uuid"]),
-                subtitle=raw.get("displayNameSubText"),
-                description=raw.get("description") or raw.get("extraDescription"),
+        bundle_map: dict[str, Bundle] = {}
+        for raw in bundles:
+            if not isinstance(raw, dict) or not raw.get("uuid"):
+                continue
+            names = _localized_values(raw.get("displayName"))
+            subtitles = _localized_values(raw.get("displayNameSubText"))
+            descriptions = _localized_values(
+                raw.get("description") or raw.get("extraDescription")
+            )
+            uuid = str(raw["uuid"])
+            bundle_map[uuid] = Bundle(
+                uuid=uuid,
+                name=localized_text(names, ENGLISH_LOCALE) or uuid,
+                subtitle=localized_text(subtitles, ENGLISH_LOCALE) or None,
+                description=localized_text(descriptions, ENGLISH_LOCALE) or None,
                 icon=raw.get("displayIcon")
                 or raw.get("displayIcon2")
                 or raw.get("verticalPromoImage"),
+                names=names,
+                subtitles=subtitles,
+                descriptions=descriptions,
             )
-            for raw in bundles
-            if isinstance(raw, dict) and raw.get("uuid")
-        }
         self.skins = skin_map
         self.bundles = bundle_map
         self._reindex()
@@ -300,7 +401,7 @@ class CatalogService:
                 return self._accessories[key]
             response = await self.http.request(
                 "GET",
-                f"https://valorant-api.com/v1/{endpoint}/{uuid}?language={ENGLISH_LOCALE}",
+                f"https://valorant-api.com/v1/{endpoint}/{uuid}?language=all",
             )
             if response.status == 404:
                 self._accessories[key] = None
@@ -321,7 +422,7 @@ class CatalogService:
                 if self._buddy_catalog is None:
                     response = await self.http.request(
                         "GET",
-                        f"https://valorant-api.com/v1/buddies?language={ENGLISH_LOCALE}",
+                        "https://valorant-api.com/v1/buddies?language=all",
                     )
                     rows = (
                         response.data.get("data")
@@ -334,16 +435,21 @@ class CatalogService:
                     for buddy in rows:
                         if not isinstance(buddy, dict):
                             continue
-                        name = str(buddy.get("displayName") or "Unknown Buddy")
+                        names = _localized_values(buddy.get("displayName"))
+                        name = localized_text(names, ENGLISH_LOCALE)
                         base_icon = buddy.get("displayIcon")
                         buddy_uuid = str(buddy.get("uuid") or "")
                         if buddy_uuid:
-                            buddies[buddy_uuid.lower()] = Accessory(name, base_icon)
+                            buddies[buddy_uuid.lower()] = Accessory(
+                                name, base_icon, names=names
+                            )
                         for level in buddy.get("levels") or []:
                             if not isinstance(level, dict) or not level.get("uuid"):
                                 continue
                             buddies[str(level["uuid"]).lower()] = Accessory(
-                                name, level.get("displayIcon") or base_icon
+                                name,
+                                level.get("displayIcon") or base_icon,
+                                names=names,
                             )
                     if not buddies:
                         raise HTTPFailure("Gun buddy catalog contained no entries")
@@ -353,31 +459,50 @@ class CatalogService:
     @staticmethod
     def _accessory_from_data(endpoint: str, raw: dict[str, Any]) -> Accessory:
         """Convert endpoint-specific Riot accessory data into a common display shape."""
+        names = _localized_values(raw.get("displayName"))
+        name = localized_text(names, ENGLISH_LOCALE)
         if endpoint == "playercards":
             return Accessory(
-                str(raw.get("displayName") or "Unknown Card"),
+                name,
                 raw.get("largeArt") or raw.get("wideArt"),
+                names=names,
             )
         if endpoint == "playertitles":
+            title_texts = _localized_values(raw.get("titleText"))
             return Accessory(
-                str(raw.get("displayName") or "Unknown Title"),
+                name,
                 None,
-                raw.get("titleText"),
+                localized_text(title_texts, ENGLISH_LOCALE) or None,
+                names=names,
+                title_texts=title_texts,
             )
         return Accessory(
-            str(raw.get("displayName") or "Unknown Accessory"),
+            name,
             raw.get("fullTransparentIcon") or raw.get("displayIcon"),
+            names=names,
         )
 
-    def search_skins(self, query: str, *, limit: int = 25) -> list[Skin]:
-        """Return fuzzy name matches whose weighted score is at least 35."""
-        return [
-            self.skins[uuid]
+    def search_skins(
+        self, query: str, *, locale: object | None = None, limit: int = 25
+    ) -> list[Skin]:
+        """Search localized names first, retaining English-name fallback matches."""
+        locale_code = getattr(locale, "value", locale)
+        locale_code = str(locale_code) if locale_code else ENGLISH_LOCALE
+        valorant_locale = DISCORD_TO_VALORANT_LOCALE.get(locale_code, ENGLISH_LOCALE)
+        choices = {uuid: skin.name_for(locale) for uuid, skin in self.skins.items()}
+        choice_sets = [choices]
+        if valorant_locale != ENGLISH_LOCALE:
+            choice_sets.append(self._skin_choices)
+
+        scores: dict[str, int] = {}
+        for search_choices in choice_sets:
             for _, score, uuid in process.extract(
-                query, self._skin_choices, scorer=fuzz.WRatio, limit=limit
-            )
-            if score >= 35
-        ]
+                query, search_choices, scorer=fuzz.WRatio, limit=limit
+            ):
+                if score >= 35:
+                    scores[uuid] = max(score, scores.get(uuid, 0))
+        matches = sorted(scores.items(), key=lambda match: match[1], reverse=True)
+        return [self.skins[uuid] for uuid, _ in matches[:limit]]
 
     def update_prices(self, offers: list[dict[str, Any]]) -> None:
         """Apply current store prices to catalog skins matched by offer identifier."""
@@ -400,6 +525,7 @@ class CatalogService:
                     "uuid": skin.uuid,
                     "offer_uuid": skin.offer_uuid,
                     "name": skin.name,
+                    "names": skin.names,
                     "icon": skin.icon,
                     "tier_uuid": skin.tier_uuid,
                     "price": skin.price,
@@ -412,8 +538,11 @@ class CatalogService:
                 {
                     "uuid": bundle.uuid,
                     "name": bundle.name,
+                    "names": bundle.names,
                     "subtitle": bundle.subtitle,
+                    "subtitles": bundle.subtitles,
                     "description": bundle.description,
+                    "descriptions": bundle.descriptions,
                     "icon": bundle.icon,
                 }
                 for bundle in self.bundles.values()
@@ -436,14 +565,19 @@ class CatalogService:
             item["uuid"]: Skin(
                 uuid=item["uuid"],
                 offer_uuid=item["offer_uuid"],
-                name=item.get("name")
-                or item.get("names", {}).get(ENGLISH_LOCALE)
-                or item["uuid"],
+                name=str(
+                    item.get("name")
+                    or localized_text(
+                        item.get("names") or item.get("name"), ENGLISH_LOCALE
+                    )
+                    or item["uuid"]
+                ),
                 icon=item.get("icon"),
                 tier_uuid=item.get("tier_uuid"),
                 price=item.get("price"),
                 levels=item.get("levels", []),
                 chromas=item.get("chromas", []),
+                names=_localized_values(item.get("names") or item.get("name")),
             )
             for item in raw.get("skins", [])
             if item.get("uuid") and item.get("offer_uuid")
@@ -451,10 +585,32 @@ class CatalogService:
         self.bundles = {
             item["uuid"]: Bundle(
                 uuid=item["uuid"],
-                name=item.get("name") or item["uuid"],
-                subtitle=item.get("subtitle"),
-                description=item.get("description"),
+                name=str(
+                    item.get("name")
+                    or localized_text(
+                        item.get("names") or item.get("name"), ENGLISH_LOCALE
+                    )
+                    or item["uuid"]
+                ),
+                subtitle=item.get("subtitle")
+                or localized_text(
+                    item.get("subtitles") or item.get("subtitle"), ENGLISH_LOCALE
+                )
+                or None,
+                description=item.get("description")
+                or localized_text(
+                    item.get("descriptions") or item.get("description"),
+                    ENGLISH_LOCALE,
+                )
+                or None,
                 icon=item.get("icon"),
+                names=_localized_values(item.get("names") or item.get("name")),
+                subtitles=_localized_values(
+                    item.get("subtitles") or item.get("subtitle")
+                ),
+                descriptions=_localized_values(
+                    item.get("descriptions") or item.get("description")
+                ),
             )
             for item in raw.get("bundles", [])
             if item.get("uuid")

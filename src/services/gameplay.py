@@ -8,7 +8,7 @@ from typing import Any
 
 from ..models import Account
 from .auth import AuthService, riot_region
-from .catalog import CatalogService
+from .catalog import CatalogService, localized_text
 from .http import HTTPClient, HTTPFailure
 
 
@@ -24,7 +24,9 @@ class GameplayService:
         """Bind the shared Riot client, authentication service, and catalog."""
         self.http, self.auth, self.catalog = http, auth, catalog
 
-    async def battlepass(self, account: Account) -> dict[str, Any]:
+    async def battlepass(
+        self, account: Account, *, locale: str | None = None
+    ) -> dict[str, Any]:
         """Return the active battlepass level, XP, expiry, and next reward."""
         try:
             headers = await self.auth.auth_headers(account)
@@ -34,8 +36,12 @@ class GameplayService:
                     f"https://pd.{riot_region(account.region)}.a.pvp.net/contracts/v1/contracts/{account.puuid}",
                     headers=headers,
                 ),
-                self.http.request("GET", "https://valorant-api.com/v1/seasons"),
-                self.http.request("GET", "https://valorant-api.com/v1/contracts"),
+                self.http.request(
+                    "GET", "https://valorant-api.com/v1/seasons?language=all"
+                ),
+                self.http.request(
+                    "GET", "https://valorant-api.com/v1/contracts?language=all"
+                ),
             )
         except HTTPFailure as exc:
             raise GameplayUnavailable("Could not fetch battlepass data") from exc
@@ -89,17 +95,19 @@ class GameplayService:
             for entry in chapter.get("levels", [])
         ]
         return {
-            "act": str(act.get("displayName") or "Current act"),
+            "act": localized_text(act.get("displayName"), locale) or None,
             "level": level,
             "progress": progress,
             "next_level_xp": int(
                 (levels[level] if level < len(levels) else {}).get("xp") or 0
             ),
             "end": end,
-            "next_reward": await self._reward(levels, level),
+            "next_reward": await self._reward(levels, level, locale),
         }
 
-    async def missions(self, account: Account) -> list[dict[str, Any]]:
+    async def missions(
+        self, account: Account, *, locale: str | None = None
+    ) -> list[dict[str, Any]]:
         """Join the account's live mission progress with cached catalog definitions."""
         try:
             headers = await self.auth.auth_headers(account)
@@ -121,7 +129,7 @@ class GameplayService:
         return [
             mission
             for row in rows
-            if (mission := self._mission_progress(row, definitions)) is not None
+            if (mission := self._mission_progress(row, definitions, locale)) is not None
         ]
 
     async def penalties(self, account: Account) -> list[dict[str, Any]]:
@@ -230,6 +238,7 @@ class GameplayService:
     def _mission_progress(
         row: Any,
         definitions: dict[str, dict[str, Any]],
+        locale: str | None,
     ) -> dict[str, Any] | None:
         """Normalize one Riot mission row and its objective progress for display."""
         if not isinstance(row, dict) or not (mission_id := str(row.get("ID") or "")):
@@ -238,7 +247,8 @@ class GameplayService:
         if not definition:
             return {
                 "type": "Missions",
-                "title": "Mission details unavailable",
+                "title": None,
+                "details_unavailable": True,
                 "xp": None,
                 "complete": bool(row.get("Complete")),
                 "expires": _parse_datetime(row.get("ExpirationTime")),
@@ -290,8 +300,8 @@ class GameplayService:
                 }
                 for _, progress in live_objectives
             ]
-        title = str(
-            definition.get("title") or definition.get("displayName") or "Mission"
+        title = localized_text(definition.get("title"), locale) or localized_text(
+            definition.get("displayName"), locale
         )
         kind = str(definition.get("type") or "").rsplit("::", 1)[-1].casefold()
         mission_type = (
@@ -299,18 +309,20 @@ class GameplayService:
         )
         return {
             "type": mission_type,
-            "title": title,
+            "title": title or None,
             "xp": _nonnegative_int(definition.get("xpGrant")),
             "complete": bool(row.get("Complete")),
             "expires": _parse_datetime(row.get("ExpirationTime")),
             "tasks": tasks,
         }
 
-    async def _reward(self, levels: list[dict[str, Any]], level: int) -> dict[str, Any]:
+    async def _reward(
+        self, levels: list[dict[str, Any]], level: int, locale: str | None
+    ) -> dict[str, Any]:
         """Resolve the next battlepass reward to display data, including its icon."""
         if level >= 55:
             return {
-                "name": "🎉 Congratulations, you've finished the battlepass!",
+                "name": None,
                 "type": "Finished",
                 "xp": 0,
                 "icon": None,
@@ -319,7 +331,7 @@ class GameplayService:
         kind, uuid = str(reward.get("type") or "Reward"), str(reward.get("uuid") or "")
         if kind == "EquippableSkinLevel" and (skin := self.catalog.get_skin(uuid)):
             return {
-                "name": skin.name,
+                "name": skin.name_for(locale),
                 "type": kind,
                 "xp": levels[level].get("xp", 0),
                 "icon": skin.icon,
@@ -333,13 +345,13 @@ class GameplayService:
         }
         if kind in types and (item := await self.catalog.accessory(types[kind], uuid)):
             return {
-                "name": item.name,
+                "name": item.name_for(locale),
                 "type": kind,
                 "xp": levels[level].get("xp", 0),
                 "icon": item.icon,
             }
         return {
-            "name": "Radianite" if kind == "Currency" else "Reward",
+            "name": None,
             "type": kind,
             "xp": levels[level].get("xp", 0),
             "icon": None,

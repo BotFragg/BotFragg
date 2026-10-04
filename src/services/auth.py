@@ -27,11 +27,10 @@ REDIRECT_URI = "http://localhost/redirect"
 
 @dataclass(slots=True)
 class AuthResult:
-    """Represent an authentication outcome with legacy and translated error data."""
+    """Represent an authentication outcome and localized failure details."""
 
     success: bool
     account: Account | None = None
-    error: str | None = None
     error_key: str | None = None
     error_arguments: dict[str, Any] = field(default_factory=dict)
 
@@ -91,14 +90,12 @@ class AuthService:
         if not code:
             return AuthResult(
                 False,
-                error="Could not find an authorization code in that URL.",
                 error_key="login-code-missing",
             )
         pending = self._pending_nonces.pop(discord_id, None)
         if not pending or pending[1] < time.monotonic():
             return AuthResult(
                 False,
-                error="That login attempt expired. Run /login again.",
                 error_key="login-attempt-expired",
             )
         try:
@@ -121,7 +118,6 @@ class AuthService:
         except HTTPFailure:
             return AuthResult(
                 False,
-                error="Riot authentication is temporarily unavailable.",
                 error_key="error-riot-auth-temporarily-unavailable",
             )
         if (
@@ -131,7 +127,6 @@ class AuthService:
         ):
             return AuthResult(
                 False,
-                error="Riot rejected that login code. It may have expired or already been used.",
                 error_key="login-code-rejected",
             )
         token_data = response.data
@@ -139,7 +134,6 @@ class AuthService:
         if claims.get("nonce") != pending[0]:
             return AuthResult(
                 False,
-                error="The login response did not match this login attempt.",
                 error_key="login-nonce-mismatch",
             )
         auth = {
@@ -152,7 +146,6 @@ class AuthService:
         if not puuid:
             return AuthResult(
                 False,
-                error="Riot returned a token without an account identifier.",
                 error_key="login-token-no-account",
             )
         try:
@@ -162,13 +155,11 @@ class AuthService:
         except HTTPFailure:
             return AuthResult(
                 False,
-                error="Riot account details are temporarily unavailable.",
                 error_key="login-account-details-unavailable",
             )
         if not user_info or not entitlement or not region:
             return AuthResult(
                 False,
-                error="Could not load the Riot account details for that login.",
                 error_key="login-account-details-missing",
             )
         auth["ent"] = entitlement
@@ -181,7 +172,6 @@ class AuthService:
                 if account and account.user_id != discord_id:
                     return AuthResult(
                         False,
-                        error="That Riot account is already linked to another Discord user.",
                         error_key="login-account-already-linked",
                     )
                 if not account:
@@ -189,7 +179,6 @@ class AuthService:
                     if count >= self.config.max_accounts_per_user:
                         return AuthResult(
                             False,
-                            error=f"You can link at most {self.config.max_accounts_per_user} accounts.",
                             error_key="login-account-limit",
                             error_arguments={
                                 "max_accounts": self.config.max_accounts_per_user
@@ -215,7 +204,6 @@ class AuthService:
             if account and account.user_id != discord_id:
                 return AuthResult(
                     False,
-                    error="That Riot account is already linked to another Discord user.",
                     error_key="login-account-already-linked",
                 )
             raise

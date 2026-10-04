@@ -9,7 +9,7 @@ from discord.ext import commands
 from ..bot import BotFraggBot
 from ..services.accounts import command_stats, count_suggestions_by_author
 from ..views import timestamp
-from .valorant._ui import embed, error, translated
+from .valorant._ui import embed, error
 
 
 class StaffCog(commands.Cog):
@@ -51,37 +51,19 @@ class StaffCog(commands.Cog):
             elif guild.get_member(user.id):
                 shared_guilds += 1
         card = embed(
-            title=translated(interaction, "staff-userinfo-title", username=str(user)),
+            title=f"User information: {user}",
             colour=0x9C84EF,
         )
         card.description = "\n".join(
             (
-                translated(
-                    interaction,
-                    "staff-userinfo-full-username",
-                    username=f"[{user}](https://discord.com/users/{user.id})",
-                ),
-                translated(interaction, "staff-userinfo-id", value=str(user.id)),
-                translated(
-                    interaction,
-                    "staff-userinfo-avatar",
-                    link=f"[Click here]({user.display_avatar.url})",
-                ),
-                translated(
-                    interaction, "staff-userinfo-shared-servers", count=shared_guilds
-                ),
-                translated(
-                    interaction, "staff-userinfo-owned-servers", count=owned_guilds
-                ),
-                translated(interaction, "staff-userinfo-commands", count=command_count),
-                translated(
-                    interaction, "staff-userinfo-suggestions", count=suggestion_count
-                ),
-                translated(
-                    interaction,
-                    "staff-userinfo-favorite-command",
-                    command=favorite or translated(interaction, "common-none"),
-                ),
+                f"**Full username:** [{user}](https://discord.com/users/{user.id})",
+                f"**ID:** {user.id}",
+                f"**Avatar URL:** [Click here]({user.display_avatar.url})",
+                f"**Shared servers (cached; may be incomplete):** {shared_guilds}",
+                f"**Owned servers:** {owned_guilds}",
+                f"**Commands used:** {command_count}",
+                f"**Suggestions submitted:** {suggestion_count}",
+                f"**Most used command:** {favorite or 'None'}",
             )
         )
         card.set_thumbnail(url=user.display_avatar.url)
@@ -103,59 +85,39 @@ class StaffCog(commands.Cog):
         if not server_id.isdecimal() or not (
             server := self.bot.get_guild(int(server_id))
         ):
-            await error(interaction, "staff-server-id-required")
+            await interaction.response.send_message(
+                embed=embed("Provide the ID of a server that BotFragg has joined."),
+                ephemeral=True,
+            )
             return
         await interaction.response.defer(thinking=True, ephemeral=True)
         command_count, favorite = await command_stats(guild_id=server.id)
         members = server.member_count
-        member_count = (
-            members
-            if members is not None
-            else translated(interaction, "common-unknown")
-        )
+        member_count = members if members is not None else "Unknown"
         card = embed(
-            title=translated(interaction, "staff-serverinfo-title"),
+            title="Server information",
             colour=discord.Color.blurple().value,
         )
         card.add_field(
-            name=translated(interaction, "staff-server-important-information"),
+            name="Key details",
             value="\n".join(
                 (
-                    translated(interaction, "staff-server-name", name=server.name),
-                    translated(interaction, "staff-server-id", value=str(server.id)),
-                    translated(interaction, "staff-server-members", count=member_count),
-                    translated(
-                        interaction,
-                        "staff-server-owner",
-                        owner=f"<@{server.owner_id}> ({server.owner_id})",
-                    ),
+                    f"**Server name:** {server.name}",
+                    f"**Server ID:** {server.id}",
+                    f"**Members (cached; may be outdated):** {member_count}",
+                    f"**Owner:** <@{server.owner_id}> ({server.owner_id})",
                 )
             ),
             inline=False,
         )
         card.add_field(
-            name=translated(interaction, "staff-server-other-information"),
+            name="Additional details",
             value="\n".join(
                 (
-                    translated(
-                        interaction,
-                        "staff-server-created",
-                        timestamp=timestamp(server.created_at),
-                    ),
-                    translated(
-                        interaction, "staff-server-commands", count=command_count
-                    ),
-                    translated(
-                        interaction,
-                        "staff-server-most-used-command",
-                        command=favorite or translated(interaction, "common-none"),
-                    ),
-                    translated(
-                        interaction,
-                        "staff-server-channels-roles",
-                        channels=len(server.channels),
-                        roles=len(server.roles),
-                    ),
+                    f"**Created:** {timestamp(server.created_at)}",
+                    f"**Commands used:** {command_count}",
+                    f"**Most used command:** {favorite or 'None'}",
+                    f"**Channels / roles:** {len(server.channels)} / {len(server.roles)}",
                 )
             ),
             inline=False,

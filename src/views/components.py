@@ -107,17 +107,26 @@ class OwnedSelect(discord.ui.DynamicItem[discord.ui.Select], template=SELECT_RE)
         *,
         placeholder: str | None = None,
         options: list[discord.SelectOption] | None = None,
+        empty_option_label: str | None = None,
     ) -> None:
-        """Build a stable custom ID and provide a safe placeholder option if empty."""
+        """Build a stable custom ID and a translated placeholder when options are empty."""
         self.action = action
         self.owner_id = owner_id
         self.payload = payload
+        select_options = options or []
+        if not select_options:
+            if not empty_option_label:
+                raise ValueError(
+                    "empty_option_label is required when options are empty"
+                )
+            select_options = [
+                discord.SelectOption(label=empty_option_label, value="unavailable")
+            ]
         super().__init__(
             discord.ui.Select(
                 custom_id=f"botfragg_select:{action}:{owner_id}:{payload}",
                 placeholder=placeholder,
-                options=options
-                or [discord.SelectOption(label="Unavailable", value="unavailable")],
+                options=select_options,
             )
         )
 
@@ -136,6 +145,9 @@ class OwnedSelect(discord.ui.DynamicItem[discord.ui.Select], template=SELECT_RE)
             match["payload"],
             placeholder=item.placeholder,
             options=item.options,
+            empty_option_label=interaction.client.translator.text(
+                interaction.locale, "common-unavailable"
+            ),
         )
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:

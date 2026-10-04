@@ -73,6 +73,7 @@ def test_dynamic_component_ids_fit_discord_limit() -> None:
                 "alert_create",
                 owner_id,
                 "12345678-1234-1234-1234-123456789012",
+                empty_option_label="Unavailable",
             ).item.custom_id
         )
         <= 100
@@ -83,6 +84,7 @@ def test_dynamic_component_ids_fit_discord_limit() -> None:
                 "shop_variant",
                 owner_id,
                 "4000000000|12345678-1234-1234-1234-123456789012",
+                empty_option_label="Unavailable",
             ).item.custom_id
         )
         <= 100
@@ -299,7 +301,11 @@ def test_shop_offer_layout_uses_tier_colour_and_discount_price() -> None:
         "0cebb8be-46d7-c12a-d306-e9907bfc5a25",
     )
     cards = offer_cards(
-        "Daily shop", [Offer(skin, 1775, 1)], "VP", link_item_image=True
+        "Daily shop",
+        [Offer(skin, 1775, 1)],
+        "VP",
+        link_item_image=True,
+        unknown_skin_name="Unknown",
     )
     assert (len(cards), cards[1].colour.value, cards[1].thumbnail.url) == (
         2,
@@ -307,7 +313,11 @@ def test_shop_offer_layout_uses_tier_colour_and_discount_price() -> None:
         "https://example.com/prime.png",
     )
     discounted = offer_cards(
-        "Night Market", [Offer(skin, 1775, 1, 1000, 44)], "VP", link_item_image=False
+        "Night Market",
+        [Offer(skin, 1775, 1, 1000, 44)],
+        "VP",
+        link_item_image=False,
+        unknown_skin_name="Unknown",
     )
     assert discounted[1].description == "VP **1,000** ~~1,775~~ (-44%)"
 
@@ -1199,7 +1209,9 @@ async def test_battlepass_hides_name_when_preference_enabled(
     class Gameplay:
         """Return controlled battlepass or mission data without making Riot requests."""
 
-        async def battlepass(self, _account: object) -> dict[str, object]:
+        async def battlepass(
+            self, _account: object, *, locale: str | None = None
+        ) -> dict[str, object]:
             """Return the configured battlepass progression fixture."""
             return data
 
@@ -1257,7 +1269,9 @@ async def test_missions_command_shows_weekly_progress_privately(
     class Gameplay:
         """Return controlled battlepass or mission data without making Riot requests."""
 
-        async def missions(self, selected: object) -> list[dict[str, object]]:
+        async def missions(
+            self, selected: object, *, locale: str | None = None
+        ) -> list[dict[str, object]]:
             """Return the configured mission-progress fixture."""
             assert selected is account
             return [
@@ -1338,7 +1352,7 @@ async def test_missions_command_shows_weekly_progress_privately(
     assert card.title == "Your Missions"
     assert ephemeral is True
     assert len(card.fields) == 1
-    assert card.fields[0].name.startswith("Weekly Missions · Expires <t:")
+    assert card.fields[0].name.startswith("Weekly missions · Expires <t:")
     assert card.fields[0].name.count("Expires") == 1
     assert card.fields[0].value.count("23,400 XP") == 4
     assert "**Purchase Items from the Armory · 23,400 XP**" in card.fields[0].value

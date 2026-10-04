@@ -17,13 +17,13 @@ def _account_display_name(
     username: str,
     *,
     hide_ign: bool,
-    translator: BotFraggTranslator | None = None,
-    locale: discord.Locale | str | None = "en-US",
+    translator: BotFraggTranslator,
+    locale: discord.Locale | str,
 ) -> str:
     """Return a generic account label when the user has chosen to hide their name."""
     if not hide_ign:
         return username
-    return translator.text(locale, "account-hidden") if translator else "Account"
+    return translator.text(locale, "account-hidden")
 
 
 def account_autocomplete_choices(

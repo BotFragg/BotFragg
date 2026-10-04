@@ -34,12 +34,20 @@ class AlertsCog(commands.Cog):
         bot.register_component("alert_page", self.alert_page)
 
     async def skin_autocomplete(
-        self, _: discord.Interaction, current: str
+        self, interaction: discord.Interaction, current: str
     ) -> list[app_commands.Choice[str]]:
         """Return catalog skin matches suitable for Discord's autocomplete limit."""
         return [
-            app_commands.Choice(name=skin.name[:100], value=skin.uuid)
-            for skin in self.bot.catalog.search_skins(current or "a")
+            app_commands.Choice(
+                name=(
+                    skin.name_for(interaction.locale)
+                    or self.bot.translator.text(interaction.locale, "common-unknown")
+                )[:100],
+                value=skin.uuid,
+            )
+            for skin in self.bot.catalog.search_skins(
+                current or "a", locale=interaction.locale
+            )
         ][:25]
 
     @app_commands.command(
@@ -58,7 +66,9 @@ class AlertsCog(commands.Cog):
             return
         item = self.bot.catalog.get_skin(skin)
         if not item:
-            matches = self.bot.catalog.search_skins(skin, limit=1)
+            matches = self.bot.catalog.search_skins(
+                skin, locale=interaction.locale, limit=1
+            )
             item = matches[0] if matches else None
         if not item:
             await error(interaction, "alert-skin-not-found")
@@ -120,7 +130,11 @@ class AlertsCog(commands.Cog):
         """Return a skin name prefixed with its tier emoji, if one exists."""
         if skin is None:
             return self.bot.translator.text(locale, "alert-unknown-skin")
-        return self.bot.emoji_service.skin_name(skin.name, skin.tier_uuid)
+        return self.bot.emoji_service.skin_name(
+            skin.name_for(locale)
+            or self.bot.translator.text(locale, "alert-unknown-skin"),
+            skin.tier_uuid,
+        )
 
     def _skin_emoji(self, skin: Skin | None) -> str | None:
         """Return a button emoji for a skin tier when one is available."""
@@ -165,15 +179,15 @@ class AlertsCog(commands.Cog):
         controls = discord.ui.View(timeout=None)
         for alert in visible:
             skin = self.bot.catalog.get_skin(str(alert.skin_uuid))
+            skin_name = skin.name_for(locale) if skin else ""
             controls.add_item(
                 OwnedActionButton(
                     "remove_alert",
                     user_id,
                     f"{alert.id},{page_data.page}",
                     label=(
-                        skin.name
-                        if skin
-                        else self.bot.translator.text(locale, "alert-unknown-skin")
+                        skin_name
+                        or self.bot.translator.text(locale, "alert-unknown-skin")
                     )[:80],
                     emoji=self._skin_emoji(skin),
                     style=discord.ButtonStyle.danger,
