@@ -86,6 +86,16 @@ running the migration command keeps local environments aligned with production.
    docker compose up -d --build
    ```
 
+After CI passes, GitHub Actions publishes `ghcr.io/botfragg/botfragg` on pushes
+to `main` and `v*` tags. Pull the latest main image with:
+
+```sh
+docker pull ghcr.io/botfragg/botfragg:latest
+```
+
+GitHub creates the package as private on its first publish. Change its visibility
+to public in the package settings if you want unauthenticated pulls.
+
 The Compose deployment waits for PostgreSQL health checks, applies native
 Tortoise migrations, and then starts the bot. Do not share or commit `.env`.
 
