@@ -1,144 +1,174 @@
-# BotFragg
+<p align="center">
+  <img src="assets/botfragg-logo.png" alt="BotFragg logo" width="96">
+</p>
 
-BotFragg is a privacy-conscious VALORANT companion for Discord. Link a Riot
-account to view the daily shop, featured bundles, Night Market, balances,
-battlepass progress, matchmaking penalties, and direct-message skin alerts.
+<h1 align="center">BotFragg</h1>
 
-BotFragg is written in Python 3.14 with discord.py, Tortoise ORM, and uv. It uses
-SQLite for local development and PostgreSQL in production.
+<p align="center">
+  Your VALORANT store, account stats, and skin alerts, right inside Discord.
+</p>
+
+<p align="center">
+  <a href="https://discord.com/oauth2/authorize?client_id=808657534025072651&amp;permissions=0&amp;scope=bot%20applications.commands">Invite the bot</a>
+  &nbsp;·&nbsp;
+  <a href="https://discord.gg/VjZ5N8nT4K">Support server</a>
+  &nbsp;·&nbsp;
+  <a href="docs/api-reference.md">Documentation</a>
+  &nbsp;·&nbsp;
+  <a href="CHANGELOG.md">Changelog</a>
+</p>
+
+<p align="center">
+  <img src="assets/botfragg-banner.png" alt="BotFragg displaying the featured bundle, daily shop, and Night Market" width="100%">
+</p>
+
+## Overview
+
+BotFragg brings your VALORANT store and account information into Discord. Link one or more Riot accounts to browse your daily shop, featured bundle, and Night Market, check your balances and battlepass progress, and receive private alerts when a skin you want appears in your shop.
+
+Riot credentials are encrypted at rest, and you can delete all of your stored data at any time.
 
 ## Features
 
-- Riot account login with encrypted credentials and multi-account switching.
-- Daily and accessory shops, featured bundle browsing, Night Market, balances,
-  battlepass progress, and matchmaking penalties.
-- DM-only daily-shop delivery and skin alerts.
-- Per-user privacy controls for in-game names and shop sharing.
-- Persistent interactive controls, restart-safe alert removal, and application
-  emoji fallbacks.
-- Command analytics, staff tools, guild/shard lifecycle logging,
-  suggestions, and GlitchTip observability.
+- **Store access:** View your daily weapon and accessory shops, the featured bundle, and the Night Market.
+- **Account insights:** Check VALORANT Points, Radianite Points, Kingdom Credits, battlepass progress, and matchmaking penalties.
+- **Private alerts:** Get daily shop updates and skin alerts delivered by direct message.
+- **Multiple accounts:** Link several Riot accounts and switch between them.
+- **Privacy controls:** Hide your in-game name and permanently delete your stored data.
+- **Interactive interface:** Navigate your shop with interactive controls and skin tier emojis.
 
 ## Commands
 
-| Area | Commands |
-| --- | --- |
-| Account | `/login`, `/logout`, `/deletedata`, `/account`, `/accounts` |
-| VALORANT | `/shop`, `/bundles`, `/nightmarket`, `/balance`, `/battlepass`, `/penalties` |
-| Alerts | `/alert`, `/alerts`, `/testalerts` |
-| Settings | `/settings view`, `/settings set` |
-| Community | `/help`, `/ping`, `/botinfo`, `/links`, `/suggest`, `/suggestion` |
+| Category  | Commands                                                                 |
+| --------- | ------------------------------------------------------------------------ |
+| Account   | `/login`, `/logout`, `/deletedata`, `/account`, `/accounts`              |
+| VALORANT  | `/shop`, `/bundles`, `/nightmarket`, `/balance`, `/battlepass`, `/penalties` |
+| Alerts    | `/alert`, `/alerts`, `/testalerts`                                       |
+| Settings  | `/settings view`, `/settings set`                                        |
+| Community | `/help`, `/ping`, `/botinfo`, `/links`, `/suggest`, `/suggestion`        |
 
-`/userinfo` and `/serverinfo` are owner-only operational commands.
+> `/userinfo` and `/serverinfo` are owner-only operational commands.
 
-## Requirements
+## Getting Started
+
+[Add BotFragg to your server](https://discord.com/oauth2/authorize?client_id=808657534025072651&permissions=0&scope=bot%20applications.commands). The invite requests the `bot` and `applications.commands` scopes. Join the [support server](https://discord.gg/VjZ5N8nT4K) for help and announcements.
+
+## Self-Hosting
+
+You can run your own instance of BotFragg. Each instance requires its own Discord application, bot token, and Fernet encryption key.
+
+### Prerequisites
 
 - Python 3.14
 - [uv](https://docs.astral.sh/uv/)
-- A Discord application and bot token
-- A Fernet key for credential encryption
-- PostgreSQL 18 for the bundled production deployment
+- PostgreSQL (required for production; development uses SQLite by default)
+- Docker and Docker Compose (optional, for containerized deployment)
 
-## Discord application setup
+### 1. Create a Discord application
 
-Create an application and bot in the [Discord Developer Portal](https://discord.com/developers/applications),
-then copy the bot token into `.env`. In **OAuth2 → URL Generator**, select the
-`bot` and `applications.commands` scopes. Grant **View Channels**, **Send
-Messages**, **Embed Links**, and **Read Message History**, then use the generated
-URL to invite BotFragg to a server. Administrator access is not required.
+The invite link above installs the hosted BotFragg bot. To run your own instance:
 
-The bot enables the non-privileged Guilds, Guild Messages, and Direct Messages
-intents in code. The slash-command setup does not require privileged intents.
+1. Create an application and bot in the [Discord Developer Portal](https://discord.com/developers/applications).
+2. Copy the bot token and client ID.
+3. In the OAuth2 URL Generator, select the `bot` and `applications.commands` scopes.
+4. Grant the following permissions: **View Channels**, **Send Messages**, **Embed Links**, and **Read Message History**.
 
-## Local development
+Administrator permission is not required.
 
-1. Copy `.env.example` to `.env`.
-2. Set `DISCORD_TOKEN` and generate `TOKEN_ENCRYPTION_KEY`:
+### 2. Run locally
 
-   ```powershell
-   uv run python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+1. Copy the example environment file and set `DISCORD_TOKEN` in `.env`:
+
+   ```sh
+   cp .env.example .env
    ```
 
-3. Install the locked development environment:
+   On Windows PowerShell:
 
    ```powershell
+   Copy-Item .env.example .env
+   ```
+
+2. Install the locked dependencies:
+
+   ```sh
    uv sync --all-groups --frozen
    ```
 
-4. Apply migrations, then start the bot:
+3. Generate a Fernet key and save it as `TOKEN_ENCRYPTION_KEY` in `.env`:
 
-   ```powershell
-   uv run tortoise -c src.database.TORTOISE_CONFIG migrate
+   ```sh
+   uv run python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+   ```
+
+4. Set `APP_ENV=development` in `.env`, then start the bot:
+
+   ```sh
    uv run botfragg
    ```
 
-SQLite is selected automatically when `APP_ENV=development` and no
-`DATABASE_URL` is provided. BotFragg creates its development schema on startup;
-running the migration command keeps local environments aligned with production.
+When `DATABASE_URL` is unset in development, BotFragg uses SQLite.
 
-## Production
+### 3. Deploy with Docker Compose
 
-1. Set `APP_ENV=production`, `DISCORD_TOKEN`, `TOKEN_ENCRYPTION_KEY`, and a
-   strong `POSTGRES_PASSWORD` in `.env`.
-2. Start PostgreSQL and BotFragg:
+1. In `.env`, set `APP_ENV=production`, `DISCORD_TOKEN`, `TOKEN_ENCRYPTION_KEY`, and `DATABASE_URL`. The database URL must point to a PostgreSQL instance reachable from the bot container.
+2. Build and start the service:
 
    ```sh
    docker compose up -d --build
    ```
 
-After CI passes, GitHub Actions publishes `ghcr.io/botfragg/botfragg` on pushes
-to `main` and `v*` tags. Pull the latest main image with:
+The Compose service runs database migrations before starting the bot. The included Compose file does not provision PostgreSQL, so you must supply your own instance.
+
+### Prebuilt container image
+
+GitHub Actions publishes the [BotFragg container package](https://github.com/orgs/BotFragg/packages/container/botfragg) after CI passes on pushes to `main` and tags matching `v*`. The `latest` tag tracks `main`, and version and commit SHA tags are also available.
 
 ```sh
 docker pull ghcr.io/botfragg/botfragg:latest
 ```
 
-GitHub creates the package as private on its first publish. Change its visibility
-to public in the package settings if you want unauthenticated pulls.
-
-The Compose deployment waits for PostgreSQL health checks, applies native
-Tortoise migrations, and then starts the bot. Do not share or commit `.env`.
-
 ## Configuration
 
-See `.env.example` for every supported setting. The essential values are:
+All supported settings are documented in [`.env.example`](.env.example). A typical production setup requires:
 
-| Variable | Purpose |
-| --- | --- |
-| `DISCORD_TOKEN` | Discord bot token. |
-| `TOKEN_ENCRYPTION_KEY` | Fernet key used to encrypt Riot credential payloads. |
-| `APP_ENV` | `development`, `test`, or `production`. |
-| `DATABASE_URL` | Required in production; otherwise SQLite is used locally. |
-| `ALERT_TIME_UTC` | UTC time for the daily DM alert job. |
-| `GLITCHTIP_DSN` | Optional self-hosted GlitchTip endpoint. |
+| Variable               | Description                                         |
+| ---------------------- | --------------------------------------------------- |
+| `DISCORD_TOKEN`        | Token for your Discord bot application              |
+| `TOKEN_ENCRYPTION_KEY` | Fernet key used to encrypt Riot credentials         |
+| `APP_ENV`              | Set to `production` for deployment                  |
+| `DATABASE_URL`         | PostgreSQL connection URL (required in production)  |
+| `ALERT_TIME_UTC`       | UTC time at which daily shop alerts are sent        |
 
-Set `GLITCHTIP_TRACES_SAMPLE_RATE` and `GLITCHTIP_PROFILES_SAMPLE_RATE` above
-their default `0.1` only when full telemetry capture is needed.
+Optional settings:
 
-## Privacy and observability
+- `GLITCHTIP_DSN` enables GlitchTip error reporting.
+- `SUPPORT_URL` shows your support server in the `/links` command.
 
-Read [PRIVACY.md](PRIVACY.md) before operating or using BotFragg. Users can delete
-their BotFragg data with `/deletedata confirm:True`; `/logout` removes credentials
-only and retains account settings and alerts.
+Keep your `.env` file private and never commit it to version control.
 
-Optional GlitchTip reporting filters credentials, tokens, cookies, HTTP
-request data, local variables, command inputs, message content, Riot account
-identifiers, and Discord IDs before events are sent. BotFragg does not read or
-retain DM content or attachments.
+## Privacy and Security
 
-## Code reference
+BotFragg encrypts Riot credentials and does not read or retain the content or attachments of direct messages. You can remove all of your stored data at any time with `/deletedata confirm:True`.
 
-The [API reference](docs/api-reference.md) lists every Python module, class,
-function, and method with its signature, source link, and docstring. The
-[repository file guide](docs/code-reference.md) describes every tracked file and
-summarizes the runtime flow.
+Before using the bot, please review the [Privacy Policy](PRIVACY.md) and [Terms of Service](tos.md). To report a vulnerability, see the [Security Policy](SECURITY.md).
 
-## Contributing and security
+## Documentation
 
-Read the [repository file guide](docs/code-reference.md) for the package layout
-and [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. Report
-vulnerabilities privately as described in [SECURITY.md](SECURITY.md).
+- [API reference](docs/api-reference.md)
+- [Repository file guide](docs/code-reference.md)
+- [Contributing guide](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
+- [Changelog](CHANGELOG.md)
+
+## Contributing
+
+Contributions are welcome. Please read the [contributing guide](CONTRIBUTING.md) before opening an issue or pull request.
+
+## Disclaimer
+
+BotFragg isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games and all associated properties are trademarks or registered trademarks of Riot Games, Inc.
 
 ## License
 
-BotFragg is licensed under the [GNU GPLv3](LICENSE).
+BotFragg is released under the [GNU GPLv3](LICENSE).
