@@ -330,9 +330,7 @@ class ExtraCog(commands.Cog):
         return view(
             *(
                 discord.ui.Button(
-                    label=self.bot.translator.text(locale, key)
-                    if key.startswith("link-")
-                    else key,
+                    label=self.bot.translator.text(locale, key),
                     url=url,
                 )
                 for key, url in links
@@ -350,7 +348,6 @@ class ExtraCog(commands.Cog):
         component = module.partition("src.cogs.")[2].split(".", 1)[0]
         category = {
             "extra": "help-category-misc",
-            "staff": "help-category-staff",
             "valorant": "help-category-valorant",
         }.get(component, component.replace("_", " ").title() or "Other")
         category_name = (
@@ -404,6 +401,8 @@ class ExtraCog(commands.Cog):
         categories: dict[str, list[str]] = {}
         for command in self.bot.tree.walk_commands():
             if not isinstance(command, app_commands.Command):
+                continue
+            if command.extras.get("owner_only"):
                 continue
             mention = mentions.get(command.qualified_name)
             command_name = mention or f"`/{command.qualified_name}`"
@@ -468,6 +467,17 @@ class ExtraCog(commands.Cog):
             "Suggest a feature for BotFragg", key="command-suggest-description"
         ),
     )
+    @app_commands.rename(
+        suggestion=app_commands.locale_str(
+            "suggestion", key="option-suggest-suggestion-name"
+        )
+    )
+    @app_commands.describe(
+        suggestion=app_commands.locale_str(
+            "Describe the feature you want to suggest",
+            key="option-suggest-suggestion-description",
+        )
+    )
     @app_commands.guild_only()
     async def suggest(
         self,
@@ -530,6 +540,15 @@ class ExtraCog(commands.Cog):
             key="command-suggestion-track-description",
         ),
     )
+    @app_commands.rename(
+        id=app_commands.locale_str("id", key="option-suggestion-track-id-name")
+    )
+    @app_commands.describe(
+        id=app_commands.locale_str(
+            "ID of the suggestion to follow",
+            key="option-suggestion-track-id-description",
+        )
+    )
     @app_commands.guild_only()
     async def track(self, interaction: discord.Interaction, id: int) -> None:
         """Follow an existing suggestion so the caller receives its review result."""
@@ -556,6 +575,15 @@ class ExtraCog(commands.Cog):
             key="command-suggestion-untrack-description",
         ),
     )
+    @app_commands.rename(
+        id=app_commands.locale_str("id", key="option-suggestion-untrack-id-name")
+    )
+    @app_commands.describe(
+        id=app_commands.locale_str(
+            "ID of the suggestion to stop following",
+            key="option-suggestion-untrack-id-description",
+        )
+    )
     @app_commands.guild_only()
     async def untrack(self, interaction: discord.Interaction, id: int) -> None:
         """Remove the caller's follow from another user's suggestion."""
@@ -581,11 +609,9 @@ class ExtraCog(commands.Cog):
         )
 
     @suggestions.command(
-        name=app_commands.locale_str("approve", key="command-suggestion-approve-name"),
-        description=app_commands.locale_str(
-            "Approve a feature suggestion",
-            key="command-suggestion-approve-description",
-        ),
+        name="approve",
+        description="Approve a feature suggestion",
+        extras={"owner_only": True},
     )
     @app_commands.guild_only()
     async def approve(
@@ -595,10 +621,9 @@ class ExtraCog(commands.Cog):
         await self._review_suggestion(interaction, id, reason, "approved")
 
     @suggestions.command(
-        name=app_commands.locale_str("deny", key="command-suggestion-deny-name"),
-        description=app_commands.locale_str(
-            "Deny a feature suggestion", key="command-suggestion-deny-description"
-        ),
+        name="deny",
+        description="Deny a feature suggestion",
+        extras={"owner_only": True},
     )
     @app_commands.guild_only()
     async def deny(

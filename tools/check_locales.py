@@ -26,6 +26,7 @@ PREFIXES = {
     "command",
     "common",
     "component",
+    "deletedata",
     "error",
     "group",
     "help",
@@ -35,6 +36,7 @@ PREFIXES = {
     "logout",
     "mission",
     "missions",
+    "option",
     "penalties",
     "ping",
     "setting",
@@ -104,10 +106,15 @@ def source_message_ids() -> set[str]:
     paths.extend((ROOT / "src" / "views").rglob("*.py"))
     ids = set(DYNAMIC_MESSAGE_IDS)
     for path in paths:
-        source = path.read_text(encoding="utf-8")
-        for value in re.findall(r"[\"']([^\"']+)[\"']", source):
-            if MESSAGE_ID.fullmatch(value) and value.partition("-")[0] in PREFIXES:
-                ids.add(value)
+        tree = python_ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        for node in python_ast.walk(tree):
+            if (
+                isinstance(node, python_ast.Constant)
+                and isinstance(node.value, str)
+                and MESSAGE_ID.fullmatch(node.value)
+                and node.value.partition("-")[0] in PREFIXES
+            ):
+                ids.add(node.value)
     return ids
 
 

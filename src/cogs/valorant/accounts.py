@@ -100,6 +100,15 @@ class AccountsCog(commands.Cog):
             key="command-account-description",
         ),
     )
+    @app_commands.rename(
+        account=app_commands.locale_str("account", key="option-account-account-name")
+    )
+    @app_commands.describe(
+        account=app_commands.locale_str(
+            "Linked VALORANT account to switch to",
+            key="option-account-account-description",
+        )
+    )
     @app_commands.autocomplete(account=account_autocomplete)
     async def account(self, interaction: discord.Interaction, account: str) -> None:
         """Switch the caller's active account using an autocomplete selection."""

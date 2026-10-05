@@ -56,6 +56,15 @@ class AlertsCog(commands.Cog):
             "Add a skin alert delivered by DM", key="command-alert-description"
         ),
     )
+    @app_commands.rename(
+        skin=app_commands.locale_str("skin", key="option-alert-skin-name")
+    )
+    @app_commands.describe(
+        skin=app_commands.locale_str(
+            "Skin to receive an alert for",
+            key="option-alert-skin-description",
+        )
+    )
     @app_commands.autocomplete(skin=skin_autocomplete)
     async def alert(self, interaction: discord.Interaction, skin: str) -> None:
         """Create a skin alert for the caller's active account and show a remove control."""

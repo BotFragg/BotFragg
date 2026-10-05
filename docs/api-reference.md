@@ -286,7 +286,7 @@ Build link buttons for the configured public URLs.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L343)
+[Source](../src/cogs/extra.py#L341)
 
 Use each command's cog module to place it in a help category.
 
@@ -294,7 +294,7 @@ Use each command's cog module to place it in a help category.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L364)
+[Source](../src/cogs/extra.py#L361)
 
 Return Discord-formatted mentions for all synced commands and subcommands.
 
@@ -302,7 +302,7 @@ Return Discord-formatted mentions for all synced commands and subcommands.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L391)
+[Source](../src/cogs/extra.py#L388)
 
 List registered slash commands by category in the embed description.
 
@@ -310,7 +310,7 @@ List registered slash commands by category in the embed description.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L450)
+[Source](../src/cogs/extra.py#L449)
 
 Show an invite link and any configured support, vote, and website links.
 
@@ -318,7 +318,7 @@ Show an invite link and any configured support, vote, and website links.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L472)
+[Source](../src/cogs/extra.py#L482)
 
 Persist a feature suggestion and publish it to the configured log channel.
 
@@ -326,7 +326,7 @@ Persist a feature suggestion and publish it to the configured log channel.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L534)
+[Source](../src/cogs/extra.py#L553)
 
 Follow an existing suggestion so the caller receives its review result.
 
@@ -334,7 +334,7 @@ Follow an existing suggestion so the caller receives its review result.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L560)
+[Source](../src/cogs/extra.py#L588)
 
 Remove the caller's follow from another user's suggestion.
 
@@ -342,7 +342,7 @@ Remove the caller's follow from another user's suggestion.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L591)
+[Source](../src/cogs/extra.py#L617)
 
 Submit an owner-only approval review for the selected suggestion.
 
@@ -350,7 +350,7 @@ Submit an owner-only approval review for the selected suggestion.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L604)
+[Source](../src/cogs/extra.py#L629)
 
 Submit an owner-only denial review for the selected suggestion.
 
@@ -358,7 +358,7 @@ Submit an owner-only denial review for the selected suggestion.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L610)
+[Source](../src/cogs/extra.py#L635)
 
 Authorize a review, update its record, and notify its followers.
 
@@ -366,7 +366,7 @@ Authorize a review, update its record, and notify its followers.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L661)
+[Source](../src/cogs/extra.py#L686)
 
 Edit the original suggestion post with the final status and review reason.
 
@@ -374,7 +374,7 @@ Edit the original suggestion post with the final status and review reason.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L683)
+[Source](../src/cogs/extra.py#L708)
 
 Update or recreate the persistent embed containing per-shard health.
 
@@ -382,7 +382,7 @@ Update or recreate the persistent embed containing per-shard health.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L718)
+[Source](../src/cogs/extra.py#L743)
 
 Wait for Discord readiness before the first shard-status update.
 
@@ -390,7 +390,7 @@ Wait for Discord readiness before the first shard-status update.
 
 **Scope:** `src/cogs/extra.py` · `module`
 
-[Source](../src/cogs/extra.py#L723)
+[Source](../src/cogs/extra.py#L748)
 
 Register the general utility and suggestion cog with the bot.
 
@@ -426,7 +426,7 @@ Authorize the bot owner and privately reject all other callers.
 
 **Scope:** `src/cogs/staff.py` · `StaffCog`
 
-[Source](../src/cogs/staff.py#L36)
+[Source](../src/cogs/staff.py#L35)
 
 Show the owner's stored account statistics and shared-server details.
 
@@ -434,7 +434,7 @@ Show the owner's stored account statistics and shared-server details.
 
 **Scope:** `src/cogs/staff.py` · `StaffCog`
 
-[Source](../src/cogs/staff.py#L79)
+[Source](../src/cogs/staff.py#L77)
 
 Show analytics and Discord's cached membership count for a server.
 
@@ -442,7 +442,7 @@ Show analytics and Discord's cached membership count for a server.
 
 **Scope:** `src/cogs/staff.py` · `module`
 
-[Source](../src/cogs/staff.py#L130)
+[Source](../src/cogs/staff.py#L128)
 
 Register the owner-only diagnostics cog with the bot.
 
@@ -522,7 +522,7 @@ Run the daily shop and skin-alert job inside a monitoring transaction.
 
 Wait for Discord readiness before starting daily alert delivery.
 
-### `async def run_alerts(self, *, dry_run: bool = False) -> dict[str, int]`
+### `async def run_alerts(self) -> dict[str, int]`
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
@@ -730,7 +730,7 @@ Build owner-scoped previous and next controls when multiple pages exist.
 
 **Scope:** `src/cogs/valorant/accounts.py` · `AccountsCog`
 
-[Source](../src/cogs/valorant/accounts.py#L104)
+[Source](../src/cogs/valorant/accounts.py#L113)
 
 Switch the caller's active account using an autocomplete selection.
 
@@ -738,7 +738,7 @@ Switch the caller's active account using an autocomplete selection.
 
 **Scope:** `src/cogs/valorant/accounts.py` · `AccountsCog`
 
-[Source](../src/cogs/valorant/accounts.py#L152)
+[Source](../src/cogs/valorant/accounts.py#L161)
 
 Show the caller's accounts privately when their name-hiding preference is on.
 
@@ -746,7 +746,7 @@ Show the caller's accounts privately when their name-hiding preference is on.
 
 **Scope:** `src/cogs/valorant/accounts.py` · `AccountsCog`
 
-[Source](../src/cogs/valorant/accounts.py#L176)
+[Source](../src/cogs/valorant/accounts.py#L185)
 
 Handle a persistent account-page control and refresh its message.
 
@@ -754,7 +754,7 @@ Handle a persistent account-page control and refresh its message.
 
 **Scope:** `src/cogs/valorant/accounts.py` · `module`
 
-[Source](../src/cogs/valorant/accounts.py#L203)
+[Source](../src/cogs/valorant/accounts.py#L212)
 
 Register the linked-account commands and component handlers.
 
@@ -790,7 +790,7 @@ Return catalog skin matches suitable for Discord's autocomplete limit.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L60)
+[Source](../src/cogs/valorant/alerts.py#L69)
 
 Create a skin alert for the caller's active account and show a remove control.
 
@@ -798,7 +798,7 @@ Create a skin alert for the caller's active account and show a remove control.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L103)
+[Source](../src/cogs/valorant/alerts.py#L112)
 
 Show the caller's paginated alerts and owner-bound management controls.
 
@@ -806,7 +806,7 @@ Show the caller's paginated alerts and owner-bound management controls.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L117)
+[Source](../src/cogs/valorant/alerts.py#L126)
 
 Build the confirmation card for a newly created skin alert.
 
@@ -814,7 +814,7 @@ Build the confirmation card for a newly created skin alert.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L129)
+[Source](../src/cogs/valorant/alerts.py#L138)
 
 Return a skin name prefixed with its tier emoji, if one exists.
 
@@ -822,7 +822,7 @@ Return a skin name prefixed with its tier emoji, if one exists.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L139)
+[Source](../src/cogs/valorant/alerts.py#L148)
 
 Return a button emoji for a skin tier when one is available.
 
@@ -830,7 +830,7 @@ Return a button emoji for a skin tier when one is available.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L145)
+[Source](../src/cogs/valorant/alerts.py#L154)
 
 Render one alert page with per-alert removal and optional page controls.
 
@@ -838,7 +838,7 @@ Render one alert page with per-alert removal and optional page controls.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L209)
+[Source](../src/cogs/valorant/alerts.py#L218)
 
 Remove the selected owner-scoped alert and refresh or dismiss its controls.
 
@@ -846,7 +846,7 @@ Remove the selected owner-scoped alert and refresh or dismiss its controls.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L248)
+[Source](../src/cogs/valorant/alerts.py#L257)
 
 Validate a page payload and update the alert-management message.
 
@@ -854,7 +854,7 @@ Validate a page payload and update the alert-management message.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L268)
+[Source](../src/cogs/valorant/alerts.py#L277)
 
 Check login and shop availability, then send the caller a test alert DM.
 
@@ -862,7 +862,7 @@ Check login and shop availability, then send the caller a test alert DM.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `module`
 
-[Source](../src/cogs/valorant/alerts.py#L337)
+[Source](../src/cogs/valorant/alerts.py#L346)
 
 Register the skin-alert commands and their persistent handlers.
 
@@ -1026,7 +1026,7 @@ Return the caller's linked accounts for the logout command.
 
 **Scope:** `src/cogs/valorant/logout.py` · `LogoutCog`
 
-[Source](../src/cogs/valorant/logout.py#L37)
+[Source](../src/cogs/valorant/logout.py#L46)
 
 Clear Riot credentials for one linked account while preserving its settings.
 
@@ -1034,7 +1034,7 @@ Clear Riot credentials for one linked account while preserving its settings.
 
 **Scope:** `src/cogs/valorant/logout.py` · `LogoutCog`
 
-[Source](../src/cogs/valorant/logout.py#L63)
+[Source](../src/cogs/valorant/logout.py#L81)
 
 Permanently delete the caller's records and clear cached storefronts.
 
@@ -1042,7 +1042,7 @@ Permanently delete the caller's records and clear cached storefronts.
 
 **Scope:** `src/cogs/valorant/logout.py` · `module`
 
-[Source](../src/cogs/valorant/logout.py#L89)
+[Source](../src/cogs/valorant/logout.py#L107)
 
 Register the account logout and personal data deletion commands.
 
@@ -1130,7 +1130,7 @@ Show the caller's saved preferences in an ephemeral response.
 
 **Scope:** `src/cogs/valorant/settings.py` · `SettingsCog`
 
-[Source](../src/cogs/valorant/settings.py#L84)
+[Source](../src/cogs/valorant/settings.py#L94)
 
 Present Yes/No options for the caller's selected preference.
 
@@ -1138,7 +1138,7 @@ Present Yes/No options for the caller's selected preference.
 
 **Scope:** `src/cogs/valorant/settings.py` · `SettingsCog`
 
-[Source](../src/cogs/valorant/settings.py#L119)
+[Source](../src/cogs/valorant/settings.py#L129)
 
 Validate and persist a setting selection, then update its confirmation.
 
@@ -1146,7 +1146,7 @@ Validate and persist a setting selection, then update its confirmation.
 
 **Scope:** `src/cogs/valorant/settings.py` · `module`
 
-[Source](../src/cogs/valorant/settings.py#L147)
+[Source](../src/cogs/valorant/settings.py#L157)
 
 Register the user preference commands and selection handler.
 
@@ -1206,7 +1206,7 @@ Bind the bot and register persistent shop-mode and account actions.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L195)
+[Source](../src/cogs/valorant/shop.py#L204)
 
 Show the caller's shop or a shop another user has chosen to share.
 
@@ -1214,7 +1214,7 @@ Show the caller's shop or a shop another user has chosen to share.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L264)
+[Source](../src/cogs/valorant/shop.py#L273)
 
 Build daily shop embeds, owned selectors, and available shop controls.
 
@@ -1222,7 +1222,7 @@ Build daily shop embeds, owned selectors, and available shop controls.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L348)
+[Source](../src/cogs/valorant/shop.py#L357)
 
 Show the selected account's current featured bundle offers and controls.
 
@@ -1230,7 +1230,7 @@ Show the selected account's current featured bundle offers and controls.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L365)
+[Source](../src/cogs/valorant/shop.py#L374)
 
 Build current featured bundles with shop-style cards and controls.
 
@@ -1238,7 +1238,7 @@ Build current featured bundles with shop-style cards and controls.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L460)
+[Source](../src/cogs/valorant/shop.py#L469)
 
 Resolve static bundle metadata or provide a safe live-offer fallback.
 
@@ -1246,7 +1246,7 @@ Resolve static bundle metadata or provide a safe live-offer fallback.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L474)
+[Source](../src/cogs/valorant/shop.py#L483)
 
 Format only Riot-supplied VP totals, retaining exact discount values.
 
@@ -1254,7 +1254,7 @@ Format only Riot-supplied VP totals, retaining exact discount values.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L488)
+[Source](../src/cogs/valorant/shop.py#L497)
 
 Render one live bundle item in the shop's card, tier, and price style.
 
@@ -1262,7 +1262,7 @@ Render one live bundle item in the shop's card, tier, and price style.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L548)
+[Source](../src/cogs/valorant/shop.py#L557)
 
 Render a bundle summary and up to nine shop-style item cards.
 
@@ -1270,7 +1270,7 @@ Render a bundle summary and up to nine shop-style item cards.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L614)
+[Source](../src/cogs/valorant/shop.py#L623)
 
 Render the selected daily, Night Market, accessory, or bundle mode.
 
@@ -1278,7 +1278,7 @@ Render the selected daily, Night Market, accessory, or bundle mode.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L760)
+[Source](../src/cogs/valorant/shop.py#L769)
 
 Read the values actually offered by this message's matching select menu.
 
@@ -1286,7 +1286,7 @@ Read the values actually offered by this message's matching select menu.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L774)
+[Source](../src/cogs/valorant/shop.py#L783)
 
 Revalidate a selected featured bundle against the caller's account and view.
 
@@ -1294,7 +1294,7 @@ Revalidate a selected featured bundle against the caller's account and view.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L825)
+[Source](../src/cogs/valorant/shop.py#L834)
 
 List playable levels and chromas within Discord's select-menu limit.
 
@@ -1302,7 +1302,7 @@ List playable levels and chromas within Discord's select-menu limit.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L858)
+[Source](../src/cogs/valorant/shop.py#L867)
 
 Open a private level/chroma menu for a skin offered in this message.
 
@@ -1310,7 +1310,7 @@ Open a private level/chroma menu for a skin offered in this message.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L912)
+[Source](../src/cogs/valorant/shop.py#L921)
 
 Privately return a selected video only when it belongs to that skin.
 
@@ -1318,7 +1318,7 @@ Privately return a selected video only when it belongs to that skin.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L972)
+[Source](../src/cogs/valorant/shop.py#L981)
 
 Validate the selected account and reopen the corresponding shop mode.
 
@@ -1326,7 +1326,7 @@ Validate the selected account and reopen the corresponding shop mode.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L988)
+[Source](../src/cogs/valorant/shop.py#L997)
 
 Display discounted Night Market offers for the selected Riot account.
 
@@ -1334,7 +1334,7 @@ Display discounted Night Market offers for the selected Riot account.
 
 **Scope:** `src/cogs/valorant/shop.py` · `NightMarketCog`
 
-[Source](../src/cogs/valorant/shop.py#L991)
+[Source](../src/cogs/valorant/shop.py#L1000)
 
 Bind the shared shop, account, and emoji services.
 
@@ -1342,7 +1342,7 @@ Bind the shared shop, account, and emoji services.
 
 **Scope:** `src/cogs/valorant/shop.py` · `NightMarketCog`
 
-[Source](../src/cogs/valorant/shop.py#L1002)
+[Source](../src/cogs/valorant/shop.py#L1011)
 
 Fetch and render Night Market offers or report that none are active.
 
@@ -1350,7 +1350,7 @@ Fetch and render Night Market offers or report that none are active.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L1069)
+[Source](../src/cogs/valorant/shop.py#L1078)
 
 Display the selected account's three VALORANT wallet balances.
 
@@ -1358,7 +1358,7 @@ Display the selected account's three VALORANT wallet balances.
 
 **Scope:** `src/cogs/valorant/shop.py` · `BalanceCog`
 
-[Source](../src/cogs/valorant/shop.py#L1072)
+[Source](../src/cogs/valorant/shop.py#L1081)
 
 Bind the shared shop and user-preference services.
 
@@ -1366,7 +1366,7 @@ Bind the shared shop and user-preference services.
 
 **Scope:** `src/cogs/valorant/shop.py` · `BalanceCog`
 
-[Source](../src/cogs/valorant/shop.py#L1083)
+[Source](../src/cogs/valorant/shop.py#L1092)
 
 Fetch and display VP, Radianite, and Kingdom Credit balances.
 
@@ -1374,7 +1374,7 @@ Fetch and display VP, Radianite, and Kingdom Credit balances.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L1132)
+[Source](../src/cogs/valorant/shop.py#L1141)
 
 Register the shop, Night Market, and wallet-balance cogs.
 

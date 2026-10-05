@@ -36,9 +36,10 @@ unchanged. For example, Discord's French locale code is `fr`.
 Keep every Fluent variable such as `{ $username }` in the translated message;
 the values are supplied by the bot and must remain visible. Missing messages
 fall back to English, so translations can be contributed in smaller batches.
-Command names and descriptions use the same catalog and should follow Discord's
-slash-command naming limits. Keep VALORANT/Riot names, player names, and commit
-subjects as provided by their source.
+Command names, parameter names, and their descriptions use the same catalog.
+Translated names must follow Discord's slash-command naming limits. Keep
+VALORANT/Riot names, player names, and commit subjects as provided by their
+source.
 
 Run `uv run --frozen python tools/check_locales.py` to validate Fluent syntax,
 Discord locale codes, message IDs, and placeholder names before opening a pull

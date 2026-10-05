@@ -27,10 +27,9 @@ class StaffCog(commands.Cog):
         return False
 
     @app_commands.command(
-        name=app_commands.locale_str("userinfo", key="command-userinfo-name"),
-        description=app_commands.locale_str(
-            "Show BotFragg data for a user", key="command-userinfo-description"
-        ),
+        name="userinfo",
+        description="Show BotFragg data for a user",
+        extras={"owner_only": True},
     )
     @app_commands.guild_only()
     async def userinfo(
@@ -70,10 +69,9 @@ class StaffCog(commands.Cog):
         await interaction.followup.send(embed=card, ephemeral=True)
 
     @app_commands.command(
-        name=app_commands.locale_str("serverinfo", key="command-serverinfo-name"),
-        description=app_commands.locale_str(
-            "Show BotFragg data for a server", key="command-serverinfo-description"
-        ),
+        name="serverinfo",
+        description="Show BotFragg data for a server",
+        extras={"owner_only": True},
     )
     @app_commands.guild_only()
     async def serverinfo(

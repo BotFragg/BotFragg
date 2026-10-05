@@ -33,6 +33,15 @@ class LogoutCog(commands.Cog):
             key="command-logout-description",
         ),
     )
+    @app_commands.rename(
+        account=app_commands.locale_str("account", key="option-logout-account-name")
+    )
+    @app_commands.describe(
+        account=app_commands.locale_str(
+            "Linked VALORANT account to log out from",
+            key="option-logout-account-description",
+        )
+    )
     @app_commands.autocomplete(account=account_autocomplete)
     async def logout(
         self, interaction: discord.Interaction, account: str | None = None
@@ -59,6 +68,15 @@ class LogoutCog(commands.Cog):
             "Permanently delete your BotFragg account and data.",
             key="command-deletedata-description",
         ),
+    )
+    @app_commands.rename(
+        confirm=app_commands.locale_str("confirm", key="option-deletedata-confirm-name")
+    )
+    @app_commands.describe(
+        confirm=app_commands.locale_str(
+            "Confirm permanent deletion of your data",
+            key="option-deletedata-confirm-description",
+        )
     )
     async def deletedata(self, interaction: discord.Interaction, confirm: bool) -> None:
         """Permanently delete the caller's records and clear cached storefronts."""

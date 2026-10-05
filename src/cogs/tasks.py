@@ -95,13 +95,13 @@ class TasksCog(commands.Cog):
         """Wait for Discord readiness before starting daily alert delivery."""
         await self.bot.wait_until_ready()
 
-    async def run_alerts(self, *, dry_run: bool = False) -> dict[str, int]:
+    async def run_alerts(self) -> dict[str, int]:
         """Process eligible users' shops and return counts for the completed run."""
         summary = await run_daily_alerts(
             self.bot.shop,
             alert_concurrency=self.bot.config.alert_concurrency,
             delay_between_alerts_seconds=self.bot.config.delay_between_alerts_seconds,
-            dry_run=dry_run,
+            dry_run=False,
             on_shop=self._deliver_daily_alert_result,
             on_credentials_expired=self._credentials_expired,
         )

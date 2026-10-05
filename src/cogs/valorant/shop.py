@@ -192,6 +192,15 @@ class ShopCog(commands.Cog):
             "Show your current daily shop!", key="command-shop-description"
         ),
     )
+    @app_commands.rename(
+        user=app_commands.locale_str("user", key="option-shop-user-name")
+    )
+    @app_commands.describe(
+        user=app_commands.locale_str(
+            "User whose shared shop to view",
+            key="option-shop-user-description",
+        )
+    )
     async def shop(
         self, interaction: discord.Interaction, user: discord.User | None = None
     ) -> None:

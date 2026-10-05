@@ -73,6 +73,16 @@ class SettingsCog(commands.Cog):
             key="command-settings-set-description",
         ),
     )
+    @app_commands.rename(
+        setting=app_commands.locale_str(
+            "setting", key="option-settings-set-setting-name"
+        )
+    )
+    @app_commands.describe(
+        setting=app_commands.locale_str(
+            "Setting to change", key="option-settings-set-setting-description"
+        )
+    )
     @app_commands.choices(
         setting=[
             app_commands.Choice(
