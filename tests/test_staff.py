@@ -4,11 +4,42 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 from types import SimpleNamespace
+from unittest.mock import AsyncMock, Mock
 
 import discord
+import pytest
 
 from src.cogs.staff import StaffCog
 from src.localization import BotFraggTranslator
+from tests.helpers import _localized_bot, _localized_interaction
+
+
+@pytest.mark.parametrize("command", ["userinfo", "serverinfo"])
+async def test_non_owner_staff_commands_reject_before_querying(command, monkeypatch):
+    stats = AsyncMock()
+    suggestions = AsyncMock()
+    monkeypatch.setattr("src.cogs.staff.command_stats", stats)
+    monkeypatch.setattr("src.cogs.staff.count_suggestions_by_author", suggestions)
+    bot = _localized_bot(is_owner=AsyncMock(return_value=False), get_guild=Mock())
+    interaction = _localized_interaction(
+        user=SimpleNamespace(id=202),
+        response=SimpleNamespace(
+            is_done=lambda: False, defer=AsyncMock(), send_message=AsyncMock()
+        ),
+    )
+    target = SimpleNamespace(id=101) if command == "userinfo" else "123"
+    await getattr(StaffCog, command).callback(StaffCog(bot), interaction, target)
+
+    stats.assert_not_awaited()
+    suggestions.assert_not_awaited()
+    bot.get_guild.assert_not_called()
+    interaction.response.defer.assert_not_awaited()
+    sent = interaction.response.send_message.call_args.kwargs
+    assert sent["ephemeral"] is True
+    assert sent["embed"].description == bot.translator.text(
+        interaction.locale, "staff-owner-only"
+    )
+
 
 TEST_TRANSLATOR = BotFraggTranslator()
 

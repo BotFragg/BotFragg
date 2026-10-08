@@ -392,7 +392,7 @@ Register the owner-only diagnostics cog with the bot.
 
 ## `src/cogs/suggestions.py`
 
-Suggestion submission, tracking, and owner review commands.
+Discord suggestion submission, following, and owner-only review commands.
 
 ### `class SuggestionsCog(commands.Cog)`
 
@@ -400,13 +400,13 @@ Suggestion submission, tracking, and owner review commands.
 
 [Source](../src/cogs/suggestions.py#L24)
 
-Own suggestion submission and review workflows.
+Own the public suggestion workflow and its review notifications.
 
 ### `def __init__(self, bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L27)
+[Source](../src/cogs/suggestions.py#L35)
 
 Bind suggestion commands to the running bot.
 
@@ -422,31 +422,31 @@ Persist a feature suggestion and publish it to the configured log channel.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L128)
+[Source](../src/cogs/suggestions.py#L130)
 
-Follow an existing suggestion so the caller receives its review result.
+Follow a pending suggestion or privately show its existing review.
 
 ### `async def untrack(self, interaction: discord.Interaction, id: int) -> None`
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L163)
+[Source](../src/cogs/suggestions.py#L170)
 
 Remove the caller's follow from another user's suggestion.
 
-### `async def approve(self, interaction: discord.Interaction, id: int, reason: str) -> None`
+### `async def approve(self, interaction: discord.Interaction, id: int, reason: app_commands.Range[str, 1, 1000]) -> None`
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L192)
+[Source](../src/cogs/suggestions.py#L199)
 
 Submit an owner-only approval review for the selected suggestion.
 
-### `async def deny(self, interaction: discord.Interaction, id: int, reason: str) -> None`
+### `async def deny(self, interaction: discord.Interaction, id: int, reason: app_commands.Range[str, 1, 1000]) -> None`
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L204)
+[Source](../src/cogs/suggestions.py#L214)
 
 Submit an owner-only denial review for the selected suggestion.
 
@@ -454,15 +454,23 @@ Submit an owner-only denial review for the selected suggestion.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L210)
+[Source](../src/cogs/suggestions.py#L223)
 
 Authorize a review, update its record, and notify its followers.
+
+### `def _review_card(self, suggestion: Suggestion, locale: discord.Locale) -> discord.Embed`
+
+**Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
+
+[Source](../src/cogs/suggestions.py#L262)
+
+Render the localized review shared by follower DMs and completed tracking.
 
 ### `async def _update_suggestion_log(self, suggestion: Suggestion) -> None`
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L261)
+[Source](../src/cogs/suggestions.py#L280)
 
 Edit the original suggestion post with the final status and review reason.
 
@@ -470,7 +478,7 @@ Edit the original suggestion post with the final status and review reason.
 
 **Scope:** `src/cogs/suggestions.py` · `module`
 
-[Source](../src/cogs/suggestions.py#L283)
+[Source](../src/cogs/suggestions.py#L302)
 
 Register suggestion commands and review handlers.
 
@@ -2959,37 +2967,40 @@ Persistence and orchestration for suggestions.
 
 [Source](../src/services/suggestions.py#L19)
 
-Create a pending suggestion with its author and optional delivery channel.
+Create a pending suggestion and its author follow in one transaction.
 
-### `async def record_suggestion_delivery(suggestion: Suggestion, message_id: int) -> None`
+### `async def record_suggestion_delivery(suggestion: Suggestion, message_id: int) -> Suggestion | None`
 
 **Scope:** `src/services/suggestions.py` · `module`
 
-[Source](../src/services/suggestions.py#L28)
+[Source](../src/services/suggestions.py#L31)
 
-Record the posted message and ensure the author follows the suggestion.
+Record the posted message and return its current review, or None if deleted.
 
 ### `async def delete_suggestion(suggestion_id: int) -> None`
 
 **Scope:** `src/services/suggestions.py` · `module`
 
-[Source](../src/services/suggestions.py#L37)
+[Source](../src/services/suggestions.py#L40)
 
 Delete a suggestion record by its database ID.
 
-### `async def follow_suggestion(suggestion_id: int, user_id: int) -> bool | None`
+### `async def follow_suggestion(suggestion_id: int, user_id: int) -> bool | Suggestion | None`
 
 **Scope:** `src/services/suggestions.py` · `module`
 
-[Source](../src/services/suggestions.py#L42)
+[Source](../src/services/suggestions.py#L45)
 
-Follow an existing suggestion, returning ``None`` when it does not exist.
+Follow a pending suggestion or return its completed review; missing returns None.
+
+Lock the suggestion until the follow commits so a concurrent review includes
+this follower, or returns its final result without creating a late follow.
 
 ### `async def unfollow_suggestion(suggestion_id: int, user_id: int) -> UnfollowResult`
 
 **Scope:** `src/services/suggestions.py` · `module`
 
-[Source](../src/services/suggestions.py#L52)
+[Source](../src/services/suggestions.py#L70)
 
 Remove a follow and report missing, own, removed, or absent-follow status.
 
@@ -2997,7 +3008,7 @@ Remove a follow and report missing, own, removed, or absent-follow status.
 
 **Scope:** `src/services/suggestions.py` · `module`
 
-[Source](../src/services/suggestions.py#L65)
+[Source](../src/services/suggestions.py#L83)
 
 Atomically review a pending suggestion and return its followers once.
 
@@ -3008,7 +3019,7 @@ review returns the updated record and the distinct follower IDs to notify.
 
 **Scope:** `src/services/suggestions.py` · `module`
 
-[Source](../src/services/suggestions.py#L88)
+[Source](../src/services/suggestions.py#L108)
 
 Count suggestions submitted by a Discord user.
 

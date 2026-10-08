@@ -1,4 +1,4 @@
-"""Suggestion submission, tracking, and owner review commands."""
+"""Discord suggestion submission, following, and owner-only review commands."""
 
 from __future__ import annotations
 
@@ -22,11 +22,7 @@ from ..views.ui import embed, error, translated
 
 
 class SuggestionsCog(commands.Cog):
-    """Own suggestion submission and review workflows."""
-
-    def __init__(self, bot: BotFraggBot) -> None:
-        """Bind suggestion commands to the running bot."""
-        self.bot = bot
+    """Own the public suggestion workflow and its review notifications."""
 
     suggestions = app_commands.Group(
         name=app_commands.locale_str("suggestion", key="group-suggestion-name"),
@@ -35,6 +31,10 @@ class SuggestionsCog(commands.Cog):
             key="group-suggestion-description",
         ),
     )
+
+    def __init__(self, bot: BotFraggBot) -> None:
+        """Bind suggestion commands to the running bot."""
+        self.bot = bot
 
     @app_commands.command(
         name=app_commands.locale_str("suggest", key="command-suggest-name"),
@@ -97,7 +97,9 @@ class SuggestionsCog(commands.Cog):
             await delete_suggestion(record.id)
             await error(interaction, "suggestion-delivery-failed")
             return
-        await record_suggestion_delivery(record, message.id)
+        delivered = await record_suggestion_delivery(record, message.id)
+        if delivered is not None and delivered.status != "pending":
+            await self._update_suggestion_log(delivered)
         await interaction.followup.send(
             embed=embed(
                 translated(
@@ -126,11 +128,16 @@ class SuggestionsCog(commands.Cog):
     )
     @app_commands.guild_only()
     async def track(self, interaction: discord.Interaction, id: int) -> None:
-        """Follow an existing suggestion so the caller receives its review result."""
+        """Follow a pending suggestion or privately show its existing review."""
         await interaction.response.defer(thinking=True, ephemeral=True)
         created = await follow_suggestion(id, interaction.user.id)
         if created is None:
             await error(interaction, "suggestion-not-found", number=id)
+            return
+        if isinstance(created, Suggestion):
+            await interaction.followup.send(
+                embed=self._review_card(created, interaction.locale), ephemeral=True
+            )
             return
         message = (
             self.bot.translator.text(
@@ -190,7 +197,10 @@ class SuggestionsCog(commands.Cog):
     )
     @app_commands.guild_only()
     async def approve(
-        self, interaction: discord.Interaction, id: int, reason: str
+        self,
+        interaction: discord.Interaction,
+        id: int,
+        reason: app_commands.Range[str, 1, 1000],
     ) -> None:
         """Submit an owner-only approval review for the selected suggestion."""
         await self._review_suggestion(interaction, id, reason, "approved")
@@ -202,7 +212,10 @@ class SuggestionsCog(commands.Cog):
     )
     @app_commands.guild_only()
     async def deny(
-        self, interaction: discord.Interaction, id: int, reason: str
+        self,
+        interaction: discord.Interaction,
+        id: int,
+        reason: app_commands.Range[str, 1, 1000],
     ) -> None:
         """Submit an owner-only denial review for the selected suggestion."""
         await self._review_suggestion(interaction, id, reason, "denied")
@@ -219,7 +232,11 @@ class SuggestionsCog(commands.Cog):
         if not await self.bot.is_owner(interaction.user):
             await error(interaction, "suggestion-owner-only")
             return
-        result = await review_suggestion(id, status, reason)
+        try:
+            result = await review_suggestion(id, status, reason)
+        except ValueError as exc:
+            await interaction.followup.send(embed=embed(str(exc)), ephemeral=True)
+            return
         if result is None:
             await interaction.followup.send(
                 embed=embed(
@@ -234,28 +251,30 @@ class SuggestionsCog(commands.Cog):
             try:
                 user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
                 user_locale = getattr(user, "locale", discord.Locale.american_english)
-                await user.send(
-                    embed=embed(
-                        self.bot.translator.text(
-                            user_locale,
-                            "suggestion-review-dm",
-                            number=id,
-                            status=self.bot.translator.text(
-                                user_locale, f"suggestion-status-{status}"
-                            ),
-                            reason=reason,
-                            content=suggestion.content,
-                        ),
-                        title=self.bot.translator.text(
-                            user_locale, "suggestion-update-title"
-                        ),
-                    )
-                )
+                await user.send(embed=self._review_card(suggestion, user_locale))
             except discord.HTTPException:
                 continue
         await interaction.followup.send(
             embed=embed(f"Suggestion **#{id}** has been **{status}**."),
             ephemeral=True,
+        )
+
+    def _review_card(
+        self, suggestion: Suggestion, locale: discord.Locale
+    ) -> discord.Embed:
+        """Render the localized review shared by follower DMs and completed tracking."""
+        return embed(
+            self.bot.translator.text(
+                locale,
+                "suggestion-review-dm",
+                number=suggestion.id,
+                status=self.bot.translator.text(
+                    locale, f"suggestion-status-{suggestion.status}"
+                ),
+                reason=suggestion.reason,
+                content=suggestion.content,
+            ),
+            title=self.bot.translator.text(locale, "suggestion-update-title"),
         )
 
     async def _update_suggestion_log(self, suggestion: Suggestion) -> None:
