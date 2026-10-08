@@ -24,8 +24,6 @@ BotFragg processes the following information to provide its features:
   not included in these analytics records.
 - **Suggestions:** submitted text, author ID, review status and reason, delivery
   channel and message IDs, and IDs of users following the suggestion.
-- **Developer controls:** global control names, enabled state, optional custom
-  shutdown message, the owner ID that last changed the control, and update time.
 - **Operational records:** where configured, BotFragg stores the channel and
   message IDs of its shard-status message. Optional Discord logs may include
   guild or shard information described below.
@@ -80,7 +78,7 @@ policies and retention controls to information they receive.
 
 The operator stores BotFragg records in the configured SQLite or PostgreSQL
 database. BotFragg does not automatically expire account, alert, analytics,
-suggestion, or developer-control records.
+or suggestion records.
 
 - `/logout` removes stored Riot credentials for an account. It keeps the linked
   account record, alerts, and preferences.

@@ -42,7 +42,7 @@ Riot credentials are encrypted at rest, and you can delete all of your stored da
 | Category  | Commands                                                                 |
 | --------- | ------------------------------------------------------------------------ |
 | Account   | `/login`, `/logout`, `/deletedata`, `/account`, `/accounts`              |
-| VALORANT  | `/shop`, `/bundles`, `/nightmarket`, `/balance`, `/battlepass`, `/penalties` |
+| VALORANT  | `/shop`, `/bundles`, `/nightmarket`, `/balance`, `/battlepass`, `/missions`, `/penalties` |
 | Alerts    | `/alert`, `/alerts`, `/testalerts`                                       |
 | Settings  | `/settings view`, `/settings set`                                        |
 | Community | `/help`, `/ping`, `/botinfo`, `/links`, `/suggest`, `/suggestion`        |
@@ -149,7 +149,7 @@ Keep your `.env` file private and never commit it to version control.
 
 ## Privacy and Security
 
-BotFragg encrypts Riot credentials and does not read or retain the content or attachments of direct messages. You can remove all of your stored data at any time with `/deletedata confirm:True`.
+BotFragg encrypts Riot credentials and does not store ordinary conversation messages. It processes slash commands and configured operator prefix commands addressed to the bot, including in DMs. You can remove all of your stored data at any time with `/deletedata confirm:True`.
 
 Before using the bot, please review the [Privacy Policy](PRIVACY.md) and [Terms of Service](tos.md). To report a vulnerability, see the [Security Policy](SECURITY.md).
 
@@ -157,6 +157,7 @@ Before using the bot, please review the [Privacy Policy](PRIVACY.md) and [Terms 
 
 - [API reference](docs/api-reference.md)
 - [Repository file guide](docs/code-reference.md)
+- [Operational health, recovery, and performance](docs/operations.md)
 - [Contributing guide](CONTRIBUTING.md)
 - [Security policy](SECURITY.md)
 - [Changelog](CHANGELOG.md)
