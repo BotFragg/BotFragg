@@ -5,19 +5,25 @@ from __future__ import annotations
 import asyncio
 import logging
 from collections import deque
-from datetime import UTC, time
+from datetime import UTC, datetime, time, timedelta
+from time import time as unix_time
 
 import discord
 from discord.ext import commands, tasks
+from tortoise.exceptions import DBConnectionError
 
 from ..bot import BotFraggBot
+from ..database import TRANSIENT_DATABASE_ERRORS, ping_database
+from ..health import HEALTH_PATH, JobHealth, write_health
 from ..models import Account, Alert, User
 from ..monitoring import StructuredFormatter, transaction
 from ..services.alerts import run_daily_alerts
+from ..services.http import HTTPFailure
 from ..services.shop import Offer, ShopData
 from ..views import OwnedActionButton, timestamp
+from ..views.shop import add_skin_selector, offer_cards
 from ..views.ui import embed, view
-from .valorant.shop import add_skin_selector, offer_cards
+from .extra import ExtraCog
 
 log = logging.getLogger(__name__)
 
@@ -51,18 +57,41 @@ class TasksCog(commands.Cog):
         self.catalog_refresh.change_interval(
             minutes=bot.config.game_version_interval_minutes
         )
+        self.version_refresh.add_exception_type(HTTPFailure)
+        self.catalog_refresh.add_exception_type(HTTPFailure)
+        self.daily_alerts.add_exception_type(DBConnectionError)
         self.daily_alerts.change_interval(time=bot.config.alert_time_utc)
         self.discord_log_handler = DiscordLogHandler()
         self.log_flush.change_interval(seconds=bot.config.log_flush_interval_seconds)
+        now = datetime.now(UTC)
+        first_alert = datetime.combine(now.date(), bot.config.alert_time_utc, UTC)
+        if first_alert <= now:
+            first_alert += timedelta(days=1)
+        alert_grace = getattr(bot.config, "daily_alert_health_grace_seconds", 7200)
+        self.job_health = {
+            "daily_alerts": JobHealth(
+                86400 + alert_grace, first_alert.timestamp() + alert_grace
+            ),
+            "version_refresh": JobHealth(
+                bot.config.user_agent_interval_minutes * 60 + 300
+            ),
+            "catalog_refresh": JobHealth(
+                bot.config.game_version_interval_minutes * 60 + 300
+            ),
+            "log_flush": JobHealth(bot.config.log_flush_interval_seconds + 300),
+        }
+        self._health_problems: list[str] | None = None
 
     async def cog_load(self) -> None:
         """Start background loops and attach the log handler when configured."""
+        HEALTH_PATH.unlink(missing_ok=True)
         self.daily_alerts.start()
         self.version_refresh.start()
         self.catalog_refresh.start()
         if self.bot.config.log_channel_id:
             logging.getLogger().addHandler(self.discord_log_handler)
             self.log_flush.start()
+        self.health_watch.start()
 
     async def cog_unload(self) -> None:
         """Cancel and await all active loops, then detach the root log handler."""
@@ -71,6 +100,7 @@ class TasksCog(commands.Cog):
             self.version_refresh,
             self.catalog_refresh,
             self.log_flush,
+            self.health_watch,
         )
         loop_tasks = [loop.get_task() for loop in loops]
         for loop in loops:
@@ -83,17 +113,23 @@ class TasksCog(commands.Cog):
         if running:
             await asyncio.gather(*running, return_exceptions=True)
         logging.getLogger().removeHandler(self.discord_log_handler)
+        HEALTH_PATH.unlink(missing_ok=True)
 
     @tasks.loop(time=time(0, 0, 10, tzinfo=UTC))
     async def daily_alerts(self) -> None:
         """Run the daily shop and skin-alert job inside a monitoring transaction."""
-        with transaction("botfragg.job.daily_alerts", "botfragg.job"):
-            await self.run_alerts()
-
-    @daily_alerts.before_loop
-    async def configure_daily_alerts(self) -> None:
-        """Wait for Discord readiness before starting daily alert delivery."""
-        await self.bot.wait_until_ready()
+        with (
+            self.job_health["daily_alerts"].track("daily_alerts"),
+            transaction("botfragg.job.daily_alerts", "botfragg.job"),
+        ):
+            try:
+                summary = await self.run_alerts()
+                if summary["shop_failures"] or summary["delivery_failures"]:
+                    self.job_health["daily_alerts"].failure("daily_alerts")
+            except* TRANSIENT_DATABASE_ERRORS as exc:
+                raise DBConnectionError(
+                    "Daily alert database connection interrupted"
+                ) from exc
 
     async def run_alerts(self) -> dict[str, int]:
         """Process eligible users' shops and return counts for the completed run."""
@@ -116,15 +152,17 @@ class TasksCog(commands.Cog):
         shop: ShopData,
         matches: list[tuple[Alert, Offer]],
         send_daily_shop: bool,
-    ) -> None:
-        """Deliver each matching skin alert and the user's optional daily shop."""
+    ) -> int:
+        """Deliver matching alerts and the optional daily shop; count failed DMs."""
+        failures = 0
         for alert, offer in matches:
-            await self._send_alert(user_id, alert, offer)
+            failures += not await self._send_alert(user_id, alert, offer)
         if send_daily_shop and user:
-            await self._send_daily_shop(user, account, shop)
+            failures += not await self._send_daily_shop(user, account, shop)
+        return failures
 
-    async def _send_alert(self, user_id: int, alert: Alert, offer: Offer) -> None:
-        """DM a matching skin alert with a control owned by the recipient."""
+    async def _send_alert(self, user_id: int, alert: Alert, offer: Offer) -> bool:
+        """DM an owner-scoped skin alert and report whether delivery succeeded."""
         try:
             user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
             locale = discord.Locale.american_english
@@ -156,11 +194,13 @@ class TasksCog(commands.Cog):
             await user.send(embed=card, view=controls)
         except discord.HTTPException:
             log.warning("Could not deliver alert notification")
+            return False
+        return True
 
     async def _send_daily_shop(
         self, user: User, account: Account, shop: ShopData
-    ) -> None:
-        """DM the selected account's daily shop as a set of offer embeds."""
+    ) -> bool:
+        """DM the selected account's daily shop and report delivery success."""
         try:
             target = self.bot.get_user(user.id) or await self.bot.fetch_user(user.id)
             locale = discord.Locale.american_english
@@ -190,13 +230,17 @@ class TasksCog(commands.Cog):
                 locale,
             )
             await target.send(
-                embeds=cards, view=controls if controls.children else None
+                # Discord accepts None here; its Messageable annotation omits it.
+                embeds=cards,
+                view=controls if controls.children else None,  # type: ignore[arg-type]
             )
         except discord.HTTPException:
             log.warning("Could not deliver daily shop notification")
+            return False
+        return True
 
-    async def _credentials_expired(self, user_id: int) -> None:
-        """Tell a user privately when their Riot login must be renewed."""
+    async def _credentials_expired(self, user_id: int) -> int:
+        """Notify a user that credentials expired and return the delivery failure count."""
         try:
             target = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
             locale = discord.Locale.american_english
@@ -207,31 +251,35 @@ class TasksCog(commands.Cog):
             )
         except discord.HTTPException:
             log.warning("Could not notify user about expired Riot credentials")
+            return 1
+        return 0
 
     @tasks.loop(minutes=15)
     async def version_refresh(self) -> None:
         """Refresh the Riot client version used in authenticated API requests."""
-        with transaction("botfragg.job.version_refresh", "botfragg.job"):
+        with (
+            self.job_health["version_refresh"].track("version_refresh"),
+            transaction("botfragg.job.version_refresh", "botfragg.job"),
+        ):
             await self.bot.auth.refresh_version()
-
-    @version_refresh.before_loop
-    async def before_version_refresh(self) -> None:
-        """Wait for Discord readiness before the first version refresh."""
-        await self.bot.wait_until_ready()
 
     @tasks.loop(minutes=15)
     async def catalog_refresh(self) -> None:
         """Refresh the VALORANT catalog when its upstream version changes."""
-        with transaction("botfragg.job.catalog_refresh", "botfragg.job"):
+        with (
+            self.job_health["catalog_refresh"].track("catalog_refresh"),
+            transaction("botfragg.job.catalog_refresh", "botfragg.job"),
+        ):
+            self.bot.shop.prune_expired()
             await self.bot.catalog.refresh(check_version=True)
-
-    @catalog_refresh.before_loop
-    async def before_catalog_refresh(self) -> None:
-        """Wait for Discord readiness before the first catalog refresh."""
-        await self.bot.wait_until_ready()
 
     @tasks.loop(seconds=10)
     async def log_flush(self) -> None:
+        """Measure log delivery, preserving the queue after Discord failures."""
+        with self.job_health["log_flush"].track("log_flush"):
+            await self._flush_logs()
+
+    async def _flush_logs(self) -> None:
         """Send buffered log lines to Discord and requeue them after HTTP failures."""
         if not self.discord_log_handler.messages or not self.bot.config.log_channel_id:
             return
@@ -241,13 +289,20 @@ class TasksCog(commands.Cog):
             line = self.discord_log_handler.messages[0]
             if lines and length + len(line) + 1 > 3500:
                 break
-            lines.append(self.discord_log_handler.messages.popleft())
+            self.discord_log_handler.messages.popleft()
+            if len(line) > 3500:
+                self.discord_log_handler.messages.appendleft(line[3500:])
+                line = line[:3500]
+            lines.append(line)
             length += len(line) + 1
         try:
             channel = self.bot.get_channel(
                 self.bot.config.log_channel_id
             ) or await self.bot.fetch_channel(self.bot.config.log_channel_id)
-            await channel.send(
+            send = getattr(channel, "send", None)
+            if not callable(send):
+                raise TypeError("LOG_CHANNEL_ID must reference a messageable channel")
+            await send(
                 embed=embed(
                     "```\n" + "\n".join(lines) + "\n```",
                     title="Bot log",
@@ -255,12 +310,64 @@ class TasksCog(commands.Cog):
                 )
             )
         except discord.HTTPException:
+            self.job_health["log_flush"].failure("log_flush")
             for line in reversed(lines):
                 self.discord_log_handler.messages.appendleft(line)
 
+    @tasks.loop(seconds=30)
+    async def health_watch(self) -> None:
+        """Publish Discord, database, and scheduled-job health for Docker and operators."""
+        now = unix_time()
+        jobs = {
+            name: state.snapshot(
+                running=loop.is_running(), failed=loop.failed(), now=now
+            )
+            for name, state in self.job_health.items()
+            if name != "log_flush" or self.bot.config.log_channel_id
+            for loop in (getattr(self, name),)
+        }
+        extra = self.bot.get_cog("ExtraCog")
+        missing_shard_job = False
+        if self.bot.config.shard_status_channel_id:
+            missing_shard_job = not isinstance(extra, ExtraCog)
+        if isinstance(extra, ExtraCog) and self.bot.config.shard_status_channel_id:
+            jobs["shard_status"] = extra.job_health.snapshot(
+                running=extra.shard_status.is_running(),
+                failed=extra.shard_status.failed(),
+                now=now,
+            )
+        problems = [name for name, state in jobs.items() if not state["healthy"]]
+        if missing_shard_job:
+            problems.append("shard_status")
+        if not self.bot.is_ready() or self.bot.is_closed():
+            problems.append("discord")
+        try:
+            await asyncio.wait_for(ping_database(), timeout=5)
+        except Exception:
+            problems.append("database")
+        if problems != self._health_problems:
+            log.log(
+                logging.ERROR if problems else logging.INFO,
+                "Bot health changed",
+                extra={"problems": problems},
+            )
+            self._health_problems = problems
+        write_health(
+            {
+                "healthy": not problems,
+                "checked_at": unix_time(),
+                "jobs": jobs,
+                "problems": problems,
+            }
+        )
+
+    @daily_alerts.before_loop
+    @version_refresh.before_loop
+    @catalog_refresh.before_loop
     @log_flush.before_loop
-    async def before_log_flush(self) -> None:
-        """Wait for Discord readiness before sending buffered logs."""
+    @health_watch.before_loop
+    async def before_jobs(self) -> None:
+        """Wait for Discord readiness before starting any background job."""
         await self.bot.wait_until_ready()
 
 

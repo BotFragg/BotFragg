@@ -25,4 +25,7 @@ RUN uv sync --frozen --no-dev \
 
 USER botfragg
 
+HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
+    CMD ["python", "-m", "src.health"]
+
 CMD ["uv", "run", "--frozen", "--no-dev", "botfragg"]

@@ -6,10 +6,14 @@ from contextlib import asynccontextmanager
 from datetime import UTC, datetime, timedelta
 from email.utils import format_datetime
 from types import SimpleNamespace as NS
+from unittest.mock import AsyncMock
 
 import pytest
 from aiohttp import web
+from discord.ext.tasks import ExponentialBackoff
 
+from src.cogs.tasks import TasksCog
+from src.services.auth import AuthService
 from src.services.http import HTTPClient, HTTPFailure, _safe_log_url
 
 
@@ -63,6 +67,43 @@ async def test_decodable_non_json_body_keeps_text_fallback():
             result = await http.request("GET", url)
             assert result.status == 502 and result.data == "not json"
         finally:
+            await http.close()
+
+
+async def test_version_loop_retries_an_undecodable_response(monkeypatch):
+    monkeypatch.setattr(ExponentialBackoff, "delay", lambda self: 0)
+    async with response_server(b"\xff\xfe", status=502) as url:
+        http = client()
+        await http.start()
+        retried = asyncio.Event()
+        calls = 0
+
+        async def request(method, requested_url, **kwargs):
+            nonlocal calls
+            calls += 1
+            if calls > 1:
+                retried.set()
+            return await http.request(method, url, **kwargs)
+
+        cog = TasksCog(
+            NS(
+                config=NS(
+                    user_agent_interval_minutes=15,
+                    game_version_interval_minutes=15,
+                    alert_time_utc=datetime.now(UTC).time(),
+                    log_flush_interval_seconds=10,
+                ),
+                auth=AuthService(NS(), NS(request=request), NS()),
+                wait_until_ready=AsyncMock(),
+            )
+        )
+        task = cog.version_refresh.start()
+        try:
+            await asyncio.wait_for(retried.wait(), 2)
+            assert not cog.version_refresh.failed()
+        finally:
+            cog.version_refresh.cancel()
+            await asyncio.gather(task, return_exceptions=True)
             await http.close()
 
 

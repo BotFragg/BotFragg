@@ -2,10 +2,27 @@
 
 from __future__ import annotations
 
+from asyncpg.exceptions import (
+    AdminShutdownError,
+    CannotConnectNowError,
+    CrashShutdownError,
+    PostgresConnectionError,
+)
 from tortoise import Tortoise, connections
+from tortoise.exceptions import DBConnectionError
 
 from .config import ROOT, Settings, settings
 from .models import ShardStatusMessage
+
+TRANSIENT_DATABASE_ERRORS = (
+    ConnectionError,
+    TimeoutError,
+    DBConnectionError,
+    PostgresConnectionError,
+    AdminShutdownError,
+    CrashShutdownError,
+    CannotConnectNowError,
+)
 
 
 def _database_url(url: str) -> str:

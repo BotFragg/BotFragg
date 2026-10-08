@@ -1,4 +1,4 @@
-"""Create the initial user, account, alert, and suggestion tables."""
+"""Create the initial user, account, and alert tables."""
 
 from tortoise import migrations
 from tortoise.migrations import operations as ops

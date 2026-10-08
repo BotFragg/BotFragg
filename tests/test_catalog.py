@@ -7,6 +7,7 @@ import json
 import tempfile
 import threading
 from datetime import UTC, datetime
+from datetime import time as utc_time
 from pathlib import Path
 from types import SimpleNamespace
 from types import SimpleNamespace as NS
@@ -15,6 +16,7 @@ from unittest.mock import AsyncMock, Mock
 import discord
 import pytest
 
+from src.cogs.tasks import TasksCog
 from src.services import catalog as catalog_module
 from src.services.catalog import (
     CATALOG_FORMAT_VERSION,
@@ -207,6 +209,40 @@ async def test_catalog_version_failure_is_recoverable(payload):
     )
     with pytest.raises(HTTPFailure):
         await catalog.refresh()
+
+
+@pytest.mark.asyncio
+async def test_malformed_weapon_rows_do_not_kill_catalog_loop():
+    async def request(method, url, **kwargs):
+        if url.endswith("/version"):
+            return NS(status=200, data={"data": {"manifestId": "synthetic"}})
+        if "/weapons?" in url:
+            return NS(status=200, data={"data": [None]})
+        return NS(status=200, data={"data": [{"uuid": "bundle"}]})
+
+    catalog = CatalogService(NS(request=request))
+    bot = NS(
+        config=NS(
+            user_agent_interval_minutes=15,
+            game_version_interval_minutes=15,
+            alert_time_utc=utc_time(0, 0),
+            log_flush_interval_seconds=10,
+        ),
+        wait_until_ready=AsyncMock(),
+        catalog=catalog,
+        shop=NS(prune_expired=lambda: None),
+    )
+    cog = TasksCog(bot)
+    loop = cog.catalog_refresh
+    task = loop.start()
+    try:
+        await asyncio.wait_for(asyncio.shield(task), timeout=0.15)
+    except HTTPFailure, TimeoutError:
+        pass
+    finally:
+        loop.cancel()
+        await asyncio.gather(task, return_exceptions=True)
+    assert not loop.failed()
 
 
 @pytest.mark.parametrize(

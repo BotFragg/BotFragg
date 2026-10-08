@@ -216,21 +216,21 @@ Register the Discord event-listener cog with the bot.
 
 ## `src/cogs/extra.py`
 
-General BotFragg commands for status, links, suggestions, and shard health.
+General BotFragg commands for status, links, help, and shard health.
 
 ### `class ExtraCog(commands.Cog)`
 
 **Scope:** `src/cogs/extra.py` · `module`
 
-[Source](../src/cogs/extra.py#L36)
+[Source](../src/cogs/extra.py#L38)
 
-Provide public utility commands and owner-managed suggestion workflows.
+Provide public utility commands and the persistent shard-status message.
 
 ### `def __init__(self, bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L39)
+[Source](../src/cogs/extra.py#L41)
 
 Store the bot and record when this cog started for the info command.
 
@@ -238,7 +238,7 @@ Store the bot and record when this cog started for the info command.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L55)
+[Source](../src/cogs/extra.py#L59)
 
 Start shard-status updates when their destination is configured.
 
@@ -246,7 +246,7 @@ Start shard-status updates when their destination is configured.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L60)
+[Source](../src/cogs/extra.py#L64)
 
 Cancel and await the shard-status task during extension shutdown.
 
@@ -254,7 +254,7 @@ Cancel and await the shard-status task during extension shutdown.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L74)
+[Source](../src/cogs/extra.py#L78)
 
 Report Discord gateway latency and a live database probe duration.
 
@@ -262,7 +262,7 @@ Report Discord gateway latency and a live database probe duration.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L104)
+[Source](../src/cogs/extra.py#L108)
 
 Show recent public updates and BotFragg runtime information.
 
@@ -270,7 +270,7 @@ Show recent public updates and BotFragg runtime information.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L212)
+[Source](../src/cogs/extra.py#L216)
 
 Fetch and cache five public commits, formatting them per request locale.
 
@@ -278,7 +278,7 @@ Fetch and cache five public commits, formatting them per request locale.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L292)
+[Source](../src/cogs/extra.py#L294)
 
 Build link buttons for the configured public URLs.
 
@@ -286,15 +286,15 @@ Build link buttons for the configured public URLs.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L323)
+[Source](../src/cogs/extra.py#L325)
 
 Use each command's cog module to place it in a help category.
 
-### `def _command_mentions(commands: list[discord.AppCommand]) -> dict[str, str]`
+### `def _command_mentions(commands: list[app_commands.AppCommand]) -> dict[str, str]`
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L343)
+[Source](../src/cogs/extra.py#L346)
 
 Return Discord-formatted mentions for all synced commands and subcommands.
 
@@ -302,7 +302,7 @@ Return Discord-formatted mentions for all synced commands and subcommands.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L370)
+[Source](../src/cogs/extra.py#L373)
 
 List registered slash commands by category in the embed description.
 
@@ -310,7 +310,7 @@ List registered slash commands by category in the embed description.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L431)
+[Source](../src/cogs/extra.py#L434)
 
 Show an invite link and any configured support, vote, and website links.
 
@@ -318,7 +318,15 @@ Show an invite link and any configured support, vote, and website links.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L447)
+[Source](../src/cogs/extra.py#L450)
+
+Measure the shard-status job and preserve its existing retry behavior.
+
+### `async def _update_shard_status(self) -> None`
+
+**Scope:** `src/cogs/extra.py` · `ExtraCog`
+
+[Source](../src/cogs/extra.py#L455)
 
 Update or recreate the persistent embed containing per-shard health.
 
@@ -326,7 +334,7 @@ Update or recreate the persistent embed containing per-shard health.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L482)
+[Source](../src/cogs/extra.py#L492)
 
 Wait for Discord readiness before the first shard-status update.
 
@@ -334,9 +342,9 @@ Wait for Discord readiness before the first shard-status update.
 
 **Scope:** `src/cogs/extra.py` · `module`
 
-[Source](../src/cogs/extra.py#L487)
+[Source](../src/cogs/extra.py#L497)
 
-Register the general utility and suggestion cog with the bot.
+Register the general utility cog with the bot.
 
 ## `src/cogs/staff.py`
 
@@ -490,7 +498,7 @@ Background loops for daily alerts, catalog refresh, and Discord log delivery.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L25)
+[Source](../src/cogs/tasks.py#L31)
 
 Buffer privacy-filtered structured log lines for periodic Discord delivery.
 
@@ -498,7 +506,7 @@ Buffer privacy-filtered structured log lines for periodic Discord delivery.
 
 **Scope:** `src/cogs/tasks.py` · `DiscordLogHandler`
 
-[Source](../src/cogs/tasks.py#L28)
+[Source](../src/cogs/tasks.py#L34)
 
 Create a bounded log buffer using BotFragg's privacy-aware formatter.
 
@@ -506,7 +514,7 @@ Create a bounded log buffer using BotFragg's privacy-aware formatter.
 
 **Scope:** `src/cogs/tasks.py` · `DiscordLogHandler`
 
-[Source](../src/cogs/tasks.py#L34)
+[Source](../src/cogs/tasks.py#L40)
 
 Format a log record into the buffer or delegate failures to logging.
 
@@ -514,7 +522,7 @@ Format a log record into the buffer or delegate failures to logging.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L42)
+[Source](../src/cogs/tasks.py#L48)
 
 Own periodic application jobs and stop them cleanly when unloaded.
 
@@ -522,7 +530,7 @@ Own periodic application jobs and stop them cleanly when unloaded.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L45)
+[Source](../src/cogs/tasks.py#L51)
 
 Set job intervals from settings and prepare the optional log handler.
 
@@ -530,7 +538,7 @@ Set job intervals from settings and prepare the optional log handler.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L58)
+[Source](../src/cogs/tasks.py#L85)
 
 Start background loops and attach the log handler when configured.
 
@@ -538,7 +546,7 @@ Start background loops and attach the log handler when configured.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L67)
+[Source](../src/cogs/tasks.py#L96)
 
 Cancel and await all active loops, then detach the root log handler.
 
@@ -546,111 +554,103 @@ Cancel and await all active loops, then detach the root log handler.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L88)
+[Source](../src/cogs/tasks.py#L119)
 
 Run the daily shop and skin-alert job inside a monitoring transaction.
-
-### `async def configure_daily_alerts(self) -> None`
-
-**Scope:** `src/cogs/tasks.py` · `TasksCog`
-
-[Source](../src/cogs/tasks.py#L94)
-
-Wait for Discord readiness before starting daily alert delivery.
 
 ### `async def run_alerts(self) -> dict[str, int]`
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L98)
+[Source](../src/cogs/tasks.py#L134)
 
 Process eligible users' shops and return counts for the completed run.
 
-### `async def _deliver_daily_alert_result(self, user_id: int, user: User | None, account: Account, shop: ShopData, matches: list[tuple[Alert, Offer]], send_daily_shop: bool) -> None`
+### `async def _deliver_daily_alert_result(self, user_id: int, user: User | None, account: Account, shop: ShopData, matches: list[tuple[Alert, Offer]], send_daily_shop: bool) -> int`
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L111)
+[Source](../src/cogs/tasks.py#L147)
 
-Deliver each matching skin alert and the user's optional daily shop.
+Deliver matching alerts and the optional daily shop; count failed DMs.
 
-### `async def _send_alert(self, user_id: int, alert: Alert, offer: Offer) -> None`
-
-**Scope:** `src/cogs/tasks.py` · `TasksCog`
-
-[Source](../src/cogs/tasks.py#L126)
-
-DM a matching skin alert with a control owned by the recipient.
-
-### `async def _send_daily_shop(self, user: User, account: Account, shop: ShopData) -> None`
+### `async def _send_alert(self, user_id: int, alert: Alert, offer: Offer) -> bool`
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L160)
+[Source](../src/cogs/tasks.py#L164)
 
-DM the selected account's daily shop as a set of offer embeds.
+DM an owner-scoped skin alert and report whether delivery succeeded.
 
-### `async def _credentials_expired(self, user_id: int) -> None`
+### `async def _send_daily_shop(self, user: User, account: Account, shop: ShopData) -> bool`
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L198)
+[Source](../src/cogs/tasks.py#L200)
 
-Tell a user privately when their Riot login must be renewed.
+DM the selected account's daily shop and report delivery success.
+
+### `async def _credentials_expired(self, user_id: int) -> int`
+
+**Scope:** `src/cogs/tasks.py` · `TasksCog`
+
+[Source](../src/cogs/tasks.py#L242)
+
+Notify a user that credentials expired and return the delivery failure count.
 
 ### `async def version_refresh(self) -> None`
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L212)
+[Source](../src/cogs/tasks.py#L258)
 
 Refresh the Riot client version used in authenticated API requests.
-
-### `async def before_version_refresh(self) -> None`
-
-**Scope:** `src/cogs/tasks.py` · `TasksCog`
-
-[Source](../src/cogs/tasks.py#L218)
-
-Wait for Discord readiness before the first version refresh.
 
 ### `async def catalog_refresh(self) -> None`
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L223)
+[Source](../src/cogs/tasks.py#L267)
 
 Refresh the VALORANT catalog when its upstream version changes.
-
-### `async def before_catalog_refresh(self) -> None`
-
-**Scope:** `src/cogs/tasks.py` · `TasksCog`
-
-[Source](../src/cogs/tasks.py#L229)
-
-Wait for Discord readiness before the first catalog refresh.
 
 ### `async def log_flush(self) -> None`
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L234)
+[Source](../src/cogs/tasks.py#L277)
 
-Send buffered log lines to Discord and requeue them after HTTP failures.
+Measure log delivery, preserving the queue after Discord failures.
 
-### `async def before_log_flush(self) -> None`
+### `async def _flush_logs(self) -> None`
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L262)
+[Source](../src/cogs/tasks.py#L282)
 
-Wait for Discord readiness before sending buffered logs.
+Send buffered log lines to Discord and requeue them after HTTP failures.
+
+### `async def health_watch(self) -> None`
+
+**Scope:** `src/cogs/tasks.py` · `TasksCog`
+
+[Source](../src/cogs/tasks.py#L318)
+
+Publish Discord, database, and scheduled-job health for Docker and operators.
+
+### `async def before_jobs(self) -> None`
+
+**Scope:** `src/cogs/tasks.py` · `TasksCog`
+
+[Source](../src/cogs/tasks.py#L369)
+
+Wait for Discord readiness before starting any background job.
 
 ### `async def setup(bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L267)
+[Source](../src/cogs/tasks.py#L374)
 
 Register the background-task cog with the bot.
 
@@ -1394,7 +1394,7 @@ Immutable runtime configuration populated from environment variables.
 
 **Scope:** `src/config.py` · `Settings`
 
-[Source](../src/config.py#L163)
+[Source](../src/config.py#L164)
 
 Load settings, validate URLs and limits, and optionally require secrets.
 
@@ -1418,7 +1418,7 @@ Database URL normalization, Tortoise setup, and shard-status persistence.
 
 **Scope:** `src/database.py` · `module`
 
-[Source](../src/database.py#L11)
+[Source](../src/database.py#L28)
 
 Resolve relative SQLite paths against the repository root.
 
@@ -1426,7 +1426,7 @@ Resolve relative SQLite paths against the repository root.
 
 **Scope:** `src/database.py` · `module`
 
-[Source](../src/database.py#L23)
+[Source](../src/database.py#L40)
 
 Build the ORM configuration for the supplied application settings.
 
@@ -1434,7 +1434,7 @@ Build the ORM configuration for the supplied application settings.
 
 **Scope:** `src/database.py` · `module`
 
-[Source](../src/database.py#L42)
+[Source](../src/database.py#L59)
 
 Initialize Tortoise and optionally create missing development schemas.
 
@@ -1442,7 +1442,7 @@ Initialize Tortoise and optionally create missing development schemas.
 
 **Scope:** `src/database.py` · `module`
 
-[Source](../src/database.py#L49)
+[Source](../src/database.py#L66)
 
 Run a minimal query against the default database connection.
 
@@ -1450,7 +1450,7 @@ Run a minimal query against the default database connection.
 
 **Scope:** `src/database.py` · `module`
 
-[Source](../src/database.py#L54)
+[Source](../src/database.py#L71)
 
 Close all Tortoise database connections.
 
@@ -1458,7 +1458,7 @@ Close all Tortoise database connections.
 
 **Scope:** `src/database.py` · `module`
 
-[Source](../src/database.py#L59)
+[Source](../src/database.py#L76)
 
 Return the saved status-message ID for a channel, if one exists.
 
@@ -1466,9 +1466,61 @@ Return the saved status-message ID for a channel, if one exists.
 
 **Scope:** `src/database.py` · `module`
 
-[Source](../src/database.py#L65)
+[Source](../src/database.py#L82)
 
 Create or update the status-message reference for a channel.
+
+## `src/health.py`
+
+Background-job evidence and a local, credential-free container health check.
+
+### `class JobHealth`
+
+**Scope:** `src/health.py` · `module`
+
+[Source](../src/health.py#L22)
+
+Track actual completion, failures, and elapsed time for one scheduled job.
+
+### `def failure(self, name: str) -> None`
+
+**Scope:** `src/health.py` · `JobHealth`
+
+[Source](../src/health.py#L32)
+
+Record a failure, including one handled inside a job's retry logic.
+
+### `def track(self, name: str) -> Iterator[None]`
+
+**Scope:** `src/health.py` · `JobHealth`
+
+[Source](../src/health.py#L41)
+
+Measure one attempt; exceptions and cancellation never count as success.
+
+### `def snapshot(self, *, running: bool, failed: bool, now: float) -> dict[str, object]`
+
+**Scope:** `src/health.py` · `JobHealth`
+
+[Source](../src/health.py#L65)
+
+Report stopped, failed, or overdue work without exposing user data.
+
+### `def write_health(snapshot: dict[str, object], path: Path = HEALTH_PATH) -> None`
+
+**Scope:** `src/health.py` · `module`
+
+[Source](../src/health.py#L90)
+
+Replace the status file atomically so probes never read partial JSON.
+
+### `def healthcheck(path: Path = HEALTH_PATH) -> bool`
+
+**Scope:** `src/health.py` · `module`
+
+[Source](../src/health.py#L104)
+
+Require a fresh successful heartbeat; malformed or missing files fail closed.
 
 ## `src/localization.py`
 
@@ -1528,7 +1580,7 @@ Load settings, configure observability, and run the Discord client.
 
 ## `src/migrations/0001_initial.py`
 
-Create the initial user, account, alert, and suggestion tables.
+Create the initial user, account, and alert tables.
 
 ### `class Migration(migrations.Migration)`
 

@@ -4,12 +4,16 @@ from __future__ import annotations
 
 import json
 import logging
+from collections import deque
+from datetime import time as daytime
 from types import SimpleNamespace
+from types import SimpleNamespace as NS
 
+import discord
 import pytest
 
 from src import monitoring
-from src.cogs.tasks import DiscordLogHandler
+from src.cogs.tasks import DiscordLogHandler, TasksCog
 from src.monitoring import StructuredFormatter, _scrub
 
 
@@ -49,6 +53,71 @@ def test_formatter_removes_oauth_code_from_gateway_payload():
         None,
     )
     assert "AUDIT_SYNTHETIC_CODE" not in StructuredFormatter().format(record)
+
+
+@pytest.mark.asyncio
+async def test_log_flush_bounds_single_oversized_record():
+    attempts = []
+
+    async def send(*, embed):
+        attempts.append(len(embed.description))
+        if len(embed.description) > 4096:
+            raise discord.HTTPException(
+                NS(status=400, reason="Bad Request"), "Embed description too long"
+            )
+
+    channel = NS(send=send)
+    config = NS(
+        user_agent_interval_minutes=15,
+        game_version_interval_minutes=15,
+        alert_time_utc=daytime(0, 0),
+        log_flush_interval_seconds=10,
+        log_channel_id=123,
+    )
+    cog = TasksCog(NS(config=config, get_channel=lambda _: channel))
+    cog.discord_log_handler.messages = deque(["x" * 5000, "normal log"], maxlen=1000)
+    await TasksCog.log_flush.coro(cog)
+    await TasksCog.log_flush.coro(cog)
+    assert max(attempts) <= 4096 and not cog.discord_log_handler.messages, (
+        f"Long record requeued indefinitely: {attempts}"
+    )
+
+
+async def test_split_log_retries_preserve_content_and_order():
+    attempts, delivered = [], []
+
+    async def send(*, embed):
+        attempts.append(embed.description)
+        if len(attempts) == 1:
+            raise discord.HTTPException(NS(status=503, reason="Unavailable"), "retry")
+        delivered.append(embed.description[4:-4])
+
+    cog = TasksCog(
+        NS(
+            config=NS(
+                user_agent_interval_minutes=15,
+                game_version_interval_minutes=15,
+                alert_time_utc=daytime(0, 0),
+                log_flush_interval_seconds=10,
+                log_channel_id=123,
+            ),
+            get_channel=lambda _: NS(send=send),
+        )
+    )
+    cog.discord_log_handler.messages.extend(["x" * 8000, "last"])
+    for _ in range(4):
+        await TasksCog.log_flush.coro(cog)
+    assert attempts[0] == attempts[1]
+    assert all(len(attempt) <= 4096 for attempt in attempts)
+    assert "".join(delivered) == "x" * 8000 + "\nlast"
+    assert not cog.discord_log_handler.messages
+    for loop in (
+        cog.daily_alerts,
+        cog.version_refresh,
+        cog.catalog_refresh,
+        cog.log_flush,
+    ):
+        assert loop._before_loop is TasksCog.before_jobs
 
 
 def test_error_tracking_scrubs_riot_credentials() -> None:

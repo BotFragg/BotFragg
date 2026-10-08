@@ -1,4 +1,4 @@
-"""General BotFragg commands for status, links, suggestions, and shard health."""
+"""General BotFragg commands for status, links, help, and shard health."""
 
 from __future__ import annotations
 
@@ -16,10 +16,12 @@ from discord.ext import commands, tasks
 from ..bot import BotFraggBot
 from ..config import ROOT
 from ..database import (
+    TRANSIENT_DATABASE_ERRORS,
     get_shard_status_message_id,
     ping_database,
     save_shard_status_message,
 )
+from ..health import JobHealth
 from ..localization import BotFraggTranslator
 from ..services.accounts import count_registered_users
 from ..services.http import HTTPFailure
@@ -34,16 +36,18 @@ COMMIT_SHA = re.compile(r"[0-9a-f]{40,64}", re.IGNORECASE)
 
 
 class ExtraCog(commands.Cog):
-    """Provide public utility commands and owner-managed suggestion workflows."""
+    """Provide public utility commands and the persistent shard-status message."""
 
     def __init__(self, bot: BotFraggBot) -> None:
         """Store the bot and record when this cog started for the info command."""
         self.bot = bot
+        self.shard_status.add_exception_type(*TRANSIENT_DATABASE_ERRORS)
+        self.job_health = JobHealth(330)
         self.started_at = datetime.now(UTC)
         self._latest_updates: list[tuple[str, str | None, str | None]] | None = None
-        self._latest_updates_unavailable = True
         self._latest_updates_expires = 0.0
         self._latest_updates_lock = asyncio.Lock()
+        self.source_line_count: int | None
         try:
             self.source_line_count = sum(
                 len(path.read_text(encoding="utf-8").splitlines())
@@ -215,7 +219,6 @@ class ExtraCog(commands.Cog):
             async with self._latest_updates_lock:
                 if monotonic() >= self._latest_updates_expires:
                     self._latest_updates = None
-                    self._latest_updates_unavailable = True
                     try:
                         response = await self.bot.riot_http.request(
                             "GET",
@@ -262,10 +265,9 @@ class ExtraCog(commands.Cog):
                             updates.append((sha, subject, commit_date))
                         if updates or not response.data:
                             self._latest_updates = updates
-                            self._latest_updates_unavailable = False
                     self._latest_updates_expires = monotonic() + GITHUB_CACHE_SECONDS
 
-        if self._latest_updates_unavailable or self._latest_updates is None:
+        if self._latest_updates is None:
             return self.bot.translator.text(locale, "botinfo-commits-unavailable")
         if not self._latest_updates:
             return self.bot.translator.text(locale, "botinfo-no-commits")
@@ -331,6 +333,7 @@ class ExtraCog(commands.Cog):
         category = {
             "extra": "help-category-misc",
             "valorant": "help-category-valorant",
+            "suggestions": "help-category-misc",
         }.get(component, component.replace("_", " ").title() or "Other")
         category_name = (
             translator.text(locale, category)
@@ -340,7 +343,7 @@ class ExtraCog(commands.Cog):
         return translator.text(locale, "help-category-commands", category=category_name)
 
     @staticmethod
-    def _command_mentions(commands: list[discord.AppCommand]) -> dict[str, str]:
+    def _command_mentions(commands: list[app_commands.AppCommand]) -> dict[str, str]:
         """Return Discord-formatted mentions for all synced commands and subcommands."""
         mentions: dict[str, str] = {}
         pending: list[app_commands.AppCommandGroup] = []
@@ -352,11 +355,11 @@ class ExtraCog(commands.Cog):
                 if isinstance(option, app_commands.AppCommandGroup)
             )
         while pending:
-            command = pending.pop()
-            mentions[command.qualified_name] = command.mention
+            group = pending.pop()
+            mentions[group.qualified_name] = group.mention
             pending.extend(
                 option
-                for option in command.options
+                for option in group.options
                 if isinstance(option, app_commands.AppCommandGroup)
             )
         return mentions
@@ -406,13 +409,13 @@ class ExtraCog(commands.Cog):
                 )
             )
 
-        description = [translated(interaction, "help-intro")]
+        lines = [translated(interaction, "help-intro")]
         for category, entries in categories.items():
-            description.extend(("", f"**{category}**", *entries))
+            lines.extend(("", f"**{category}**", *entries))
 
         controls = self._public_links(user, interaction.locale)
         card = embed(
-            "\n".join(description),
+            "\n".join(lines),
             title=translated(interaction, "help-title"),
         )
         card.set_thumbnail(url=user.display_avatar.url)
@@ -445,6 +448,11 @@ class ExtraCog(commands.Cog):
 
     @tasks.loop(seconds=30)
     async def shard_status(self) -> None:
+        """Measure the shard-status job and preserve its existing retry behavior."""
+        with self.job_health.track("shard_status"):
+            await self._update_shard_status()
+
+    async def _update_shard_status(self) -> None:
         """Update or recreate the persistent embed containing per-shard health."""
         channel_id = self.bot.config.shard_status_channel_id
         if not channel_id:
@@ -454,6 +462,7 @@ class ExtraCog(commands.Cog):
                 channel_id
             )
             if not isinstance(channel, discord.abc.Messageable):
+                self.job_health.failure("shard_status")
                 return
             card = embed(title="Shard information")
             for shard_id in sorted(self.bot.shards)[:25]:
@@ -476,6 +485,7 @@ class ExtraCog(commands.Cog):
             message = await channel.send(embed=card)
             await save_shard_status_message(channel_id, message.id)
         except discord.HTTPException:
+            self.job_health.failure("shard_status")
             return
 
     @shard_status.before_loop
@@ -485,5 +495,5 @@ class ExtraCog(commands.Cog):
 
 
 async def setup(bot: BotFraggBot) -> None:
-    """Register the general utility and suggestion cog with the bot."""
+    """Register the general utility cog with the bot."""
     await bot.add_cog(ExtraCog(bot))

@@ -1,22 +1,329 @@
-"""Behavior checks for jobs."""
+"""Behavior and regression checks for jobs."""
 
 from __future__ import annotations
 
 import asyncio
 import logging
+from datetime import UTC, datetime
+from datetime import time as utc_time
 from types import SimpleNamespace
+from types import SimpleNamespace as NS
+from unittest.mock import AsyncMock
 
+import asyncpg
 import discord
 import pytest
+from tortoise.exceptions import DBConnectionError
 
 from src.cogs.extra import ExtraCog
 from src.cogs.tasks import TasksCog
+from src.services.http import HTTPFailure
 from tests.helpers import (
     _localized_bot,
 )
 
 
-async def test_tasks_cog_awaits_cancelled_background_loops() -> None:
+@pytest.mark.usefixtures("database")
+@pytest.mark.parametrize(
+    "outcome", ["unavailable", "expired", "delivery", "expired_delivery", "success"]
+)
+async def test_daily_health_reports_outcomes_and_recovers(outcome):
+    from src.models import Account, User
+    from src.services.auth import AuthenticationRequired
+    from src.services.shop import ShopUnavailable
+
+    user = await User.create(
+        id=101, daily_shop_enabled=True, current_account_id="daily"
+    )
+    await Account.create(puuid="daily", user=user, username="Player#NA")
+    target = NS(send=AsyncMock())
+    shop = NS(storefront=AsyncMock(return_value=NS(offers=[], expires=0)))
+    bot = _localized_bot(
+        config=NS(
+            user_agent_interval_minutes=15,
+            game_version_interval_minutes=15,
+            alert_time_utc=utc_time(0, 0),
+            log_flush_interval_seconds=10,
+            alert_concurrency=1,
+            delay_between_alerts_seconds=0,
+            link_item_image=False,
+        ),
+        shop=shop,
+        get_user=lambda _: target,
+        emoji_service=NS(currency=AsyncMock(return_value="VP")),
+    )
+    if outcome == "unavailable":
+        shop.storefront.side_effect = ShopUnavailable("synthetic outage")
+    elif outcome in {"expired", "expired_delivery"}:
+        shop.storefront.side_effect = AuthenticationRequired("expired")
+    if outcome in {"delivery", "expired_delivery"}:
+        target.send.side_effect = discord.HTTPException(
+            NS(status=403, reason="Forbidden"), "synthetic blocked DM"
+        )
+    cog = TasksCog(bot)
+    state = cog.job_health["daily_alerts"]
+    await cog.daily_alerts()
+    assert state.snapshot(running=True, failed=False, now=0)["healthy"] is (
+        outcome in {"expired", "success"}
+    )
+    assert state.failures == int(
+        outcome in {"unavailable", "delivery", "expired_delivery"}
+    )
+    assert (
+        state.last_success is None if state.failures else state.last_success is not None
+    )
+
+    shop.storefront.side_effect = None
+    target.send.side_effect = None
+    await cog.daily_alerts()
+    assert state.snapshot(running=True, failed=False, now=0)["healthy"] is True
+
+
+async def test_refresh_loop_survives_transient_http_failure():
+    bot = SimpleNamespace(
+        config=SimpleNamespace(
+            user_agent_interval_minutes=15,
+            game_version_interval_minutes=15,
+            alert_time_utc=datetime.now(UTC).time(),
+            log_flush_interval_seconds=10,
+        ),
+        wait_until_ready=AsyncMock(),
+        auth=SimpleNamespace(
+            refresh_version=AsyncMock(side_effect=HTTPFailure("synthetic timeout"))
+        ),
+    )
+    cog = TasksCog(bot)
+    loop = cog.version_refresh
+    task = loop.start()
+    try:
+        await asyncio.wait_for(asyncio.shield(task), timeout=0.2)
+    except HTTPFailure:
+        pass
+    except TimeoutError:
+        pass
+    finally:
+        loop.cancel()
+        await asyncio.gather(task, return_exceptions=True)
+    assert not loop.failed()
+
+
+@pytest.mark.parametrize("job", ["daily", "shard"])
+async def test_database_connection_loss_does_not_permanently_stop_jobs(
+    job, monkeypatch
+):
+    config = NS(
+        user_agent_interval_minutes=15,
+        game_version_interval_minutes=15,
+        alert_time_utc=utc_time(0, 0),
+        log_flush_interval_seconds=10,
+        shard_status_channel_id=101,
+    )
+    bot = NS(config=config, wait_until_ready=AsyncMock(), shards={})
+    failure = asyncpg.exceptions.ConnectionDoesNotExistError(
+        "Synthetic database restart"
+    )
+    if job == "daily":
+        cog = TasksCog(bot)
+        cog.run_alerts = AsyncMock(side_effect=failure)
+        loop = cog.daily_alerts
+    else:
+        import src.cogs.extra as module
+
+        class Channel(discord.abc.Messageable):
+            async def _get_channel(self):
+                return self
+
+        bot.get_channel = lambda channel_id: Channel()
+        monkeypatch.setattr(
+            module, "get_shard_status_message_id", AsyncMock(side_effect=failure)
+        )
+        cog = ExtraCog(bot)
+        loop = cog.shard_status
+    loop.change_interval(seconds=0.01)
+    task = loop.start()
+    try:
+        await asyncio.wait_for(asyncio.shield(task), 0.1)
+    except (
+        asyncpg.exceptions.ConnectionDoesNotExistError,
+        DBConnectionError,
+        TimeoutError,
+    ):
+        pass
+    finally:
+        loop.cancel()
+        await asyncio.gather(task, return_exceptions=True)
+    assert not loop.failed(), (
+        "One transient database outage permanently killed the loop"
+    )
+
+
+async def test_successful_background_job_remains_running():
+    config = NS(
+        user_agent_interval_minutes=15,
+        game_version_interval_minutes=15,
+        alert_time_utc=utc_time(0, 0),
+        log_flush_interval_seconds=10,
+    )
+    cog = TasksCog(NS(config=config, wait_until_ready=AsyncMock()))
+    cog.run_alerts = AsyncMock(
+        return_value={"shop_failures": 0, "delivery_failures": 0}
+    )
+    loop = cog.daily_alerts
+    loop.change_interval(seconds=0.01)
+    task = loop.start()
+    try:
+        await asyncio.wait_for(asyncio.shield(task), 0.05)
+    except TimeoutError:
+        pass
+    finally:
+        loop.cancel()
+        await asyncio.gather(task, return_exceptions=True)
+    assert not loop.failed() and cog.run_alerts.await_count > 0
+
+
+@pytest.mark.parametrize(
+    "failure_type",
+    [
+        asyncpg.exceptions.ConnectionDoesNotExistError,
+        ConnectionRefusedError,
+        TimeoutError,
+    ],
+)
+async def test_database_failure_inside_daily_worker_does_not_kill_loop(
+    monkeypatch, failure_type
+):
+    import src.services.alerts as module
+
+    failure = failure_type("Synthetic worker DB outage")
+    monkeypatch.setattr(module, "user_ids_with_alerts", AsyncMock(return_value={101}))
+    monkeypatch.setattr(module, "daily_shop_user_ids", AsyncMock(return_value=set()))
+    user = NS(id=101)
+    account = NS(user_id=101, user=user, puuid="synthetic")
+    query = NS(order_by=AsyncMock(return_value=[account]))
+    query.select_related = lambda *args: query
+    monkeypatch.setattr(module.Account, "filter", lambda **kwargs: query)
+    monkeypatch.setattr(
+        module, "account_ids_with_alerts", AsyncMock(return_value=set())
+    )
+    monkeypatch.setattr(module, "selected_account", AsyncMock(side_effect=failure))
+    config = NS(
+        user_agent_interval_minutes=15,
+        game_version_interval_minutes=15,
+        alert_time_utc=utc_time(0, 0),
+        log_flush_interval_seconds=10,
+        alert_concurrency=1,
+        delay_between_alerts_seconds=0,
+    )
+    cog = TasksCog(NS(config=config, wait_until_ready=AsyncMock(), shop=NS()))
+    loop = cog.daily_alerts
+    loop.change_interval(seconds=0.01)
+    task = loop.start()
+    try:
+        await asyncio.wait_for(asyncio.shield(task), 0.1)
+    except ExceptionGroup as group:
+        assert len(group.exceptions) == 1
+        assert isinstance(group.exceptions[0], type(failure))
+    except DBConnectionError:
+        pass
+    except TimeoutError:
+        pass
+    finally:
+        loop.cancel()
+        await asyncio.gather(task, return_exceptions=True)
+    assert not loop.failed(), (
+        "TaskGroup-wrapped database failure permanently killed the daily loop"
+    )
+
+
+@pytest.mark.parametrize(
+    "failure_type",
+    [
+        asyncpg.exceptions.ConnectionDoesNotExistError,
+        ConnectionRefusedError,
+        TimeoutError,
+    ],
+)
+@pytest.mark.parametrize("unknown_type", [ValueError, FileNotFoundError])
+async def test_daily_job_keeps_unrelated_worker_errors_visible(
+    failure_type, unknown_type
+):
+    cog = TasksCog(
+        NS(
+            config=NS(
+                user_agent_interval_minutes=15,
+                game_version_interval_minutes=15,
+                alert_time_utc=utc_time(0, 0),
+                log_flush_interval_seconds=10,
+            )
+        )
+    )
+    unknown = unknown_type("Synthetic implementation error")
+    cog.run_alerts = AsyncMock(
+        side_effect=ExceptionGroup(
+            "mixed",
+            [
+                failure_type("Synthetic outage"),
+                unknown,
+            ],
+        )
+    )
+    with pytest.raises(ExceptionGroup) as raised:
+        await cog.daily_alerts()
+    assert raised.value.subgroup(lambda error: error is unknown) is not None
+
+
+@pytest.mark.parametrize(
+    "failure",
+    [
+        asyncpg.exceptions.ConnectionDoesNotExistError,
+        asyncpg.exceptions.AdminShutdownError,
+        asyncpg.exceptions.CrashShutdownError,
+        asyncpg.exceptions.CannotConnectNowError,
+        DBConnectionError,
+        ConnectionRefusedError,
+        TimeoutError,
+    ],
+)
+async def test_daily_job_retries_and_recovers(failure, monkeypatch):
+    from discord.ext.tasks import ExponentialBackoff
+
+    monkeypatch.setattr(ExponentialBackoff, "delay", lambda self: 0)
+    cog = TasksCog(
+        NS(
+            config=NS(
+                user_agent_interval_minutes=15,
+                game_version_interval_minutes=15,
+                alert_time_utc=utc_time(0, 0),
+                log_flush_interval_seconds=10,
+            ),
+            wait_until_ready=AsyncMock(),
+        )
+    )
+    recovered = asyncio.Event()
+    calls = 0
+
+    async def run():
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            raise failure("Synthetic outage")
+        recovered.set()
+        await asyncio.Event().wait()
+
+    cog.run_alerts = run
+    cog.daily_alerts.change_interval(seconds=0.01)
+    task = cog.daily_alerts.start()
+    try:
+        await asyncio.wait_for(recovered.wait(), 1)
+        assert calls == 2 and not cog.daily_alerts.failed()
+    finally:
+        cog.daily_alerts.cancel()
+        await asyncio.gather(task, return_exceptions=True)
+
+
+async def test_tasks_cog_awaits_cancelled_background_loops(
+    monkeypatch, tmp_path
+) -> None:
     """Verify that tasks cog awaits cancelled background loops."""
     finished = 0
 
@@ -43,19 +350,21 @@ async def test_tasks_cog_awaits_cancelled_background_loops() -> None:
             """Cancel the fake task and record the cancellation."""
             self.task.cancel()
 
-    loops = [Loop(asyncio.create_task(worker())) for _ in range(4)]
+    monkeypatch.setattr("src.cogs.tasks.HEALTH_PATH", tmp_path / "health.json")
+    loops = [Loop(asyncio.create_task(worker())) for _ in range(5)]
     await asyncio.sleep(0)
     cog = SimpleNamespace(
         daily_alerts=loops[0],
         version_refresh=loops[1],
         catalog_refresh=loops[2],
         log_flush=loops[3],
+        health_watch=loops[4],
         discord_log_handler=logging.NullHandler(),
     )
 
     await TasksCog.cog_unload(cog)
 
-    assert finished == 4
+    assert finished == 5
     assert all(loop.get_task().done() for loop in loops)
 
 
@@ -89,7 +398,7 @@ async def test_task_notifications_handle_http_errors_while_fetching_user(
 
     monkeypatch.setattr("src.cogs.tasks.offer_cards", lambda *_args, **_kwargs: [])
 
-    await TasksCog._send_alert(
+    sent_alert = await TasksCog._send_alert(
         cog,
         user_id,
         SimpleNamespace(id=1, account=SimpleNamespace(username="Player#NA")),
@@ -97,15 +406,16 @@ async def test_task_notifications_handle_http_errors_while_fetching_user(
             skin=SimpleNamespace(name="Skin", icon=None, tier_uuid=None), expires=0
         ),
     )
-    await TasksCog._send_daily_shop(
+    sent_shop = await TasksCog._send_daily_shop(
         cog,
         SimpleNamespace(id=user_id),
         SimpleNamespace(username="Player#NA"),
         SimpleNamespace(offers=[], expires=0),
     )
-    await TasksCog._credentials_expired(cog, user_id)
+    notice_failures = await TasksCog._credentials_expired(cog, user_id)
 
     assert fetched_ids == [user_id, user_id, user_id]
+    assert sent_alert is False and sent_shop is False and notice_failures == 1
 
 
 async def test_extra_cog_awaits_cancelled_background_loop() -> None:
