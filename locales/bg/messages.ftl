@@ -85,7 +85,6 @@ command-suggestion-untrack-name = спри-следенето
 command-suggestion-untrack-description = Спрете да следите предложение за функция
 command-testalerts-name = тест-на-известия
 command-testalerts-description = Проверете дали известията могат да бъдат изпращани с лично съобщение
-command-suggestion-description = Следете или преглеждайте предложения за функции
 group-suggestion-name = предложение
 group-suggestion-description = Следете или преглеждайте предложения за функции
 
@@ -203,7 +202,7 @@ login-instructions-step-4 = **4.** Изберете **Постави URL** и п
 login-security-notice = Поставете само URL адреса. Никога не споделяйте паролата или кодовете си за потвърждение.
 login-button = Вход в Riot
 login-paste-button = Постави URL
-login-account-limit = Разрешени са най-много { $max_accounts } акаунта. Излезте от съществуващ акаунт, за да добавите още един.
+login-account-limit = Разрешени са най-много { $max_accounts } акаунта.
 login-account-already-linked = Този Riot акаунт вече е свързан с друг потребител в Discord.
 login-code-missing = В URL адреса не е намерен код за оторизация.
 login-attempt-expired = Опитът за вход е изтекъл. Стартирайте отново командата `/вход`.

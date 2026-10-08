@@ -1,4 +1,4 @@
-"""Behavior checks for bot."""
+"""Behavior and regression checks for bot."""
 
 from __future__ import annotations
 

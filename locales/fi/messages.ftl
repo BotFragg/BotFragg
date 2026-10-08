@@ -85,7 +85,6 @@ command-suggestion-untrack-name = lopeta-seuraaminen
 command-suggestion-untrack-description = Lopeta ominaisuusehdotuksen seuraaminen
 command-testalerts-name = testaa-hälytykset
 command-testalerts-description = Tarkista, voidaanko hälytykset lähettää yksityisviestinä
-command-suggestion-description = Seuraa ominaisuusehdotuksia tai tarkastele niitä
 group-suggestion-name = ehdotus
 group-suggestion-description = Seuraa ominaisuusehdotuksia tai tarkastele niitä
 
@@ -203,7 +202,7 @@ login-instructions-step-4 = **4.** Valitse **Liitä URL** ja liitä kopioimasi U
 login-security-notice = Liitä vain URL. Älä koskaan jaa salasanaasi tai vahvistuskoodejasi.
 login-button = Kirjaudu Riot-tilille
 login-paste-button = Liitä URL
-login-account-limit = Enintään { $max_accounts } tiliä sallitaan. Kirjaudu ulos olemassa olevalta tililtä lisätäksesi uuden.
+login-account-limit = Enintään { $max_accounts } tiliä sallitaan.
 login-account-already-linked = Tämä Riot-tili on jo yhdistetty toiselle Discord-käyttäjälle.
 login-code-missing = URL-osoitteesta ei löytynyt valtuutuskoodia.
 login-attempt-expired = Kirjautumisyritys on vanhentunut. Yritä uudelleen komennolla `/kirjaudu`.

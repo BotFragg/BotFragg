@@ -85,7 +85,6 @@ command-suggestion-untrack-name = niet-meer-volgen
 command-suggestion-untrack-description = Volg een functievoorstel niet meer
 command-testalerts-name = test-meldingen
 command-testalerts-description = Controleer of meldingen via privéberichten kunnen worden bezorgd
-command-suggestion-description = Volg functievoorstellen of bekijk ze
 group-suggestion-name = voorstel
 group-suggestion-description = Volg functievoorstellen of bekijk ze
 
@@ -203,7 +202,7 @@ login-instructions-step-4 = **4.** Kies **URL plakken** en plak de gekopieerde U
 login-security-notice = Plak alleen de URL. Deel nooit je wachtwoord of verificatiecodes.
 login-button = Inloggen bij Riot
 login-paste-button = URL plakken
-login-account-limit = Je kunt maximaal { $max_accounts } accounts koppelen. Log uit bij een bestaand account om er nog een toe te voegen.
+login-account-limit = Je kunt maximaal { $max_accounts } accounts koppelen.
 login-account-already-linked = Dit Riot-account is al gekoppeld aan een andere Discord-gebruiker.
 login-code-missing = Er is geen autorisatiecode gevonden in de URL.
 login-attempt-expired = Deze aanmeldingspoging is verlopen. Voer `/inloggen` uit om het opnieuw te proberen.

@@ -1114,7 +1114,7 @@ Present Yes/No options for the caller's selected preference.
 
 **Scope:** `src/cogs/valorant/settings.py` · `SettingsCog`
 
-[Source](../src/cogs/valorant/settings.py#L129)
+[Source](../src/cogs/valorant/settings.py#L130)
 
 Validate and persist a setting selection, then update its confirmation.
 
@@ -1122,7 +1122,7 @@ Validate and persist a setting selection, then update its confirmation.
 
 **Scope:** `src/cogs/valorant/settings.py` · `module`
 
-[Source](../src/cogs/valorant/settings.py#L157)
+[Source](../src/cogs/valorant/settings.py#L158)
 
 Register the user preference commands and selection handler.
 

@@ -85,7 +85,6 @@ command-suggestion-untrack-name = untrack
 command-suggestion-untrack-description = Unfollow a feature suggestion
 command-testalerts-name = testalerts
 command-testalerts-description = Verify that alert DMs can be delivered
-command-suggestion-description = Follow or review feature suggestions
 group-suggestion-name = suggestion
 group-suggestion-description = Follow or review feature suggestions
 
@@ -203,7 +202,7 @@ login-instructions-step-4 = **4.** Select **Paste URL** and paste the copied URL
 login-security-notice = Only paste the URL. Never share your password or verification codes.
 login-button = Log in to Riot
 login-paste-button = Paste URL
-login-account-limit = A maximum of { $max_accounts } accounts is allowed. Log out of an existing account to add another.
+login-account-limit = A maximum of { $max_accounts } accounts is allowed.
 login-account-already-linked = This Riot account is already linked to another Discord user.
 login-code-missing = No authorization code was found in the URL.
 login-attempt-expired = This login attempt has expired. Run `/login` to try again.

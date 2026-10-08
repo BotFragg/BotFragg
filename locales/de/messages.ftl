@@ -85,7 +85,6 @@ command-suggestion-untrack-name = entfolgen
 command-suggestion-untrack-description = Folge einem Funktionsvorschlag nicht mehr
 command-testalerts-name = test-benachrichtigung
 command-testalerts-description = Prüfe, ob Benachrichtigungen als Direktnachricht gesendet werden können
-command-suggestion-description = Folge Funktionsvorschlägen oder überprüfe sie
 group-suggestion-name = vorschlag
 group-suggestion-description = Folge Funktionsvorschlägen oder überprüfe sie
 
@@ -203,7 +202,7 @@ login-instructions-step-4 = **4.** Wähle **URL einfügen** und füge die kopier
 login-security-notice = Füge nur die URL ein. Teile niemals dein Passwort oder deine Bestätigungscodes.
 login-button = Bei Riot anmelden
 login-paste-button = URL einfügen
-login-account-limit = Du kannst höchstens { $max_accounts } Konten verknüpfen. Melde ein bestehendes Konto ab, um ein weiteres hinzuzufügen.
+login-account-limit = Du kannst höchstens { $max_accounts } Konten verknüpfen.
 login-account-already-linked = Dieses Riot-Konto ist bereits mit einem anderen Discord-Nutzer verknüpft.
 login-code-missing = In der URL wurde kein Autorisierungscode gefunden.
 login-attempt-expired = Dieser Anmeldeversuch ist abgelaufen. Führe `/anmelden` aus, um es erneut zu versuchen.

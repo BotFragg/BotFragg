@@ -85,7 +85,6 @@ command-suggestion-untrack-name = sluta-följa
 command-suggestion-untrack-description = Sluta följa ett funktionsförslag
 command-testalerts-name = testa-aviseringar
 command-testalerts-description = Kontrollera om aviseringar kan skickas som direktmeddelanden
-command-suggestion-description = Följ funktionsförslag eller granska dem
 group-suggestion-name = förslag
 group-suggestion-description = Följ funktionsförslag eller granska dem
 
@@ -203,7 +202,7 @@ login-instructions-step-4 = **4.** Välj **Klistra in URL** och klistra in den k
 login-security-notice = Klistra bara in webbadressen. Dela aldrig ditt lösenord eller dina verifieringskoder.
 login-button = Logga in på Riot
 login-paste-button = Klistra in URL
-login-account-limit = Du kan ha högst { $max_accounts } konton. Logga ut från ett befintligt konto för att lägga till ett till.
+login-account-limit = Du kan ha högst { $max_accounts } konton.
 login-account-already-linked = Det här Riot-kontot är redan länkat till en annan Discord-användare.
 login-code-missing = Ingen auktoriseringskod hittades i webbadressen.
 login-attempt-expired = Inloggningsförsöket har gått ut. Kör `/logga-in` för att försöka igen.

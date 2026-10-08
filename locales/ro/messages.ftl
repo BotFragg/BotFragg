@@ -85,7 +85,6 @@ command-suggestion-untrack-name = oprește-urmărirea
 command-suggestion-untrack-description = Nu mai urmări o sugestie de funcționalitate
 command-testalerts-name = testează-alertele
 command-testalerts-description = Verifică dacă alertele pot fi trimise prin mesaje directe.
-command-suggestion-description = Urmărește sau evaluează sugestii de funcționalități
 group-suggestion-name = sugestie
 group-suggestion-description = Urmărește sau evaluează sugestii de funcționalități
 
@@ -203,7 +202,7 @@ login-instructions-step-4 = **4.** Selectează **Lipește URL-ul** și lipește 
 login-security-notice = Lipește doar URL-ul. Nu partaja niciodată parola sau codurile de verificare.
 login-button = Conectare la Riot
 login-paste-button = Lipește URL-ul
-login-account-limit = Poți conecta maximum { $max_accounts } conturi. Deconectează un cont existent pentru a adăuga altul.
+login-account-limit = Poți conecta maximum { $max_accounts } conturi.
 login-account-already-linked = Acest cont Riot este deja conectat la un alt utilizator Discord.
 login-code-missing = URL-ul nu conține niciun cod de autorizare.
 login-attempt-expired = Această încercare de conectare a expirat. Rulează `/conectare` pentru a încerca din nou.

@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 import discord
+from fluent.runtime import FluentBundle, FluentResource
 from fluent.syntax import FluentParser, ast
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -49,7 +50,6 @@ PREFIXES = {
     "test",
 }
 DYNAMIC_MESSAGE_IDS = {
-    "command-suggestion-description",
     "error-riot-services-unavailable",
     "login-account-already-linked",
     "login-account-details-missing",
@@ -210,6 +210,66 @@ def source_message_variables() -> dict[str, set[str]]:
     return variables
 
 
+def source_command_names() -> dict[str, list[tuple[str, str | None]]]:
+    """Collect sibling command/group names from their registration declarations."""
+    scopes: dict[str, list[tuple[str, str | None]]] = {}
+    for path in (ROOT / "src" / "cogs").rglob("*.py"):
+        tree = python_ast.parse(path.read_text(encoding="utf-8"))
+        for node in python_ast.walk(tree):
+            if not isinstance(node, python_ast.Call) or not isinstance(
+                node.func, python_ast.Attribute
+            ):
+                continue
+            if node.func.attr not in {"command", "Group"}:
+                continue
+            name = next((kw.value for kw in node.keywords if kw.arg == "name"), None)
+            key = None
+            if isinstance(name, python_ast.Call):
+                key = next(
+                    (
+                        kw.value.value
+                        for kw in name.keywords
+                        if kw.arg == "key" and isinstance(kw.value, python_ast.Constant)
+                    ),
+                    None,
+                )
+                name = name.args[0] if name.args else None
+            if not isinstance(name, python_ast.Constant) or not isinstance(
+                name.value, str
+            ):
+                continue
+            parent = python_ast.unparse(node.func.value)
+            scope = "root" if parent == "app_commands" else f"{path}:{parent}"
+            scopes.setdefault(scope, []).append((name.value, key))
+    return scopes
+
+
+def command_name_errors(
+    path: Path, scopes: dict[str, list[tuple[str, str | None]]]
+) -> list[str]:
+    """Reject localized sibling collisions before a Discord command sync."""
+    bundle = FluentBundle([path.parent.name], use_isolating=False)
+    bundle.add_resource(FluentResource(path.read_text(encoding="utf-8")))
+    errors = []
+    for scope, names in scopes.items():
+        seen: set[str] = set()
+        for default, key in names:
+            message = (
+                bundle.get_message(key) if key and bundle.has_message(key) else None
+            )
+            name = (
+                bundle.format_pattern(message.value)[0]
+                if message and message.value
+                else default
+            )
+            if name in seen:
+                errors.append(
+                    f"{path.parent.name}:{scope} duplicate command name {name!r}"
+                )
+            seen.add(name)
+    return errors
+
+
 def main() -> int:
     """Validate all supported locale files against the English source catalog."""
     english_path = LOCALES / "en-US" / "messages.ftl"
@@ -251,10 +311,15 @@ def main() -> int:
             print(f"Missing catalog file in locale directory: {directory.name}")
             return 1
     catalogs = list(LOCALES.glob("*/messages.ftl"))
+    command_scopes = source_command_names()
     for path in catalogs:
         locale = path.parent.name
         if locale not in supported:
             print(f"Unsupported Discord locale directory: {locale}")
+            return 1
+        errors = command_name_errors(path, command_scopes)
+        if errors:
+            print("\n".join(errors))
             return 1
         if path == english_path:
             continue

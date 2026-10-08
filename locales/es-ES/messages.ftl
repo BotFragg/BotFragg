@@ -85,7 +85,6 @@ command-suggestion-untrack-name = dejar-de-seguir
 command-suggestion-untrack-description = Deja de seguir una sugerencia de funcionalidad
 command-testalerts-name = probar-alertas
 command-testalerts-description = Comprueba si se pueden enviar alertas por mensaje directo
-command-suggestion-description = Sigue sugerencias de funcionalidad o revísalas
 group-suggestion-name = sugerencia
 group-suggestion-description = Sigue sugerencias de funcionalidad o revísalas
 
@@ -203,7 +202,7 @@ login-instructions-step-4 = **4.** Selecciona **Pegar URL** y pega la URL copiad
 login-security-notice = Pega únicamente la URL. No compartas nunca tu contraseña ni tus códigos de verificación.
 login-button = Iniciar sesión en Riot
 login-paste-button = Pegar URL
-login-account-limit = Puedes vincular un máximo de { $max_accounts } cuentas. Cierra la sesión de una cuenta existente para añadir otra.
+login-account-limit = Puedes vincular un máximo de { $max_accounts } cuentas.
 login-account-already-linked = Esta cuenta de Riot ya está vinculada a otro usuario de Discord.
 login-code-missing = No se ha encontrado ningún código de autorización en la URL.
 login-attempt-expired = Este intento de inicio de sesión ha caducado. Ejecuta `/iniciar-sesion` para volver a intentarlo.

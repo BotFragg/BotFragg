@@ -85,7 +85,6 @@ command-suggestion-untrack-name = takibi-bırak
 command-suggestion-untrack-description = Bir özellik önerisini takip etmeyi bırakın
 command-testalerts-name = uyarıları-test-et
 command-testalerts-description = Uyarıların özel mesaj olarak gönderilip gönderilemediğini kontrol edin
-command-suggestion-description = Özellik önerilerini takip edin veya inceleyin
 group-suggestion-name = öneri
 group-suggestion-description = Özellik önerilerini takip edin veya inceleyin
 
@@ -203,7 +202,7 @@ login-instructions-step-4 = **4.** **URL'yi yapıştır** düğmesini seçin ve 
 login-security-notice = Yalnızca URL'yi yapıştırın. Şifrenizi veya doğrulama kodlarınızı asla paylaşmayın.
 login-button = Riot'ta oturum aç
 login-paste-button = URL'yi yapıştır
-login-account-limit = En fazla { $max_accounts } hesap bağlanabilir. Yeni bir hesap eklemek için mevcut hesaplardan birinden çıkış yapın.
+login-account-limit = En fazla { $max_accounts } hesap bağlanabilir.
 login-account-already-linked = Bu Riot hesabı başka bir Discord kullanıcısına zaten bağlı.
 login-code-missing = URL'de yetkilendirme kodu bulunamadı.
 login-attempt-expired = Bu giriş denemesinin süresi doldu. Tekrar denemek için `/giriş-yap` komutunu çalıştırın.

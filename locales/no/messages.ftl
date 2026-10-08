@@ -85,7 +85,6 @@ command-suggestion-untrack-name = slutt-a-folge
 command-suggestion-untrack-description = Slutt å følge et funksjonsforslag
 command-testalerts-name = test-varsler
 command-testalerts-description = Sjekk om varsler kan sendes som private meldinger
-command-suggestion-description = Følg eller gå gjennom funksjonsforslag
 group-suggestion-name = forslag
 group-suggestion-description = Følg eller gå gjennom funksjonsforslag
 
@@ -203,7 +202,7 @@ login-instructions-step-4 = **4.** Velg **Lim inn URL**, og lim inn den kopierte
 login-security-notice = Lim bare inn URL-en. Del aldri passordet eller bekreftelseskodene dine.
 login-button = Logg inn på Riot
 login-paste-button = Lim inn URL
-login-account-limit = Du kan koble til maksimalt { $max_accounts } kontoer. Logg ut av en eksisterende konto for å legge til en ny.
+login-account-limit = Du kan koble til maksimalt { $max_accounts } kontoer.
 login-account-already-linked = Denne Riot-kontoen er allerede koblet til en annen Discord-bruker.
 login-code-missing = Fant ingen autorisasjonskode i URL-en.
 login-attempt-expired = Dette påloggingsforsøket har utløpt. Kjør `/logg-inn` for å prøve igjen.

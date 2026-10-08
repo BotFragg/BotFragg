@@ -85,7 +85,6 @@ command-suggestion-untrack-name = nebesekti
 command-suggestion-untrack-description = Nebesek funkcijos pasiūlymo
 command-testalerts-name = tikrinti-pranesimus
 command-testalerts-description = Patikrink, ar galima siųsti pranešimus privačiomis žinutėmis
-command-suggestion-description = Sek funkcijų pasiūlymus arba juos peržiūrėk
 group-suggestion-name = pasiulymas
 group-suggestion-description = Sek funkcijų pasiūlymus arba juos peržiūrėk
 
@@ -203,7 +202,7 @@ login-instructions-step-4 = **4.** Pasirink **Įklijuoti URL** ir įklijuok nuko
 login-security-notice = Įklijuok tik URL. Niekada nesidalyk slaptažodžiu ar patvirtinimo kodais.
 login-button = Prisijungti prie „Riot“
 login-paste-button = Įklijuoti URL
-login-account-limit = Gali susieti daugiausia { $max_accounts } paskyras. Atsiek esamą paskyrą, kad pridėtum kitą.
+login-account-limit = Gali susieti daugiausia { $max_accounts } paskyras.
 login-account-already-linked = Ši „Riot“ paskyra jau susieta su kitu „Discord“ naudotoju.
 login-code-missing = URL nerastas autorizavimo kodas.
 login-attempt-expired = Šis prisijungimo bandymas baigėsi. Paleisk `/prisijungti`, kad bandytum dar kartą.

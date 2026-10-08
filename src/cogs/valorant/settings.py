@@ -107,19 +107,20 @@ class SettingsCog(commands.Cog):
                 label=translated(interaction, "common-no"), value="false"
             ),
         ]
+        setting_label = translated(interaction, SETTINGS[setting.value][1])
         menu = OwnedSelect(
             "setting",
             interaction.user.id,
             setting.value,
             placeholder=translated(
-                interaction, "settings-set-placeholder", setting=setting.name
+                interaction, "settings-set-placeholder", setting=setting_label
             ),
             options=choices,
             empty_option_label=translated(interaction, "common-unavailable"),
         )
         await interaction.followup.send(
             embed=embed(
-                translated(interaction, "settings-set-prompt", setting=setting.name),
+                translated(interaction, "settings-set-prompt", setting=setting_label),
                 colour=DARK,
             ),
             view=view(menu),

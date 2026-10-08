@@ -85,7 +85,6 @@ command-suggestion-untrack-name = prestani-pratiti
 command-suggestion-untrack-description = Prestani pratiti prijedlog za novu značajku
 command-testalerts-name = testiraj-obavijesti
 command-testalerts-description = Provjeri mogu li se obavijesti slati privatnom porukom
-command-suggestion-description = Prati prijedloge za nove značajke ili ih pregledaj
 group-suggestion-name = prijedlog
 group-suggestion-description = Prati prijedloge za nove značajke ili ih pregledaj
 
@@ -203,7 +202,7 @@ login-instructions-step-4 = **4.** Odaberi **Zalijepi URL** i zalijepi kopirani 
 login-security-notice = Zalijepi samo URL. Nikada ne dijeli lozinku ni verifikacijske kodove.
 login-button = Prijava na Riot
 login-paste-button = Zalijepi URL
-login-account-limit = Možeš povezati najviše { $max_accounts } računa. Odjavi postojeći račun da dodaš novi.
+login-account-limit = Možeš povezati najviše { $max_accounts } računa.
 login-account-already-linked = Ovaj Riot račun već je povezan s drugim Discord korisnikom.
 login-code-missing = URL ne sadrži autorizacijski kod.
 login-attempt-expired = Ova je prijava istekla. Pokreni `/prijava` za novi pokušaj.

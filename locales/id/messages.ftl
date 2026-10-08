@@ -85,7 +85,6 @@ command-suggestion-untrack-name = berhenti-ikuti
 command-suggestion-untrack-description = Berhenti mengikuti saran fitur
 command-testalerts-name = uji-notifikasi
 command-testalerts-description = Periksa apakah pesan langsung notifikasi dapat dikirim
-command-suggestion-description = Ikuti atau tinjau saran fitur
 group-suggestion-name = saran
 group-suggestion-description = Ikuti atau tinjau saran fitur
 
@@ -203,7 +202,7 @@ login-instructions-step-4 = **4.** Pilih **Tempel URL**, lalu tempel URL yang di
 login-security-notice = Tempel URL saja. Jangan pernah membagikan kata sandi atau kode verifikasi Anda.
 login-button = Masuk ke Riot
 login-paste-button = Tempel URL
-login-account-limit = Anda hanya dapat menautkan maksimal { $max_accounts } akun. Putuskan tautan salah satu akun yang ada untuk menambahkan akun lain.
+login-account-limit = Anda hanya dapat menautkan maksimal { $max_accounts } akun.
 login-account-already-linked = Akun Riot ini sudah ditautkan ke pengguna Discord lain.
 login-code-missing = Kode otorisasi tidak ditemukan di URL.
 login-attempt-expired = Upaya login ini sudah kedaluwarsa. Jalankan `/masuk` untuk mencoba lagi.

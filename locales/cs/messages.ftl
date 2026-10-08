@@ -85,7 +85,6 @@ command-suggestion-untrack-name = přestat-sledovat
 command-suggestion-untrack-description = Přestat sledovat návrh funkce
 command-testalerts-name = testovat-upozornění
 command-testalerts-description = Ověřit, zda lze doručit soukromé zprávy s upozorněními
-command-suggestion-description = Sledovat návrhy funkcí nebo je kontrolovat
 group-suggestion-name = návrh
 group-suggestion-description = Sledovat návrhy funkcí nebo je kontrolovat
 
@@ -203,7 +202,7 @@ login-instructions-step-4 = **4.** Vyberte **Vložit URL** a vložte zkopírovan
 login-security-notice = Vložte pouze URL. Nikdy nesdělujte své heslo ani ověřovací kódy.
 login-button = Přihlásit se k Riot účtu
 login-paste-button = Vložit URL
-login-account-limit = Můžete propojit nejvýše { $max_accounts } účtů. Chcete-li přidat další, odhlaste některý ze stávajících.
+login-account-limit = Můžete propojit nejvýše { $max_accounts } účtů.
 login-account-already-linked = Tento účet Riot je již propojen s jiným uživatelem Discordu.
 login-code-missing = V URL nebyl nalezen autorizační kód.
 login-attempt-expired = Platnost tohoto pokusu o přihlášení vypršela. Zkuste to znovu pomocí příkazu `/přihlásit`.

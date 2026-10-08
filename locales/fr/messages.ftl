@@ -85,7 +85,6 @@ command-suggestion-untrack-name = ne-plus-suivre
 command-suggestion-untrack-description = Ne suis plus une suggestion de fonctionnalité
 command-testalerts-name = tester-alertes
 command-testalerts-description = Vérifie que les messages privés d’alerte peuvent être envoyés
-command-suggestion-description = Suis des suggestions de fonctionnalité ou examine-les
 group-suggestion-name = suggestion
 group-suggestion-description = Suis des suggestions de fonctionnalité ou examine-les
 
@@ -203,7 +202,7 @@ login-instructions-step-4 = **4.** Sélectionne **Coller l’URL** et colle l’
 login-security-notice = Colle uniquement l’URL. Ne partage jamais ton mot de passe ni tes codes de vérification.
 login-button = Se connecter à Riot
 login-paste-button = Coller l’URL
-login-account-limit = Tu peux associer jusqu’à { $max_accounts } comptes. Déconnecte un compte existant pour en ajouter un autre.
+login-account-limit = Tu peux associer jusqu’à { $max_accounts } comptes.
 login-account-already-linked = Ce compte Riot est déjà associé à un autre utilisateur Discord.
 login-code-missing = Aucun code d’autorisation n’a été trouvé dans l’URL.
 login-attempt-expired = Cette tentative de connexion a expiré. Lance `/connexion` pour réessayer.

@@ -85,7 +85,6 @@ command-suggestion-untrack-name = stop-med-at-følge
 command-suggestion-untrack-description = Stop med at følge et funktionsforslag
 command-testalerts-name = test-notifikation
 command-testalerts-description = Kontrollér, om notifikationer kan sendes som private beskeder
-command-suggestion-description = Følg eller gennemgå funktionsforslag
 group-suggestion-name = forslag
 group-suggestion-description = Følg eller gennemgå funktionsforslag
 
@@ -203,7 +202,7 @@ login-instructions-step-4 = **4.** Vælg **Indsæt URL**, og indsæt den kopiere
 login-security-notice = Indsæt kun URL'en. Del aldrig din adgangskode eller dine bekræftelseskoder.
 login-button = Log ind på Riot
 login-paste-button = Indsæt URL
-login-account-limit = Du kan højst have { $max_accounts } konti tilknyttet. Log ud af en eksisterende konto for at tilføje en ny.
+login-account-limit = Du kan højst have { $max_accounts } konti tilknyttet.
 login-account-already-linked = Denne Riot-konto er allerede tilknyttet en anden Discord-bruger.
 login-code-missing = Der blev ikke fundet nogen godkendelseskode i URL'en.
 login-attempt-expired = Dette loginforsøg er udløbet. Kør `/log-ind` for at prøve igen.
