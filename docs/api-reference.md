@@ -1666,7 +1666,7 @@ Structured logging and privacy filters for logs and GlitchTip events.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L55)
+[Source](../src/monitoring.py#L64)
 
 Format log records as JSON after filtering sensitive values.
 
@@ -1674,7 +1674,7 @@ Format log records as JSON after filtering sensitive values.
 
 **Scope:** `src/monitoring.py` · `StructuredFormatter`
 
-[Source](../src/monitoring.py#L58)
+[Source](../src/monitoring.py#L67)
 
 Serialize a scrubbed log record and its safe structured fields.
 
@@ -1682,7 +1682,7 @@ Serialize a scrubbed log record and its safe structured fields.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L77)
+[Source](../src/monitoring.py#L86)
 
 Filter credentials and personal identifiers from nested event data.
 
@@ -1690,31 +1690,31 @@ Filter credentials and personal identifiers from nested event data.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L104)
+[Source](../src/monitoring.py#L115)
 
 Drop network and unrelated log breadcrumbs, then scrub retained data.
 
-### `def _scrub_event(event: dict[str, Any]) -> dict[str, Any]`
+### `def _scrub_event(event: Event) -> Event`
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L118)
+[Source](../src/monitoring.py#L129)
 
 Remove request data and sensitive values from an error event.
 
-### `def _scrub_transaction(event: dict[str, Any], hint: dict[str, Any]) -> dict[str, Any]`
+### `def _scrub_transaction(event: Event, hint: dict[str, Any]) -> Event`
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L125)
+[Source](../src/monitoring.py#L136)
 
 Remove request payloads and HTTP span details from a transaction.
 
-### `def _scrub_log(log: dict[str, Any], hint: dict[str, Any]) -> dict[str, Any] | None`
+### `def _scrub_log(log: Log, hint: dict[str, Any]) -> Log | None`
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L135)
+[Source](../src/monitoring.py#L147)
 
 Keep BotFragg logs and serious Discord errors after removing URL data.
 
@@ -1722,7 +1722,7 @@ Keep BotFragg logs and serious Discord errors after removing URL data.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L149)
+[Source](../src/monitoring.py#L161)
 
 Return the installed BotFragg release label or an unknown fallback.
 
@@ -1730,7 +1730,7 @@ Return the installed BotFragg release label or an unknown fallback.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L157)
+[Source](../src/monitoring.py#L169)
 
 Enable privacy-filtered GlitchTip telemetry when a DSN is configured.
 
@@ -1738,7 +1738,7 @@ Enable privacy-filtered GlitchTip telemetry when a DSN is configured.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L187)
+[Source](../src/monitoring.py#L199)
 
 Start a GlitchTip transaction with the supplied name and operation.
 
@@ -1746,7 +1746,7 @@ Start a GlitchTip transaction with the supplied name and operation.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L192)
+[Source](../src/monitoring.py#L204)
 
 End the current monitoring session and flush queued telemetry.
 
@@ -2636,7 +2636,7 @@ Shared Riot HTTP transport with URL redaction and per-host rate-limit backoff.
 
 **Scope:** `src/services/http.py` · `module`
 
-[Source](../src/services/http.py#L19)
+[Source](../src/services/http.py#L21)
 
 Remove credentials, query data, and UUID path segments from a URL.
 
@@ -2644,7 +2644,7 @@ Remove credentials, query data, and UUID path segments from a URL.
 
 **Scope:** `src/services/http.py` · `module`
 
-[Source](../src/services/http.py#L39)
+[Source](../src/services/http.py#L41)
 
 Hold an HTTP response status and decoded body.
 
@@ -2652,7 +2652,7 @@ Hold an HTTP response status and decoded body.
 
 **Scope:** `src/services/http.py` · `module`
 
-[Source](../src/services/http.py#L46)
+[Source](../src/services/http.py#L48)
 
 Own a reusable aiohttp session and normalize transport failures.
 
@@ -2660,7 +2660,7 @@ Own a reusable aiohttp session and normalize transport failures.
 
 **Scope:** `src/services/http.py` · `HTTPClient`
 
-[Source](../src/services/http.py#L49)
+[Source](../src/services/http.py#L51)
 
 Store request settings and initialize session and rate-limit state.
 
@@ -2668,7 +2668,7 @@ Store request settings and initialize session and rate-limit state.
 
 **Scope:** `src/services/http.py` · `HTTPClient`
 
-[Source](../src/services/http.py#L55)
+[Source](../src/services/http.py#L57)
 
 Create the shared aiohttp session with configured timeout and pool limits.
 
@@ -2676,7 +2676,7 @@ Create the shared aiohttp session with configured timeout and pool limits.
 
 **Scope:** `src/services/http.py` · `HTTPClient`
 
-[Source](../src/services/http.py#L61)
+[Source](../src/services/http.py#L63)
 
 Close the shared session when it has been started and remains open.
 
@@ -2684,31 +2684,31 @@ Close the shared session when it has been started and remains open.
 
 **Scope:** `src/services/http.py` · `HTTPClient`
 
-[Source](../src/services/http.py#L66)
+[Source](../src/services/http.py#L68)
 
 Send a request, decode its body, and apply per-host rate-limit backoff.
 
 
 **Raises**
 - **`RuntimeError`** — If the client has not been started.
-- **`HTTPFailure`** — If the request is rate-limited, times out, or fails at the
-  transport layer.
+- **`HTTPFailure`** — If the request is rate-limited, times out, fails at the
+  transport layer, or its response body cannot be decoded.
 
 ### `def _retry_after(self, value: str | None) -> int`
 
 **Scope:** `src/services/http.py` · `HTTPClient`
 
-[Source](../src/services/http.py#L112)
+[Source](../src/services/http.py#L123)
 
-Parse and clamp a Retry-After value to the configured backoff limit.
+Parse Retry-After seconds or an HTTP date and clamp the backoff.
 
 ### `class HTTPFailure(RuntimeError)`
 
 **Scope:** `src/services/http.py` · `module`
 
-[Source](../src/services/http.py#L121)
+[Source](../src/services/http.py#L138)
 
-Raised for rate limits, transport failures, and bounded request timeouts.
+Raised for rate limits, transport/decoding failures, and request timeouts.
 
 ## `src/services/shop.py`
 

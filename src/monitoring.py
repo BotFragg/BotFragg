@@ -7,12 +7,15 @@ import logging
 import re
 from datetime import UTC, datetime
 from importlib.metadata import PackageNotFoundError, version
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import sentry_sdk
 from sentry_sdk.integrations.logging import LoggingIntegration
 
 from .config import Settings
+
+if TYPE_CHECKING:
+    from sentry_sdk._types import Event, Log
 
 _SENSITIVE_KEY_PARTS = (
     "authorization",
@@ -49,6 +52,12 @@ _JWT = re.compile(
     r"\.[A-Za-z0-9_-]{8,}(?![A-Za-z0-9_-])"
 )
 _UUID = re.compile(r"(?i)\b[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\b")
+_WEBHOOK_SECRET = re.compile(
+    r"(?i)(/api/(?:v\d+/)?(?:webhooks|interactions)/\d+/)[A-Za-z0-9._-]+"
+)
+_OAUTH_SECRET = re.compile(
+    r"(?i)([?&#](?:code|state|nonce|access_token|refresh_token|id_token)=)[^&#\s\"'\\]+"
+)
 _STANDARD_LOG_FIELDS = frozenset(logging.makeLogRecord({}).__dict__)
 
 
@@ -87,6 +96,8 @@ def _scrub(value: Any) -> Any:
     if isinstance(value, list):
         return [_scrub(item) for item in value]
     if isinstance(value, str):
+        value = _WEBHOOK_SECRET.sub(r"\1[Filtered]", value)
+        value = _OAUTH_SECRET.sub(r"\1[Filtered]", value)
         value = _BEARER_TOKEN.sub(r"\1[Filtered]", value)
         value = _LABELED_SECRET.sub(
             lambda match: (
@@ -115,24 +126,25 @@ def _breadcrumb(
     return _scrub(breadcrumb)
 
 
-def _scrub_event(event: dict[str, Any]) -> dict[str, Any]:
+def _scrub_event(event: Event) -> Event:
     """Remove request data and sensitive values from an error event."""
     event = _scrub(event)
     event.pop("request", None)
     return event
 
 
-def _scrub_transaction(event: dict[str, Any], hint: dict[str, Any]) -> dict[str, Any]:
+def _scrub_transaction(event: Event, hint: dict[str, Any]) -> Event:
     """Remove request payloads and HTTP span details from a transaction."""
     event = _scrub_event(event)
-    for span in event.get("spans", []):
+    spans = event.get("spans", [])
+    for span in spans if isinstance(spans, list) else []:
         span.pop("data", None)
         if str(span.get("op") or "").startswith("http"):
             span["description"] = "HTTP request"
     return event
 
 
-def _scrub_log(log: dict[str, Any], hint: dict[str, Any]) -> dict[str, Any] | None:
+def _scrub_log(log: Log, hint: dict[str, Any]) -> Log | None:
     """Keep BotFragg logs and serious Discord errors after removing URL data."""
     attributes = log.get("attributes", {})
     logger_name = str(attributes.get("logger.name") or "")

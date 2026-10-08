@@ -1,4 +1,4 @@
-"""Behavior checks for monitoring."""
+"""Behavior and regression checks for monitoring."""
 
 from __future__ import annotations
 
@@ -12,12 +12,43 @@ from src import monitoring
 from src.cogs.tasks import DiscordLogHandler
 from src.monitoring import StructuredFormatter, _scrub
 
-_OPTIONAL_URLS = (
-    "SUPPORT_URL",
-    "VOTE_URL",
-    "WEBSITE_URL",
-    "SHARD_LOG_WEBHOOK_URL",
-)
+
+def test_formatter_removes_webhook_and_interaction_tokens():
+    synthetic_token = "AUDIT_SYNTHETIC_" + "a" * 60
+    record = logging.LogRecord(
+        "discord.webhook.async_",
+        logging.DEBUG,
+        "synthetic.py",
+        1,
+        "Webhook ID %s with POST %s has returned status code 200",
+        (
+            123456789012345678,
+            f"https://discord.com/api/webhooks/123456789012345678/{synthetic_token}",
+        ),
+        None,
+    )
+    assert synthetic_token not in StructuredFormatter().format(record)
+
+
+def test_formatter_removes_oauth_code_from_gateway_payload():
+    record = logging.LogRecord(
+        "discord.gateway",
+        logging.DEBUG,
+        "synthetic.py",
+        1,
+        "WebSocket Event: %s",
+        (
+            json.dumps(
+                {
+                    "components": [
+                        {"value": "http://localhost/redirect?code=AUDIT_SYNTHETIC_CODE"}
+                    ]
+                }
+            ),
+        ),
+        None,
+    )
+    assert "AUDIT_SYNTHETIC_CODE" not in StructuredFormatter().format(record)
 
 
 def test_error_tracking_scrubs_riot_credentials() -> None:

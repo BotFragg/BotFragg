@@ -5,6 +5,8 @@ from __future__ import annotations
 import logging
 import time
 from dataclasses import dataclass
+from datetime import UTC
+from email.utils import parsedate_to_datetime
 from typing import Any
 from urllib.parse import urlsplit
 from uuid import UUID
@@ -76,8 +78,8 @@ class HTTPClient:
 
         Raises:
             RuntimeError: If the client has not been started.
-            HTTPFailure: If the request is rate-limited, times out, or fails at the
-                transport layer.
+            HTTPFailure: If the request is rate-limited, times out, fails at the
+                transport layer, or its response body cannot be decoded.
         """
         if not self.session:
             raise RuntimeError("HTTP client is not started")
@@ -93,30 +95,45 @@ class HTTPClient:
             async with self.session.request(
                 method, url, headers=headers, json=json, data=data
             ) as response:
-                try:
-                    body: Any = await response.json(content_type=None)
-                except aiohttp.ContentTypeError, ValueError:
-                    body = await response.text()
+                body: Any = None
+                if response.status != 429:
+                    try:
+                        body = await response.json(content_type=None)
+                    except aiohttp.ContentTypeError, ValueError:
+                        body = await response.text()
                 if response.status == 429 or (
                     isinstance(body, dict) and body.get("error") == "rate_limited"
                 ):
                     seconds = self._retry_after(response.headers.get("Retry-After"))
-                    self._limited_until[host] = time.monotonic() + seconds
-                    raise HTTPFailure(f"Rate limited for {seconds:.0f} seconds")
+                    retry_at = max(
+                        self._limited_until.get(host, 0), time.monotonic() + seconds
+                    )
+                    self._limited_until[host] = retry_at
+                    raise HTTPFailure(
+                        f"Rate limited for {retry_at - time.monotonic():.0f} seconds"
+                    )
                 return HTTPResult(response.status, body)
         except TimeoutError as exc:
             raise HTTPFailure("Request timed out") from exc
+        except UnicodeDecodeError as exc:
+            raise HTTPFailure("Could not decode HTTP response") from exc
         except aiohttp.ClientError as exc:
             raise HTTPFailure(str(exc)) from exc
 
     def _retry_after(self, value: str | None) -> int:
-        """Parse and clamp a Retry-After value to the configured backoff limit."""
+        """Parse Retry-After seconds or an HTTP date and clamp the backoff."""
         try:
             seconds = int(value or self.config.rate_limit_backoff_seconds)
         except ValueError:
-            seconds = self.config.rate_limit_backoff_seconds
+            try:
+                retry_at = parsedate_to_datetime(value or "")
+                if retry_at.tzinfo is None:
+                    retry_at = retry_at.replace(tzinfo=UTC)
+                seconds = int(retry_at.timestamp() - time.time())
+            except TypeError, ValueError, OverflowError:
+                seconds = self.config.rate_limit_backoff_seconds
         return min(max(seconds + 1, 1), self.config.rate_limit_cap_seconds)
 
 
 class HTTPFailure(RuntimeError):
-    """Raised for rate limits, transport failures, and bounded request timeouts."""
+    """Raised for rate limits, transport/decoding failures, and request timeouts."""
