@@ -13,6 +13,7 @@ from discord.ext import commands
 from src.bot import BotFraggBot, BotFraggCommandTree
 from src.cogs.extra import ExtraCog
 from src.cogs.staff import StaffCog
+from src.cogs.suggestions import SuggestionsCog
 from src.cogs.valorant.accounts import AccountsCog
 from src.cogs.valorant.alerts import AlertsCog
 from src.cogs.valorant.battlepass import BattlepassCog
@@ -203,6 +204,7 @@ async def test_initial_release_command_contract(
         BattlepassCog(bot),
         PenaltiesCog(bot),
         ExtraCog(bot),
+        SuggestionsCog(bot),
         StaffCog(bot),
     ):
         await bot.add_cog(cog)

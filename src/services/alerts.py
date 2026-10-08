@@ -1,0 +1,213 @@
+"""Persistence and orchestration for alerts."""
+
+from __future__ import annotations
+
+import asyncio
+from collections import defaultdict
+from collections.abc import Awaitable, Callable
+from dataclasses import dataclass
+from uuid import UUID
+
+from ..models import (
+    Account,
+    Alert,
+    User,
+)
+from .accounts import daily_shop_user_ids, selected_account
+from .auth import AuthenticationRequired
+from .shop import Offer, ShopData, ShopService, ShopUnavailable
+
+MAX_ALERTS_PER_PAGE = 20
+
+
+@dataclass(slots=True)
+class AlertPage:
+    """Hold one bounded page of alerts and its normalized pagination metadata."""
+
+    alerts: list[Alert]
+    total: int
+    page: int
+    pages: int
+    page_size: int
+
+
+async def create_alert(
+    user_id: int, account: Account, skin_uuid: UUID
+) -> tuple[Alert, bool]:
+    """Create an account-scoped skin alert or return the existing duplicate."""
+    if account.user_id != user_id:
+        raise ValueError("Account does not belong to this Discord user")
+    return await Alert.get_or_create(account=account, skin_uuid=skin_uuid)
+
+
+async def list_alerts_page(user_id: int, page: int, page_size: int) -> AlertPage:
+    """Fetch an owner-scoped alert page, wrapping page indexes and bounding size."""
+    page_size = max(1, min(page_size, MAX_ALERTS_PER_PAGE))
+    query = Alert.filter(account__user_id=user_id).order_by("id")
+    total = await query.count()
+    if not total:
+        return AlertPage([], 0, 0, 0, page_size)
+
+    pages = (total + page_size - 1) // page_size
+    page %= pages
+    alerts = await query.offset(page * page_size).limit(page_size)
+    if not alerts:
+        total = await query.count()
+        if not total:
+            return AlertPage([], 0, 0, 0, page_size)
+        pages = (total + page_size - 1) // page_size
+        page %= pages
+        alerts = await query.offset(page * page_size).limit(page_size)
+
+    return AlertPage(alerts, total, page, pages, page_size)
+
+
+async def remove_alert(user_id: int, alert_id: int) -> Alert | None:
+    """Delete and return an alert only when it belongs to the requesting user."""
+    alert = await Alert.get_or_none(id=alert_id, account__user_id=user_id)
+    if alert:
+        await alert.delete()
+    return alert
+
+
+async def first_alert(user_id: int) -> Alert | None:
+    """Return a user's first alert with its linked account loaded."""
+    return (
+        await Alert.filter(account__user_id=user_id).prefetch_related("account").first()
+    )
+
+
+async def user_ids_with_alerts() -> set[int]:
+    """Return distinct Discord IDs that own at least one alert."""
+    return set(await Alert.all().distinct().values_list("account__user_id", flat=True))
+
+
+async def account_ids_with_alerts(account_ids: list[str]) -> set[str]:
+    """Return only the supplied account IDs that currently have alerts."""
+    if not account_ids:
+        return set()
+    return set(
+        await Alert.filter(account_id__in=account_ids).values_list(
+            "account_id", flat=True
+        )
+    )
+
+
+async def matching_alerts_for_skins(
+    account_id: str, skin_uuids: list[str]
+) -> list[Alert]:
+    """Fetch alerts matching one account and a bounded set of shop skin IDs."""
+    if not skin_uuids:
+        return []
+    return await Alert.filter(
+        account_id=account_id, skin_uuid__in=skin_uuids
+    ).prefetch_related("account")
+
+
+ShopOutcomeHandler = Callable[
+    [int, User | None, Account, ShopData, list[tuple[Alert, Offer]], bool],
+    Awaitable[None],
+]
+
+CredentialsExpiredHandler = Callable[[int], Awaitable[None]]
+
+
+async def run_daily_alerts(
+    shop: ShopService,
+    *,
+    alert_concurrency: int,
+    delay_between_alerts_seconds: float,
+    dry_run: bool,
+    on_shop: ShopOutcomeHandler,
+    on_credentials_expired: CredentialsExpiredHandler,
+) -> dict[str, int]:
+    """Check eligible accounts with bounded concurrency and report run totals.
+
+    ``dry_run`` performs the lookups without sending notifications. The callbacks
+    handle successful shops and expired credentials; the returned counts include
+    users, fetched shops, matched alerts, and recoverable failures.
+    """
+    user_ids = await user_ids_with_alerts()
+    user_ids.update(await daily_shop_user_ids())
+    summary = {"users": len(user_ids), "shops": 0, "alerts": 0, "failures": 0}
+
+    accounts_by_user: dict[int, list[Account]] = defaultdict(list)
+    accounts = (
+        await Account.filter(user_id__in=user_ids)
+        .select_related("user")
+        .order_by("created_at")
+        if user_ids
+        else []
+    )
+    for account in accounts:
+        accounts_by_user[account.user_id].append(account)
+    alerted_accounts = await account_ids_with_alerts(
+        [account.puuid for account in accounts]
+    )
+
+    async def process(user_id: int) -> None:
+        """Check one user's accounts and dispatch any matching shop results."""
+        user_accounts = accounts_by_user.get(user_id, [])
+        user = user_accounts[0].user if user_accounts else None
+        current = (
+            await selected_account(user_id, user=user, accounts=user_accounts)
+            if user
+            else None
+        )
+        for account in user_accounts:
+            has_alerts = account.puuid in alerted_accounts
+            send_daily_shop = bool(
+                user
+                and user.daily_shop_enabled
+                and account.puuid == getattr(current, "puuid", None)
+            )
+            if not has_alerts and not send_daily_shop:
+                continue
+
+            try:
+                storefront = await shop.storefront(account, use_cache=False)
+            except AuthenticationRequired:
+                summary["failures"] += 1
+                if not dry_run:
+                    await on_credentials_expired(user_id)
+                continue
+            except ShopUnavailable:
+                summary["failures"] += 1
+                continue
+
+            summary["shops"] += 1
+            offers_by_uuid = {offer.skin.uuid: offer for offer in storefront.offers}
+            matches = (
+                await matching_alerts_for_skins(account.puuid, list(offers_by_uuid))
+                if has_alerts
+                else []
+            )
+            summary["alerts"] += len(matches)
+
+            if not dry_run and (matches or send_daily_shop):
+                await on_shop(
+                    user_id,
+                    user,
+                    account,
+                    storefront,
+                    [
+                        (alert, offers_by_uuid[str(alert.skin_uuid)])
+                        for alert in matches
+                    ],
+                    send_daily_shop,
+                )
+            if delay_between_alerts_seconds:
+                await asyncio.sleep(delay_between_alerts_seconds)
+
+    user_iterator = iter(user_ids)
+
+    async def worker() -> None:
+        """Process users from the shared iterator until it is exhausted."""
+        for user_id in user_iterator:
+            await process(user_id)
+
+    async with asyncio.TaskGroup() as task_group:
+        for _ in range(min(alert_concurrency, len(user_ids))):
+            task_group.create_task(worker())
+
+    return summary

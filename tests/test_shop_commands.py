@@ -103,7 +103,7 @@ async def test_accessory_shop_renders_catalog_item_without_changing_output(
 
     monkeypatch.setattr(shop_module, "account_for_user", account_for_user)
     monkeypatch.setattr(shop_module, "get_user", get_user)
-    monkeypatch.setattr(shop_module, "list_accounts", list_accounts)
+    monkeypatch.setattr("src.views.shop.list_accounts", list_accounts)
     bot = _localized_bot(
         shop=Shop(),
         emoji_service=EmojiService(),
@@ -290,7 +290,7 @@ async def test_daily_shop_view_includes_only_its_offers_in_skin_menu(
             """Report that no custom tier emoji is available."""
             return ""
 
-    monkeypatch.setattr("src.cogs.valorant.shop.list_accounts", list_accounts)
+    monkeypatch.setattr("src.views.shop.list_accounts", list_accounts)
     bot = _localized_bot(
         register_component=lambda *_args: None,
         emoji_service=EmojiService(),
@@ -710,7 +710,7 @@ async def test_nightmarket_command_includes_skin_and_account_menus(
 
     monkeypatch.setattr("src.cogs.valorant.shop.selected_account", selected_account)
     monkeypatch.setattr("src.cogs.valorant.shop.get_user", get_user)
-    monkeypatch.setattr("src.cogs.valorant.shop.list_accounts", list_accounts)
+    monkeypatch.setattr("src.views.shop.list_accounts", list_accounts)
     monkeypatch.setattr("src.cogs.valorant.shop.account_for_user", account_for_user)
 
     class EmojiService:
@@ -873,7 +873,7 @@ async def test_shop_account_selector_hides_names_when_requested(
         """Return the configured accounts for the requested Discord user."""
         return accounts
 
-    monkeypatch.setattr("src.cogs.valorant.shop.list_accounts", list_accounts)
+    monkeypatch.setattr("src.views.shop.list_accounts", list_accounts)
     controls = discord.ui.View(timeout=None)
     await shop_module.add_account_selector(
         controls,

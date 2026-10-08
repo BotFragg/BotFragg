@@ -15,17 +15,15 @@ from src.models import (
     Alert,
     User,
 )
-from src.services import accounts as alert_service
-from src.services.accounts import (
+from src.services import alerts as alert_service
+from src.services.accounts import get_user, list_accounts, selected_account
+from src.services.alerts import (
     account_ids_with_alerts,
     create_alert,
-    get_user,
-    list_accounts,
     list_alerts_page,
     matching_alerts_for_skins,
     remove_alert,
     run_daily_alerts,
-    selected_account,
     user_ids_with_alerts,
 )
 from src.services.auth import AuthenticationRequired, AuthService

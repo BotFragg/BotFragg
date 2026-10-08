@@ -9,7 +9,7 @@ from discord.ext import commands
 from ...bot import BotFraggBot
 from ...services.accounts import list_accounts
 from ...views import OwnedActionButton
-from ._ui import embed, error, localized_embed, translated, view
+from ...views.ui import embed, error, localized_embed, translated, view
 
 
 class LoginModal(discord.ui.Modal):

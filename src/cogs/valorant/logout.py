@@ -8,7 +8,7 @@ from discord.ext import commands
 
 from ...bot import BotFraggBot
 from ...services.accounts import delete_user_data, list_accounts, resolve_account
-from ._ui import account_autocomplete_choices, error, localized_embed
+from ...views.ui import account_autocomplete_choices, error, localized_embed
 
 
 class LogoutCog(commands.Cog):

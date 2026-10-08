@@ -5,9 +5,9 @@ from __future__ import annotations
 import discord
 from discord import app_commands
 
-from ...localization import BotFraggTranslator
-from ...models import Account
-from ...services.auth import AuthenticationRequired
+from ..localization import BotFraggTranslator
+from ..models import Account
+from ..services.auth import AuthenticationRequired
 
 RED = 0xFD4553
 DARK = 0x202225

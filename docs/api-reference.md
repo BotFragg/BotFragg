@@ -106,7 +106,7 @@ Initialize shared resources, load extensions, and optionally sync commands.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L212)
+[Source](../src/bot.py#L213)
 
 Set the online activity and log the connected shard and guild counts.
 
@@ -114,7 +114,7 @@ Set the online activity and log the connected shard and guild counts.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L225)
+[Source](../src/bot.py#L226)
 
 Close Discord, Riot HTTP, database, and monitoring resources in order.
 
@@ -222,7 +222,7 @@ General BotFragg commands for status, links, suggestions, and shard health.
 
 **Scope:** `src/cogs/extra.py` · `module`
 
-[Source](../src/cogs/extra.py#L46)
+[Source](../src/cogs/extra.py#L36)
 
 Provide public utility commands and owner-managed suggestion workflows.
 
@@ -230,7 +230,7 @@ Provide public utility commands and owner-managed suggestion workflows.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L57)
+[Source](../src/cogs/extra.py#L39)
 
 Store the bot and record when this cog started for the info command.
 
@@ -238,7 +238,7 @@ Store the bot and record when this cog started for the info command.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L73)
+[Source](../src/cogs/extra.py#L55)
 
 Start shard-status updates when their destination is configured.
 
@@ -246,7 +246,7 @@ Start shard-status updates when their destination is configured.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L78)
+[Source](../src/cogs/extra.py#L60)
 
 Cancel and await the shard-status task during extension shutdown.
 
@@ -254,7 +254,7 @@ Cancel and await the shard-status task during extension shutdown.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L92)
+[Source](../src/cogs/extra.py#L74)
 
 Report Discord gateway latency and a live database probe duration.
 
@@ -262,7 +262,7 @@ Report Discord gateway latency and a live database probe duration.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L122)
+[Source](../src/cogs/extra.py#L104)
 
 Show recent public updates and BotFragg runtime information.
 
@@ -270,7 +270,7 @@ Show recent public updates and BotFragg runtime information.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L230)
+[Source](../src/cogs/extra.py#L212)
 
 Fetch and cache five public commits, formatting them per request locale.
 
@@ -278,7 +278,7 @@ Fetch and cache five public commits, formatting them per request locale.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L310)
+[Source](../src/cogs/extra.py#L292)
 
 Build link buttons for the configured public URLs.
 
@@ -286,7 +286,7 @@ Build link buttons for the configured public URLs.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L341)
+[Source](../src/cogs/extra.py#L323)
 
 Use each command's cog module to place it in a help category.
 
@@ -294,7 +294,7 @@ Use each command's cog module to place it in a help category.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L361)
+[Source](../src/cogs/extra.py#L343)
 
 Return Discord-formatted mentions for all synced commands and subcommands.
 
@@ -302,7 +302,7 @@ Return Discord-formatted mentions for all synced commands and subcommands.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L388)
+[Source](../src/cogs/extra.py#L370)
 
 List registered slash commands by category in the embed description.
 
@@ -310,71 +310,15 @@ List registered slash commands by category in the embed description.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L449)
+[Source](../src/cogs/extra.py#L431)
 
 Show an invite link and any configured support, vote, and website links.
-
-### `async def suggest(self, interaction: discord.Interaction, suggestion: app_commands.Range[str, 1, 1000]) -> None`
-
-**Scope:** `src/cogs/extra.py` · `ExtraCog`
-
-[Source](../src/cogs/extra.py#L482)
-
-Persist a feature suggestion and publish it to the configured log channel.
-
-### `async def track(self, interaction: discord.Interaction, id: int) -> None`
-
-**Scope:** `src/cogs/extra.py` · `ExtraCog`
-
-[Source](../src/cogs/extra.py#L553)
-
-Follow an existing suggestion so the caller receives its review result.
-
-### `async def untrack(self, interaction: discord.Interaction, id: int) -> None`
-
-**Scope:** `src/cogs/extra.py` · `ExtraCog`
-
-[Source](../src/cogs/extra.py#L588)
-
-Remove the caller's follow from another user's suggestion.
-
-### `async def approve(self, interaction: discord.Interaction, id: int, reason: str) -> None`
-
-**Scope:** `src/cogs/extra.py` · `ExtraCog`
-
-[Source](../src/cogs/extra.py#L617)
-
-Submit an owner-only approval review for the selected suggestion.
-
-### `async def deny(self, interaction: discord.Interaction, id: int, reason: str) -> None`
-
-**Scope:** `src/cogs/extra.py` · `ExtraCog`
-
-[Source](../src/cogs/extra.py#L629)
-
-Submit an owner-only denial review for the selected suggestion.
-
-### `async def _review_suggestion(self, interaction: discord.Interaction, id: int, reason: str, status: Literal['approved', 'denied']) -> None`
-
-**Scope:** `src/cogs/extra.py` · `ExtraCog`
-
-[Source](../src/cogs/extra.py#L635)
-
-Authorize a review, update its record, and notify its followers.
-
-### `async def _update_suggestion_log(self, suggestion: Suggestion) -> None`
-
-**Scope:** `src/cogs/extra.py` · `ExtraCog`
-
-[Source](../src/cogs/extra.py#L686)
-
-Edit the original suggestion post with the final status and review reason.
 
 ### `async def shard_status(self) -> None`
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L708)
+[Source](../src/cogs/extra.py#L447)
 
 Update or recreate the persistent embed containing per-shard health.
 
@@ -382,7 +326,7 @@ Update or recreate the persistent embed containing per-shard health.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L743)
+[Source](../src/cogs/extra.py#L482)
 
 Wait for Discord readiness before the first shard-status update.
 
@@ -390,7 +334,7 @@ Wait for Discord readiness before the first shard-status update.
 
 **Scope:** `src/cogs/extra.py` · `module`
 
-[Source](../src/cogs/extra.py#L748)
+[Source](../src/cogs/extra.py#L487)
 
 Register the general utility and suggestion cog with the bot.
 
@@ -402,7 +346,7 @@ Owner-only Discord diagnostics for users, servers, and command analytics.
 
 **Scope:** `src/cogs/staff.py` · `module`
 
-[Source](../src/cogs/staff.py#L15)
+[Source](../src/cogs/staff.py#L16)
 
 Owner-only operational diagnostics.
 
@@ -410,7 +354,7 @@ Owner-only operational diagnostics.
 
 **Scope:** `src/cogs/staff.py` · `StaffCog`
 
-[Source](../src/cogs/staff.py#L18)
+[Source](../src/cogs/staff.py#L19)
 
 Bind the staff diagnostics to the running bot.
 
@@ -418,7 +362,7 @@ Bind the staff diagnostics to the running bot.
 
 **Scope:** `src/cogs/staff.py` · `StaffCog`
 
-[Source](../src/cogs/staff.py#L22)
+[Source](../src/cogs/staff.py#L23)
 
 Authorize the bot owner and privately reject all other callers.
 
@@ -426,7 +370,7 @@ Authorize the bot owner and privately reject all other callers.
 
 **Scope:** `src/cogs/staff.py` · `StaffCog`
 
-[Source](../src/cogs/staff.py#L35)
+[Source](../src/cogs/staff.py#L36)
 
 Show the owner's stored account statistics and shared-server details.
 
@@ -434,7 +378,7 @@ Show the owner's stored account statistics and shared-server details.
 
 **Scope:** `src/cogs/staff.py` · `StaffCog`
 
-[Source](../src/cogs/staff.py#L77)
+[Source](../src/cogs/staff.py#L78)
 
 Show analytics and Discord's cached membership count for a server.
 
@@ -442,9 +386,93 @@ Show analytics and Discord's cached membership count for a server.
 
 **Scope:** `src/cogs/staff.py` · `module`
 
-[Source](../src/cogs/staff.py#L128)
+[Source](../src/cogs/staff.py#L129)
 
 Register the owner-only diagnostics cog with the bot.
+
+## `src/cogs/suggestions.py`
+
+Suggestion submission, tracking, and owner review commands.
+
+### `class SuggestionsCog(commands.Cog)`
+
+**Scope:** `src/cogs/suggestions.py` · `module`
+
+[Source](../src/cogs/suggestions.py#L24)
+
+Own suggestion submission and review workflows.
+
+### `def __init__(self, bot: BotFraggBot) -> None`
+
+**Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
+
+[Source](../src/cogs/suggestions.py#L27)
+
+Bind suggestion commands to the running bot.
+
+### `async def suggest(self, interaction: discord.Interaction, suggestion: app_commands.Range[str, 1, 1000]) -> None`
+
+**Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
+
+[Source](../src/cogs/suggestions.py#L57)
+
+Persist a feature suggestion and publish it to the configured log channel.
+
+### `async def track(self, interaction: discord.Interaction, id: int) -> None`
+
+**Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
+
+[Source](../src/cogs/suggestions.py#L128)
+
+Follow an existing suggestion so the caller receives its review result.
+
+### `async def untrack(self, interaction: discord.Interaction, id: int) -> None`
+
+**Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
+
+[Source](../src/cogs/suggestions.py#L163)
+
+Remove the caller's follow from another user's suggestion.
+
+### `async def approve(self, interaction: discord.Interaction, id: int, reason: str) -> None`
+
+**Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
+
+[Source](../src/cogs/suggestions.py#L192)
+
+Submit an owner-only approval review for the selected suggestion.
+
+### `async def deny(self, interaction: discord.Interaction, id: int, reason: str) -> None`
+
+**Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
+
+[Source](../src/cogs/suggestions.py#L204)
+
+Submit an owner-only denial review for the selected suggestion.
+
+### `async def _review_suggestion(self, interaction: discord.Interaction, id: int, reason: str, status: Literal['approved', 'denied']) -> None`
+
+**Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
+
+[Source](../src/cogs/suggestions.py#L210)
+
+Authorize a review, update its record, and notify its followers.
+
+### `async def _update_suggestion_log(self, suggestion: Suggestion) -> None`
+
+**Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
+
+[Source](../src/cogs/suggestions.py#L261)
+
+Edit the original suggestion post with the final status and review reason.
+
+### `async def setup(bot: BotFraggBot) -> None`
+
+**Scope:** `src/cogs/suggestions.py` · `module`
+
+[Source](../src/cogs/suggestions.py#L283)
+
+Register suggestion commands and review handlers.
 
 ## `src/cogs/tasks.py`
 
@@ -622,66 +650,6 @@ Register the background-task cog with the bot.
 
 Initial-release VALORANT command cogs.
 
-## `src/cogs/valorant/_ui.py`
-
-VALORANT cog presentation helpers for names, views, embeds, and errors.
-
-### `def _account_display_name(username: str, *, hide_ign: bool, translator: BotFraggTranslator, locale: discord.Locale | str) -> str`
-
-**Scope:** `src/cogs/valorant/_ui.py` · `module`
-
-[Source](../src/cogs/valorant/_ui.py#L16)
-
-Return a generic account label when the user has chosen to hide their name.
-
-### `def account_autocomplete_choices(accounts: list[Account], current: str) -> list[app_commands.Choice[str]]`
-
-**Scope:** `src/cogs/valorant/_ui.py` · `module`
-
-[Source](../src/cogs/valorant/_ui.py#L29)
-
-Format account-name matches for Discord's bounded autocomplete menu.
-
-### `def view(*items: discord.ui.Item) -> discord.ui.View`
-
-**Scope:** `src/cogs/valorant/_ui.py` · `module`
-
-[Source](../src/cogs/valorant/_ui.py#L40)
-
-Create a persistent view containing the supplied Discord components.
-
-### `def embed(message: str | None = None, *, colour: int = RED, title: str | None = None) -> discord.Embed`
-
-**Scope:** `src/cogs/valorant/_ui.py` · `module`
-
-[Source](../src/cogs/valorant/_ui.py#L48)
-
-Build a standard BotFragg embed with optional description, title, and colour.
-
-### `def translated(interaction: discord.Interaction, key: str, **arguments: object) -> str`
-
-**Scope:** `src/cogs/valorant/_ui.py` · `module`
-
-[Source](../src/cogs/valorant/_ui.py#L55)
-
-Format one message using the caller's Discord locale.
-
-### `def localized_embed(interaction: discord.Interaction, description_key: str | None = None, *, title_key: str | None = None, colour: int = DARK, description_args: dict[str, object] | None = None, title_args: dict[str, object] | None = None) -> discord.Embed`
-
-**Scope:** `src/cogs/valorant/_ui.py` · `module`
-
-[Source](../src/cogs/valorant/_ui.py#L60)
-
-Build an embed from catalog message IDs and the caller's locale.
-
-### `async def error(interaction: discord.Interaction, message: str | Exception, **arguments: object) -> None`
-
-**Scope:** `src/cogs/valorant/_ui.py` · `module`
-
-[Source](../src/cogs/valorant/_ui.py#L81)
-
-Send a private error embed using the interaction's available response path.
-
 ## `src/cogs/valorant/accounts.py`
 
 Slash commands for selecting, listing, and paging through linked accounts.
@@ -766,7 +734,7 @@ Commands for creating, viewing, removing, and testing skin alerts.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `module`
 
-[Source](../src/cogs/valorant/alerts.py#L27)
+[Source](../src/cogs/valorant/alerts.py#L22)
 
 Manage owner-scoped alert records and their persistent Discord controls.
 
@@ -774,7 +742,7 @@ Manage owner-scoped alert records and their persistent Discord controls.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L30)
+[Source](../src/cogs/valorant/alerts.py#L25)
 
 Bind the bot and register persistent alert-management actions.
 
@@ -782,7 +750,7 @@ Bind the bot and register persistent alert-management actions.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L36)
+[Source](../src/cogs/valorant/alerts.py#L31)
 
 Return catalog skin matches suitable for Discord's autocomplete limit.
 
@@ -790,7 +758,7 @@ Return catalog skin matches suitable for Discord's autocomplete limit.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L69)
+[Source](../src/cogs/valorant/alerts.py#L64)
 
 Create a skin alert for the caller's active account and show a remove control.
 
@@ -798,7 +766,7 @@ Create a skin alert for the caller's active account and show a remove control.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L112)
+[Source](../src/cogs/valorant/alerts.py#L107)
 
 Show the caller's paginated alerts and owner-bound management controls.
 
@@ -806,7 +774,7 @@ Show the caller's paginated alerts and owner-bound management controls.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L126)
+[Source](../src/cogs/valorant/alerts.py#L121)
 
 Build the confirmation card for a newly created skin alert.
 
@@ -814,7 +782,7 @@ Build the confirmation card for a newly created skin alert.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L138)
+[Source](../src/cogs/valorant/alerts.py#L133)
 
 Return a skin name prefixed with its tier emoji, if one exists.
 
@@ -822,7 +790,7 @@ Return a skin name prefixed with its tier emoji, if one exists.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L148)
+[Source](../src/cogs/valorant/alerts.py#L143)
 
 Return a button emoji for a skin tier when one is available.
 
@@ -830,7 +798,7 @@ Return a button emoji for a skin tier when one is available.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L154)
+[Source](../src/cogs/valorant/alerts.py#L149)
 
 Render one alert page with per-alert removal and optional page controls.
 
@@ -838,7 +806,7 @@ Render one alert page with per-alert removal and optional page controls.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L218)
+[Source](../src/cogs/valorant/alerts.py#L213)
 
 Remove the selected owner-scoped alert and refresh or dismiss its controls.
 
@@ -846,7 +814,7 @@ Remove the selected owner-scoped alert and refresh or dismiss its controls.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L257)
+[Source](../src/cogs/valorant/alerts.py#L252)
 
 Validate a page payload and update the alert-management message.
 
@@ -854,7 +822,7 @@ Validate a page payload and update the alert-management message.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L277)
+[Source](../src/cogs/valorant/alerts.py#L272)
 
 Check login and shop availability, then send the caller a test alert DM.
 
@@ -862,7 +830,7 @@ Check login and shop availability, then send the caller a test alert DM.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `module`
 
-[Source](../src/cogs/valorant/alerts.py#L346)
+[Source](../src/cogs/valorant/alerts.py#L341)
 
 Register the skin-alert commands and their persistent handlers.
 
@@ -1154,43 +1122,11 @@ Register the user preference commands and selection handler.
 
 Commands for skin shops, featured bundles, and balances.
 
-### `def _price_line(currency: str, final_price: int, original_price: int | None = None, discount_percent: int | None = None) -> str`
-
-**Scope:** `src/cogs/valorant/shop.py` · `module`
-
-[Source](../src/cogs/valorant/shop.py#L45)
-
-Format a current price and any original price discount on one line.
-
-### `def offer_cards(header: str, offers: list[Offer], currency: str, *, link_item_image: bool, unknown_skin_name: str, emoji_service: ApplicationEmojiService | None = None, header_colour: int = 2105893, locale: object | None = None) -> list[discord.Embed]`
-
-**Scope:** `src/cogs/valorant/shop.py` · `module`
-
-[Source](../src/cogs/valorant/shop.py#L61)
-
-Render a heading and one tier-coloured embed for each skin offer.
-
-### `def add_skin_selector(controls: discord.ui.View, owner_id: int, offers: list[Offer], expires: int, emoji_service: ApplicationEmojiService, translator: BotFraggTranslator, locale: discord.Locale) -> None`
-
-**Scope:** `src/cogs/valorant/shop.py` · `module`
-
-[Source](../src/cogs/valorant/shop.py#L99)
-
-Add a menu containing only the skin offers rendered beside it.
-
-### `async def add_account_selector(controls: discord.ui.View, owner_id: int, mode: str, current: str, *, hide_ign: bool = False, translator: BotFraggTranslator, locale: discord.Locale) -> None`
-
-**Scope:** `src/cogs/valorant/shop.py` · `module`
-
-[Source](../src/cogs/valorant/shop.py#L141)
-
-Add a private account selector when the owner has multiple accounts.
-
 ### `class ShopCog(commands.Cog)`
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L177)
+[Source](../src/cogs/valorant/shop.py#L42)
 
 Show shops and bundles for the caller's linked account.
 
@@ -1198,7 +1134,7 @@ Show shops and bundles for the caller's linked account.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L180)
+[Source](../src/cogs/valorant/shop.py#L45)
 
 Bind the bot and register persistent shop-mode and account actions.
 
@@ -1206,7 +1142,7 @@ Bind the bot and register persistent shop-mode and account actions.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L204)
+[Source](../src/cogs/valorant/shop.py#L69)
 
 Show the caller's shop or a shop another user has chosen to share.
 
@@ -1214,7 +1150,7 @@ Show the caller's shop or a shop another user has chosen to share.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L273)
+[Source](../src/cogs/valorant/shop.py#L138)
 
 Build daily shop embeds, owned selectors, and available shop controls.
 
@@ -1222,7 +1158,7 @@ Build daily shop embeds, owned selectors, and available shop controls.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L357)
+[Source](../src/cogs/valorant/shop.py#L222)
 
 Show the selected account's current featured bundle offers and controls.
 
@@ -1230,7 +1166,7 @@ Show the selected account's current featured bundle offers and controls.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L374)
+[Source](../src/cogs/valorant/shop.py#L239)
 
 Build current featured bundles with shop-style cards and controls.
 
@@ -1238,7 +1174,7 @@ Build current featured bundles with shop-style cards and controls.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L469)
+[Source](../src/cogs/valorant/shop.py#L334)
 
 Resolve static bundle metadata or provide a safe live-offer fallback.
 
@@ -1246,7 +1182,7 @@ Resolve static bundle metadata or provide a safe live-offer fallback.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L483)
+[Source](../src/cogs/valorant/shop.py#L348)
 
 Format only Riot-supplied VP totals, retaining exact discount values.
 
@@ -1254,7 +1190,7 @@ Format only Riot-supplied VP totals, retaining exact discount values.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L497)
+[Source](../src/cogs/valorant/shop.py#L362)
 
 Render one live bundle item in the shop's card, tier, and price style.
 
@@ -1262,7 +1198,7 @@ Render one live bundle item in the shop's card, tier, and price style.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L557)
+[Source](../src/cogs/valorant/shop.py#L422)
 
 Render a bundle summary and up to nine shop-style item cards.
 
@@ -1270,7 +1206,7 @@ Render a bundle summary and up to nine shop-style item cards.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L623)
+[Source](../src/cogs/valorant/shop.py#L488)
 
 Render the selected daily, Night Market, accessory, or bundle mode.
 
@@ -1278,7 +1214,7 @@ Render the selected daily, Night Market, accessory, or bundle mode.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L769)
+[Source](../src/cogs/valorant/shop.py#L634)
 
 Read the values actually offered by this message's matching select menu.
 
@@ -1286,7 +1222,7 @@ Read the values actually offered by this message's matching select menu.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L783)
+[Source](../src/cogs/valorant/shop.py#L648)
 
 Revalidate a selected featured bundle against the caller's account and view.
 
@@ -1294,7 +1230,7 @@ Revalidate a selected featured bundle against the caller's account and view.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L834)
+[Source](../src/cogs/valorant/shop.py#L699)
 
 List playable levels and chromas within Discord's select-menu limit.
 
@@ -1302,7 +1238,7 @@ List playable levels and chromas within Discord's select-menu limit.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L867)
+[Source](../src/cogs/valorant/shop.py#L732)
 
 Open a private level/chroma menu for a skin offered in this message.
 
@@ -1310,7 +1246,7 @@ Open a private level/chroma menu for a skin offered in this message.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L921)
+[Source](../src/cogs/valorant/shop.py#L786)
 
 Privately return a selected video only when it belongs to that skin.
 
@@ -1318,7 +1254,7 @@ Privately return a selected video only when it belongs to that skin.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L981)
+[Source](../src/cogs/valorant/shop.py#L846)
 
 Validate the selected account and reopen the corresponding shop mode.
 
@@ -1326,7 +1262,7 @@ Validate the selected account and reopen the corresponding shop mode.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L997)
+[Source](../src/cogs/valorant/shop.py#L862)
 
 Display discounted Night Market offers for the selected Riot account.
 
@@ -1334,7 +1270,7 @@ Display discounted Night Market offers for the selected Riot account.
 
 **Scope:** `src/cogs/valorant/shop.py` · `NightMarketCog`
 
-[Source](../src/cogs/valorant/shop.py#L1000)
+[Source](../src/cogs/valorant/shop.py#L865)
 
 Bind the shared shop, account, and emoji services.
 
@@ -1342,7 +1278,7 @@ Bind the shared shop, account, and emoji services.
 
 **Scope:** `src/cogs/valorant/shop.py` · `NightMarketCog`
 
-[Source](../src/cogs/valorant/shop.py#L1011)
+[Source](../src/cogs/valorant/shop.py#L876)
 
 Fetch and render Night Market offers or report that none are active.
 
@@ -1350,7 +1286,7 @@ Fetch and render Night Market offers or report that none are active.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L1078)
+[Source](../src/cogs/valorant/shop.py#L943)
 
 Display the selected account's three VALORANT wallet balances.
 
@@ -1358,7 +1294,7 @@ Display the selected account's three VALORANT wallet balances.
 
 **Scope:** `src/cogs/valorant/shop.py` · `BalanceCog`
 
-[Source](../src/cogs/valorant/shop.py#L1081)
+[Source](../src/cogs/valorant/shop.py#L946)
 
 Bind the shared shop and user-preference services.
 
@@ -1366,7 +1302,7 @@ Bind the shared shop and user-preference services.
 
 **Scope:** `src/cogs/valorant/shop.py` · `BalanceCog`
 
-[Source](../src/cogs/valorant/shop.py#L1092)
+[Source](../src/cogs/valorant/shop.py#L957)
 
 Fetch and display VP, Radianite, and Kingdom Credit balances.
 
@@ -1374,7 +1310,7 @@ Fetch and display VP, Radianite, and Kingdom Credit balances.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L1141)
+[Source](../src/cogs/valorant/shop.py#L1006)
 
 Register the shop, Night Market, and wallet-balance cogs.
 
@@ -1818,7 +1754,7 @@ Persistence operations for users, Riot accounts, alerts, analytics, and ideas.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L32)
+[Source](../src/services/accounts.py#L23)
 
 Return the stored BotFragg user for a Discord ID, if one exists.
 
@@ -1826,7 +1762,7 @@ Return the stored BotFragg user for a Discord ID, if one exists.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L37)
+[Source](../src/services/accounts.py#L28)
 
 Count users with a stored BotFragg profile.
 
@@ -1834,7 +1770,7 @@ Count users with a stored BotFragg profile.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L42)
+[Source](../src/services/accounts.py#L33)
 
 Return Discord IDs whose saved preference enables daily shop DMs.
 
@@ -1842,7 +1778,7 @@ Return Discord IDs whose saved preference enables daily shop DMs.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L47)
+[Source](../src/services/accounts.py#L38)
 
 Return a Riot account only when it belongs to the requested Discord user.
 
@@ -1850,7 +1786,7 @@ Return a Riot account only when it belongs to the requested Discord user.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L52)
+[Source](../src/services/accounts.py#L43)
 
 Update one allowlisted Boolean preference and refresh the user's timestamp.
 
@@ -1858,7 +1794,7 @@ Update one allowlisted Boolean preference and refresh the user's timestamp.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L62)
+[Source](../src/services/accounts.py#L53)
 
 Return the active account, choosing the oldest account when none is selected.
 
@@ -1870,7 +1806,7 @@ conditional so a concurrent selection is not overwritten.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L118)
+[Source](../src/services/accounts.py#L109)
 
 Return a user's Riot accounts in creation order.
 
@@ -1878,7 +1814,7 @@ Return a user's Riot accounts in creation order.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L123)
+[Source](../src/services/accounts.py#L114)
 
 Resolve an account by PUUID, case-insensitive name, or one-based position.
 
@@ -1886,7 +1822,7 @@ Resolve an account by PUUID, case-insensitive name, or one-based position.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L139)
+[Source](../src/services/accounts.py#L130)
 
 Set a user's active account after verifying that the account is theirs.
 
@@ -1894,79 +1830,83 @@ Set a user's active account after verifying that the account is theirs.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L148)
+[Source](../src/services/accounts.py#L139)
 
 Delete the user's stored BotFragg records and all linked Riot accounts.
 
+## `src/services/alerts.py`
+
+Persistence and orchestration for alerts.
+
 ### `class AlertPage`
 
-**Scope:** `src/services/accounts.py` · `module`
+**Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/accounts.py#L165)
+[Source](../src/services/alerts.py#L24)
 
 Hold one bounded page of alerts and its normalized pagination metadata.
 
 ### `async def create_alert(user_id: int, account: Account, skin_uuid: UUID) -> tuple[Alert, bool]`
 
-**Scope:** `src/services/accounts.py` · `module`
+**Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/accounts.py#L175)
+[Source](../src/services/alerts.py#L34)
 
 Create an account-scoped skin alert or return the existing duplicate.
 
 ### `async def list_alerts_page(user_id: int, page: int, page_size: int) -> AlertPage`
 
-**Scope:** `src/services/accounts.py` · `module`
+**Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/accounts.py#L184)
+[Source](../src/services/alerts.py#L43)
 
 Fetch an owner-scoped alert page, wrapping page indexes and bounding size.
 
 ### `async def remove_alert(user_id: int, alert_id: int) -> Alert | None`
 
-**Scope:** `src/services/accounts.py` · `module`
+**Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/accounts.py#L206)
+[Source](../src/services/alerts.py#L65)
 
 Delete and return an alert only when it belongs to the requesting user.
 
 ### `async def first_alert(user_id: int) -> Alert | None`
 
-**Scope:** `src/services/accounts.py` · `module`
+**Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/accounts.py#L214)
+[Source](../src/services/alerts.py#L73)
 
 Return a user's first alert with its linked account loaded.
 
 ### `async def user_ids_with_alerts() -> set[int]`
 
-**Scope:** `src/services/accounts.py` · `module`
+**Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/accounts.py#L221)
+[Source](../src/services/alerts.py#L80)
 
 Return distinct Discord IDs that own at least one alert.
 
 ### `async def account_ids_with_alerts(account_ids: list[str]) -> set[str]`
 
-**Scope:** `src/services/accounts.py` · `module`
+**Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/accounts.py#L226)
+[Source](../src/services/alerts.py#L85)
 
 Return only the supplied account IDs that currently have alerts.
 
 ### `async def matching_alerts_for_skins(account_id: str, skin_uuids: list[str]) -> list[Alert]`
 
-**Scope:** `src/services/accounts.py` · `module`
+**Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/accounts.py#L237)
+[Source](../src/services/alerts.py#L96)
 
 Fetch alerts matching one account and a bounded set of shop skin IDs.
 
 ### `async def run_daily_alerts(shop: ShopService, *, alert_concurrency: int, delay_between_alerts_seconds: float, dry_run: bool, on_shop: ShopOutcomeHandler, on_credentials_expired: CredentialsExpiredHandler) -> dict[str, int]`
 
-**Scope:** `src/services/accounts.py` · `module`
+**Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/accounts.py#L255)
+[Source](../src/services/alerts.py#L115)
 
 Check eligible accounts with bounded concurrency and report run totals.
 
@@ -1974,83 +1914,28 @@ Check eligible accounts with bounded concurrency and report run totals.
 handle successful shops and expired credentials; the returned counts include
 users, fetched shops, matched alerts, and recoverable failures.
 
+## `src/services/analytics.py`
+
+Persistence and orchestration for analytics.
+
 ### `async def record_command_invocation(*, command: str, user_id: int, guild_id: int | None, channel_id: int | None) -> None`
 
-**Scope:** `src/services/accounts.py` · `module`
+**Scope:** `src/services/analytics.py` · `module`
 
-[Source](../src/services/accounts.py#L356)
+[Source](../src/services/analytics.py#L12)
 
 Persist a successful command invocation with its optional Discord scope.
 
 ### `async def command_stats(*, user_id: int | None = None, guild_id: int | None = None) -> tuple[int, str | None]`
 
-**Scope:** `src/services/accounts.py` · `module`
+**Scope:** `src/services/analytics.py` · `module`
 
-[Source](../src/services/accounts.py#L372)
+[Source](../src/services/analytics.py#L28)
 
 Return a scoped command-use count and the most-used command.
 
 Exactly one of ``user_id`` or ``guild_id`` is required. Ties for the most-used
 command are resolved alphabetically for stable results.
-
-### `async def create_suggestion(author_id: int, content: str, log_channel_id: int | None) -> Suggestion`
-
-**Scope:** `src/services/accounts.py` · `module`
-
-[Source](../src/services/accounts.py#L404)
-
-Create a pending suggestion with its author and optional delivery channel.
-
-### `async def record_suggestion_delivery(suggestion: Suggestion, message_id: int) -> None`
-
-**Scope:** `src/services/accounts.py` · `module`
-
-[Source](../src/services/accounts.py#L413)
-
-Record the posted message and ensure the author follows the suggestion.
-
-### `async def delete_suggestion(suggestion_id: int) -> None`
-
-**Scope:** `src/services/accounts.py` · `module`
-
-[Source](../src/services/accounts.py#L422)
-
-Delete a suggestion record by its database ID.
-
-### `async def follow_suggestion(suggestion_id: int, user_id: int) -> bool | None`
-
-**Scope:** `src/services/accounts.py` · `module`
-
-[Source](../src/services/accounts.py#L427)
-
-Follow an existing suggestion, returning ``None`` when it does not exist.
-
-### `async def unfollow_suggestion(suggestion_id: int, user_id: int) -> UnfollowResult`
-
-**Scope:** `src/services/accounts.py` · `module`
-
-[Source](../src/services/accounts.py#L437)
-
-Remove a follow and report missing, own, removed, or absent-follow status.
-
-### `async def review_suggestion(suggestion_id: int, status: ReviewStatus, reason: str) -> tuple[Suggestion, set[int]] | None`
-
-**Scope:** `src/services/accounts.py` · `module`
-
-[Source](../src/services/accounts.py#L450)
-
-Atomically review a pending suggestion and return its followers once.
-
-A suggestion that is missing or already reviewed returns ``None``; a successful
-review returns the updated record and the distinct follower IDs to notify.
-
-### `async def count_suggestions_by_author(author_id: int) -> int`
-
-**Scope:** `src/services/accounts.py` · `module`
-
-[Source](../src/services/accounts.py#L473)
-
-Count suggestions submitted by a Discord user.
 
 ## `src/services/auth.py`
 
@@ -2925,6 +2810,69 @@ Parse an integer only when it meets the requested minimum.
 
 Return a price only when the source entry explicitly uses VALORANT Points.
 
+## `src/services/suggestions.py`
+
+Persistence and orchestration for suggestions.
+
+### `async def create_suggestion(author_id: int, content: str, log_channel_id: int | None) -> Suggestion`
+
+**Scope:** `src/services/suggestions.py` · `module`
+
+[Source](../src/services/suggestions.py#L19)
+
+Create a pending suggestion with its author and optional delivery channel.
+
+### `async def record_suggestion_delivery(suggestion: Suggestion, message_id: int) -> None`
+
+**Scope:** `src/services/suggestions.py` · `module`
+
+[Source](../src/services/suggestions.py#L28)
+
+Record the posted message and ensure the author follows the suggestion.
+
+### `async def delete_suggestion(suggestion_id: int) -> None`
+
+**Scope:** `src/services/suggestions.py` · `module`
+
+[Source](../src/services/suggestions.py#L37)
+
+Delete a suggestion record by its database ID.
+
+### `async def follow_suggestion(suggestion_id: int, user_id: int) -> bool | None`
+
+**Scope:** `src/services/suggestions.py` · `module`
+
+[Source](../src/services/suggestions.py#L42)
+
+Follow an existing suggestion, returning ``None`` when it does not exist.
+
+### `async def unfollow_suggestion(suggestion_id: int, user_id: int) -> UnfollowResult`
+
+**Scope:** `src/services/suggestions.py` · `module`
+
+[Source](../src/services/suggestions.py#L52)
+
+Remove a follow and report missing, own, removed, or absent-follow status.
+
+### `async def review_suggestion(suggestion_id: int, status: ReviewStatus, reason: str) -> tuple[Suggestion, set[int]] | None`
+
+**Scope:** `src/services/suggestions.py` · `module`
+
+[Source](../src/services/suggestions.py#L65)
+
+Atomically review a pending suggestion and return its followers once.
+
+A suggestion that is missing or already reviewed returns ``None``; a successful
+review returns the updated record and the distinct follower IDs to notify.
+
+### `async def count_suggestions_by_author(author_id: int) -> int`
+
+**Scope:** `src/services/suggestions.py` · `module`
+
+[Source](../src/services/suggestions.py#L88)
+
+Count suggestions submitted by a Discord user.
+
 ## `src/views/__init__.py`
 
 Public timestamp and owner-scoped Discord component exports.
@@ -3032,3 +2980,99 @@ Dispatch the selected value with the menu payload to its registered handler.
 [Source](../src/views/components.py#L185)
 
 Build a compact red embed for an invalid or unavailable component action.
+
+## `src/views/shop.py`
+
+Shared shop presentation for commands and notifications.
+
+### `def _price_line(currency: str, final_price: int, original_price: int | None = None, discount_percent: int | None = None) -> str`
+
+**Scope:** `src/views/shop.py` · `module`
+
+[Source](../src/views/shop.py#L27)
+
+Format a current price and any original price discount on one line.
+
+### `def offer_cards(header: str, offers: list[Offer], currency: str, *, link_item_image: bool, unknown_skin_name: str, emoji_service: ApplicationEmojiService | None = None, header_colour: int = 2105893, locale: object | None = None) -> list[discord.Embed]`
+
+**Scope:** `src/views/shop.py` · `module`
+
+[Source](../src/views/shop.py#L43)
+
+Render a heading and one tier-coloured embed for each skin offer.
+
+### `def add_skin_selector(controls: discord.ui.View, owner_id: int, offers: list[Offer], expires: int, emoji_service: ApplicationEmojiService, translator: BotFraggTranslator, locale: discord.Locale) -> None`
+
+**Scope:** `src/views/shop.py` · `module`
+
+[Source](../src/views/shop.py#L81)
+
+Add a menu containing only the skin offers rendered beside it.
+
+### `async def add_account_selector(controls: discord.ui.View, owner_id: int, mode: str, current: str, *, hide_ign: bool = False, translator: BotFraggTranslator, locale: discord.Locale) -> None`
+
+**Scope:** `src/views/shop.py` · `module`
+
+[Source](../src/views/shop.py#L123)
+
+Add a private account selector when the owner has multiple accounts.
+
+## `src/views/ui.py`
+
+VALORANT cog presentation helpers for names, views, embeds, and errors.
+
+### `def _account_display_name(username: str, *, hide_ign: bool, translator: BotFraggTranslator, locale: discord.Locale | str) -> str`
+
+**Scope:** `src/views/ui.py` · `module`
+
+[Source](../src/views/ui.py#L16)
+
+Return a generic account label when the user has chosen to hide their name.
+
+### `def account_autocomplete_choices(accounts: list[Account], current: str) -> list[app_commands.Choice[str]]`
+
+**Scope:** `src/views/ui.py` · `module`
+
+[Source](../src/views/ui.py#L29)
+
+Format account-name matches for Discord's bounded autocomplete menu.
+
+### `def view(*items: discord.ui.Item) -> discord.ui.View`
+
+**Scope:** `src/views/ui.py` · `module`
+
+[Source](../src/views/ui.py#L40)
+
+Create a persistent view containing the supplied Discord components.
+
+### `def embed(message: str | None = None, *, colour: int = RED, title: str | None = None) -> discord.Embed`
+
+**Scope:** `src/views/ui.py` · `module`
+
+[Source](../src/views/ui.py#L48)
+
+Build a standard BotFragg embed with optional description, title, and colour.
+
+### `def translated(interaction: discord.Interaction, key: str, **arguments: object) -> str`
+
+**Scope:** `src/views/ui.py` · `module`
+
+[Source](../src/views/ui.py#L55)
+
+Format one message using the caller's Discord locale.
+
+### `def localized_embed(interaction: discord.Interaction, description_key: str | None = None, *, title_key: str | None = None, colour: int = DARK, description_args: dict[str, object] | None = None, title_args: dict[str, object] | None = None) -> discord.Embed`
+
+**Scope:** `src/views/ui.py` · `module`
+
+[Source](../src/views/ui.py#L60)
+
+Build an embed from catalog message IDs and the caller's locale.
+
+### `async def error(interaction: discord.Interaction, message: str | Exception, **arguments: object) -> None`
+
+**Scope:** `src/views/ui.py` · `module`
+
+[Source](../src/views/ui.py#L81)
+
+Send a private error embed using the interaction's available response path.

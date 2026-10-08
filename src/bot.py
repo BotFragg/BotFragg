@@ -201,6 +201,7 @@ class BotFraggBot(commands.AutoShardedBot):
             "src.cogs.valorant.penalties",
             "src.cogs.events",
             "src.cogs.extra",
+            "src.cogs.suggestions",
             "src.cogs.staff",
             "src.cogs.tasks",
         ):

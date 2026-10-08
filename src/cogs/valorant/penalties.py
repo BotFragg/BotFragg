@@ -15,7 +15,7 @@ from ...services.accounts import account_for_user, get_user, selected_account
 from ...services.auth import AuthenticationRequired
 from ...services.gameplay import GameplayUnavailable
 from ...views import OwnedActionButton, timestamp
-from ._ui import _account_display_name, embed, error, view
+from ...views.ui import _account_display_name, embed, error, view
 
 PENALTIES_PER_PAGE = 5
 

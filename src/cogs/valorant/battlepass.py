@@ -13,7 +13,7 @@ from ...services.auth import AuthenticationRequired
 from ...services.emojis import ApplicationEmojiService
 from ...services.gameplay import GameplayUnavailable
 from ...views import timestamp
-from ._ui import _account_display_name, embed, error
+from ...views.ui import _account_display_name, embed, error
 
 MISSION_TYPE_KEYS = {
     "Daily Missions": "mission-group-daily",

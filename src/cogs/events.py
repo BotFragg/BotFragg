@@ -9,9 +9,9 @@ from discord import app_commands
 from discord.ext import commands
 
 from ..bot import BotFraggBot
-from ..services.accounts import record_command_invocation
+from ..services.analytics import record_command_invocation
 from ..views import timestamp
-from .valorant._ui import embed
+from ..views.ui import embed
 
 log = logging.getLogger(__name__)
 

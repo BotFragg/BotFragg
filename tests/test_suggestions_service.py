@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from src.models import Suggestion, SuggestionFollower
-from src.services.accounts import (
+from src.services.suggestions import (
     count_suggestions_by_author,
     create_suggestion,
     follow_suggestion,

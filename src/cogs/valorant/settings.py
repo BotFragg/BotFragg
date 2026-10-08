@@ -9,7 +9,7 @@ from discord.ext import commands
 from ...bot import BotFraggBot
 from ...services.accounts import get_user, update_user_preference
 from ...views import OwnedSelect
-from ._ui import DARK, embed, error, localized_embed, translated, view
+from ...views.ui import DARK, embed, error, localized_embed, translated, view
 
 SETTINGS = {
     "daily_shop_enabled": ("Send your shop every day by DM", "setting-daily-shop"),

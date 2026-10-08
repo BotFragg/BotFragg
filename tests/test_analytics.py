@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from src.models import CommandInvocation
-from src.services.accounts import command_stats, record_command_invocation
+from src.services.analytics import command_stats, record_command_invocation
 
 
 @pytest.mark.usefixtures("database")

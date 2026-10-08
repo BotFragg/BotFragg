@@ -9,19 +9,14 @@ from discord import app_commands
 from discord.ext import commands
 
 from ...bot import BotFraggBot
-from ...services.accounts import (
-    create_alert,
-    first_alert,
-    list_alerts_page,
-    remove_alert,
-    selected_account,
-)
+from ...services.accounts import selected_account
+from ...services.alerts import create_alert, first_alert, list_alerts_page, remove_alert
 from ...services.auth import AuthenticationRequired
 from ...services.catalog import Skin
 from ...services.http import HTTPFailure
 from ...services.shop import ShopUnavailable
 from ...views import OwnedActionButton, timestamp
-from ._ui import embed, error, translated, view
+from ...views.ui import embed, error, translated, view
 
 
 class AlertsCog(commands.Cog):

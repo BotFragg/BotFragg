@@ -16,7 +16,7 @@ from ...services.accounts import (
     select_account,
 )
 from ...views import OwnedActionButton
-from ._ui import (
+from ...views.ui import (
     _account_display_name,
     account_autocomplete_choices,
     embed,

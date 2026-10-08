@@ -7,9 +7,10 @@ from discord import app_commands
 from discord.ext import commands
 
 from ..bot import BotFraggBot
-from ..services.accounts import command_stats, count_suggestions_by_author
+from ..services.analytics import command_stats
+from ..services.suggestions import count_suggestions_by_author
 from ..views import timestamp
-from .valorant._ui import embed, error
+from ..views.ui import embed, error
 
 
 class StaffCog(commands.Cog):

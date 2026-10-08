@@ -13,10 +13,10 @@ from discord.ext import commands, tasks
 from ..bot import BotFraggBot
 from ..models import Account, Alert, User
 from ..monitoring import StructuredFormatter, transaction
-from ..services.accounts import run_daily_alerts
+from ..services.alerts import run_daily_alerts
 from ..services.shop import Offer, ShopData
 from ..views import OwnedActionButton, timestamp
-from .valorant._ui import embed, view
+from ..views.ui import embed, view
 from .valorant.shop import add_skin_selector, offer_cards
 
 log = logging.getLogger(__name__)
