@@ -22,7 +22,7 @@ Discord client construction, command handling, service wiring, and shutdown.
 
 Build the generic, user-safe response shown after an unhandled command error.
 
-### `class BotFraggCommandTree(app_commands.CommandTree)`
+### `class BotFraggCommandTree(app_commands.CommandTree['BotFraggBot'])`
 
 **Scope:** `src/bot.py` · `module`
 
@@ -30,7 +30,7 @@ Build the generic, user-safe response shown after an unhandled command error.
 
 Application-command tree with shared context rules and error reporting.
 
-### `def __init__(self, client: discord.Client) -> None`
+### `def __init__(self, client: BotFraggBot) -> None`
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
@@ -38,7 +38,7 @@ Application-command tree with shared context rules and error reporting.
 
 Allow commands in servers and private contexts for guild and user installs.
 
-### `async def _call(self, interaction: discord.Interaction) -> None`
+### `async def _call(self, interaction: discord.Interaction[BotFraggBot]) -> None`
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
@@ -46,7 +46,7 @@ Allow commands in servers and private contexts for guild and user installs.
 
 Record command executions while leaving autocomplete requests untraced.
 
-### `def _command_name(data: dict[str, object]) -> str`
+### `def _command_name(data: Mapping[str, object]) -> str`
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
@@ -54,7 +54,7 @@ Record command executions while leaving autocomplete requests untraced.
 
 Return the dotted parent and subcommand path from Discord's payload.
 
-### `async def on_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError, /) -> None`
+### `async def on_error(self, interaction: discord.Interaction[BotFraggBot], error: app_commands.AppCommandError, /) -> None`
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
@@ -66,7 +66,7 @@ Log unhandled app-command errors and send a private generic response.
 
 **Scope:** `src/bot.py` · `module`
 
-[Source](../src/bot.py#L117)
+[Source](../src/bot.py#L120)
 
 Own Discord lifecycle and the shared Riot, database, and presentation services.
 
@@ -74,15 +74,15 @@ Own Discord lifecycle and the shared Riot, database, and presentation services.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L120)
+[Source](../src/bot.py#L123)
 
 Configure the bot's prefix, minimal intents, and application services.
 
-### `async def on_command_error(self, context: commands.Context[BotFraggBot], exception: commands.CommandError, /) -> None`
+### `async def on_command_error(self, context: commands.Context, exception: commands.CommandError, /) -> None`
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L146)
+[Source](../src/bot.py#L149)
 
 Log failed prefix commands and reply with a generic error message.
 
@@ -90,7 +90,7 @@ Log failed prefix commands and reply with a generic error message.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L170)
+[Source](../src/bot.py#L173)
 
 Register a persistent component action, rejecting duplicate action names.
 
@@ -98,7 +98,7 @@ Register a persistent component action, rejecting duplicate action names.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L176)
+[Source](../src/bot.py#L179)
 
 Initialize shared resources, load extensions, and optionally sync commands.
 
@@ -106,7 +106,7 @@ Initialize shared resources, load extensions, and optionally sync commands.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L213)
+[Source](../src/bot.py#L216)
 
 Set the online activity and log the connected shard and guild counts.
 
@@ -114,7 +114,7 @@ Set the online activity and log the connected shard and guild counts.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L226)
+[Source](../src/bot.py#L229)
 
 Close Discord, Riot HTTP, database, and monitoring resources in order.
 

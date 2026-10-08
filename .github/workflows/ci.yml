@@ -11,17 +11,35 @@ jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: botfragg_test
+          # Disposable runner database; no production credentials or remote access.
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 127.0.0.1:5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d botfragg_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      BOTFRAGG_TEST_POSTGRES_URL: postgres://postgres@127.0.0.1:5432/botfragg_test
+      BOTFRAGG_REQUIRE_POSTGRES: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.14"
       - run: uv sync --all-groups --frozen
+      - run: uv run --frozen ruff check .
+      - run: uv run --frozen ruff format --check .
+      - run: uv run --frozen mypy
       - run: uv run --frozen python tools/check_locales.py
       - run: uv run --frozen python tools/generate_api_reference.py --check
       - run: uv run --frozen pytest -q
-      - run: uv run --frozen ruff check .
-      - run: uv run --frozen ruff format --check .
       - run: uv run --frozen python -m compileall -q src tests
 
   build-image:

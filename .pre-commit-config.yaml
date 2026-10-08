@@ -13,6 +13,12 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
+      - id: mypy
+        name: Mypy
+        entry: uv run --frozen --no-sync mypy
+        language: system
+        pass_filenames: false
+        always_run: true
       - id: pytest
         name: pytest
         entry: uv run --frozen --no-sync pytest -q

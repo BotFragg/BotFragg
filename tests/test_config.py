@@ -1,4 +1,4 @@
-"""Behavior checks for config."""
+"""Behavior and regression checks by responsibility."""
 
 from __future__ import annotations
 

@@ -37,6 +37,7 @@ async def command_stats(
         raise ValueError("Provide exactly one of user_id or guild_id")
 
     filters = {"user_id": user_id} if user_id is not None else {"guild_id": guild_id}
+    # ponytail: scopes scan retained rows; add indexes when measured latency needs them.
     records = await (
         CommandInvocation.filter(**filters)
         .group_by("command")

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Mapping
 
 import discord
 from discord import app_commands
@@ -36,10 +36,10 @@ def _command_error_embed(
     )
 
 
-class BotFraggCommandTree(app_commands.CommandTree):
+class BotFraggCommandTree(app_commands.CommandTree["BotFraggBot"]):
     """Application-command tree with shared context rules and error reporting."""
 
-    def __init__(self, client: discord.Client) -> None:
+    def __init__(self, client: BotFraggBot) -> None:
         """Allow commands in servers and private contexts for guild and user installs."""
         super().__init__(
             client,
@@ -49,18 +49,18 @@ class BotFraggCommandTree(app_commands.CommandTree):
             allowed_installs=app_commands.AppInstallationType(guild=True, user=True),
         )
 
-    async def _call(self, interaction: discord.Interaction) -> None:
+    async def _call(self, interaction: discord.Interaction[BotFraggBot]) -> None:
         """Record command executions while leaving autocomplete requests untraced."""
         if interaction.type is discord.InteractionType.autocomplete:
             await super()._call(interaction)
             return
-        data = interaction.data or {}
+        data: Mapping[str, object] = interaction.data or {}
         command_name = self._command_name(data)
         with transaction(f"discord.command.{command_name}", "discord.command"):
             await super()._call(interaction)
 
     @staticmethod
-    def _command_name(data: dict[str, object]) -> str:
+    def _command_name(data: Mapping[str, object]) -> str:
         """Return the dotted parent and subcommand path from Discord's payload."""
         parts = [str(data.get("name") or "unknown")]
         options = data.get("options")
@@ -80,7 +80,10 @@ class BotFraggCommandTree(app_commands.CommandTree):
         return ".".join(parts)
 
     async def on_error(
-        self, interaction: discord.Interaction, error: app_commands.AppCommandError, /
+        self,
+        interaction: discord.Interaction[BotFraggBot],
+        error: app_commands.AppCommandError,
+        /,
     ) -> None:
         """Log unhandled app-command errors and send a private generic response."""
         command = interaction.command
@@ -145,7 +148,7 @@ class BotFraggBot(commands.AutoShardedBot):
 
     async def on_command_error(
         self,
-        context: commands.Context[BotFraggBot],
+        context: commands.Context,
         exception: commands.CommandError,
         /,
     ) -> None:

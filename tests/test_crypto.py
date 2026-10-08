@@ -1,4 +1,4 @@
-"""Behavior checks for crypto."""
+"""Behavior and regression checks by responsibility."""
 
 from __future__ import annotations
 
@@ -6,13 +6,6 @@ import pytest
 from cryptography.fernet import Fernet
 
 from src.services.crypto import AuthVault
-
-_OPTIONAL_URLS = (
-    "SUPPORT_URL",
-    "VOTE_URL",
-    "WEBSITE_URL",
-    "SHARD_LOG_WEBHOOK_URL",
-)
 
 
 def test_auth_vault_round_trip_and_wrong_key() -> None:
