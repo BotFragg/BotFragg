@@ -1,19 +1,21 @@
-"""Shared shop presentation for commands and notifications."""
+"""Shared shop presentation for slash commands and scheduled notifications."""
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 import discord
 
+from ..bot import BotFraggBot
 from ..localization import BotFraggTranslator
-from ..services.accounts import (
-    list_accounts,
-)
+from ..models import Account
 from ..services.emojis import ApplicationEmojiService
 from ..services.shop import (
     Offer,
+    ShopData,
 )
-from ..views import OwnedSelect
-from .ui import embed
+from ..views import OwnedActionButton, OwnedSelect, timestamp
+from .ui import embed, view
 
 TIER_COLOURS = {
     "0cebb8be-46d7-c12a-d306-e9907bfc5a25": 0x009984,
@@ -68,7 +70,7 @@ def offer_cards(
                 if emoji_service
                 else skin_name
             ),
-            colour=TIER_COLOURS.get(offer.skin.tier_uuid, 0),
+            colour=TIER_COLOURS.get(offer.skin.tier_uuid or "", 0),
         )
         if offer.skin.icon:
             if link_item_image:
@@ -120,18 +122,18 @@ def add_skin_selector(
         )
 
 
-async def add_account_selector(
+def add_account_selector(
     controls: discord.ui.View,
     owner_id: int,
     mode: str,
     current: str,
     *,
+    accounts: Sequence[Account],
     hide_ign: bool = False,
     translator: BotFraggTranslator,
     locale: discord.Locale,
 ) -> None:
-    """Add a private account selector when the owner has multiple accounts."""
-    accounts = await list_accounts(owner_id)
+    """Render an account selector from prepared accounts and current name privacy."""
     if len(accounts) > 1:
         controls.add_item(
             OwnedSelect(
@@ -154,3 +156,65 @@ async def add_account_selector(
                 empty_option_label=translator.text(locale, "common-unavailable"),
             )
         )
+
+
+def night_market_view(
+    bot: BotFraggBot,
+    interaction: discord.Interaction,
+    data: ShopData,
+    username: str,
+    puuid: str,
+    *,
+    accounts: Sequence[Account],
+    vp: str,
+    hide_ign: bool,
+    mode: str,
+) -> tuple[list[discord.Embed], discord.ui.View]:
+    """Render Night Market offers and controls without further preparation waits."""
+    locale = interaction.locale
+    expires = data.night_market_expires or data.expires
+    cards = offer_cards(
+        bot.translator.text(
+            locale,
+            "shop-night-market-header",
+            username=username,
+            timestamp=timestamp(expires),
+        ),
+        data.night_market,
+        vp,
+        link_item_image=bot.config.link_item_image if mode == "night" else False,
+        unknown_skin_name=bot.translator.text(locale, "common-unknown"),
+        emoji_service=bot.emoji_service,
+        header_colour=0xFD4553 if mode == "night" else 0xEAEEB2,
+        locale=locale,
+    )
+    controls = view()
+    add_skin_selector(
+        controls,
+        interaction.user.id,
+        data.night_market,
+        expires,
+        bot.emoji_service,
+        bot.translator,
+        locale,
+    )
+    add_account_selector(
+        controls,
+        interaction.user.id,
+        mode,
+        puuid,
+        accounts=accounts,
+        hide_ign=hide_ign,
+        translator=bot.translator,
+        locale=locale,
+    )
+    if mode == "night":
+        controls.add_item(
+            OwnedActionButton(
+                "shop_mode",
+                interaction.user.id,
+                f"daily,{puuid}",
+                label=bot.translator.text(locale, "shop-skin-button"),
+            )
+        )
+    return cards, controls

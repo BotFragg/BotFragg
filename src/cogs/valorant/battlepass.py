@@ -2,16 +2,22 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+
 import discord
 from discord import app_commands
 from discord.ext import commands
 
 from ...bot import BotFraggBot
 from ...localization import BotFraggTranslator
-from ...services.accounts import get_user, selected_account
+from ...services.accounts import selected_account
 from ...services.auth import AuthenticationRequired
 from ...services.emojis import ApplicationEmojiService
-from ...services.gameplay import GameplayUnavailable
+from ...services.gameplay import (
+    BattlepassProgress,
+    GameplayUnavailable,
+    MissionProgress,
+)
 from ...views import timestamp
 from ...views.ui import _account_display_name, embed, error
 
@@ -59,10 +65,13 @@ class BattlepassCog(commands.Cog):
             await error(interaction, exc)
             return
         filled_bar, empty_bar = await self.bot.emoji_service.battlepass_bars()
-        user = await get_user(interaction.user.id)
+        account = await account.persisted_row().select_related("user").get_or_none()
+        if not account:
+            await error(interaction, "error-account-unavailable")
+            return
         username = _account_display_name(
             account.username,
-            hide_ign=bool(user and user.hide_ign),
+            hide_ign=account.user.hide_ign,
             translator=self.bot.translator,
             locale=interaction.locale,
         )
@@ -112,7 +121,7 @@ class BattlepassCog(commands.Cog):
 
     @staticmethod
     def _missions_card(
-        missions: list[dict],
+        missions: list[MissionProgress],
         filled_bar: str = "█",
         empty_bar: str = "░",
         *,
@@ -124,7 +133,7 @@ class BattlepassCog(commands.Cog):
         if not missions:
             card.description = translator.text(locale, "missions-empty")
             return card
-        groups: dict[tuple[str, object], list[dict]] = {}
+        groups: dict[tuple[str, datetime | None], list[MissionProgress]] = {}
         for mission in missions:
             kind = str(mission.get("type") or "Missions")
             if kind_key := MISSION_TYPE_KEYS.get(kind):
@@ -205,7 +214,7 @@ class BattlepassCog(commands.Cog):
     @staticmethod
     def _battlepass_card(
         player: str,
-        data: dict,
+        data: BattlepassProgress,
         filled_bar: str = "█",
         empty_bar: str = "░",
         *,

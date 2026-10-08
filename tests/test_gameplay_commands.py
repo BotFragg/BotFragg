@@ -1,9 +1,10 @@
-"""Behavior checks for gameplay commands."""
+"""Behavior and regression checks for gameplay commands."""
 
 from __future__ import annotations
 
 from datetime import UTC, datetime
 from types import SimpleNamespace
+from unittest.mock import AsyncMock
 
 import discord
 import pytest
@@ -22,6 +23,12 @@ async def test_battlepass_hides_name_when_preference_enabled(
 ) -> None:
     """Verify that battlepass hides name when preference enabled."""
     account = SimpleNamespace(username="SecretName#NA")
+    account.user = SimpleNamespace(hide_ign=True)
+    account.persisted_row = lambda: SimpleNamespace(
+        select_related=lambda *args: SimpleNamespace(
+            get_or_none=AsyncMock(return_value=account)
+        )
+    )
     data = {
         "act": "Act",
         "level": 1,
@@ -35,10 +42,6 @@ async def test_battlepass_hides_name_when_preference_enabled(
     async def selected_account(_user_id: int) -> SimpleNamespace:
         """Return the configured active account for the command under test."""
         return account
-
-    async def get_user(_user_id: int) -> SimpleNamespace:
-        """Return the configured user fixture for the requested Discord ID."""
-        return SimpleNamespace(hide_ign=True)
 
     class Response:
         """Capture whether an interaction was deferred and whether its initial response was private."""
@@ -73,7 +76,6 @@ async def test_battlepass_hides_name_when_preference_enabled(
     monkeypatch.setattr(
         "src.cogs.valorant.battlepass.selected_account", selected_account
     )
-    monkeypatch.setattr("src.cogs.valorant.battlepass.get_user", get_user)
     interaction = _localized_interaction(
         user=SimpleNamespace(id=123), response=Response(), followup=Followup()
     )

@@ -8,6 +8,8 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from uuid import UUID
 
+from tortoise.transactions import in_transaction
+
 from ..models import (
     Account,
     Alert,
@@ -37,7 +39,18 @@ async def create_alert(
     """Create an account-scoped skin alert or return the existing duplicate."""
     if account.user_id != user_id:
         raise ValueError("Account does not belong to this Discord user")
-    return await Alert.get_or_create(account=account, skin_uuid=skin_uuid)
+    async with in_transaction() as connection:
+        current = (
+            await account.persisted_row()
+            .using_db(connection)
+            .select_for_update()
+            .get_or_none()
+        )
+        if current is None:
+            raise ValueError("Account no longer exists")
+        return await Alert.get_or_create(
+            account=current, skin_uuid=skin_uuid, using_db=connection
+        )
 
 
 async def list_alerts_page(user_id: int, page: int, page_size: int) -> AlertPage:
@@ -79,37 +92,41 @@ async def first_alert(user_id: int) -> Alert | None:
 
 async def user_ids_with_alerts() -> set[int]:
     """Return distinct Discord IDs that own at least one alert."""
-    return set(await Alert.all().distinct().values_list("account__user_id", flat=True))
+    # Tortoise's annotation describes tuples even when flat=True returns scalars.
+    return set(await Alert.all().distinct().values_list("account__user_id", flat=True))  # type: ignore[arg-type]
 
 
 async def account_ids_with_alerts(account_ids: list[str]) -> set[str]:
     """Return only the supplied account IDs that currently have alerts."""
     if not account_ids:
         return set()
-    return set(
+    return set(  # Tortoise flat=True returns scalar IDs, not tuples.
         await Alert.filter(account_id__in=account_ids).values_list(
             "account_id", flat=True
-        )
+        )  # type: ignore[arg-type]
     )
 
 
 async def matching_alerts_for_skins(
-    account_id: str, skin_uuids: list[str]
+    account: Account, skin_uuids: list[str]
 ) -> list[Alert]:
     """Fetch alerts matching one account and a bounded set of shop skin IDs."""
     if not skin_uuids:
         return []
     return await Alert.filter(
-        account_id=account_id, skin_uuid__in=skin_uuids
-    ).prefetch_related("account")
+        account_id=account.puuid,
+        account__user_id=account.user_id,
+        account__created_at=account.created_at,
+        skin_uuid__in=skin_uuids,
+    ).select_related("account")
 
 
 ShopOutcomeHandler = Callable[
     [int, User | None, Account, ShopData, list[tuple[Alert, Offer]], bool],
-    Awaitable[None],
+    Awaitable[int],
 ]
 
-CredentialsExpiredHandler = Callable[[int], Awaitable[None]]
+CredentialsExpiredHandler = Callable[[int], Awaitable[int]]
 
 
 async def run_daily_alerts(
@@ -124,14 +141,24 @@ async def run_daily_alerts(
     """Check eligible accounts with bounded concurrency and report run totals.
 
     ``dry_run`` performs the lookups without sending notifications. The callbacks
-    handle successful shops and expired credentials; the returned counts include
-    users, fetched shops, matched alerts, and recoverable failures.
+    handle successful shops and expired credentials and return delivery failure
+    counts. Totals distinguish expired credentials, shop and delivery failures;
+    ``failures`` is their sum.
     """
     user_ids = await user_ids_with_alerts()
     user_ids.update(await daily_shop_user_ids())
-    summary = {"users": len(user_ids), "shops": 0, "alerts": 0, "failures": 0}
+    summary = {
+        "users": len(user_ids),
+        "shops": 0,
+        "alerts": 0,
+        "failures": 0,
+        "expired_logins": 0,
+        "shop_failures": 0,
+        "delivery_failures": 0,
+    }
 
     accounts_by_user: dict[int, list[Account]] = defaultdict(list)
+    # ponytail: materialize eligible accounts; page users if measured memory grows.
     accounts = (
         await Account.filter(user_id__in=user_ids)
         .select_related("user")
@@ -167,28 +194,40 @@ async def run_daily_alerts(
             try:
                 storefront = await shop.storefront(account, use_cache=False)
             except AuthenticationRequired:
-                summary["failures"] += 1
-                if not dry_run:
-                    await on_credentials_expired(user_id)
+                summary["expired_logins"] += 1
+                if not dry_run and await account.persisted_row().exists():
+                    summary["delivery_failures"] += await on_credentials_expired(
+                        user_id
+                    )
                 continue
             except ShopUnavailable:
-                summary["failures"] += 1
+                summary["shop_failures"] += 1
                 continue
 
             summary["shops"] += 1
+            current_account = (
+                await account.persisted_row().select_related("user").get_or_none()
+            )
+            if current_account is None:
+                continue
+            send_daily_shop = bool(
+                send_daily_shop
+                and current_account.user.daily_shop_enabled
+                and current_account.user.current_account_id == account.puuid
+            )
             offers_by_uuid = {offer.skin.uuid: offer for offer in storefront.offers}
             matches = (
-                await matching_alerts_for_skins(account.puuid, list(offers_by_uuid))
+                await matching_alerts_for_skins(account, list(offers_by_uuid))
                 if has_alerts
                 else []
             )
             summary["alerts"] += len(matches)
 
             if not dry_run and (matches or send_daily_shop):
-                await on_shop(
+                summary["delivery_failures"] += await on_shop(
                     user_id,
-                    user,
-                    account,
+                    current_account.user,
+                    current_account,
                     storefront,
                     [
                         (alert, offers_by_uuid[str(alert.skin_uuid)])
@@ -210,4 +249,9 @@ async def run_daily_alerts(
         for _ in range(min(alert_concurrency, len(user_ids))):
             task_group.create_task(worker())
 
+    summary["failures"] = (
+        summary["expired_logins"]
+        + summary["shop_failures"]
+        + summary["delivery_failures"]
+    )
     return summary

@@ -2,12 +2,24 @@
 
 from __future__ import annotations
 
+from typing import Any, NotRequired, TypedDict
+
 import discord
 from discord import app_commands
 
 from ..localization import BotFraggTranslator
 from ..models import Account
 from ..services.auth import AuthenticationRequired
+
+
+class EmbedMessage(TypedDict):
+    """Keyword arguments for an embed response with optional controls."""
+
+    embed: discord.Embed
+    view: NotRequired[discord.ui.View]
+    ephemeral: NotRequired[bool]
+    allowed_mentions: NotRequired[discord.AllowedMentions]
+
 
 RED = 0xFD4553
 DARK = 0x202225
@@ -52,7 +64,9 @@ def embed(
     return discord.Embed(title=title, description=message, colour=colour)
 
 
-def translated(interaction: discord.Interaction, key: str, **arguments: object) -> str:
+def translated(
+    interaction: discord.Interaction[Any], key: str, **arguments: object
+) -> str:
     """Format one message using the caller's Discord locale."""
     return interaction.client.translator.text(interaction.locale, key, **arguments)
 

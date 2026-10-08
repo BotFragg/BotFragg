@@ -48,7 +48,7 @@ class OwnedActionButton(discord.ui.DynamicItem[discord.ui.Button], template=ACTI
     @classmethod
     async def from_custom_id(
         cls,
-        interaction: discord.Interaction,
+        interaction: discord.Interaction[Any],
         item: discord.ui.Item[Any],
         match: re.Match[str],
     ) -> OwnedActionButton:
@@ -65,7 +65,7 @@ class OwnedActionButton(discord.ui.DynamicItem[discord.ui.Button], template=ACTI
         )
         return instance
 
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+    async def interaction_check(self, interaction: discord.Interaction[Any]) -> bool:
         """Reject interactions from users other than the button's recorded owner."""
         if interaction.user.id == self.owner_id:
             return True
@@ -79,7 +79,7 @@ class OwnedActionButton(discord.ui.DynamicItem[discord.ui.Button], template=ACTI
         )
         return False
 
-    async def callback(self, interaction: discord.Interaction) -> None:
+    async def callback(self, interaction: discord.Interaction[Any]) -> None:
         """Dispatch the button action to its registered handler inside a trace."""
         handler = getattr(interaction.client, "component_handlers", {}).get(self.action)
         if handler is None:
@@ -133,7 +133,7 @@ class OwnedSelect(discord.ui.DynamicItem[discord.ui.Select], template=SELECT_RE)
     @classmethod
     async def from_custom_id(
         cls,
-        interaction: discord.Interaction,
+        interaction: discord.Interaction[Any],
         item: discord.ui.Item[Any],
         match: re.Match[str],
     ) -> OwnedSelect:
@@ -150,7 +150,7 @@ class OwnedSelect(discord.ui.DynamicItem[discord.ui.Select], template=SELECT_RE)
             ),
         )
 
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+    async def interaction_check(self, interaction: discord.Interaction[Any]) -> bool:
         """Reject interactions from users other than the menu's recorded owner."""
         if interaction.user.id == self.owner_id:
             return True
@@ -164,7 +164,7 @@ class OwnedSelect(discord.ui.DynamicItem[discord.ui.Select], template=SELECT_RE)
         )
         return False
 
-    async def callback(self, interaction: discord.Interaction) -> None:
+    async def callback(self, interaction: discord.Interaction[Any]) -> None:
         """Dispatch the selected value with the menu payload to its registered handler."""
         handler = getattr(interaction.client, "component_handlers", {}).get(self.action)
         if handler is None:

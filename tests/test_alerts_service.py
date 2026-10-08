@@ -1,9 +1,11 @@
-"""Behavior checks for alerts service."""
+"""Tests for alert ownership, bounded queries, batching, and delivery behavior."""
 
 from __future__ import annotations
 
 import asyncio
 from types import SimpleNamespace
+from types import SimpleNamespace as NS
+from unittest.mock import AsyncMock
 from uuid import UUID
 
 import pytest
@@ -16,7 +18,12 @@ from src.models import (
     User,
 )
 from src.services import alerts as alert_service
-from src.services.accounts import get_user, list_accounts, selected_account
+from src.services.accounts import (
+    delete_user_data,
+    get_user,
+    list_accounts,
+    selected_account,
+)
 from src.services.alerts import (
     account_ids_with_alerts,
     create_alert,
@@ -27,6 +34,9 @@ from src.services.alerts import (
     user_ids_with_alerts,
 )
 from src.services.auth import AuthenticationRequired, AuthService
+from src.services.catalog import (
+    Skin,
+)
 from src.services.crypto import AuthVault
 from src.services.shop import (
     Offer,
@@ -96,10 +106,10 @@ async def test_alert_job_queries_are_bounded_to_users_accounts_and_skins() -> No
         first.puuid,
         second.puuid,
     }
-    matches = await matching_alerts_for_skins(first.puuid, [str(first_skin)])
+    matches = await matching_alerts_for_skins(first, [str(first_skin)])
     assert [alert.skin_uuid for alert in matches] == [first_skin]
     assert await account_ids_with_alerts([]) == set()
-    assert await matching_alerts_for_skins(first.puuid, []) == []
+    assert await matching_alerts_for_skins(first, []) == []
 
 
 async def test_alert_page_uses_a_bounded_owner_scoped_query(
@@ -182,6 +192,53 @@ def shop_data(*skin_uuids: str) -> ShopData:
 
 
 @pytest.mark.usefixtures("database")
+@pytest.mark.parametrize("dry_run", [False, True])
+async def test_daily_summary_separates_credentials_and_delivery_failures(dry_run):
+    user = await User.create(
+        id=101, daily_shop_enabled=True, current_account_id="daily"
+    )
+    daily = await Account.create(puuid="daily", user=user, username="Daily#NA")
+    expired = await Account.create(puuid="expired", user=user, username="Expired#NA")
+    skin = UUID(int=1)
+    await Alert.create(account=daily, skin_uuid=skin)
+    await Alert.create(account=expired, skin_uuid=skin)
+
+    async def storefront(account, *, use_cache):
+        if account.puuid == expired.puuid:
+            raise AuthenticationRequired("expired")
+        return shop_data(str(skin))
+
+    delivery = AsyncMock(return_value=2)
+    notice = AsyncMock(return_value=1)
+    summary = await run_daily_alerts(
+        SimpleNamespace(storefront=storefront),
+        alert_concurrency=1,
+        delay_between_alerts_seconds=0,
+        dry_run=dry_run,
+        on_shop=delivery,
+        on_credentials_expired=notice,
+    )
+    assert summary == {
+        "users": 1,
+        "shops": 1,
+        "alerts": 1,
+        "failures": 1 if dry_run else 4,
+        "expired_logins": 1,
+        "shop_failures": 0,
+        "delivery_failures": 0 if dry_run else 3,
+    }
+    from src.monitoring import _scrub
+
+    assert _scrub(summary) == summary
+    if dry_run:
+        delivery.assert_not_awaited()
+        notice.assert_not_awaited()
+    else:
+        delivery.assert_awaited_once()
+        notice.assert_awaited_once_with(user.id)
+
+
+@pytest.mark.usefixtures("database")
 async def test_daily_alert_run_preserves_selection_summary_and_batches_alert_presence(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -254,10 +311,12 @@ async def test_daily_alert_run_preserves_selection_summary_and_batches_alert_pre
                 send_daily_shop,
             )
         )
+        return 0
 
     async def on_credentials_expired(user_id):
         """Capture expired-credential callback invocations."""
         outcomes.append(("credentials", user_id))
+        return 0
 
     summary = await run_daily_alerts(
         shop,
@@ -268,7 +327,15 @@ async def test_daily_alert_run_preserves_selection_summary_and_batches_alert_pre
         on_credentials_expired=on_credentials_expired,
     )
 
-    assert summary == {"users": 2, "shops": 3, "alerts": 3, "failures": 1}
+    assert summary == {
+        "users": 2,
+        "shops": 3,
+        "alerts": 3,
+        "failures": 1,
+        "expired_logins": 1,
+        "shop_failures": 0,
+        "delivery_failures": 0,
+    }
     assert [
         account_id
         for user_id, account_id, _use_cache in shop.calls
@@ -343,7 +410,7 @@ async def test_daily_alert_run_cancels_and_awaits_sibling_users_on_failure() -> 
 
     async def unused_callback(*_args):
         """Fail the test if an unexpected notification callback is invoked."""
-        return None
+        return 0
 
     with pytest.raises(ExceptionGroup) as raised:
         await run_daily_alerts(
@@ -394,10 +461,12 @@ async def test_daily_alert_run_keeps_send_and_delay_order(
     async def on_shop(user_id, _user, account, _shop, _alerts, _send_daily_shop):
         """Capture arguments passed to the daily-shop delivery callback."""
         timeline.append(("send", user_id, account.puuid))
+        return 0
 
     async def on_credentials_expired(user_id):
         """Capture expired-credential callback invocations."""
         timeline.append(("credentials", user_id))
+        return 0
 
     async def record_delay(seconds: float) -> None:
         """Record alert delays so delivery ordering can be asserted."""
@@ -414,7 +483,15 @@ async def test_daily_alert_run_keeps_send_and_delay_order(
         on_credentials_expired=on_credentials_expired,
     )
 
-    assert summary == {"users": 1, "shops": 2, "alerts": 2, "failures": 1}
+    assert summary == {
+        "users": 1,
+        "shops": 2,
+        "alerts": 2,
+        "failures": 1,
+        "expired_logins": 0,
+        "shop_failures": 1,
+        "delivery_failures": 0,
+    }
     assert timeline == [
         ("store", first.puuid),
         ("send", user.id, first.puuid),
@@ -449,13 +526,14 @@ async def test_daily_alert_auth_http_5xx_does_not_request_relogin() -> None:
             """Record request arguments and return the configured HTTP response."""
             return SimpleNamespace(status=503, data={})
 
-    async def unused_callback(*_args) -> None:
+    async def unused_callback(*_args) -> int:
         """Fail the test if an unexpected notification callback is invoked."""
-        return None
+        return 0
 
-    async def on_credentials_expired(user_id: int) -> None:
+    async def on_credentials_expired(user_id: int) -> int:
         """Capture expired-credential callback invocations."""
         credential_notices.append(user_id)
+        return 0
 
     auth = AuthService(
         SimpleNamespace(token_refresh_buffer_minutes=5, auto_refresh_tokens=True),
@@ -474,7 +552,15 @@ async def test_daily_alert_auth_http_5xx_does_not_request_relogin() -> None:
         on_credentials_expired=on_credentials_expired,
     )
 
-    assert summary == {"users": 1, "shops": 0, "alerts": 0, "failures": 1}
+    assert summary == {
+        "users": 1,
+        "shops": 0,
+        "alerts": 0,
+        "failures": 1,
+        "expired_logins": 0,
+        "shop_failures": 1,
+        "delivery_failures": 0,
+    }
     assert credential_notices == []
 
 
@@ -551,7 +637,7 @@ async def test_daily_alert_run_batches_user_and_alert_lookups(
 
     async def unused_callback(*_args):
         """Fail the test if an unexpected notification callback is invoked."""
-        return None
+        return 0
 
     await run_daily_alerts(
         Shop(),
@@ -606,7 +692,7 @@ async def test_daily_alert_tasks_are_bounded_by_configured_concurrency() -> None
             await release.wait()
             return SimpleNamespace(offers=[])
 
-    async def unused_callback(*_args) -> None:
+    async def unused_callback(*_args) -> int:
         """Fail the test if an unexpected notification callback is invoked."""
         raise AssertionError("dry-run should not send notifications")
 
@@ -629,6 +715,89 @@ async def test_daily_alert_tasks_are_bounded_by_configured_concurrency() -> None
     await asyncio.wait_for(job, timeout=1)
 
     assert new_tasks <= concurrency + 1
+
+
+SKIN_ID = UUID("11111111-1111-4111-8111-111111111111")
+
+
+async def replace_account(old, owner_id=202):
+    await delete_user_data(old.user_id)
+    new_owner = await User.create(id=owner_id)
+    return await Account.create(
+        puuid=old.puuid, user=new_owner, username="Replacement#NA"
+    )
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("owner_id", [101, 202])
+async def test_stale_alert_creation_cannot_mutate_relinked_account(database, owner_id):
+    owner = await User.create(id=101)
+    old = await Account.create(puuid="synthetic", user=owner, username="Original#NA")
+    replacement = await replace_account(old, owner_id)
+    with pytest.raises(ValueError, match="Account no longer exists"):
+        await create_alert(owner.id, old, SKIN_ID)
+    assert not await Alert.exists(account__user_id=replacement.user_id), (
+        "A stale request inserted an alert for the new owner"
+    )
+    await create_alert(replacement.user_id, replacement, SKIN_ID)
+    assert await matching_alerts_for_skins(old, [str(SKIN_ID)]) == []
+    matches = await matching_alerts_for_skins(replacement, [str(SKIN_ID)])
+    assert len(matches) == 1 and matches[0].account.user_id == owner_id
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("owner_id", [101, 202])
+@pytest.mark.parametrize("daily_shop", [False, True])
+async def test_alert_worker_does_not_deliver_replacement_owners_alerts(
+    database, owner_id, daily_shop
+):
+    owner = await User.create(id=101, daily_shop_enabled=daily_shop)
+    old = await Account.create(puuid="synthetic", user=owner, username="Original#NA")
+    await Alert.create(account=old, skin_uuid=SKIN_ID)
+    skin = Skin(str(SKIN_ID), "offer", "Synthetic skin", None, None)
+
+    async def storefront(account, **kwargs):
+        replacement = await replace_account(account, owner_id)
+        await Alert.create(account=replacement, skin_uuid=SKIN_ID)
+        return ShopData([Offer(skin, 100, 4000000000)], [], [], 4000000000, None)
+
+    delivery = AsyncMock()
+    await run_daily_alerts(
+        NS(storefront=storefront),
+        alert_concurrency=1,
+        delay_between_alerts_seconds=0,
+        dry_run=False,
+        on_shop=delivery,
+        on_credentials_expired=AsyncMock(),
+    )
+    assert delivery.await_count == 0, (
+        "The old Discord owner received the replacement owner alert"
+    )
+
+
+async def test_alert_insert_serializes_with_deletion_and_relink(database, monkeypatch):
+    owner = await User.create(id=101)
+    account = await Account.create(puuid="synthetic", user=owner, username="Original")
+    inserting, release = asyncio.Event(), asyncio.Event()
+    original = Alert.get_or_create
+
+    async def paused_insert(**kwargs):
+        inserting.set()
+        await release.wait()
+        return await original(**kwargs)
+
+    monkeypatch.setattr(Alert, "get_or_create", paused_insert)
+    creation = asyncio.create_task(create_alert(owner.id, account, SKIN_ID))
+    await asyncio.wait_for(inserting.wait(), timeout=1)
+    deletion = asyncio.create_task(replace_account(account))
+    try:
+        with pytest.raises(TimeoutError):
+            await asyncio.wait_for(asyncio.shield(deletion), timeout=0.05)
+    finally:
+        release.set()
+        await asyncio.gather(creation, deletion)
+    replacement = deletion.result()
+    assert not await Alert.exists(account__user_id=replacement.user_id)
 
 
 @pytest.mark.usefixtures("database")

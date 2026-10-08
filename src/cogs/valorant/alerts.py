@@ -16,7 +16,7 @@ from ...services.catalog import Skin
 from ...services.http import HTTPFailure
 from ...services.shop import ShopUnavailable
 from ...views import OwnedActionButton, timestamp
-from ...views.ui import embed, error, translated, view
+from ...views.ui import EmbedMessage, embed, error, translated, view
 
 
 class AlertsCog(commands.Cog):
@@ -78,7 +78,11 @@ class AlertsCog(commands.Cog):
             await error(interaction, "alert-skin-not-found")
             return
         skin_uuid = UUID(item.uuid)
-        alert, created = await create_alert(interaction.user.id, account, skin_uuid)
+        try:
+            alert, created = await create_alert(interaction.user.id, account, skin_uuid)
+        except ValueError:
+            await error(interaction, "error-not-registered")
+            return
         if not created:
             await error(
                 interaction,
@@ -113,7 +117,7 @@ class AlertsCog(commands.Cog):
         card, controls = await self.manager_view(
             interaction.user.id, 0, interaction.locale
         )
-        kwargs: dict[str, object] = {"embed": card}
+        kwargs: EmbedMessage = {"embed": card}
         if controls is not None:
             kwargs["view"] = controls
         await interaction.followup.send(**kwargs)

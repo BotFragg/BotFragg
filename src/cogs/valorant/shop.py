@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
+from collections.abc import Sequence
 
 import discord
 from discord import app_commands
@@ -12,9 +13,11 @@ from discord.ext import commands
 
 from ...bot import BotFraggBot
 from ...localization import BotFraggTranslator
+from ...models import Account
 from ...services.accounts import (
     account_for_user,
     get_user,
+    list_accounts,
     selected_account,
 )
 from ...services.auth import AuthenticationRequired
@@ -32,6 +35,7 @@ from ...views.shop import (
     _price_line,
     add_account_selector,
     add_skin_selector,
+    night_market_view,
     offer_cards,
 )
 from ...views.ui import _account_display_name, embed, error, translated, view
@@ -69,7 +73,7 @@ class ShopCog(commands.Cog):
     async def shop(
         self, interaction: discord.Interaction, user: discord.User | None = None
     ) -> None:
-        """Show the caller's shop or a shop another user has chosen to share."""
+        """Show a shop after rechecking its original account and current privacy."""
         await interaction.response.defer(thinking=True)
         target = user or interaction.user
         settings = await get_user(target.id)
@@ -86,6 +90,18 @@ class ShopCog(commands.Cog):
             data = await self.bot.shop.storefront(account)
         except (AuthenticationRequired, ShopUnavailable) as exc:
             await error(interaction, exc)
+            return
+        vp = await self.bot.emoji_service.currency("vp") or "VP"
+        accounts = (
+            await list_accounts(target.id) if target.id == interaction.user.id else []
+        )
+        account = await account.persisted_row().select_related("user").get_or_none()
+        if not account:
+            await error(interaction, "error-account-unavailable")
+            return
+        settings = account.user
+        if target.id != interaction.user.id and not settings.others_can_view_shop:
+            await error(interaction, "shop-user-not-sharing")
             return
         hide_ign = bool(settings and settings.hide_ign)
         username = _account_display_name(
@@ -114,7 +130,7 @@ class ShopCog(commands.Cog):
                         timestamp=timestamp(data.expires),
                     ),
                     data.offers,
-                    await self.bot.emoji_service.currency("vp") or "VP",
+                    vp,
                     link_item_image=self.bot.config.link_item_image,
                     unknown_skin_name=self.bot.translator.text(
                         interaction.locale, "common-unknown"
@@ -122,30 +138,34 @@ class ShopCog(commands.Cog):
                     emoji_service=self.bot.emoji_service,
                     locale=interaction.locale,
                 ),
-                view=controls if controls.children else None,
+                view=controls,
             )
             return
-        embeds, controls = await self.shop_view(
+        embeds, controls = self.shop_view(
             data,
             username,
             interaction.user.id,
             account.puuid,
+            accounts=accounts,
+            vp=vp,
             hide_ign=hide_ign,
             locale=interaction.locale,
         )
         await interaction.followup.send(embeds=embeds, view=controls)
 
-    async def shop_view(
+    def shop_view(
         self,
         data: ShopData,
         username: str,
         owner_id: int,
         puuid: str,
         *,
+        accounts: Sequence[Account],
+        vp: str,
         hide_ign: bool = False,
         locale: discord.Locale,
     ) -> tuple[list[discord.Embed], discord.ui.View]:
-        """Build daily shop embeds, owned selectors, and available shop controls."""
+        """Render daily shop cards and controls without further preparation waits."""
         controls = view()
         add_skin_selector(
             controls,
@@ -156,11 +176,12 @@ class ShopCog(commands.Cog):
             self.bot.translator,
             locale,
         )
-        await add_account_selector(
+        add_account_selector(
             controls,
             owner_id,
             "daily",
             puuid,
+            accounts=accounts,
             hide_ign=hide_ign,
             translator=self.bot.translator,
             locale=locale,
@@ -193,7 +214,6 @@ class ShopCog(commands.Cog):
                 label=self.bot.translator.text(locale, "shop-accessory-button"),
             )
         )
-        vp = await self.bot.emoji_service.currency("vp") or "VP"
         return (
             offer_cards(
                 self.bot.translator.text(
@@ -234,6 +254,9 @@ class ShopCog(commands.Cog):
         embeds, controls = await self.featured_bundles_view(
             data, interaction.user.id, account.puuid, locale=interaction.locale
         )
+        if not await account.persisted_row().exists():
+            await error(interaction, "error-account-unavailable")
+            return
         await interaction.followup.send(embeds=embeds, view=controls)
 
     async def featured_bundles_view(
@@ -281,8 +304,12 @@ class ShopCog(commands.Cog):
                     card.set_thumbnail(url=metadata.icon)
                 cards.append(card)
             if len(offers) > 9:
-                cards[0].description += "\n" + self.bot.translator.text(
-                    locale, "bundles-omitted", count=len(offers) - 9
+                cards[0].description = (
+                    (cards[0].description or "")
+                    + "\n"
+                    + self.bot.translator.text(
+                        locale, "bundles-omitted", count=len(offers) - 9
+                    )
                 )
         else:
             cards = [
@@ -372,7 +399,7 @@ class ShopCog(commands.Cog):
                 or self.bot.translator.text(locale, "common-unknown"),
                 skin.tier_uuid,
             )
-            colour = TIER_COLOURS.get(skin.tier_uuid, 0)
+            colour = TIER_COLOURS.get(skin.tier_uuid or "", 0)
             icon = skin.icon
         else:
             try:
@@ -505,24 +532,7 @@ class ShopCog(commands.Cog):
         except (AuthenticationRequired, ShopUnavailable) as exc:
             await error(interaction, exc)
             return
-        user = await get_user(interaction.user.id)
-        hide_ign = bool(user and user.hide_ign)
-        username = _account_display_name(
-            account.username,
-            hide_ign=hide_ign,
-            translator=self.bot.translator,
-            locale=interaction.locale,
-        )
-        if mode == "daily":
-            embeds, controls = await self.shop_view(
-                data,
-                username,
-                interaction.user.id,
-                puuid,
-                hide_ign=hide_ign,
-                locale=interaction.locale,
-            )
-        elif mode == "bundles":
+        if mode == "bundles":
             embeds, controls = await self.featured_bundles_view(
                 data,
                 interaction.user.id,
@@ -530,56 +540,52 @@ class ShopCog(commands.Cog):
                 locale=interaction.locale,
                 show_shop_button=True,
             )
-        elif mode in {"night", "nightmarket"}:
-            vp = await self.bot.emoji_service.currency("vp") or "VP"
-            embeds = offer_cards(
-                self.bot.translator.text(
-                    interaction.locale,
-                    "shop-night-market-header",
-                    username=username,
-                    timestamp=timestamp(data.night_market_expires or data.expires),
-                ),
-                data.night_market,
-                vp,
-                link_item_image=self.bot.config.link_item_image,
-                unknown_skin_name=self.bot.translator.text(
-                    interaction.locale, "common-unknown"
-                ),
-                emoji_service=self.bot.emoji_service,
-                locale=interaction.locale,
-            )
-            controls = view()
-            add_skin_selector(
-                controls,
-                interaction.user.id,
-                data.night_market,
-                data.night_market_expires or data.expires,
-                self.bot.emoji_service,
-                self.bot.translator,
-                interaction.locale,
-            )
-            await add_account_selector(
-                controls,
-                interaction.user.id,
-                mode,
-                puuid,
-                hide_ign=hide_ign,
-                translator=self.bot.translator,
-                locale=interaction.locale,
-            )
-            if mode == "night":
-                controls.add_item(
-                    OwnedActionButton(
-                        "shop_mode",
-                        interaction.user.id,
-                        f"daily,{puuid}",
-                        label=self.bot.translator.text(
-                            interaction.locale, "shop-skin-button"
-                        ),
-                    )
-                )
         else:
-            kc = await self.bot.emoji_service.currency("kc") or "KC"
+            currency = await self.bot.emoji_service.currency(
+                "kc" if mode == "accessory" else "vp"
+            ) or ("KC" if mode == "accessory" else "VP")
+            accounts = await list_accounts(interaction.user.id)
+            if mode == "accessory":
+                try:
+                    accessory_offers = await self.bot.shop.accessory_offers(data)
+                except HTTPFailure as exc:
+                    await error(interaction, exc)
+                    return
+        account = await account.persisted_row().select_related("user").get_or_none()
+        if not account:
+            await error(interaction, "error-account-unavailable")
+            return
+        hide_ign = account.user.hide_ign
+        username = _account_display_name(
+            account.username,
+            hide_ign=hide_ign,
+            translator=self.bot.translator,
+            locale=interaction.locale,
+        )
+        if mode == "daily":
+            embeds, controls = self.shop_view(
+                data,
+                username,
+                interaction.user.id,
+                puuid,
+                accounts=accounts,
+                vp=currency,
+                hide_ign=hide_ign,
+                locale=interaction.locale,
+            )
+        elif mode in {"night", "nightmarket"}:
+            embeds, controls = night_market_view(
+                self.bot,
+                interaction,
+                data,
+                username,
+                puuid,
+                accounts=accounts,
+                vp=currency,
+                hide_ign=hide_ign,
+                mode=mode,
+            )
+        elif mode == "accessory":
             embeds = [
                 embed(
                     self.bot.translator.text(
@@ -590,12 +596,12 @@ class ShopCog(commands.Cog):
                     ),
                 )
             ]
-            for accessory_offer in await self.bot.shop.accessory_offers(data):
+            for accessory_offer in accessory_offers:
                 item = accessory_offer.item
                 title_text = item.title_text_for(interaction.locale)
                 detail = f"`{title_text}`\n\n" if title_text else ""
                 card = embed(
-                    f"{detail}{kc} **{accessory_offer.price:,}**",
+                    f"{detail}{currency} **{accessory_offer.price:,}**",
                     title=item.name_for(interaction.locale)
                     or self.bot.translator.text(interaction.locale, "common-unknown"),
                 )
@@ -605,15 +611,20 @@ class ShopCog(commands.Cog):
                     card.set_thumbnail(url=item.icon)
                 embeds.append(card)
             if len(embeds) == 1:
-                embeds[0].description += "\n\n" + self.bot.translator.text(
-                    interaction.locale, "shop-accessory-all-owned"
+                embeds[0].description = (
+                    (embeds[0].description or "")
+                    + "\n\n"
+                    + self.bot.translator.text(
+                        interaction.locale, "shop-accessory-all-owned"
+                    )
                 )
             controls = view()
-            await add_account_selector(
+            add_account_selector(
                 controls,
                 interaction.user.id,
                 "accessory",
                 puuid,
+                accounts=accounts,
                 hide_ign=hide_ign,
                 translator=self.bot.translator,
                 locale=interaction.locale,
@@ -693,6 +704,9 @@ class ShopCog(commands.Cog):
             selected_id=bundle_id,
             show_shop_button=source == "shop",
         )
+        if not await account.persisted_row().exists():
+            await error(interaction, "error-account-unavailable")
+            return
         await interaction.edit_original_response(embeds=embeds, view=controls)
 
     @staticmethod
@@ -823,7 +837,8 @@ class ShopCog(commands.Cog):
             None,
         )
         if (
-            not selected
+            skin is None
+            or not selected
             or not isinstance(selected[1].get("streamedVideo"), str)
             or not selected[1]["streamedVideo"].startswith("https://")
         ):
@@ -885,59 +900,36 @@ class NightMarketCog(commands.Cog):
         except (AuthenticationRequired, ShopUnavailable) as exc:
             await error(interaction, exc)
             return
-        user = await get_user(interaction.user.id)
-        hide_ign = bool(user and user.hide_ign)
-        username = _account_display_name(
-            account.username,
-            hide_ign=hide_ign,
-            translator=self.bot.translator,
-            locale=interaction.locale,
-        )
         if not data.night_market:
             await interaction.followup.send(
                 embed=embed(translated(interaction, "shop-night-market-none"))
             )
             return
         vp = await self.bot.emoji_service.currency("vp") or "VP"
-        cards = offer_cards(
-            self.bot.translator.text(
-                interaction.locale,
-                "shop-night-market-header",
-                username=username,
-                timestamp=timestamp(data.night_market_expires or data.expires),
-            ),
-            data.night_market,
-            vp,
-            link_item_image=False,
-            unknown_skin_name=self.bot.translator.text(
-                interaction.locale, "common-unknown"
-            ),
-            emoji_service=self.bot.emoji_service,
-            header_colour=0xEAEEB2,
-            locale=interaction.locale,
-        )
-        controls = view()
-        add_skin_selector(
-            controls,
-            interaction.user.id,
-            data.night_market,
-            data.night_market_expires or data.expires,
-            self.bot.emoji_service,
-            self.bot.translator,
-            interaction.locale,
-        )
-        await add_account_selector(
-            controls,
-            interaction.user.id,
-            "nightmarket",
-            account.puuid,
+        accounts = await list_accounts(interaction.user.id)
+        account = await account.persisted_row().select_related("user").get_or_none()
+        if not account:
+            await error(interaction, "error-account-unavailable")
+            return
+        hide_ign = account.user.hide_ign
+        username = _account_display_name(
+            account.username,
             hide_ign=hide_ign,
             translator=self.bot.translator,
             locale=interaction.locale,
         )
-        await interaction.followup.send(
-            embeds=cards, view=controls if controls.children else None
+        cards, controls = night_market_view(
+            self.bot,
+            interaction,
+            data,
+            username,
+            account.puuid,
+            accounts=accounts,
+            vp=vp,
+            hide_ign=hide_ign,
+            mode="nightmarket",
         )
+        await interaction.followup.send(embeds=cards, view=controls)
 
 
 class BalanceCog(commands.Cog):
@@ -966,11 +958,17 @@ class BalanceCog(commands.Cog):
         except (AuthenticationRequired, ShopUnavailable) as exc:
             await error(interaction, exc)
             return
-        user = await get_user(interaction.user.id)
-        hide_ign = bool(user and user.hide_ign)
+        currencies = {
+            key: await self.bot.emoji_service.currency(key) or key.upper()
+            for key in ("vp", "rp", "kc")
+        }
+        account = await account.persisted_row().select_related("user").get_or_none()
+        if not account:
+            await error(interaction, "error-account-unavailable")
+            return
         username = _account_display_name(
             account.username,
-            hide_ign=hide_ign,
+            hide_ign=account.user.hide_ign,
             translator=self.bot.translator,
             locale=interaction.locale,
         )
@@ -997,7 +995,7 @@ class BalanceCog(commands.Cog):
         ):
             card.add_field(
                 name=name,
-                value=f"{await self.bot.emoji_service.currency(key) or key.upper()} **{value:,}**",
+                value=f"{currencies[key]} **{value:,}**",
                 inline=True,
             )
         await interaction.followup.send(embed=card)

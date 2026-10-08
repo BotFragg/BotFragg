@@ -17,6 +17,7 @@ from ...services.accounts import (
 )
 from ...views import OwnedActionButton
 from ...views.ui import (
+    EmbedMessage,
     _account_display_name,
     account_autocomplete_choices,
     embed,
@@ -51,6 +52,8 @@ class AccountsCog(commands.Cog):
         translator: BotFraggTranslator,
         locale: discord.Locale,
         page: int = 0,
+        *,
+        hide_ign: bool = False,
     ) -> discord.Embed:
         """Render one bounded account page and mark the currently selected entry."""
         pages = max(1, (len(accounts) + ACCOUNTS_PER_PAGE - 1) // ACCOUNTS_PER_PAGE)
@@ -61,8 +64,11 @@ class AccountsCog(commands.Cog):
         for index, account in enumerate(
             accounts[start : start + ACCOUNTS_PER_PAGE], start + 1
         ):
-            username = account.username or translator.text(
-                locale, "account-no-username"
+            username = _account_display_name(
+                account.username or translator.text(locale, "account-no-username"),
+                hide_ign=hide_ign,
+                translator=translator,
+                locale=locale,
             )
             if account.puuid == current_account_id:
                 username = f"**{username}**"
@@ -114,7 +120,7 @@ class AccountsCog(commands.Cog):
         """Switch the caller's active account using an autocomplete selection."""
         await interaction.response.defer(thinking=True)
         accounts = await list_accounts(interaction.user.id)
-        target = await resolve_account(interaction.user.id, account)
+        target = await resolve_account(interaction.user.id, account, accounts=accounts)
         if not accounts or not target:
             await error(
                 interaction,
@@ -125,16 +131,26 @@ class AccountsCog(commands.Cog):
         if not user:
             await error(interaction, "error-not-registered")
             return
+        already_selected = user.current_account_id == target.puuid
+        if not already_selected:
+            try:
+                await select_account(interaction.user.id, target)
+            except ValueError:
+                await error(interaction, "account-not-found")
+                return
+        target = await target.persisted_row().select_related("user").get_or_none()
+        if not target:
+            await error(interaction, "account-not-found")
+            return
         username = _account_display_name(
             target.username,
-            hide_ign=user.hide_ign,
+            hide_ign=target.user.hide_ign,
             translator=self.bot.translator,
             locale=interaction.locale,
         )
-        if user.current_account_id == target.puuid:
+        if already_selected:
             await error(interaction, "account-already-selected", username=username)
             return
-        await select_account(interaction.user.id, target)
         number = next(
             index
             for index, item in enumerate(accounts, 1)
@@ -161,22 +177,24 @@ class AccountsCog(commands.Cog):
     async def accounts(self, interaction: discord.Interaction) -> None:
         """Show the caller's accounts privately when their name-hiding preference is on."""
         user = await get_user(interaction.user.id)
+        ephemeral = bool(user and user.hide_ign)
+        await interaction.response.defer(thinking=True, ephemeral=ephemeral)
         accounts = await list_accounts(interaction.user.id)
-        await interaction.response.defer(
-            thinking=True, ephemeral=bool(user and user.hide_ign)
-        )
+        user = await get_user(interaction.user.id)
         if not user or not accounts:
             await error(interaction, "error-not-registered")
             return
         controls = self._accounts_view(interaction.user.id, len(accounts), 0)
-        kwargs: dict[str, object] = {
+        kwargs: EmbedMessage = {
             "embed": self._accounts_embed(
                 accounts,
                 user.current_account_id,
                 self.bot.translator,
                 interaction.locale,
+                # The first followup inherits the visibility accepted by defer.
+                hide_ign=user.hide_ign and not ephemeral,
             ),
-            "ephemeral": user.hide_ign,
+            "ephemeral": ephemeral,
         }
         if controls is not None:
             kwargs["view"] = controls
@@ -185,28 +203,35 @@ class AccountsCog(commands.Cog):
     async def accounts_page(
         self, interaction: discord.Interaction, payload: str
     ) -> None:
-        """Handle a persistent account-page control and refresh its message."""
+        """Refresh an account page privately when an old public list now hides names."""
         await interaction.response.defer()
         try:
             page = int(payload)
         except ValueError:
             await error(interaction, "accounts-page-invalid")
             return
-        user = await get_user(interaction.user.id)
         accounts = await list_accounts(interaction.user.id)
+        user = await get_user(interaction.user.id)
         if not user or not accounts:
             await error(interaction, "accounts-none-left")
             return
-        await interaction.edit_original_response(
-            embed=self._accounts_embed(
-                accounts,
-                user.current_account_id,
-                self.bot.translator,
-                interaction.locale,
-                page,
-            ),
-            view=self._accounts_view(interaction.user.id, len(accounts), page),
+        card = self._accounts_embed(
+            accounts,
+            user.current_account_id,
+            self.bot.translator,
+            interaction.locale,
+            page,
         )
+        controls = self._accounts_view(interaction.user.id, len(accounts), page)
+        if user.hide_ign and (
+            interaction.message is None or not interaction.message.flags.ephemeral
+        ):
+            kwargs: EmbedMessage = {"embed": card, "ephemeral": True}
+            if controls is not None:
+                kwargs["view"] = controls
+            await interaction.followup.send(**kwargs)
+        else:
+            await interaction.edit_original_response(embed=card, view=controls)
 
 
 async def setup(bot: BotFraggBot) -> None:

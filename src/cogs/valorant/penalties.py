@@ -13,9 +13,9 @@ from ...localization import BotFraggTranslator
 from ...models import Account
 from ...services.accounts import account_for_user, get_user, selected_account
 from ...services.auth import AuthenticationRequired
-from ...services.gameplay import GameplayUnavailable
+from ...services.gameplay import GameplayUnavailable, Penalty
 from ...views import OwnedActionButton, timestamp
-from ...views.ui import _account_display_name, embed, error, view
+from ...views.ui import EmbedMessage, _account_display_name, embed, error, view
 
 PENALTIES_PER_PAGE = 5
 
@@ -64,7 +64,7 @@ class PenaltiesCog(commands.Cog):
             self.bot.translator,
             interaction.locale,
         )
-        kwargs: dict[str, object] = {"embed": card, "ephemeral": True}
+        kwargs: EmbedMessage = {"embed": card, "ephemeral": True}
         if controls is not None:
             kwargs["view"] = controls
         kwargs["allowed_mentions"] = discord.AllowedMentions.none()
@@ -122,7 +122,7 @@ def _penalties_page(
     owner_id: int,
     account: Account,
     player: str,
-    penalties: list[dict],
+    penalties: list[Penalty],
     page: int,
     translator: BotFraggTranslator,
     locale: discord.Locale,
@@ -186,8 +186,9 @@ def _penalties_page(
             ),
         ]
         warning_details = []
-        if isinstance(penalty.get("warning_type"), str):
-            warning_details.append(penalty["warning_type"])
+        warning_type = penalty.get("warning_type")
+        if isinstance(warning_type, str):
+            warning_details.append(warning_type)
         if isinstance(penalty.get("warning_tier"), int):
             warning_details.append(
                 translator.text(

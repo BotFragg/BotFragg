@@ -1,10 +1,12 @@
-"""Behavior checks for shop commands."""
+"""Behavior and regression checks for shop commands."""
 
 from __future__ import annotations
 
 import asyncio
 from datetime import UTC, datetime
 from types import SimpleNamespace
+from types import SimpleNamespace as NS
+from unittest.mock import AsyncMock
 
 import discord
 import pytest
@@ -14,10 +16,15 @@ from src.cogs.valorant import shop as shop_module
 from src.cogs.valorant.shop import (
     NightMarketCog,
     ShopCog,
-    add_skin_selector,
-    offer_cards,
 )
-from src.services.catalog import Accessory, Bundle, Skin
+from src.localization import BotFraggTranslator
+from src.models import Account, User
+from src.services.catalog import (
+    Accessory,
+    Bundle,
+    CatalogService,
+    Skin,
+)
 from src.services.shop import (
     KC_UUID,
     FeaturedBundle,
@@ -27,6 +34,8 @@ from src.services.shop import (
     ShopService,
 )
 from src.views import OwnedSelect
+from src.views import shop as shop_views
+from src.views.shop import add_skin_selector, offer_cards
 from tests.helpers import (
     TEST_LOCALE,
     TEST_TRANSLATOR,
@@ -35,100 +44,108 @@ from tests.helpers import (
 )
 
 
-async def test_accessory_shop_renders_catalog_item_without_changing_output(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """Verify that accessory shop renders catalog item without changing output."""
-    item = Accessory("Buddy", "https://example.com/buddy.png", "Limited edition")
-    data = ShopData(
-        offers=[],
-        accessory=[
-            {
-                "Offer": {
-                    "Cost": {KC_UUID: 1500},
-                    "Rewards": [{"ItemTypeID": "buddy", "ItemID": "buddy-id"}],
-                }
-            }
-        ],
-        night_market=[],
-        expires=4_000_000_000,
-        night_market_expires=None,
+async def test_empty_shared_shop_sends_a_view(monkeypatch):
+    from src.cogs.valorant.shop import ShopCog
+    from src.services.shop import ShopData
+
+    account = SimpleNamespace(puuid="synthetic", username="Example#NA")
+    account.user = NS(others_can_view_shop=True, hide_ign=False)
+    account.persisted_row = lambda: NS(
+        select_related=lambda *args: NS(get_or_none=AsyncMock(return_value=account))
     )
-    account = SimpleNamespace(puuid="account", username="One#NA")
-    rendered: dict[str, object] = {}
+    monkeypatch.setattr(
+        "src.cogs.valorant.shop.get_user",
+        AsyncMock(
+            return_value=SimpleNamespace(others_can_view_shop=True, hide_ign=False)
+        ),
+    )
+    monkeypatch.setattr(
+        "src.cogs.valorant.shop.selected_account", AsyncMock(return_value=account)
+    )
+    bot = SimpleNamespace(
+        translator=BotFraggTranslator(),
+        config=SimpleNamespace(link_item_image=False),
+        shop=SimpleNamespace(
+            storefront=AsyncMock(return_value=ShopData([], [], [], 4000000000, None))
+        ),
+        emoji_service=SimpleNamespace(currency=AsyncMock(return_value="VP")),
+        register_component=lambda *args: None,
+    )
+    interaction = SimpleNamespace(
+        user=SimpleNamespace(id=1),
+        locale=discord.Locale.american_english,
+        response=SimpleNamespace(defer=AsyncMock()),
+        followup=SimpleNamespace(send=AsyncMock()),
+    )
+    await ShopCog.shop.callback(ShopCog(bot), interaction, SimpleNamespace(id=2))
+    controls = interaction.followup.send.call_args.kwargs["view"]
+    assert isinstance(controls, discord.ui.View)
+    assert not controls.children
 
-    class Shop:
-        """Return deterministic storefront data and record account lookups for alert and command assertions."""
 
-        async def storefront(self, _account):
-            """Return the configured storefront fixture for the requested account."""
-            return data
+@pytest.mark.parametrize(
+    ("viewer", "stage"), [(1, "storefront"), (1, "currency"), (2, "storefront")]
+)
+@pytest.mark.parametrize(
+    "change", ["hide", "unshare", "delete", "recreate", "reassign"]
+)
+async def test_shop_rechecks_privacy_and_original_account(
+    database, change, viewer, stage
+):
+    owner = await User.create(id=2, current_account_id="synthetic")
+    account = await Account.create(
+        puuid="synthetic", user=owner, username="SecretName#NA"
+    )
 
-        async def accessory_offers(self, shop_data):
-            """Return the configured accessory-shop offers."""
-            assert shop_data is data
-            return [SimpleNamespace(item=item, price=1500)]
+    async def change_privacy():
+        if change == "hide":
+            await User.filter(id=owner.id).update(hide_ign=True)
+        elif change == "unshare":
+            await User.filter(id=owner.id).update(others_can_view_shop=False)
+        elif change == "delete":
+            await owner.delete()
+        else:
+            await account.delete()
+            recipient = owner if change == "recreate" else await User.create(id=3)
+            await Account.create(
+                puuid=account.puuid, user=recipient, username="Replacement#NA"
+            )
 
-    class EmojiService:
-        """Return deterministic currency and progress markers for embed assertions."""
+    async def storefront(_account):
+        if stage == "storefront":
+            await change_privacy()
+        return ShopData([], [], [], 4_000_000_000, None)
 
-        async def currency(self, key: str) -> str:
-            """Return a stable currency marker for embed assertions."""
-            assert key == "kc"
-            return "KC"
+    async def currency(_kind):
+        if stage == "currency":
+            await change_privacy()
+        return "VP"
 
-    class Response:
-        """Capture whether an interaction was deferred and whether its initial response was private."""
-
-        async def defer(self) -> None:
-            """Record that the fake interaction response was deferred."""
-            return None
-
-    async def account_for_user(_owner_id: int, _puuid: str):
-        """Return the test account only for the matching user and PUUID."""
-        return account
-
-    async def get_user(_owner_id: int):
-        """Return the configured user fixture for the requested Discord ID."""
-        return None
-
-    async def list_accounts(_owner_id: int):
-        """Return the configured accounts for the requested Discord user."""
-        return [account, SimpleNamespace(puuid="two", username="Two#EU")]
-
-    async def edit_original_response(*, embeds, view) -> None:
-        """Record edits to the fake interaction's original response."""
-        rendered["embeds"] = embeds
-        rendered["view"] = view
-
-    monkeypatch.setattr(shop_module, "account_for_user", account_for_user)
-    monkeypatch.setattr(shop_module, "get_user", get_user)
-    monkeypatch.setattr("src.views.shop.list_accounts", list_accounts)
     bot = _localized_bot(
-        shop=Shop(),
-        emoji_service=EmojiService(),
-        config=SimpleNamespace(link_item_image=True),
-        register_component=lambda *_args: None,
+        register_component=lambda *args: None,
+        config=NS(link_item_image=False),
+        shop=NS(storefront=storefront),
+        emoji_service=NS(currency=currency),
     )
     interaction = _localized_interaction(
-        user=SimpleNamespace(id=123),
-        response=Response(),
-        edit_original_response=edit_original_response,
+        user=NS(id=viewer),
+        response=NS(defer=AsyncMock(), is_done=lambda: True),
+        followup=NS(send=AsyncMock()),
     )
-    await ShopCog(bot).shop_mode(interaction, "accessory,account")
+    await ShopCog.shop.callback(ShopCog(bot), interaction, NS(id=owner.id))
 
-    embeds = rendered["embeds"]
-    assert len(embeds) == 2
-    assert embeds[1].title == "Buddy"
-    assert embeds[1].description == "`Limited edition`\n\nKC **1,500**"
-    assert embeds[1].url == item.icon
-    assert embeds[1].thumbnail.url == item.icon
-    controls = rendered["view"]
-    assert isinstance(controls, discord.ui.View)
-    assert [child.item.custom_id.split(":")[1] for child in controls.children] == [
-        "shop_account",
-        "shop_mode",
-    ]
+    sent = interaction.followup.send.call_args.kwargs
+    if change == "hide" or (change == "unshare" and viewer == owner.id):
+        header = sent["embeds"][0].description
+        if change == "hide":
+            assert "SecretName" not in header
+            assert "Account" in header
+        else:
+            assert "SecretName" in header
+        assert not sent.get("ephemeral", False)
+    else:
+        assert sent["ephemeral"] is True
+        assert "view" not in sent
 
 
 def test_shop_offer_layout_uses_tier_colour_and_discount_price() -> None:
@@ -262,18 +279,14 @@ async def test_shop_skin_menu_selects_tiered_skin_and_returns_private_video() ->
     }
 
 
-async def test_daily_shop_view_includes_only_its_offers_in_skin_menu(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
+async def test_daily_shop_view_includes_only_its_offers_in_skin_menu() -> None:
     """Verify the standard daily shop view exposes its current offer choices."""
     skin = Skin("skin", "offer", "Prime Vandal", None, None)
 
-    async def list_accounts(_owner_id: int) -> list[object]:
-        """Return two accounts so selector ordering is visible in the view."""
-        return [
-            SimpleNamespace(puuid="account", username="Player#NA"),
-            SimpleNamespace(puuid="another", username="Other#EU"),
-        ]
+    accounts = [
+        SimpleNamespace(puuid="account", username="Player#NA"),
+        SimpleNamespace(puuid="another", username="Other#EU"),
+    ]
 
     class EmojiService:
         """Return stable currency and tier emoji markers for shop cards."""
@@ -290,14 +303,13 @@ async def test_daily_shop_view_includes_only_its_offers_in_skin_menu(
             """Report that no custom tier emoji is available."""
             return ""
 
-    monkeypatch.setattr("src.views.shop.list_accounts", list_accounts)
     bot = _localized_bot(
         register_component=lambda *_args: None,
         emoji_service=EmojiService(),
         config=SimpleNamespace(link_item_image=False),
     )
     cog = ShopCog(bot)
-    embeds, controls = await cog.shop_view(
+    embeds, controls = cog.shop_view(
         ShopData(
             [Offer(skin, 1775, 1)],
             [],
@@ -319,6 +331,8 @@ async def test_daily_shop_view_includes_only_its_offers_in_skin_menu(
         "Player",
         123,
         "account",
+        accounts=accounts,
+        vp="VP",
         locale=TEST_LOCALE,
     )
 
@@ -346,7 +360,9 @@ async def test_bundles_command_renders_live_prices_and_tiered_skin_names(
     """Verify the single current bundle includes exact prices and skin tier labels."""
     skin = Skin("skin", "offer", "Prime Phantom", None, "tier-uuid")
     bundle = Bundle("bundle-uuid", "Prime Collection", "Set", None, None)
-    account = SimpleNamespace(puuid="account")
+    account = SimpleNamespace(
+        puuid="account", persisted_row=lambda: NS(exists=AsyncMock(return_value=True))
+    )
     data = ShopData(
         [],
         [],
@@ -484,7 +500,9 @@ async def test_bundles_reports_missing_account_and_empty_featured_list(
     assert "`/login`" in followup.message["embed"].description
     assert followup.message["ephemeral"] is True
 
-    account = SimpleNamespace(puuid="account")
+    account = SimpleNamespace(
+        puuid="account", persisted_row=lambda: NS(exists=AsyncMock(return_value=True))
+    )
 
     async def selected(_owner_id: int):
         """Return the linked account for the empty-list response check."""
@@ -691,14 +709,14 @@ async def test_nightmarket_command_includes_skin_and_account_menus(
     data = ShopData([], [], [Offer(skin, 1775, 1, 1000, 44)], 4_000_000_000, None)
     account = SimpleNamespace(puuid="account", username="Player#NA")
     other_account = SimpleNamespace(puuid="other", username="Other#NA")
+    for item in (account, other_account):
+        item.user = NS(hide_ign=False)
+        row = NS(get_or_none=AsyncMock(return_value=item))
+        item.persisted_row = lambda row=row: NS(select_related=lambda *args: row)
 
     async def selected_account(_owner_id: int) -> SimpleNamespace:
         """Return the account fixture for the Night Market command."""
         return account
-
-    async def get_user(_owner_id: int) -> None:
-        """Report default visibility preferences for the fixture user."""
-        return None
 
     async def list_accounts(_owner_id: int) -> list[SimpleNamespace]:
         """Return two accounts so the selector is visible."""
@@ -709,8 +727,7 @@ async def test_nightmarket_command_includes_skin_and_account_menus(
         return other_account if puuid == "other" else None
 
     monkeypatch.setattr("src.cogs.valorant.shop.selected_account", selected_account)
-    monkeypatch.setattr("src.cogs.valorant.shop.get_user", get_user)
-    monkeypatch.setattr("src.views.shop.list_accounts", list_accounts)
+    monkeypatch.setattr("src.cogs.valorant.shop.list_accounts", list_accounts)
     monkeypatch.setattr("src.cogs.valorant.shop.account_for_user", account_for_user)
 
     class EmojiService:
@@ -860,26 +877,20 @@ async def test_daily_shop_dm_includes_skin_video_menu() -> None:
     assert [option.value for option in selector.item.options] == ["skin"]
 
 
-async def test_shop_account_selector_hides_names_when_requested(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
+async def test_shop_account_selector_hides_names_when_requested() -> None:
     """Verify that shop account selector hides names when requested."""
     accounts = [
         SimpleNamespace(puuid="one", username="SecretOne#NA"),
         SimpleNamespace(puuid="two", username="SecretTwo#EU"),
     ]
 
-    async def list_accounts(_: int) -> list[SimpleNamespace]:
-        """Return the configured accounts for the requested Discord user."""
-        return accounts
-
-    monkeypatch.setattr("src.views.shop.list_accounts", list_accounts)
     controls = discord.ui.View(timeout=None)
-    await shop_module.add_account_selector(
+    shop_views.add_account_selector(
         controls,
         123,
         "daily",
         "one",
+        accounts=accounts,
         hide_ign=True,
         translator=TEST_TRANSLATOR,
         locale=TEST_LOCALE,
@@ -897,6 +908,10 @@ async def test_shop_hides_full_in_game_name_when_preference_enabled(
 ) -> None:
     """Verify that shop hides full in game name when preference enabled."""
     account = SimpleNamespace(puuid="one", username="SecretName#NA")
+    account.user = NS(others_can_view_shop=False, hide_ign=True)
+    account.persisted_row = lambda: NS(
+        select_related=lambda *args: NS(get_or_none=AsyncMock(return_value=account))
+    )
 
     async def get_user(_user_id: int) -> SimpleNamespace:
         """Return the configured user fixture for the requested Discord ID."""
@@ -929,15 +944,19 @@ async def test_shop_hides_full_in_game_name_when_preference_enabled(
 
     monkeypatch.setattr("src.cogs.valorant.shop.get_user", get_user)
     monkeypatch.setattr("src.cogs.valorant.shop.selected_account", selected_account)
+    monkeypatch.setattr(
+        "src.cogs.valorant.shop.list_accounts", AsyncMock(return_value=[account])
+    )
     bot = _localized_bot(
         shop=Shop(),
         register_component=lambda *_args: None,
+        emoji_service=NS(currency=AsyncMock(return_value="VP")),
     )
     cog = ShopCog(bot)
     rendered: dict[str, object] = {}
 
-    async def shop_view(
-        _data, username, _owner_id, _puuid, *, hide_ign=False, locale=None
+    def shop_view(
+        _data, username, _owner_id, _puuid, *, accounts, vp, hide_ign=False, locale=None
     ):
         """Return the expected shop embeds and interactive controls."""
         rendered["username"] = username
@@ -991,3 +1010,156 @@ async def test_shop_deletion_cleanup_waits_for_storefront_headers_in_flight() ->
     await asyncio.wait_for(cleanup, timeout=1)
 
     assert account.puuid not in service._cache
+
+
+async def test_accessory_shop_renders_catalog_item_without_changing_output(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Verify that accessory shop renders catalog item without changing output."""
+    item = Accessory("Buddy", "https://example.com/buddy.png", "Limited edition")
+    data = ShopData(
+        offers=[],
+        accessory=[
+            {
+                "Offer": {
+                    "Cost": {KC_UUID: 1500},
+                    "Rewards": [{"ItemTypeID": "buddy", "ItemID": "buddy-id"}],
+                }
+            }
+        ],
+        night_market=[],
+        expires=4_000_000_000,
+        night_market_expires=None,
+    )
+    account = SimpleNamespace(puuid="account", username="One#NA")
+    account.user = NS(hide_ign=False)
+    account.persisted_row = lambda: NS(
+        select_related=lambda *args: NS(get_or_none=AsyncMock(return_value=account))
+    )
+    rendered: dict[str, object] = {}
+
+    class Shop:
+        """Return deterministic storefront data and record account lookups for alert and command assertions."""
+
+        async def storefront(self, _account):
+            """Return the configured storefront fixture for the requested account."""
+            return data
+
+        async def accessory_offers(self, shop_data):
+            """Return the configured accessory-shop offers."""
+            assert shop_data is data
+            return [SimpleNamespace(item=item, price=1500)]
+
+    class EmojiService:
+        """Return deterministic currency and progress markers for embed assertions."""
+
+        async def currency(self, key: str) -> str:
+            """Return a stable currency marker for embed assertions."""
+            assert key == "kc"
+            return "KC"
+
+    class Response:
+        """Capture whether an interaction was deferred and whether its initial response was private."""
+
+        async def defer(self) -> None:
+            """Record that the fake interaction response was deferred."""
+            return None
+
+    async def account_for_user(_owner_id: int, _puuid: str):
+        """Return the test account only for the matching user and PUUID."""
+        return account
+
+    async def list_accounts(_owner_id: int):
+        """Return the configured accounts for the requested Discord user."""
+        return [account, SimpleNamespace(puuid="two", username="Two#EU")]
+
+    async def edit_original_response(*, embeds, view) -> None:
+        """Record edits to the fake interaction's original response."""
+        rendered["embeds"] = embeds
+        rendered["view"] = view
+
+    monkeypatch.setattr(shop_module, "account_for_user", account_for_user)
+    monkeypatch.setattr(shop_module, "list_accounts", list_accounts)
+    bot = _localized_bot(
+        shop=Shop(),
+        emoji_service=EmojiService(),
+        config=SimpleNamespace(link_item_image=True),
+        register_component=lambda *_args: None,
+    )
+    interaction = _localized_interaction(
+        user=SimpleNamespace(id=123),
+        response=Response(),
+        edit_original_response=edit_original_response,
+    )
+    await ShopCog(bot).shop_mode(interaction, "accessory,account")
+
+    embeds = rendered["embeds"]
+    assert len(embeds) == 2
+    assert embeds[1].title == "Buddy"
+    assert embeds[1].description == "`Limited edition`\n\nKC **1,500**"
+    assert embeds[1].url == item.icon
+    assert embeds[1].thumbnail.url == item.icon
+    controls = rendered["view"]
+    assert isinstance(controls, discord.ui.View)
+    assert [child.item.custom_id.split(":")[1] for child in controls.children] == [
+        "shop_account",
+        "shop_mode",
+    ]
+
+
+@pytest.mark.parametrize(
+    ("status", "body"),
+    [(503, {}), (403, {}), (200, []), (200, {}), (200, {"data": []})],
+)
+async def test_accessory_shop_metadata_failure_returns_a_localized_error(
+    database, status, body
+):
+    owner = await User.create(id=101)
+    await Account.create(puuid="synthetic", username="Synthetic", user=owner)
+    data = ShopData(
+        [],
+        [
+            {
+                "Offer": {
+                    "Cost": {KC_UUID: 1500},
+                    "Rewards": [
+                        {
+                            "ItemTypeID": "d5f120f8-ff8c-4aac-92ea-f2b5acbe9475",
+                            "ItemID": "spray",
+                        }
+                    ],
+                }
+            }
+        ],
+        [],
+        4000000000,
+        None,
+    )
+    request = AsyncMock(return_value=NS(status=status, data=body))
+    catalog = CatalogService(NS(request=request))
+    shop = ShopService(NS(), NS(), NS(), catalog)
+    shop.storefront = AsyncMock(return_value=data)
+    bot = NS(
+        register_component=lambda *args: None,
+        translator=BotFraggTranslator(),
+        config=NS(link_item_image=True),
+        emoji_service=NS(currency=AsyncMock(return_value="KC")),
+        shop=shop,
+    )
+    interaction = NS(
+        user=NS(id=101),
+        client=bot,
+        locale=discord.Locale.french,
+        response=NS(defer=AsyncMock(), is_done=lambda: True),
+        followup=NS(send=AsyncMock()),
+        edit_original_response=AsyncMock(),
+    )
+    await ShopCog(bot).shop_mode(interaction, "accessory,synthetic")
+    assert interaction.followup.send.await_count == 1
+    assert interaction.followup.send.call_args.kwargs["ephemeral"] is True
+    assert interaction.followup.send.call_args.kwargs["embed"].description == (
+        bot.translator.text(interaction.locale, "error-riot-services-unavailable")
+    )
+    interaction.edit_original_response.assert_not_awaited()
+    assert catalog._accessories == {}
+    assert request.await_count == 1

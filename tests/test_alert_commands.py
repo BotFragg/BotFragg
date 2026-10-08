@@ -1,4 +1,4 @@
-"""Behavior checks for alert commands."""
+"""Behavior and regression checks for alert commands."""
 
 from __future__ import annotations
 
