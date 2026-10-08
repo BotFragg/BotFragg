@@ -7,10 +7,12 @@ import base64
 import json
 import secrets
 import time
-from collections import defaultdict
+from collections.abc import AsyncIterator, Mapping
+from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, NotRequired, TypedDict
 from urllib.parse import parse_qs, urlencode, urlparse
+from weakref import WeakValueDictionary
 
 from tortoise.exceptions import IntegrityError
 from tortoise.expressions import F
@@ -23,6 +25,31 @@ from .http import HTTPClient, HTTPFailure
 
 CLIENT_ID = "riot-client"
 REDIRECT_URI = "http://localhost/redirect"
+
+
+class TokenData(TypedDict):
+    """Riot token fields after trust-boundary validation."""
+
+    access_token: str
+    id_token: str | None
+    refresh_token: str | None
+
+
+class UserInfo(TypedDict):
+    """Validated Riot identity fields used to display the linked account name."""
+
+    game_name: str
+    tag_line: str
+
+
+class LoginCredentials(TypedDict):
+    """Credential payload constructed from a validated login response."""
+
+    rso: str
+    idt: str | None
+    refresh_token: str | None
+    refresh_token_obtained: int
+    ent: NotRequired[str]
 
 
 @dataclass(slots=True)
@@ -43,16 +70,48 @@ class AuthService:
         self.config = config
         self.http = http
         self.vault = vault
-        self._locks: defaultdict[str, asyncio.Lock] = defaultdict(asyncio.Lock)
-        self._login_locks: defaultdict[int, asyncio.Lock] = defaultdict(asyncio.Lock)
+        self._locks: WeakValueDictionary[str, asyncio.Lock] = WeakValueDictionary()
+        self._login_locks: WeakValueDictionary[int, asyncio.Lock] = (
+            WeakValueDictionary()
+        )
         self._version: dict[str, Any] = {}
         self._pending_nonces: dict[int, tuple[str, float]] = {}
+        self._login_cancellations: WeakValueDictionary[int, asyncio.Event] = (
+            WeakValueDictionary()
+        )
+
+    @asynccontextmanager
+    async def cancel_logins(self, discord_id: int) -> AsyncIterator[None]:
+        """Invalidate login attempts and serialize deletion with their database commits."""
+        async with self._login_locks.setdefault(discord_id, asyncio.Lock()):
+            cancelled = self._login_cancellations.setdefault(
+                discord_id, asyncio.Event()
+            )
+            cancelled.set()
+            self._pending_nonces.pop(discord_id, None)
+            try:
+                yield
+            finally:
+                self._pending_nonces.pop(discord_id, None)
+                self._login_cancellations.pop(discord_id, None)
 
     async def refresh_version(self) -> None:
         """Fetch Riot's current client version for authenticated request headers."""
+        self.prune_expired_nonces()
         result = await self.http.request("GET", "https://valorant-api.com/v1/version")
-        if result.status == 200 and isinstance(result.data, dict):
-            self._version = result.data.get("data") or {}
+        version = result.data.get("data") if isinstance(result.data, dict) else None
+        if (
+            result.status != 200
+            or not isinstance(version, dict)
+            or not isinstance(version.get("riotClientVersion"), str)
+            or not version["riotClientVersion"]
+            or (
+                version.get("riotClientBuild") is not None
+                and not isinstance(version["riotClientBuild"], str)
+            )
+        ):
+            raise HTTPFailure("Invalid VALORANT client version response")
+        self._version = version
 
     @property
     def riot_headers(self) -> dict[str, str]:
@@ -67,6 +126,7 @@ class AuthService:
 
     def login_url(self, discord_id: int) -> str:
         """Create a Riot authorization URL and retain a short-lived per-user nonce."""
+        self.prune_expired_nonces()
         nonce = secrets.token_urlsafe(24)
         self._pending_nonces[discord_id] = (nonce, time.monotonic() + 600)
         return "https://auth.riotgames.com/authorize?" + urlencode(
@@ -86,7 +146,10 @@ class AuthService:
         already owned by another Discord user, or a user at the account limit, is
         rejected without replacing the existing owner.
         """
-        code = parse_qs(urlparse(callback_url.strip()).query).get("code", [None])[0]
+        try:
+            code = parse_qs(urlparse(callback_url.strip()).query).get("code", [None])[0]
+        except ValueError:
+            return AuthResult(False, error_key="login-code-missing")
         if not code:
             return AuthResult(
                 False,
@@ -98,6 +161,7 @@ class AuthService:
                 False,
                 error_key="login-attempt-expired",
             )
+        cancelled = self._login_cancellations.setdefault(discord_id, asyncio.Event())
         try:
             response = await self.http.request(
                 "POST",
@@ -120,30 +184,31 @@ class AuthService:
                 False,
                 error_key="error-riot-auth-temporarily-unavailable",
             )
-        if (
-            response.status != 200
-            or not isinstance(response.data, dict)
-            or not response.data.get("access_token")
-        ):
+        if response.status != 200 or not isinstance(response.data, dict):
             return AuthResult(
                 False,
                 error_key="login-code-rejected",
             )
-        token_data = response.data
+        try:
+            token_data = _token_data(response.data)
+        except HTTPFailure:
+            return AuthResult(
+                False, error_key="error-riot-auth-temporarily-unavailable"
+            )
         claims = decode_jwt(token_data.get("id_token"))
         if claims.get("nonce") != pending[0]:
             return AuthResult(
                 False,
                 error_key="login-nonce-mismatch",
             )
-        auth = {
+        auth: LoginCredentials = {
             "rso": token_data["access_token"],
             "idt": token_data.get("id_token"),
             "refresh_token": token_data.get("refresh_token"),
             "refresh_token_obtained": int(time.time() * 1000),
         }
-        puuid = str(decode_jwt(auth["rso"]).get("sub") or "")
-        if not puuid:
+        puuid = decode_jwt(auth["rso"]).get("sub")
+        if not isinstance(puuid, str) or not puuid:
             return AuthResult(
                 False,
                 error_key="login-token-no-account",
@@ -165,10 +230,17 @@ class AuthService:
         auth["ent"] = entitlement
         username = f"{user_info['game_name']}#{user_info['tag_line']}"
         try:
-            async with self._login_locks[discord_id], in_transaction():
+            async with (
+                self._login_locks.setdefault(discord_id, asyncio.Lock()),
+                in_transaction(),
+            ):
+                if cancelled.is_set():
+                    return AuthResult(False, error_key="login-attempt-expired")
                 user, _ = await User.get_or_create(id=discord_id)
                 user = await User.filter(id=discord_id).select_for_update().get()
-                account = await Account.get_or_none(puuid=puuid)
+                account = (
+                    await Account.filter(puuid=puuid).select_for_update().get_or_none()
+                )
                 if account and account.user_id != discord_id:
                     return AuthResult(
                         False,
@@ -211,8 +283,8 @@ class AuthService:
 
     async def ensure(self, account: Account, *, force: bool = False) -> AuthResult:
         """Serialize credential checks for an account and return its usable auth state."""
-        async with self._locks[account.puuid]:
-            fresh = await Account.get_or_none(puuid=account.puuid)
+        async with self._locks.setdefault(account.puuid, asyncio.Lock()):
+            fresh = await account.persisted_row().get_or_none()
             if not fresh:
                 return AuthResult(False, account=account)
             return await self._ensure_locked(fresh, force=force)
@@ -222,23 +294,28 @@ class AuthService:
     ) -> AuthResult:
         """Check token lifetime and repair or refresh credentials while holding its lock."""
         auth = self.vault.decrypt(account.auth_blob)
-        if not auth.get("rso"):
+        if not isinstance(auth.get("rso"), str) or not auth["rso"]:
             return AuthResult(False, account=account)
         remaining = token_expiry(auth["rso"]) - time.time()
         if not force and remaining > self.config.token_refresh_buffer_minutes * 60:
-            if auth.get("ent"):
+            if isinstance(auth.get("ent"), str) and auth["ent"]:
                 return AuthResult(True, account=account)
             return await self._repair_entitlement(
                 account, auth, refresh_on_missing=True
             )
         if not self.config.auto_refresh_tokens:
-            return AuthResult(remaining > 0 and bool(auth.get("ent")), account=account)
+            return AuthResult(
+                remaining > 0
+                and isinstance(auth.get("ent"), str)
+                and bool(auth["ent"]),
+                account=account,
+            )
         return await self._refresh_locked(account, force=force)
 
     async def refresh(self, account: Account, *, force: bool = False) -> AuthResult:
         """Refresh one account's Riot tokens under its per-account lock."""
-        async with self._locks[account.puuid]:
-            fresh = await Account.get_or_none(puuid=account.puuid)
+        async with self._locks.setdefault(account.puuid, asyncio.Lock()):
+            fresh = await account.persisted_row().get_or_none()
             if not fresh:
                 return AuthResult(False, account=account)
             return await self._refresh_locked(fresh, force=force)
@@ -252,11 +329,12 @@ class AuthService:
             not force
             and token_expiry(auth.get("rso")) - time.time()
             > self.config.token_refresh_buffer_minutes * 60
-            and auth.get("ent")
+            and isinstance(auth.get("ent"), str)
+            and auth["ent"]
         ):
             return AuthResult(True, account=account)
         refresh_token = auth.get("refresh_token")
-        if not refresh_token:
+        if not isinstance(refresh_token, str) or not refresh_token:
             await self._clear_credentials_locked(account)
             return AuthResult(False, account=account)
         expected_version = account.auth_version
@@ -280,54 +358,69 @@ class AuthService:
             raise HTTPFailure(
                 f"Riot token refresh failed with status {response.status}"
             )
-        if response.status in {400, 401} and data.get("error") in {
-            "invalid_grant",
-            "bad_claims",
-        }:
-            current = await Account.get(puuid=account.puuid)
+        if (
+            response.status in {400, 401}
+            and isinstance(data.get("error"), str)
+            and data.get("error")
+            in {
+                "invalid_grant",
+                "bad_claims",
+            }
+        ):
+            current = await account.persisted_row().get_or_none()
+            if current is None:
+                return AuthResult(False)
             if current.auth_version == expected_version:
                 await self._clear_credentials_locked(current)
-                current = await Account.get(puuid=account.puuid)
-            return AuthResult(False, account=current)
-        if response.status != 200 or not data.get("access_token"):
-            return AuthResult(False, account=account)
+                current = await account.persisted_row().get_or_none()
+            return await self._ensure_locked(current) if current else AuthResult(False)
+        if response.status != 200:
+            raise HTTPFailure(
+                f"Riot token refresh failed with status {response.status}"
+            )
+        token_data = _token_data(data)
         new_auth = dict(auth)
-        new_auth["rso"] = data["access_token"]
-        if data.get("id_token"):
-            new_auth["idt"] = data["id_token"]
-        if data.get("refresh_token") and data["refresh_token"] != refresh_token:
-            new_auth["refresh_token"] = data["refresh_token"]
+        new_auth["rso"] = token_data["access_token"]
+        if token_data["id_token"]:
+            new_auth["idt"] = token_data["id_token"]
+        if token_data["refresh_token"] and token_data["refresh_token"] != refresh_token:
+            new_auth["refresh_token"] = token_data["refresh_token"]
             new_auth["refresh_token_obtained"] = int(time.time() * 1000)
         new_auth.pop("ent", None)
-        changed = await Account.filter(
-            puuid=account.puuid, auth_version=expected_version
-        ).update(
-            auth_blob=self.vault.encrypt(new_auth),
-            auth_version=F("auth_version") + 1,
+        changed = (
+            await account.persisted_row()
+            .filter(auth_version=expected_version)
+            .update(
+                auth_blob=self.vault.encrypt(new_auth),
+                auth_version=F("auth_version") + 1,
+            )
         )
-        if not changed:
-            current = await Account.get(puuid=account.puuid)
-            return await self._ensure_locked(current)
-        saved = await Account.get(puuid=account.puuid)
+        saved = await account.persisted_row().get_or_none()
+        if saved is None:
+            return AuthResult(False)
+        if not changed or saved.auth_version != expected_version + 1:
+            return await self._ensure_locked(saved)
         return await self._repair_entitlement(saved, new_auth)
 
     async def clear_credentials(self, account: Account) -> None:
         """Remove the selected account's Riot tokens while coordinating with refreshes."""
-        async with self._locks[account.puuid]:
-            current = await Account.get_or_none(puuid=account.puuid)
+        async with self._locks.setdefault(account.puuid, asyncio.Lock()):
+            current = await account.persisted_row().get_or_none()
             if current:
                 await self._clear_credentials_locked(current)
 
     async def _clear_credentials_locked(self, account: Account) -> None:
         """Clear credentials only if the stored auth version still matches the caller."""
-        await Account.filter(
-            puuid=account.puuid, auth_version=account.auth_version
-        ).update(auth_blob=None, auth_version=F("auth_version") + 1)
+        await (
+            account.persisted_row()
+            .filter(auth_version=account.auth_version)
+            .update(auth_blob=None, auth_version=F("auth_version") + 1)
+        )
 
     async def auth_headers(self, account: Account) -> dict[str, str]:
         """Return fresh Riot authorization headers or raise when login is required."""
-        async with self._locks[account.puuid]:
-            current = await Account.get_or_none(puuid=account.puuid)
+        async with self._locks.setdefault(account.puuid, asyncio.Lock()):
+            current = await account.persisted_row().get_or_none()
             if not current:
                 raise AuthenticationRequired("Riot login is required")
             result = await self._ensure_locked(current)
@@ -335,7 +428,10 @@ class AuthService:
                 raise AuthenticationRequired("Riot login is required")
             current = result.account
             auth = self.vault.decrypt(current.auth_blob)
-            if not auth.get("rso") or not auth.get("ent"):
+            if any(
+                not isinstance(auth.get(key), str) or not auth[key]
+                for key in ("rso", "ent")
+            ):
                 raise AuthenticationRequired("Riot login is required")
             return {
                 "Authorization": f"Bearer {auth['rso']}",
@@ -346,7 +442,7 @@ class AuthService:
     async def _repair_entitlement(
         self,
         account: Account,
-        auth: dict[str, Any],
+        auth: Mapping[str, Any],
         *,
         refresh_on_missing: bool = False,
     ) -> AuthResult:
@@ -358,23 +454,40 @@ class AuthService:
             return AuthResult(False, account=account)
         new_auth = dict(auth)
         new_auth["ent"] = entitlement
-        changed = await Account.filter(
-            puuid=account.puuid, auth_version=account.auth_version
-        ).update(
-            auth_blob=self.vault.encrypt(new_auth), auth_version=F("auth_version") + 1
+        changed = (
+            await account.persisted_row()
+            .filter(auth_version=account.auth_version)
+            .update(
+                auth_blob=self.vault.encrypt(new_auth),
+                auth_version=F("auth_version") + 1,
+            )
         )
-        current = await Account.get(puuid=account.puuid)
+        current = await account.persisted_row().get_or_none()
+        if current is None:
+            return AuthResult(False)
         if changed:
             return AuthResult(True, account=current)
         current_auth = self.vault.decrypt(current.auth_blob)
         usable = (
-            bool(current_auth.get("rso") and current_auth.get("ent"))
+            all(
+                isinstance(current_auth.get(key), str) and current_auth[key]
+                for key in ("rso", "ent")
+            )
             and token_expiry(current_auth.get("rso")) - time.time()
             > self.config.token_refresh_buffer_minutes * 60
         )
         return AuthResult(usable, account=current)
 
-    async def _user_info(self, auth: dict[str, Any]) -> dict[str, str] | None:
+    def prune_expired_nonces(self) -> None:
+        """Release abandoned login attempts after their ten-minute lifetime."""
+        now = time.monotonic()
+        self._pending_nonces = {
+            key: pending
+            for key, pending in self._pending_nonces.items()
+            if pending[1] > now
+        }
+
+    async def _user_info(self, auth: Mapping[str, Any]) -> UserInfo | None:
         """Fetch the Riot game name and tag line associated with an access token."""
         response = await self.http.request(
             "GET",
@@ -383,12 +496,15 @@ class AuthService:
         )
         if response.status != 200 or not isinstance(response.data, dict):
             return None
-        account = response.data.get("acct") or {}
-        if not account.get("game_name") or not account.get("tag_line"):
-            return None
-        return account
+        account = response.data.get("acct")
+        if not isinstance(account, dict) or any(
+            not isinstance(account.get(key), str) or not account[key]
+            for key in ("game_name", "tag_line")
+        ):
+            raise HTTPFailure("Invalid Riot account details")
+        return {"game_name": account["game_name"], "tag_line": account["tag_line"]}
 
-    async def _entitlement(self, auth: dict[str, Any]) -> str | None:
+    async def _entitlement(self, auth: Mapping[str, Any]) -> str | None:
         """Request an entitlement token and surface transient Riot failures."""
         response = await self.http.request(
             "POST",
@@ -402,11 +518,18 @@ class AuthService:
             raise HTTPFailure(
                 f"Riot entitlement request failed with status {response.status}"
             )
-        if response.status != 200 or not isinstance(response.data, dict):
+        if response.status != 200:
             return None
-        return response.data.get("entitlements_token")
+        entitlement = (
+            response.data.get("entitlements_token")
+            if isinstance(response.data, dict)
+            else None
+        )
+        if not isinstance(entitlement, str) or not entitlement:
+            raise HTTPFailure("Invalid Riot entitlement response")
+        return entitlement
 
-    async def _region(self, auth: dict[str, Any]) -> str | None:
+    async def _region(self, auth: Mapping[str, Any]) -> str | None:
         """Resolve the VALORANT shard affinity associated with an ID token."""
         response = await self.http.request(
             "PUT",
@@ -419,7 +542,14 @@ class AuthService:
         )
         if response.status != 200 or not isinstance(response.data, dict):
             return None
-        return (response.data.get("affinities") or {}).get("live")
+        affinities = response.data.get("affinities")
+        if (
+            not isinstance(affinities, dict)
+            or not isinstance(affinities.get("live"), str)
+            or not affinities["live"]
+        ):
+            raise HTTPFailure("Invalid Riot region response")
+        return affinities["live"]
 
     def _user_agent(self) -> str:
         """Build the Riot authentication user agent from the latest client build."""
@@ -431,9 +561,24 @@ class AuthService:
         return f"RiotClient/{build} rso-auth (Windows;10;;Professional, x64)"
 
 
+def _token_data(data: dict[str, Any]) -> TokenData:
+    """Validate token response fields before using or persisting credentials."""
+    for key in ("access_token", "id_token", "refresh_token"):
+        value = data.get(key)
+        if key != "access_token" and value is None:
+            continue
+        if not isinstance(value, str) or not value:
+            raise HTTPFailure(f"Invalid Riot {key}")
+    return {
+        "access_token": data["access_token"],
+        "id_token": data.get("id_token"),
+        "refresh_token": data.get("refresh_token"),
+    }
+
+
 def decode_jwt(token: str | None) -> dict[str, Any]:
     """Decode a JWT payload for claim lookup without performing signature validation."""
-    if not token or token.count(".") < 1:
+    if not isinstance(token, str) or token.count(".") < 1:
         return {}
     try:
         payload = token.split(".")[1]

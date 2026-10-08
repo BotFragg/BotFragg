@@ -1,6 +1,9 @@
-"""Behavior checks for models."""
+"""Behavior and regression checks for models."""
 
 from __future__ import annotations
+
+from types import SimpleNamespace as NS
+from unittest.mock import AsyncMock
 
 import pytest
 from tortoise.exceptions import IntegrityError
@@ -11,6 +14,26 @@ from src.models import (
     Suggestion,
     SuggestionFollower,
 )
+from src.services.auth import AuthService
+from src.services.http import HTTPFailure
+
+
+async def test_valid_client_version_recovers_after_bad_response():
+    request = AsyncMock(
+        side_effect=[
+            NS(status=200, data={"data": []}),
+            NS(
+                status=200,
+                data={"data": {"riotClientVersion": "new", "riotClientBuild": "build"}},
+            ),
+        ]
+    )
+    auth = AuthService(NS(), NS(request=request), NS())
+    with pytest.raises(HTTPFailure):
+        await auth.refresh_version()
+    await auth.refresh_version()
+    assert auth.riot_headers["X-Riot-ClientVersion"] == "new"
+    assert auth._user_agent().startswith("RiotClient/build ")
 
 
 @pytest.mark.usefixtures("database")

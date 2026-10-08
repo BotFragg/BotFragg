@@ -1,4 +1,4 @@
-"""Behavior checks for auth."""
+"""Behavior and regression checks for auth."""
 
 from __future__ import annotations
 
@@ -6,18 +6,25 @@ import asyncio
 import base64
 import json
 import time
+import time as clock
 from types import SimpleNamespace
+from types import SimpleNamespace as NS
+from unittest.mock import AsyncMock
 from urllib.parse import parse_qs, urlparse
 
 import discord
 import pytest
 from cryptography.fernet import Fernet
+from tortoise import Tortoise, connections
 
 from src.cogs.valorant.alerts import AlertsCog
+from src.cogs.valorant.login import LoginCog
+from src.localization import BotFraggTranslator
 from src.models import (
     Account,
     User,
 )
+from src.services.accounts import delete_user_data
 from src.services.auth import (
     AuthenticationRequired,
     AuthService,
@@ -38,12 +45,531 @@ from tests.helpers import (
     _localized_interaction,
 )
 
-_OPTIONAL_URLS = (
-    "SUPPORT_URL",
-    "VOTE_URL",
-    "WEBSITE_URL",
-    "SHARD_LOG_WEBHOOK_URL",
+
+def token(**claims):
+    payload = base64.urlsafe_b64encode(json.dumps(claims).encode()).decode().rstrip("=")
+    return f"synthetic.{payload}.signature"
+
+
+def lifetime_jwt(**claims):
+    payload = base64.urlsafe_b64encode(json.dumps(claims).encode()).decode().rstrip("=")
+    return f"x.{payload}.x"
+
+
+def auth_service(http=None):
+    return AuthService(
+        NS(
+            token_refresh_buffer_minutes=5,
+            auto_refresh_tokens=True,
+            max_accounts_per_user=10,
+        ),
+        http or NS(),
+        AuthVault(Fernet.generate_key().decode()),
+    )
+
+
+def refresh_jwt(**claims):
+    payload = base64.urlsafe_b64encode(json.dumps(claims).encode()).decode().rstrip("=")
+    return f"synthetic.{payload}.synthetic"
+
+
+@pytest.mark.usefixtures("database")
+async def test_login_can_reauthenticate_an_account_at_capacity():
+    user = await User.create(id=103)
+    await Account.create(
+        puuid="synthetic-account", user=user, username="Example#NA", auth_blob=None
+    )
+    auth = SimpleNamespace(login_url=lambda _: "https://example.com/login")
+    bot = SimpleNamespace(
+        config=SimpleNamespace(max_accounts_per_user=1),
+        auth=auth,
+        translator=BotFraggTranslator(),
+        register_component=lambda *args: None,
+    )
+    interaction = SimpleNamespace(
+        user=SimpleNamespace(id=103),
+        client=bot,
+        locale=discord.Locale.american_english,
+        response=SimpleNamespace(defer=AsyncMock(), is_done=lambda: True),
+        followup=SimpleNamespace(send=AsyncMock()),
+    )
+    await LoginCog.login.callback(LoginCog(bot), interaction)
+    assert "view" in interaction.followup.send.call_args.kwargs
+
+
+@pytest.mark.usefixtures("database")
+async def test_delete_during_refresh_becomes_login_required():
+    user = await User.create(id=104)
+    vault = AuthVault(Fernet.generate_key().decode())
+    account = await Account.create(
+        puuid="synthetic-race",
+        user=user,
+        username="Example#NA",
+        auth_blob=vault.encrypt(
+            {"rso": "x.eyJleHAiOjB9.x", "refresh_token": "synthetic"}
+        ),
+    )
+    started, release = asyncio.Event(), asyncio.Event()
+
+    async def request(*args, **kwargs):
+        started.set()
+        await release.wait()
+        return SimpleNamespace(
+            status=200, data={"access_token": "x.eyJleHAiOjQwMDAwMDAwMDB9.x"}
+        )
+
+    auth = AuthService(
+        SimpleNamespace(token_refresh_buffer_minutes=5, auto_refresh_tokens=True),
+        SimpleNamespace(request=request),
+        vault,
+    )
+    task = asyncio.create_task(auth.auth_headers(account))
+    await asyncio.wait_for(started.wait(), 1)
+    await delete_user_data(user.id)
+    release.set()
+    with pytest.raises(AuthenticationRequired):
+        await task
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "payload",
+    [
+        None,
+        [],
+        ["malformed"],
+        {},
+        {"riotClientVersion": None},
+        {"riotClientVersion": []},
+        {"riotClientVersion": "good", "riotClientBuild": []},
+    ],
 )
+async def test_version_refresh_does_not_poison_auth_headers(payload):
+    auth = AuthService(
+        NS(),
+        NS(request=AsyncMock(return_value=NS(status=200, data={"data": payload}))),
+        NS(),
+    )
+    previous = {"riotClientVersion": "last-good-version"}
+    auth._version = previous
+    with pytest.raises(HTTPFailure):
+        await auth.refresh_version()
+    assert auth._version == previous
+    assert auth.riot_headers["X-Riot-ClientVersion"] == "last-good-version"
+
+
+async def test_bad_entitlement_never_becomes_a_persisted_header(database):
+    vault = AuthVault(Fernet.generate_key().decode())
+    auth = AuthService(
+        NS(token_refresh_buffer_minutes=5, auto_refresh_tokens=True),
+        NS(
+            request=AsyncMock(
+                return_value=NS(status=200, data={"entitlements_token": ["malformed"]})
+            )
+        ),
+        vault,
+    )
+    owner = await User.create(id=101)
+    account = await Account.create(
+        puuid="synthetic",
+        user=owner,
+        username="Synthetic",
+        auth_blob=vault.encrypt({"rso": token(exp=int(time.time()) + 3600)}),
+    )
+    with pytest.raises(HTTPFailure):
+        await auth.auth_headers(account)
+    saved = await Account.get(puuid=account.puuid)
+    assert saved.auth_blob == account.auth_blob
+    assert saved.auth_version == account.auth_version
+    auth.http.request.return_value.data = {"entitlements_token": "recovered"}
+    headers = await auth.auth_headers(account)
+    assert headers["X-Riot-Entitlements-JWT"] == "recovered"
+    assert all(isinstance(value, str) for value in headers.values())
+
+
+@pytest.mark.parametrize(
+    "endpoint, payload",
+    [
+        ("_user_info", {"acct": ["malformed"]}),
+        ("_user_info", {"acct": {"game_name": 5, "tag_line": "NA"}}),
+        ("_user_info", {"acct": {"game_name": "Synthetic", "tag_line": []}}),
+        ("_region", {"affinities": ["malformed"]}),
+        ("_region", {"affinities": {"live": ["na"]}}),
+    ],
+)
+async def test_malformed_login_details_are_recoverable(endpoint, payload):
+    auth = AuthService(
+        NS(), NS(request=AsyncMock(return_value=NS(status=200, data=payload))), NS()
+    )
+    try:
+        result = await getattr(auth, endpoint)({"rso": "synthetic", "idt": "synthetic"})
+    except HTTPFailure:
+        return
+    assert result is None
+
+
+@pytest.mark.parametrize("field", ["access_token", "id_token", "refresh_token"])
+@pytest.mark.parametrize("value", [[], {}, 5, ""])
+async def test_malformed_refresh_preserves_last_credentials(database, field, value):
+    vault = AuthVault(Fernet.generate_key().decode())
+    request = AsyncMock(
+        return_value=NS(
+            status=200,
+            data={"access_token": token(exp=int(time.time()) + 3600), field: value},
+        )
+    )
+    service = AuthService(
+        NS(token_refresh_buffer_minutes=5, auto_refresh_tokens=True),
+        NS(request=request),
+        vault,
+    )
+    owner = await User.create(id=101)
+    old = {
+        "rso": token(exp=int(time.time()) - 1),
+        "refresh_token": "last-good",
+        "ent": "last-good-entitlement",
+    }
+    account = await Account.create(
+        puuid="synthetic",
+        user=owner,
+        username="Synthetic",
+        auth_blob=vault.encrypt(old),
+    )
+    with pytest.raises(HTTPFailure):
+        await service.auth_headers(account)
+    saved = await Account.get(puuid=account.puuid)
+    assert saved.auth_blob == account.auth_blob
+    assert saved.auth_version == account.auth_version
+
+
+@pytest.mark.parametrize("value", [None, [], {}, 5])
+def test_jwt_decoder_rejects_nonstring_tokens(value):
+    assert decode_jwt(value) == {}
+
+
+@pytest.mark.parametrize("error", ["invalid_grant", "bad_claims"])
+@pytest.mark.parametrize("login_phase", ["none", "request", "clear"])
+async def test_refresh_rejection_checks_the_current_login(database, error, login_phase):
+    vault = AuthVault(Fernet.generate_key().decode())
+    user = await User.create(id=101)
+    account = await Account.create(
+        puuid="synthetic",
+        user=user,
+        username="Synthetic",
+        auth_blob=vault.encrypt({"rso": refresh_jwt(exp=1), "refresh_token": "old"}),
+    )
+    newer = {
+        "rso": refresh_jwt(exp=clock.time() + 3600, kind="new-login"),
+        "ent": "new-entitlement",
+        "refresh_token": "new-refresh",
+    }
+
+    async def publish_login():
+        await Account.filter(puuid=account.puuid).update(
+            auth_blob=vault.encrypt(newer), auth_version=1
+        )
+
+    async def request(*args, **kwargs):
+        if login_phase == "request":
+            await publish_login()
+        return NS(status=400, data={"error": error})
+
+    service = AuthService(
+        NS(auto_refresh_tokens=True, token_refresh_buffer_minutes=5),
+        NS(request=request),
+        vault,
+    )
+    if login_phase == "clear":
+        original_clear = service._clear_credentials_locked
+
+        async def clear(current):
+            await publish_login()
+            await original_clear(current)
+
+        service._clear_credentials_locked = clear
+    if login_phase == "none":
+        with pytest.raises(AuthenticationRequired):
+            await service.auth_headers(account)
+        assert (await Account.get(puuid=account.puuid)).auth_blob is None
+    else:
+        headers = await service.auth_headers(account)
+        saved = await Account.get(puuid=account.puuid)
+        assert vault.decrypt(saved.auth_blob) == newer
+        assert headers["Authorization"] == f"Bearer {newer['rso']}"
+        assert headers["X-Riot-Entitlements-JWT"] == newer["ent"]
+
+
+async def test_refresh_does_not_attach_old_tokens_to_a_newer_version(
+    database, monkeypatch
+):
+    vault = AuthVault(Fernet.generate_key().decode())
+    user = await User.create(id=101)
+    account = await Account.create(
+        puuid="synthetic",
+        user=user,
+        username="Old",
+        auth_blob=vault.encrypt(
+            {"rso": refresh_jwt(exp=1), "refresh_token": "old-refresh"}
+        ),
+    )
+    login_auth = {
+        "rso": refresh_jwt(exp=clock.time() + 3600, kind="new-login"),
+        "ent": "new-login-ent",
+        "refresh_token": "new-login-refresh",
+    }
+    request = AsyncMock(
+        return_value=NS(
+            status=200,
+            data={
+                "access_token": refresh_jwt(
+                    exp=clock.time() + 3600, kind="old-refresh"
+                ),
+                "refresh_token": "rotated-old-refresh",
+            },
+        )
+    )
+    service = AuthService(
+        NS(token_refresh_buffer_minutes=10, auto_refresh_tokens=True),
+        NS(request=request),
+        vault,
+    )
+    service._entitlement = AsyncMock(return_value="old-refresh-ent")
+    original_row = Account.persisted_row
+    calls = 0
+
+    def row(self):
+        nonlocal calls
+        calls += 1
+        query = original_row(self)
+        if calls != 2:
+            return query
+
+        async def read_after_login():
+            await Account.filter(puuid=self.puuid).update(
+                auth_blob=vault.encrypt(login_auth), auth_version=2
+            )
+            return await query.get_or_none()
+
+        return NS(get_or_none=read_after_login)
+
+    monkeypatch.setattr(Account, "persisted_row", row)
+    result = await service._refresh_locked(account, force=True)
+    saved = await Account.get(puuid=account.puuid)
+    assert result.success and saved.auth_version == 2
+    assert vault.decrypt(saved.auth_blob) == login_auth
+    service._entitlement.assert_not_awaited()
+
+
+async def test_login_row_lock_preserves_credentials_against_concurrent_refresh(
+    monkeypatch,
+    postgres_url,
+):
+    await Tortoise.init(
+        db_url=postgres_url,
+        modules={"models": ["src.models.entities"]},
+    )
+    await Tortoise.generate_schemas(safe=True)
+    login_task = refresh_task = None
+    release_login = asyncio.Event()
+    try:
+        vault = AuthVault(Fernet.generate_key().decode())
+        user = await User.create(id=901)
+        account = await Account.create(
+            puuid="synthetic-concurrent",
+            user=user,
+            username="Old",
+            auth_blob=vault.encrypt(
+                {"rso": refresh_jwt(exp=1), "refresh_token": "old-refresh"}
+            ),
+        )
+        login_token = refresh_jwt(
+            sub=account.puuid, exp=clock.time() + 3600, kind="login"
+        )
+        refresh_token = refresh_jwt(
+            sub=account.puuid, exp=clock.time() + 3600, kind="refresh"
+        )
+        service = AuthService(
+            NS(
+                max_accounts_per_user=5,
+                auto_refresh_tokens=True,
+                token_refresh_buffer_minutes=10,
+            ),
+            NS(),
+            vault,
+        )
+        service.login_url(user.id)
+        nonce = service._pending_nonces[user.id][0]
+        login_ready, refresh_requested, refresh_entitlement = (
+            asyncio.Event(),
+            asyncio.Event(),
+            asyncio.Event(),
+        )
+
+        async def request(method, url, **kwargs):
+            if "grant_type=authorization_code" in kwargs["data"]:
+                return NS(
+                    status=200,
+                    data={
+                        "access_token": login_token,
+                        "refresh_token": "login-refresh",
+                        "id_token": refresh_jwt(nonce=nonce),
+                    },
+                )
+            refresh_requested.set()
+            return NS(
+                status=200,
+                data={
+                    "access_token": refresh_token,
+                    "refresh_token": "rotated-old-refresh",
+                },
+            )
+
+        async def entitlement(auth):
+            if auth["rso"] == refresh_token:
+                refresh_entitlement.set()
+                return "old-refresh-ent"
+            return "login-ent"
+
+        service.http = NS(request=request)
+        service._user_info = AsyncMock(
+            return_value={"game_name": "NewLogin", "tag_line": "AUDIT"}
+        )
+        service._region = AsyncMock(return_value="eu")
+        service._entitlement = entitlement
+        original_save = Account.save
+
+        async def save(self, *args, **kwargs):
+            if vault.decrypt(self.auth_blob).get("rso") == login_token:
+                login_ready.set()
+                await release_login.wait()
+            return await original_save(self, *args, **kwargs)
+
+        monkeypatch.setattr(Account, "save", save)
+        login_task = asyncio.create_task(
+            service.redeem_callback(user.id, "http://localhost/redirect?code=synthetic")
+        )
+        await asyncio.wait_for(login_ready.wait(), 5)
+        refresh_task = asyncio.create_task(service.refresh(account, force=True))
+        await asyncio.wait_for(refresh_requested.wait(), 5)
+        async with asyncio.timeout(5):
+            while not refresh_entitlement.is_set():
+                blocked = await connections.get("default").execute_query_dict(
+                    "SELECT pid FROM pg_stat_activity WHERE pid <> pg_backend_pid() "
+                    "AND datname = current_database() AND wait_event_type = 'Lock'"
+                )
+                if blocked:
+                    break
+                await asyncio.sleep(0.01)
+        assert not refresh_entitlement.is_set(), (
+            "Refresh bypassed the login's Account row lock"
+        )
+        release_login.set()
+        login, refresh = await asyncio.wait_for(
+            asyncio.gather(login_task, refresh_task), 5
+        )
+        final = await Account.get(puuid=account.puuid)
+        assert login.success and refresh.success
+        assert final.auth_version == 1
+        assert vault.decrypt(final.auth_blob)["rso"] == login_token
+        assert vault.decrypt(final.auth_blob)["ent"] == "login-ent"
+    finally:
+        release_login.set()
+        for task in (login_task, refresh_task):
+            if task is not None:
+                task.cancel()
+        await asyncio.gather(
+            *(task for task in (login_task, refresh_task) if task is not None),
+            return_exceptions=True,
+        )
+        await User.filter(id=901).delete()
+        await Tortoise.close_connections()
+
+
+@pytest.mark.asyncio
+async def test_stale_account_cannot_read_new_owners_credentials(database):
+    auth = auth_service()
+    first = await User.create(id=101)
+    second = await User.create(id=202)
+    old = await Account.create(puuid="synthetic", user=first, username="old")
+    await delete_user_data(first.id)
+    await Account.create(
+        puuid=old.puuid,
+        user=second,
+        username="new",
+        auth_blob=auth.vault.encrypt(
+            {
+                "rso": lifetime_jwt(exp=int(time.time()) + 3600),
+                "ent": "new-owner-entitlement",
+            }
+        ),
+    )
+    with pytest.raises(AuthenticationRequired):
+        await auth.auth_headers(old)
+    assert not (await auth.ensure(old)).success
+    assert not (await auth.refresh(old, force=True)).success
+
+
+@pytest.mark.asyncio
+async def test_stale_logout_cannot_clear_new_owners_credentials(database):
+    auth = auth_service()
+    first = await User.create(id=101)
+    second = await User.create(id=202)
+    old = await Account.create(puuid="synthetic", user=first, username="old")
+    await delete_user_data(first.id)
+    replacement = await Account.create(
+        puuid=old.puuid,
+        user=second,
+        username="new",
+        auth_blob=auth.vault.encrypt({"rso": "new-owner-token"}),
+    )
+    await auth.clear_credentials(old)
+    fresh = await Account.get(puuid=replacement.puuid)
+    assert fresh.auth_blob is not None, (
+        "Stale owner cleared replacement owner credentials"
+    )
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("replacement_owner", [101, 202])
+async def test_refresh_cas_cannot_overwrite_recreated_account(
+    database, replacement_owner
+):
+    auth = auth_service()
+    first = await User.create(id=101)
+    old = await Account.create(
+        puuid="synthetic",
+        user=first,
+        username="old",
+        auth_blob=auth.vault.encrypt(
+            {"rso": lifetime_jwt(exp=1), "refresh_token": "old-refresh"}
+        ),
+    )
+    replacement_blob = auth.vault.encrypt(
+        {"rso": "replacement-token", "ent": "replacement-ent"}
+    )
+
+    async def request(method, url, **kwargs):
+        if url.endswith("/token"):
+            await delete_user_data(first.id)
+            second = await User.create(id=replacement_owner)
+            await Account.create(
+                puuid=old.puuid, user=second, username="new", auth_blob=replacement_blob
+            )
+            return NS(
+                status=200,
+                data={
+                    "access_token": lifetime_jwt(exp=int(time.time()) + 3600),
+                    "refresh_token": "old-rotated",
+                },
+            )
+        return NS(status=200, data={"entitlements_token": "old-entitlement"})
+
+    auth.http = NS(request=request)
+    assert not (await auth.refresh(old, force=True)).success
+    replacement = await Account.get(puuid=old.puuid)
+    assert replacement.auth_blob == replacement_blob, (
+        "auth_version reset lets a stale refresh replace the new owner auth"
+    )
 
 
 async def test_expired_shop_cache_entry_is_removed_when_auth_fails() -> None:
@@ -474,6 +1000,8 @@ async def test_testalerts_reports_temporary_auth_failure(
 
 def test_jwt_decode_and_expiry() -> None:
     """Verify that JWT decode and expiry."""
+    import base64
+    import json
 
     expires = int(time.time()) + 3600
     payload = (

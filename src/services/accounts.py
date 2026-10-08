@@ -1,4 +1,4 @@
-"""Persistence operations for users, Riot accounts, alerts, analytics, and ideas."""
+"""Persistence operations for user preferences, Riot accounts, and personal-data deletion."""
 
 from __future__ import annotations
 
@@ -32,7 +32,8 @@ async def count_registered_users() -> int:
 
 async def daily_shop_user_ids() -> set[int]:
     """Return Discord IDs whose saved preference enables daily shop DMs."""
-    return set(await User.filter(daily_shop_enabled=True).values_list("id", flat=True))
+    # Tortoise's annotation describes tuples even when flat=True returns scalars.
+    return set(await User.filter(daily_shop_enabled=True).values_list("id", flat=True))  # type: ignore[arg-type]
 
 
 async def account_for_user(discord_id: int, puuid: str) -> Account | None:
@@ -74,7 +75,8 @@ async def selected_account(
                 (
                     account
                     for account in accounts
-                    if account.puuid == user.current_account_id
+                    if account.user_id == discord_id
+                    and account.puuid == user.current_account_id
                 ),
                 None,
             )
@@ -85,24 +87,37 @@ async def selected_account(
         else await Account.filter(user_id=discord_id).order_by("created_at").first()
     )
     if first:
-        updated = await User.filter(
-            id=discord_id, current_account_id__isnull=True
-        ).update(current_account_id=first.puuid, updated_at=timezone.now())
-        if updated:
-            return first
-        user = await User.get_or_none(id=discord_id)
-        if user and user.current_account_id:
-            if accounts is not None:
-                return next(
-                    (
-                        account
-                        for account in accounts
-                        if account.puuid == user.current_account_id
-                    ),
-                    None,
+        async with in_transaction() as connection:
+            current_user = (
+                await User.filter(id=discord_id, created_at=user.created_at)
+                .using_db(connection)
+                .select_for_update()
+                .get_or_none()
+            )
+            if current_user is None:
+                return None
+            if current_user.current_account_id:
+                return await account_for_user(
+                    discord_id, current_user.current_account_id
                 )
-            return await account_for_user(discord_id, user.current_account_id)
-        return None
+            current = (
+                await first.persisted_row()
+                .using_db(connection)
+                .select_for_update()
+                .get_or_none()
+            )
+            if current is None:
+                return None
+            await (
+                User.filter(
+                    id=discord_id,
+                    created_at=user.created_at,
+                    current_account_id__isnull=True,
+                )
+                .using_db(connection)
+                .update(current_account_id=current.puuid, updated_at=timezone.now())
+            )
+            return current
     return None
 
 
@@ -111,11 +126,22 @@ async def list_accounts(discord_id: int) -> list[Account]:
     return await Account.filter(user_id=discord_id).order_by("created_at")
 
 
-async def resolve_account(discord_id: int, query: str | None) -> Account | None:
+async def resolve_account(
+    discord_id: int,
+    query: str | None,
+    *,
+    accounts: Sequence[Account] | None = None,
+) -> Account | None:
     """Resolve an account by PUUID, case-insensitive name, or one-based position."""
     if not query:
-        return await selected_account(discord_id)
-    accounts = await list_accounts(discord_id)
+        return await selected_account(discord_id, accounts=accounts)
+    accounts = [
+        account
+        for account in (
+            accounts if accounts is not None else await list_accounts(discord_id)
+        )
+        if account.user_id == discord_id
+    ]
     lowered = query.casefold()
     for account in accounts:
         if account.puuid == query or account.username.casefold() == lowered:
@@ -131,19 +157,33 @@ async def select_account(discord_id: int, account: Account) -> None:
     """Set a user's active account after verifying that the account is theirs."""
     if account.user_id != discord_id:
         raise ValueError("Account does not belong to this Discord user")
-    await User.filter(id=discord_id).update(
-        current_account_id=account.puuid, updated_at=timezone.now()
-    )
+    async with in_transaction() as connection:
+        user = (
+            await User.filter(id=discord_id)
+            .using_db(connection)
+            .select_for_update()
+            .get_or_none()
+        )
+        current = (
+            await account.persisted_row()
+            .using_db(connection)
+            .select_for_update()
+            .get_or_none()
+        )
+        if user is None or current is None:
+            raise ValueError("Account no longer exists")
+        await (
+            User.filter(id=discord_id)
+            .using_db(connection)
+            .update(current_account_id=current.puuid, updated_at=timezone.now())
+        )
 
 
 async def delete_user_data(discord_id: int) -> bool:
     """Delete the user's stored BotFragg records and all linked Riot accounts."""
     async with in_transaction():
-        user = await User.get_or_none(id=discord_id)
-        if not user:
-            return False
-        await CommandInvocation.filter(user_id=discord_id).delete()
-        await SuggestionFollower.filter(user_id=discord_id).delete()
-        await Suggestion.filter(author_id=discord_id).delete()
-        await user.delete()
-    return True
+        removed = await CommandInvocation.filter(user_id=discord_id).delete()
+        removed += await SuggestionFollower.filter(user_id=discord_id).delete()
+        removed += await Suggestion.filter(author_id=discord_id).delete()
+        removed += await User.filter(id=discord_id).delete()
+    return bool(removed)

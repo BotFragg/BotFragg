@@ -37,6 +37,8 @@ class EventsCog(commands.Cog):
                 "context": "guild" if interaction.guild_id else "dm",
             },
         )
+        if command.qualified_name == "deletedata":
+            return
         try:
             await record_command_invocation(
                 command=command.qualified_name,

@@ -87,10 +87,12 @@ class LogoutCog(commands.Cog):
                 "deletedata-confirm-required",
             )
             return
-        account_ids = [
-            account.puuid for account in await list_accounts(interaction.user.id)
-        ]
-        if not await delete_user_data(interaction.user.id):
+        async with self.bot.auth.cancel_logins(interaction.user.id):
+            account_ids = [
+                account.puuid for account in await list_accounts(interaction.user.id)
+            ]
+            deleted = await delete_user_data(interaction.user.id)
+        if not deleted:
             await error(interaction, "deletedata-no-data")
             return
         for account_id in account_ids:

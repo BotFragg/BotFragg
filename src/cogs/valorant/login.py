@@ -7,9 +7,8 @@ from discord import app_commands
 from discord.ext import commands
 
 from ...bot import BotFraggBot
-from ...services.accounts import list_accounts
 from ...views import OwnedActionButton
-from ...views.ui import embed, error, localized_embed, translated, view
+from ...views.ui import embed, localized_embed, translated, view
 
 
 class LoginModal(discord.ui.Modal):
@@ -21,7 +20,7 @@ class LoginModal(discord.ui.Modal):
             title=bot.translator.text(locale, "login-modal-title"), timeout=300
         )
         self.bot = bot
-        self.callback_url = discord.ui.TextInput(
+        self.callback_url: discord.ui.TextInput = discord.ui.TextInput(
             label=bot.translator.text(locale, "login-modal-label"),
             placeholder=bot.translator.text(locale, "login-modal-placeholder"),
             style=discord.TextStyle.paragraph,
@@ -35,7 +34,7 @@ class LoginModal(discord.ui.Modal):
         result = await self.bot.auth.redeem_callback(
             interaction.user.id, str(self.callback_url)
         )
-        if not result.success:
+        if not result.success or result.account is None:
             await interaction.followup.send(
                 embed=embed(
                     translated(
@@ -73,20 +72,10 @@ class LoginCog(commands.Cog):
         ),
     )
     async def login(self, interaction: discord.Interaction) -> None:
-        """Start a nonce-bound Riot login when the caller has account capacity."""
+        """Start a nonce-bound login; account creation limits belong to auth."""
         await interaction.response.defer(thinking=True, ephemeral=True)
-        if (
-            len(await list_accounts(interaction.user.id))
-            >= self.bot.config.max_accounts_per_user
-        ):
-            await error(
-                interaction,
-                "login-account-limit",
-                max_accounts=self.bot.config.max_accounts_per_user,
-            )
-            return
         url = self.bot.auth.login_url(interaction.user.id)
-        login_button = discord.ui.Button(
+        login_button: discord.ui.Button = discord.ui.Button(
             label=translated(interaction, "login-button"),
             url=url,
             style=discord.ButtonStyle.link,

@@ -1,4 +1,4 @@
-"""Behavior checks for accounts service."""
+"""Behavior and regression checks for accounts service."""
 
 from __future__ import annotations
 
@@ -16,11 +16,59 @@ from src.services.accounts import (
     account_for_user,
     count_registered_users,
     daily_shop_user_ids,
+    delete_user_data,
     get_user,
     select_account,
     selected_account,
     update_user_preference,
 )
+
+
+async def test_stale_account_selection_does_not_break_recreated_user(database):
+    owner = await User.create(id=101)
+    old = await Account.create(puuid="old", user=owner, username="Original")
+    await delete_user_data(owner.id)
+    owner = await User.create(id=101)
+    current = await Account.create(puuid="current", user=owner, username="Current")
+    other = await User.create(id=202)
+    await Account.create(puuid=old.puuid, user=other, username="New owner")
+    with pytest.raises(ValueError):
+        await select_account(owner.id, old)
+    assert (await selected_account(owner.id)).puuid == current.puuid
+
+
+async def test_stale_default_selection_does_not_mutate_recreated_user(database):
+    owner = await User.create(id=101)
+    old = await Account.create(puuid="old", user=owner, username="Original")
+    await delete_user_data(owner.id)
+    replacement = await User.create(id=101)
+    current = await Account.create(
+        puuid="current", user=replacement, username="Current"
+    )
+    await selected_account(owner.id, user=owner, accounts=[old])
+    fresh = await User.get(id=owner.id)
+    assert fresh.current_account_id in {None, current.puuid}
+
+
+@pytest.mark.parametrize("same_owner", [True, False])
+async def test_selection_rejects_recreated_account_lifetime(database, same_owner):
+    owner = await User.create(id=101)
+    old = await Account.create(puuid="synthetic", user=owner, username="Original")
+    await old.delete()
+    other = owner if same_owner else await User.create(id=202)
+    current = await Account.create(puuid=old.puuid, user=other, username="Replacement")
+    with pytest.raises(ValueError):
+        await select_account(owner.id, old)
+    assert (await User.get(id=owner.id)).current_account_id is None
+    await select_account(other.id, current)
+    assert (await selected_account(other.id)).puuid == current.puuid
+
+
+async def test_selected_snapshot_filters_account_owner(database):
+    owner = await User.create(id=101, current_account_id="foreign")
+    other = await User.create(id=202)
+    foreign = await Account.create(puuid="foreign", user=other, username="Other")
+    assert await selected_account(owner.id, user=owner, accounts=[foreign]) is None
 
 
 @pytest.mark.usefixtures("database")

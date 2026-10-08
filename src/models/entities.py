@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from tortoise import fields
 from tortoise.models import Model
+from tortoise.queryset import QuerySet
 
 
 class User(Model):
@@ -23,7 +24,14 @@ class User(Model):
 class Account(Model):
     """Store a user's Riot identity and encrypted authentication payload."""
 
+    def persisted_row(self) -> QuerySet[Account]:
+        """Scope access to this account's original owner and creation time."""
+        return Account.filter(
+            puuid=self.puuid, user_id=self.user_id, created_at=self.created_at
+        )
+
     puuid = fields.CharField(max_length=64, primary_key=True)
+    user_id: int  # Tortoise creates the FK scalar alongside the relation at runtime.
     user: fields.ForeignKeyRelation[User] = fields.ForeignKeyField(
         "models.User", related_name="accounts", on_delete=fields.CASCADE
     )
