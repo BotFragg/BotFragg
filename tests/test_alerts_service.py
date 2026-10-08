@@ -1,4 +1,4 @@
-"""Tests for alert ownership, bounded queries, batching, and delivery behavior."""
+"""Behavior checks for alerts service."""
 
 from __future__ import annotations
 
@@ -8,8 +8,13 @@ from uuid import UUID
 
 import pytest
 from cryptography.fernet import Fernet
+from tortoise.exceptions import IntegrityError
 
-from src.models import Account, Alert, User
+from src.models import (
+    Account,
+    Alert,
+    User,
+)
 from src.services import accounts as alert_service
 from src.services.accounts import (
     account_ids_with_alerts,
@@ -25,7 +30,12 @@ from src.services.accounts import (
 )
 from src.services.auth import AuthenticationRequired, AuthService
 from src.services.crypto import AuthVault
-from src.services.shop import Offer, ShopData, ShopService, ShopUnavailable
+from src.services.shop import (
+    Offer,
+    ShopData,
+    ShopService,
+    ShopUnavailable,
+)
 
 
 @pytest.mark.usefixtures("database")
@@ -621,3 +631,14 @@ async def test_daily_alert_tasks_are_bounded_by_configured_concurrency() -> None
     await asyncio.wait_for(job, timeout=1)
 
     assert new_tasks <= concurrency + 1
+
+
+@pytest.mark.usefixtures("database")
+async def test_alert_unique_per_account_and_skin() -> None:
+    """Verify that each account can have only one alert for a given skin."""
+    user = await User.create(id=456)
+    account = await Account.create(puuid="account", user=user, username="One#NA")
+    skin = UUID("11111111-1111-1111-1111-111111111111")
+    await Alert.create(account=account, skin_uuid=skin)
+    with pytest.raises(IntegrityError):
+        await Alert.create(account=account, skin_uuid=skin)
