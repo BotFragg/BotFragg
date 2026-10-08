@@ -2205,11 +2205,19 @@ Resolve VALORANT-API text for a Discord locale with English fallback.
 
 Normalize a localized string or locale map into nonempty values.
 
+### `def _catalog_rows(value: Any, label: str) -> list[dict[str, Any]]`
+
+**Scope:** `src/services/catalog.py` · `module`
+
+[Source](../src/services/catalog.py#L77)
+
+Validate upstream rows and the identifiers/media consumed by catalog views.
+
 ### `class Skin`
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L78)
+[Source](../src/services/catalog.py#L103)
 
 Hold normalized skin identity, display data, pricing, levels, and chromas.
 
@@ -2217,7 +2225,7 @@ Hold normalized skin identity, display data, pricing, levels, and chromas.
 
 **Scope:** `src/services/catalog.py` · `Skin`
 
-[Source](../src/services/catalog.py#L91)
+[Source](../src/services/catalog.py#L116)
 
 Return this skin's localized or English name, or empty when missing.
 
@@ -2225,7 +2233,7 @@ Return this skin's localized or English name, or empty when missing.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L99)
+[Source](../src/services/catalog.py#L124)
 
 Hold static display metadata for a VALORANT bundle.
 
@@ -2233,7 +2241,7 @@ Hold static display metadata for a VALORANT bundle.
 
 **Scope:** `src/services/catalog.py` · `Bundle`
 
-[Source](../src/services/catalog.py#L111)
+[Source](../src/services/catalog.py#L136)
 
 Return this bundle's localized or English name, or empty when missing.
 
@@ -2241,7 +2249,7 @@ Return this bundle's localized or English name, or empty when missing.
 
 **Scope:** `src/services/catalog.py` · `Bundle`
 
-[Source](../src/services/catalog.py#L117)
+[Source](../src/services/catalog.py#L142)
 
 Return this bundle's localized subtitle, if available.
 
@@ -2249,7 +2257,7 @@ Return this bundle's localized subtitle, if available.
 
 **Scope:** `src/services/catalog.py` · `Bundle`
 
-[Source](../src/services/catalog.py#L121)
+[Source](../src/services/catalog.py#L146)
 
 Return this bundle's localized description, if available.
 
@@ -2257,7 +2265,7 @@ Return this bundle's localized description, if available.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L130)
+[Source](../src/services/catalog.py#L155)
 
 Hold normalized display data for a non-skin cosmetic reward.
 
@@ -2265,7 +2273,7 @@ Hold normalized display data for a non-skin cosmetic reward.
 
 **Scope:** `src/services/catalog.py` · `Accessory`
 
-[Source](../src/services/catalog.py#L139)
+[Source](../src/services/catalog.py#L164)
 
 Return this accessory's localized name, or empty when metadata is missing.
 
@@ -2273,7 +2281,7 @@ Return this accessory's localized name, or empty when metadata is missing.
 
 **Scope:** `src/services/catalog.py` · `Accessory`
 
-[Source](../src/services/catalog.py#L143)
+[Source](../src/services/catalog.py#L168)
 
 Return localized accessory title text, if available.
 
@@ -2281,7 +2289,7 @@ Return localized accessory title text, if available.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L151)
+[Source](../src/services/catalog.py#L176)
 
 Load, refresh, search, and cache VALORANT catalog data.
 
@@ -2289,7 +2297,7 @@ Load, refresh, search, and cache VALORANT catalog data.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L154)
+[Source](../src/services/catalog.py#L179)
 
 Prepare in-memory indexes and the working-directory catalog snapshot.
 
@@ -2297,7 +2305,7 @@ Prepare in-memory indexes and the working-directory catalog snapshot.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L175)
+[Source](../src/services/catalog.py#L201)
 
 Load the saved catalog off the event loop or fetch a fresh snapshot.
 
@@ -2305,18 +2313,20 @@ Load the saved catalog off the event loop or fetch a fresh snapshot.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L187)
+[Source](../src/services/catalog.py#L213)
 
 Fetch the current weapon and bundle catalogs and save their snapshot.
 
 When ``check_version`` is true, skip rebuilding only if the upstream version
-and local cache format are current.
+and local cache format are current. A saved version change invalidates
+accessory metadata, including requests that began before the refresh.
+A failed save restores the previous catalog even during cancellation.
 
 ### `async def _fetch_data(self, kind: str) -> list[dict[str, Any]]`
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L253)
+[Source](../src/services/catalog.py#L297)
 
 Fetch one catalog endpoint and return its validated data rows.
 
@@ -2324,7 +2334,7 @@ Fetch one catalog endpoint and return its validated data rows.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L265)
+[Source](../src/services/catalog.py#L309)
 
 Return cached mission definitions, refreshing them at most every 30 minutes.
 
@@ -2332,7 +2342,7 @@ Return cached mission definitions, refreshing them at most every 30 minutes.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L311)
+[Source](../src/services/catalog.py#L355)
 
 Normalize weapon and bundle responses and rebuild lookup indexes.
 
@@ -2340,7 +2350,7 @@ Normalize weapon and bundle responses and rebuild lookup indexes.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L363)
+[Source](../src/services/catalog.py#L410)
 
 Index skins by their UUID, offer UUID, and level UUID aliases.
 
@@ -2348,7 +2358,7 @@ Index skins by their UUID, offer UUID, and level UUID aliases.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L374)
+[Source](../src/services/catalog.py#L421)
 
 Resolve a skin from any indexed base, offer, or level identifier.
 
@@ -2356,7 +2366,7 @@ Resolve a skin from any indexed base, offer, or level identifier.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L378)
+[Source](../src/services/catalog.py#L425)
 
 Resolve bundle metadata by its Riot UUID.
 
@@ -2364,7 +2374,7 @@ Resolve bundle metadata by its Riot UUID.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L383)
+[Source](../src/services/catalog.py#L430)
 
 Fetch and cache a supported accessory using its Riot item type ID.
 
@@ -2372,7 +2382,7 @@ Fetch and cache a supported accessory using its Riot item type ID.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L417)
+[Source](../src/services/catalog.py#L468)
 
 Resolve a Riot bundle buddy by its buddy or level UUID.
 
@@ -2380,7 +2390,7 @@ Resolve a Riot bundle buddy by its buddy or level UUID.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L460)
+[Source](../src/services/catalog.py#L512)
 
 Convert endpoint-specific Riot accessory data into a common display shape.
 
@@ -2388,15 +2398,15 @@ Convert endpoint-specific Riot accessory data into a common display shape.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L485)
+[Source](../src/services/catalog.py#L538)
 
 Search localized names first, retaining English-name fallback matches.
 
-### `def update_prices(self, offers: list[dict[str, Any]]) -> None`
+### `def update_prices(self, prices: dict[str, int]) -> None`
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L507)
+[Source](../src/services/catalog.py#L560)
 
 Apply current store prices to catalog skins matched by offer identifier.
 
@@ -2404,7 +2414,7 @@ Apply current store prices to catalog skins matched by offer identifier.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L518)
+[Source](../src/services/catalog.py#L567)
 
 Encode the current version, skins, and bundles as compact JSON.
 
@@ -2412,7 +2422,7 @@ Encode the current version, skins, and bundles as compact JSON.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L553)
+[Source](../src/services/catalog.py#L602)
 
 Write a complete catalog snapshot through a temporary file replacement.
 
@@ -2420,7 +2430,7 @@ Write a complete catalog snapshot through a temporary file replacement.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L560)
+[Source](../src/services/catalog.py#L609)
 
 Restore catalog records from a snapshot and rebuild lookup indexes.
 
@@ -2532,11 +2542,51 @@ Resolve or create one application emoji, returning empty text on failure.
 
 Fetch VALORANT progression and matchmaking penalties for linked accounts.
 
-### `class GameplayService`
+### `class Reward(TypedDict)`
 
 **Scope:** `src/services/gameplay.py` · `module`
 
 [Source](../src/services/gameplay.py#L15)
+
+Validated display data for the next battlepass reward.
+
+### `class BattlepassProgress(TypedDict)`
+
+**Scope:** `src/services/gameplay.py` · `module`
+
+[Source](../src/services/gameplay.py#L25)
+
+The active battlepass and its account-specific progress.
+
+### `class MissionTask(TypedDict)`
+
+**Scope:** `src/services/gameplay.py` · `module`
+
+[Source](../src/services/gameplay.py#L36)
+
+One objective's known progress and target.
+
+### `class MissionProgress(TypedDict)`
+
+**Scope:** `src/services/gameplay.py` · `module`
+
+[Source](../src/services/gameplay.py#L43)
+
+Mission display data, including explicitly unavailable metadata.
+
+### `class Penalty(TypedDict)`
+
+**Scope:** `src/services/gameplay.py` · `module`
+
+[Source](../src/services/gameplay.py#L55)
+
+Normalized penalty data after validating its account identity.
+
+### `class GameplayService`
+
+**Scope:** `src/services/gameplay.py` · `module`
+
+[Source](../src/services/gameplay.py#L67)
 
 Riot gameplay APIs used by battlepass, mission, and penalty commands.
 
@@ -2544,47 +2594,47 @@ Riot gameplay APIs used by battlepass, mission, and penalty commands.
 
 **Scope:** `src/services/gameplay.py` · `GameplayService`
 
-[Source](../src/services/gameplay.py#L18)
+[Source](../src/services/gameplay.py#L70)
 
 Bind the shared Riot client, authentication service, and catalog.
 
-### `async def battlepass(self, account: Account, *, locale: str | None = None) -> dict[str, Any]`
+### `async def battlepass(self, account: Account, *, locale: str | None = None) -> BattlepassProgress`
 
 **Scope:** `src/services/gameplay.py` · `GameplayService`
 
-[Source](../src/services/gameplay.py#L27)
+[Source](../src/services/gameplay.py#L79)
 
 Return the active battlepass level, XP, expiry, and next reward.
 
-### `async def missions(self, account: Account, *, locale: str | None = None) -> list[dict[str, Any]]`
+### `async def missions(self, account: Account, *, locale: str | None = None) -> list[MissionProgress]`
 
 **Scope:** `src/services/gameplay.py` · `GameplayService`
 
-[Source](../src/services/gameplay.py#L108)
+[Source](../src/services/gameplay.py#L176)
 
 Join the account's live mission progress with cached catalog definitions.
 
-### `async def penalties(self, account: Account) -> list[dict[str, Any]]`
+### `async def penalties(self, account: Account) -> list[Penalty]`
 
 **Scope:** `src/services/gameplay.py` · `GameplayService`
 
-[Source](../src/services/gameplay.py#L135)
+[Source](../src/services/gameplay.py#L203)
 
 Fetch and normalize an account's current Riot matchmaking penalties.
 
-### `def _mission_progress(row: Any, definitions: dict[str, dict[str, Any]], locale: str | None) -> dict[str, Any] | None`
+### `def _mission_progress(row: Any, definitions: dict[str, dict[str, Any]], locale: str | None) -> MissionProgress | None`
 
 **Scope:** `src/services/gameplay.py` · `GameplayService`
 
-[Source](../src/services/gameplay.py#L238)
+[Source](../src/services/gameplay.py#L306)
 
 Normalize one Riot mission row and its objective progress for display.
 
-### `async def _reward(self, levels: list[dict[str, Any]], level: int, locale: str | None) -> dict[str, Any]`
+### `async def _reward(self, levels: list[dict[str, Any]], level: int, locale: str | None) -> Reward`
 
 **Scope:** `src/services/gameplay.py` · `GameplayService`
 
-[Source](../src/services/gameplay.py#L319)
+[Source](../src/services/gameplay.py#L387)
 
 Resolve the next battlepass reward to display data, including its icon.
 
@@ -2592,15 +2642,23 @@ Resolve the next battlepass reward to display data, including its icon.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L361)
+[Source](../src/services/gameplay.py#L444)
 
-Return a validated API response's data list or an empty list.
+Return validated API metadata rows.
+
+### `def _rows(value: Any) -> list[dict[str, Any]]`
+
+**Scope:** `src/services/gameplay.py` · `module`
+
+[Source](../src/services/gameplay.py#L449)
+
+Reject malformed battlepass containers and rows at the API boundary.
 
 ### `class GameplayUnavailable(RuntimeError)`
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L370)
+[Source](../src/services/gameplay.py#L456)
 
 Riot did not return usable gameplay data.
 
@@ -2608,7 +2666,7 @@ Riot did not return usable gameplay data.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L374)
+[Source](../src/services/gameplay.py#L460)
 
 Convert a non-Boolean value to a nonnegative integer when possible.
 
@@ -2616,7 +2674,7 @@ Convert a non-Boolean value to a nonnegative integer when possible.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L385)
+[Source](../src/services/gameplay.py#L471)
 
 Convert a value to a positive integer or return ``None``.
 
@@ -2624,7 +2682,7 @@ Convert a value to a positive integer or return ``None``.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L390)
+[Source](../src/services/gameplay.py#L476)
 
 Parse an ISO timestamp and attach UTC when the input has no timezone.
 
@@ -2782,15 +2840,23 @@ Return the shared in-process lock used for one account's shop requests.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L104)
+[Source](../src/services/shop.py#L100)
 
 Remove an account's cached storefront after coordinating with active fetches.
+
+### `def prune_expired(self) -> None`
+
+**Scope:** `src/services/shop.py` · `ShopService`
+
+[Source](../src/services/shop.py#L105)
+
+Release expired storefronts, including accounts no longer queried.
 
 ### `async def storefront(self, account: Account, *, use_cache: bool = True) -> ShopData`
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L109)
+[Source](../src/services/shop.py#L115)
 
 Return a fresh or unexpired cached storefront for the linked account.
 
@@ -2798,7 +2864,7 @@ Return a fresh or unexpired cached storefront for the linked account.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L128)
+[Source](../src/services/shop.py#L135)
 
 Fetch, repair claims, normalize all shop offers, and cache the result.
 
@@ -2806,7 +2872,7 @@ Fetch, repair claims, normalize all shop offers, and cache the result.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L272)
+[Source](../src/services/shop.py#L288)
 
 Request one account's regional storefront.
 
@@ -2814,7 +2880,7 @@ Request one account's regional storefront.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L283)
+[Source](../src/services/shop.py#L299)
 
 Return VP, Radianite, and Kingdom Credit balances for an account.
 
@@ -2822,7 +2888,7 @@ Return VP, Radianite, and Kingdom Credit balances for an account.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L303)
+[Source](../src/services/shop.py#L323)
 
 Resolve the storefront's accessory rewards and their Kingdom Credit prices.
 
@@ -2830,7 +2896,7 @@ Resolve the storefront's accessory rewards and their Kingdom Credit prices.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L319)
+[Source](../src/services/shop.py#L350)
 
 Extract the raw single-item store offers across Riot response shapes.
 
@@ -2838,7 +2904,7 @@ Extract the raw single-item store offers across Riot response shapes.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L326)
+[Source](../src/services/shop.py#L357)
 
 Build a skin-offer-to-VP-price lookup from the storefront payload.
 
@@ -2846,7 +2912,7 @@ Build a skin-offer-to-VP-price lookup from the storefront payload.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L342)
+[Source](../src/services/shop.py#L374)
 
 Raised when Riot does not return a usable storefront or wallet.
 
@@ -2854,15 +2920,31 @@ Raised when Riot does not return a usable storefront or wallet.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L346)
+[Source](../src/services/shop.py#L378)
 
 Parse an integer only when it meets the requested minimum.
+
+### `def _mapping(value: Any) -> dict[str, Any]`
+
+**Scope:** `src/services/shop.py` · `module`
+
+[Source](../src/services/shop.py#L389)
+
+Treat malformed optional mappings as absent.
+
+### `def _rows(value: Any) -> list[dict[str, Any]]`
+
+**Scope:** `src/services/shop.py` · `module`
+
+[Source](../src/services/shop.py#L394)
+
+Keep only mapping entries from an optional Riot list.
 
 ### `def _vp_price(value: Any, currency_uuid: str) -> int | None`
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L355)
+[Source](../src/services/shop.py#L403)
 
 Return a price only when the source entry explicitly uses VALORANT Points.
 

@@ -95,23 +95,30 @@ class ShopService:
 
     def _account_lock(self, account_id: str) -> asyncio.Lock:
         """Return the shared in-process lock used for one account's shop requests."""
-        lock = self._locks.get(account_id)
-        if lock is None:
-            lock = asyncio.Lock()
-            self._locks[account_id] = lock
-        return lock
+        return self._locks.setdefault(account_id, asyncio.Lock())
 
     async def clear_cached_storefront(self, account_id: str) -> None:
         """Remove an account's cached storefront after coordinating with active fetches."""
         async with self._account_lock(account_id):
             self._cache.pop(account_id, None)
 
+    def prune_expired(self) -> None:
+        """Release expired storefronts, including accounts no longer queried."""
+        now = time.time()
+        self._cache = {
+            key: data
+            for key, data in self._cache.items()
+            if (data.cache_expires if data.cache_expires is not None else data.expires)
+            > now
+        }
+
     async def storefront(self, account: Account, *, use_cache: bool = True) -> ShopData:
         """Return a fresh or unexpired cached storefront for the linked account."""
         async with self._account_lock(account.puuid):
             cached = self._cache.get(account.puuid)
-            if cached and getattr(cached, "cache_expires", None) is not None:
-                expired = cached.cache_expires <= time.time()
+            cache_expires = getattr(cached, "cache_expires", None)
+            if cached and cache_expires is not None:
+                expired = cache_expires <= time.time()
             else:
                 expired = bool(cached and cached.expires <= time.time())
             if cached and expired:
@@ -133,64 +140,73 @@ class ShopService:
         raw = response.data if isinstance(response.data, dict) else {}
         if response.status in {400, 401} and raw.get("errorCode") == "BAD_CLAIMS":
             repaired = await self.auth.ensure(account, force=True)
-            if not repaired.success:
+            if not repaired.success or not repaired.account:
                 raise AuthenticationRequired("Riot rejected the stored credentials")
-            account = await Account.get(puuid=account.puuid)
+            account = repaired.account
             headers = await self.auth.auth_headers(account)
             response = await self._storefront_request(account, headers)
             raw = response.data if isinstance(response.data, dict) else {}
             if response.status in {400, 401} and raw.get("errorCode") == "BAD_CLAIMS":
                 raise AuthenticationRequired("Riot rejected the stored credentials")
 
-        if response.status != 200 or not raw.get("SkinsPanelLayout"):
+        panel = _mapping(raw.get("SkinsPanelLayout"))
+        if response.status != 200 or not panel:
             if raw.get("errorCode") == "SCHEDULED_DOWNTIME":
                 raise ShopUnavailable("VALORANT is undergoing scheduled maintenance")
             raise ShopUnavailable("Riot returned an invalid storefront response")
         now = int(time.time())
-        panel = raw["SkinsPanelLayout"]
-        expires = now + int(panel.get("SingleItemOffersRemainingDurationInSeconds", 0))
-        offer_ids = panel.get("SingleItemOffers") or []
+        duration = _int_at_least(
+            panel.get("SingleItemOffersRemainingDurationInSeconds"), 0
+        )
+        if duration is None:
+            raise ShopUnavailable("Riot returned an invalid storefront duration")
+        expires = now + duration
+        offer_ids = panel.get("SingleItemOffers")
+        if offer_ids is None:
+            offer_ids = []
+        if not isinstance(offer_ids, list):
+            raise ShopUnavailable("Riot returned invalid daily offers")
         prices = self._offer_prices(raw)
         offers = [
             Offer(skin, prices.get(str(offer_id), skin.price or 0), expires)
             for offer_id in offer_ids
             if (skin := self.catalog.get_skin(str(offer_id)))
         ]
-        night_raw = (raw.get("BonusStore") or {}).get("BonusStoreOffers") or []
-        night_expires = (
-            now
-            + int(
-                (raw.get("BonusStore") or {}).get(
-                    "BonusStoreRemainingDurationInSeconds", 0
-                )
-            )
-            if raw.get("BonusStore")
-            else None
+        bonus = _mapping(raw.get("BonusStore"))
+        night_duration = _int_at_least(
+            bonus.get("BonusStoreRemainingDurationInSeconds"), 0
         )
+        night_expires = now + night_duration if night_duration is not None else None
         night_market: list[Offer] = []
-        for entry in night_raw:
-            offer = entry.get("Offer") or {}
+        for entry in _rows(bonus.get("BonusStoreOffers")):
+            offer = _mapping(entry.get("Offer"))
             skin = self.catalog.get_skin(str(offer.get("OfferID") or ""))
-            if skin:
+            price = _vp_price(offer.get("Cost"), VP_UUID)
+            discounted = _vp_price(entry.get("DiscountCosts"), VP_UUID)
+            percent = _int_at_least(entry.get("DiscountPercent", 0), 0)
+            if (
+                skin
+                and price is not None
+                and discounted is not None
+                and percent is not None
+                and percent <= 100
+            ):
                 night_market.append(
                     Offer(
                         skin,
-                        int((offer.get("Cost") or {}).get(VP_UUID, 0)),
+                        price,
                         night_expires or expires,
-                        int((entry.get("DiscountCosts") or {}).get(VP_UUID, 0)),
-                        int(entry.get("DiscountPercent", 0)),
+                        discounted,
+                        percent,
                     )
                 )
-        featured = raw.get("FeaturedBundle")
-        featured = featured if isinstance(featured, dict) else {}
+        featured = _mapping(raw.get("FeaturedBundle"))
         bundle_remaining = _int_at_least(
             featured.get("BundlesRemainingDurationInSeconds"), 0
         )
         bundle_expiry = now + bundle_remaining if bundle_remaining is not None else None
         featured_bundles: list[FeaturedBundle] = []
-        for entry in featured.get("Bundles") or []:
-            if not isinstance(entry, dict):
-                continue
+        for entry in _rows(featured.get("Bundles")):
             bundle_id = str(entry.get("ID") or entry.get("DataAssetID") or "")
             data_asset_id = str(entry.get("DataAssetID") or bundle_id)
             if not bundle_id:
@@ -206,12 +222,8 @@ class ShopService:
                 if expiry is not None
             ]
             items: list[FeaturedBundleItem] = []
-            for raw_item in entry.get("Items") or []:
-                if not isinstance(raw_item, dict):
-                    continue
-                item = raw_item.get("Item") or {}
-                if not isinstance(item, dict):
-                    continue
+            for raw_item in _rows(entry.get("Items")):
+                item = _mapping(raw_item.get("Item"))
                 item_type_id = str(item.get("ItemTypeID") or "")
                 item_id = str(item.get("ItemID") or "")
                 if not item_type_id or not item_id:
@@ -252,21 +264,25 @@ class ShopService:
                 )
             )
         cache_expiries = [expires]
+        if night_expires is not None:
+            cache_expiries.append(night_expires)
         cache_expiries.extend(
             offer.expires for offer in featured_bundles if offer.expires is not None
         )
         data = ShopData(
             offers=offers,
-            accessory=(raw.get("AccessoryStore") or {}).get("AccessoryStoreOffers")
-            or [],
+            accessory=_rows(
+                _mapping(raw.get("AccessoryStore")).get("AccessoryStoreOffers")
+            ),
             night_market=night_market,
             expires=expires,
             night_market_expires=night_expires,
             featured_bundles=featured_bundles,
             cache_expires=min(cache_expiries),
         )
-        self.catalog.update_prices(self._raw_offers(raw))
-        self._cache[account.puuid] = data
+        self.catalog.update_prices(prices)
+        if self.config.use_shop_cache:
+            self._cache[account.puuid] = data
         return data
 
     async def _storefront_request(
@@ -293,23 +309,38 @@ class ShopService:
             raise ShopUnavailable(str(exc)) from exc
         if response.status != 200 or not isinstance(response.data, dict):
             raise ShopUnavailable("Could not fetch the wallet")
-        balances = response.data.get("Balances") or {}
-        return {
-            "vp": int(balances.get(VP_UUID, 0)),
-            "rp": int(balances.get(RP_UUID, 0)),
-            "kc": int(balances.get(KC_UUID, 0)),
-        }
+        balances = response.data.get("Balances")
+        if not isinstance(balances, dict):
+            raise ShopUnavailable("Riot returned invalid wallet balances")
+        values: dict[str, int] = {}
+        for name, currency in (("vp", VP_UUID), ("rp", RP_UUID), ("kc", KC_UUID)):
+            value = _int_at_least(balances.get(currency, 0), 0)
+            if value is None:
+                raise ShopUnavailable("Riot returned invalid wallet balances")
+            values[name] = value
+        return values
 
     async def accessory_offers(self, data: ShopData) -> list[AccessoryOffer]:
         """Resolve the storefront's accessory rewards and their Kingdom Credit prices."""
         offers = []
-        for entry in data.accessory:
-            offer = entry.get("Offer") or {}
-            price = int((offer.get("Cost") or {}).get(KC_UUID, 0))
-            for reward in offer.get("Rewards") or []:
+        for entry in _rows(data.accessory):
+            offer = _mapping(entry.get("Offer"))
+            price = _int_at_least(_mapping(offer.get("Cost")).get(KC_UUID), 0)
+            if price is None:
+                continue
+            for reward in _rows(offer.get("Rewards")):
+                item_type = reward.get("ItemTypeID")
+                item_id = reward.get("ItemID")
+                if (
+                    not isinstance(item_type, str)
+                    or not item_type
+                    or not isinstance(item_id, str)
+                    or not item_id
+                ):
+                    continue
                 item = await self.catalog.accessory(
-                    str(reward.get("ItemTypeID") or ""),
-                    str(reward.get("ItemID") or ""),
+                    item_type,
+                    item_id,
                 )
                 if item:
                     offers.append(AccessoryOffer(item, price))
@@ -318,8 +349,8 @@ class ShopService:
     @staticmethod
     def _raw_offers(raw: dict[str, Any]) -> list[dict[str, Any]]:
         """Extract the raw single-item store offers across Riot response shapes."""
-        panel = raw.get("SkinsPanelLayout") or {}
-        return (
+        panel = _mapping(raw.get("SkinsPanelLayout"))
+        return _rows(
             panel.get("SingleItemStoreOffers") or raw.get("SingleItemStoreOffers") or []
         )
 
@@ -327,15 +358,16 @@ class ShopService:
         """Build a skin-offer-to-VP-price lookup from the storefront payload."""
         prices: dict[str, int] = {}
         for entry in self._raw_offers(raw):
-            offer = (
-                entry.get("Offer") if isinstance(entry.get("Offer"), dict) else entry
-            )
+            nested = entry.get("Offer")
+            offer = nested if isinstance(nested, dict) else entry
             identifier = str(offer.get("OfferID") or "")
-            cost = offer.get("Cost") or {}
+            cost = _mapping(offer.get("Cost"))
             if identifier and cost:
-                prices[identifier] = int(
-                    cost.get(VP_UUID, next(iter(cost.values()), 0))
+                price = _int_at_least(
+                    cost.get(VP_UUID, next(iter(cost.values()), 0)), 0
                 )
+                if price is not None:
+                    prices[identifier] = price
         return prices
 
 
@@ -345,11 +377,27 @@ class ShopUnavailable(RuntimeError):
 
 def _int_at_least(value: Any, minimum: int) -> int | None:
     """Parse an integer only when it meets the requested minimum."""
+    if isinstance(value, bool):
+        return None
     try:
         result = int(value)
-    except TypeError, ValueError:
+    except TypeError, ValueError, OverflowError:
         return None
     return result if result >= minimum else None
+
+
+def _mapping(value: Any) -> dict[str, Any]:
+    """Treat malformed optional mappings as absent."""
+    return value if isinstance(value, dict) else {}
+
+
+def _rows(value: Any) -> list[dict[str, Any]]:
+    """Keep only mapping entries from an optional Riot list."""
+    return (
+        [row for row in value if isinstance(row, dict)]
+        if isinstance(value, list)
+        else []
+    )
 
 
 def _vp_price(value: Any, currency_uuid: str) -> int | None:

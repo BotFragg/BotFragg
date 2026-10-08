@@ -1,4 +1,4 @@
-"""Behavior checks for catalog."""
+"""Behavior and regression checks for catalog."""
 
 from __future__ import annotations
 
@@ -9,13 +9,433 @@ import threading
 from datetime import UTC, datetime
 from pathlib import Path
 from types import SimpleNamespace
+from types import SimpleNamespace as NS
+from unittest.mock import AsyncMock, Mock
 
+import discord
 import pytest
 
 from src.services import catalog as catalog_module
-from src.services.catalog import CatalogService, localized_text
+from src.services.catalog import (
+    CATALOG_FORMAT_VERSION,
+    Bundle,
+    CatalogService,
+    Skin,
+    localized_text,
+)
 from src.services.gameplay import GameplayService
 from src.services.http import HTTPFailure
+
+
+@pytest.fixture
+def changing_catalog(tmp_path):
+    state = SimpleNamespace(version="v1", calls=0, missing=False)
+
+    async def request(_method, url):
+        if url.endswith("/version"):
+            data = {"version": state.version}
+        elif "/weapons?" in url:
+            data = [{"skins": [{"uuid": "skin"}]}]
+        elif "/bundles?" in url:
+            data = [{"uuid": "bundle"}]
+        else:
+            state.calls += 1
+            if state.missing and "/sprays/" in url:
+                return NS(status=404, data={})
+            item = {"uuid": "item", "displayName": state.version}
+            data = item
+            if "/buddies?" in url:
+                data = [item]
+                if state.version == "v2":
+                    data.append({"uuid": "new-item", "displayName": state.version})
+        return NS(status=200, data={"data": data})
+
+    service = CatalogService(NS(request=request))
+    service.path = tmp_path / "skins.json"
+    return service, state
+
+
+@pytest.mark.parametrize("buddy", [False, True])
+@pytest.mark.parametrize("missing", [False, True])
+async def test_catalog_version_change_refreshes_accessory_metadata(
+    changing_catalog, buddy, missing
+):
+    service, state = changing_catalog
+    item_type = (
+        catalog_module.BUDDY_ITEM_TYPE_ID
+        if buddy
+        else "d5f120f8-ff8c-4aac-92ea-f2b5acbe9475"
+    )
+    await service.refresh()
+    state.missing = missing
+    identifier = "new-item" if buddy and missing else "item"
+    original = await service.accessory(item_type, identifier)
+    assert (original is None) == missing
+    state.version = "v2"
+    state.missing = False
+    await service.refresh(check_version=True)
+    result = await service.accessory(item_type, identifier)
+    assert result is not None and result.name == "v2"
+    assert state.calls == 2
+
+
+@pytest.mark.parametrize("failed", [False, True])
+async def test_same_version_or_failed_refresh_preserves_accessory_cache(
+    changing_catalog, monkeypatch, failed
+):
+    service, state = changing_catalog
+    await service.refresh()
+    item_type = "d5f120f8-ff8c-4aac-92ea-f2b5acbe9475"
+    spray = await service.accessory(item_type, "item")
+    buddy = await service.accessory(catalog_module.BUDDY_ITEM_TYPE_ID, "item")
+    if failed:
+        state.version = "v2"
+        monkeypatch.setattr(service, "_save", Mock(side_effect=OSError("write failed")))
+        with pytest.raises(OSError):
+            await service.refresh(check_version=True)
+    else:
+        await service.refresh(check_version=True)
+        await service.refresh()
+    assert await service.accessory(item_type, "item") is spray
+    assert await service.accessory(catalog_module.BUDDY_ITEM_TYPE_ID, "item") is buddy
+    assert state.calls == 2 and service.version == "v1"
+
+
+async def test_cancelled_failed_catalog_save_rolls_back_and_retries(
+    changing_catalog, monkeypatch
+):
+    service, state = changing_catalog
+    await service.refresh()
+    original = service._serialize()
+    spray = await service.accessory("d5f120f8-ff8c-4aac-92ea-f2b5acbe9475", "item")
+    buddy = await service.accessory(catalog_module.BUDDY_ITEM_TYPE_ID, "item")
+    generation = service._accessory_generation
+    state.version = "v2"
+    started, release = asyncio.Event(), asyncio.Event()
+    save = service._save
+
+    async def failed_worker(_function, *_args):
+        started.set()
+        await release.wait()
+        raise OSError("synthetic write failure")
+
+    monkeypatch.setattr(catalog_module.asyncio, "to_thread", failed_worker)
+    refresh = asyncio.create_task(service.refresh(check_version=True))
+    try:
+        await asyncio.wait_for(started.wait(), timeout=1)
+        refresh.cancel()
+        await asyncio.sleep(0)
+        refresh.cancel()
+        await asyncio.sleep(0)
+        assert not refresh.done()
+    finally:
+        release.set()
+        with pytest.raises(asyncio.CancelledError):
+            await asyncio.wait_for(refresh, timeout=2)
+
+    assert service._serialize() == original
+    assert service.path.read_text(encoding="utf-8") == original
+    assert service._accessory_generation == generation
+    assert (
+        await service.accessory("d5f120f8-ff8c-4aac-92ea-f2b5acbe9475", "item") is spray
+    )
+    assert await service.accessory(catalog_module.BUDDY_ITEM_TYPE_ID, "item") is buddy
+
+    writer = AsyncMock(side_effect=lambda function, *args: function(*args))
+    monkeypatch.setattr(catalog_module.asyncio, "to_thread", writer)
+    await service.refresh(check_version=True)
+    writer.assert_awaited_once()
+    assert writer.call_args.args[0] == save
+    assert json.loads(service.path.read_text(encoding="utf-8"))["version"] == "v2"
+    assert service.version == "v2"
+    assert service._accessory_generation == generation + 1
+    assert service._accessories == {} and service._buddy_catalog is None
+
+
+@pytest.mark.parametrize("buddy", [False, True])
+@pytest.mark.parametrize("missing", [False, True])
+async def test_inflight_accessory_request_cannot_restore_old_cache(
+    changing_catalog, buddy, missing
+):
+    service, state = changing_catalog
+    await service.refresh()
+    state.missing = missing
+    started, release = asyncio.Event(), asyncio.Event()
+    original_request = service.http.request
+
+    async def delayed_request(method, url):
+        response = await original_request(method, url)
+        if "/buddies?" in url or "/sprays/" in url:
+            started.set()
+            await release.wait()
+        return response
+
+    service.http.request = delayed_request
+    item_type = (
+        catalog_module.BUDDY_ITEM_TYPE_ID
+        if buddy
+        else "d5f120f8-ff8c-4aac-92ea-f2b5acbe9475"
+    )
+    identifier = "new-item" if buddy and missing else "item"
+    lookup = asyncio.create_task(service.accessory(item_type, identifier))
+    try:
+        await asyncio.wait_for(started.wait(), 1)
+        state.version, state.missing = "v2", False
+        await service.refresh(check_version=True)
+    finally:
+        release.set()
+        await asyncio.wait_for(lookup, 1)
+    result = await service.accessory(item_type, identifier)
+    assert result is not None and result.name == "v2"
+    assert state.calls == 2
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {"data": None},
+        {"data": ["malformed"]},
+        {"data": {}},
+        {"data": {"manifestId": []}},
+        {"data": {"version": 1}},
+    ],
+)
+async def test_catalog_version_failure_is_recoverable(payload):
+    catalog = CatalogService(
+        NS(request=AsyncMock(return_value=NS(status=200, data=payload)))
+    )
+    with pytest.raises(HTTPFailure):
+        await catalog.refresh()
+
+
+@pytest.mark.parametrize(
+    "kind, rows",
+    [
+        ("weapons", [None]),
+        ("weapons", [{"skins": {}}]),
+        ("weapons", [{"skins": [None]}]),
+        ("weapons", [{"skins": [{"uuid": []}]}]),
+        ("weapons", [{"skins": [{}]}]),
+        ("weapons", [{"skins": [{"uuid": "skin", "levels": {}}]}]),
+        ("weapons", [{"skins": [{"uuid": "skin", "levels": [None]}]}]),
+        ("weapons", [{"skins": [{"uuid": "skin", "chromas": {}}]}]),
+        ("weapons", [{"skins": [{"uuid": "skin", "chromas": [None]}]}]),
+        (
+            "weapons",
+            [{"skins": [{"uuid": "skin", "chromas": [{"streamedVideo": []}]}]}],
+        ),
+        ("bundles", [None]),
+        ("bundles", [{"uuid": {}}]),
+        ("bundles", [{"uuid": "bundle", "displayIcon": []}]),
+    ],
+)
+async def test_upstream_catalog_failure_preserves_cache_and_retries(
+    tmp_path, kind, rows
+):
+    valid = {
+        "weapons": [{"skins": [{"uuid": "skin", "levels": [{"uuid": "offer"}]}]}],
+        "bundles": [{"uuid": "bundle"}],
+    }
+    broken = True
+
+    async def request(method, url, **kwargs):
+        if url.endswith("/version"):
+            return NS(status=200, data={"data": {"manifestId": "new"}})
+        endpoint = "weapons" if "/weapons?" in url else "bundles"
+        return NS(
+            status=200,
+            data={"data": rows if broken and endpoint == kind else valid[endpoint]},
+        )
+
+    catalog = CatalogService(NS(request=request))
+    catalog.path = tmp_path / "skins.json"
+    catalog.skins = {"old": Skin("old", "old-offer", "Old", None, None)}
+    catalog.bundles = {"old": Bundle("old", "Old", None, None, None)}
+    catalog.version = "old"
+    catalog._cache_format = CATALOG_FORMAT_VERSION
+    catalog._reindex()
+    snapshot = catalog._serialize()
+    catalog.path.write_text(snapshot, encoding="utf-8")
+    with pytest.raises(HTTPFailure):
+        await catalog.refresh(check_version=True)
+    assert catalog.get_skin("old-offer").name == "Old"
+    assert catalog.get_bundle("old").name == "Old"
+    assert catalog.version == "old"
+    assert catalog.path.read_text(encoding="utf-8") == snapshot
+    broken = False
+    await catalog.refresh(check_version=True)
+    assert catalog.get_skin("offer").uuid == "skin"
+    assert catalog.get_bundle("bundle") is not None
+    assert catalog.version == "new"
+
+
+async def test_bad_buddy_level_container_is_retryable():
+    catalog = CatalogService(
+        NS(
+            request=AsyncMock(
+                return_value=NS(
+                    status=200, data={"data": [{"uuid": "buddy", "levels": 5}]}
+                )
+            )
+        )
+    )
+    with pytest.raises(HTTPFailure):
+        await catalog._buddy_accessory("buddy")
+    assert catalog._buddy_catalog is None
+    catalog.http.request.return_value.data = {
+        "data": [
+            {
+                "uuid": "buddy",
+                "displayName": {"en-US": "Buddy", "fr-FR": "Copain"},
+                "levels": [
+                    {"uuid": "level", "displayIcon": "https://example.com/buddy.png"}
+                ],
+            }
+        ]
+    }
+    item = await catalog.accessory("dd3bf334-87f3-40bd-b043-682a57a8dc3a", "level")
+    assert item.name_for(discord.Locale.french) == "Copain"
+    assert item.icon == "https://example.com/buddy.png"
+    assert catalog.http.request.await_count == 2
+
+
+@pytest.mark.parametrize(
+    "rows",
+    [
+        [None],
+        [{"uuid": []}],
+        [{"uuid": "buddy", "displayIcon": []}],
+        [{"uuid": "buddy", "levels": [None]}],
+        [{"uuid": "buddy", "levels": [{"uuid": "level", "displayIcon": []}]}],
+    ],
+)
+async def test_malformed_buddy_rows_never_publish_partial_cache(rows):
+    catalog = CatalogService(
+        NS(
+            request=AsyncMock(
+                return_value=NS(status=200, data={"data": [{"uuid": "valid"}, *rows]})
+            )
+        )
+    )
+    with pytest.raises(HTTPFailure):
+        await catalog._buddy_accessory("valid")
+    assert catalog._buddy_catalog is None
+
+
+@pytest.mark.parametrize("levels", [None, []])
+async def test_buddy_optional_levels_remain_supported(levels):
+    catalog = CatalogService(
+        NS(
+            request=AsyncMock(
+                return_value=NS(
+                    status=200,
+                    data={
+                        "data": [
+                            {"uuid": "buddy", "displayName": "Buddy", "levels": levels}
+                        ]
+                    },
+                )
+            )
+        )
+    )
+    assert (await catalog._buddy_accessory("buddy")).name == "Buddy"
+
+
+@pytest.mark.parametrize(
+    "item_type, field",
+    [
+        ("d5f120f8-ff8c-4aac-92ea-f2b5acbe9475", "fullTransparentIcon"),
+        ("3f296c07-64c3-494c-923b-fe692a4fa1bd", "largeArt"),
+        ("3f296c07-64c3-494c-923b-fe692a4fa1bd", "wideArt"),
+        ("d5f120f8-ff8c-4aac-92ea-f2b5acbe9475", "displayIcon"),
+        ("03a572de-4234-31ed-d344-ababa488f981", "displayIcon"),
+    ],
+)
+async def test_accessory_media_is_validated_before_caching(item_type, field):
+    request = AsyncMock(
+        return_value=NS(
+            status=200,
+            data={"data": {"displayName": "Synthetic", field: ["malformed"]}},
+        )
+    )
+    catalog = CatalogService(NS(request=request))
+    with pytest.raises(HTTPFailure):
+        await catalog.accessory(item_type, "synthetic")
+    assert catalog._accessories == {}
+    request.return_value.data = {
+        "data": {"displayName": "Recovered", field: "https://example.com/recovered.png"}
+    }
+    recovered = await catalog.accessory(item_type, "synthetic")
+    assert recovered.icon == "https://example.com/recovered.png"
+    assert await catalog.accessory(item_type, "synthetic") is recovered
+    assert request.await_count == 2
+
+
+@pytest.mark.parametrize(
+    "item_type, field",
+    [
+        ("d5f120f8-ff8c-4aac-92ea-f2b5acbe9475", "fullTransparentIcon"),
+        ("3f296c07-64c3-494c-923b-fe692a4fa1bd", "largeArt"),
+        ("03a572de-4234-31ed-d344-ababa488f981", "displayIcon"),
+    ],
+)
+@pytest.mark.parametrize("icon", [None, "https://example.com/valid.png"])
+async def test_valid_accessory_media_remains_cached(item_type, field, icon):
+    request = AsyncMock(
+        return_value=NS(
+            status=200, data={"data": {"displayName": "Valid", field: icon}}
+        )
+    )
+    catalog = CatalogService(NS(request=request))
+    item = await catalog.accessory(item_type, "synthetic")
+    assert item.icon == icon
+    assert await catalog.accessory(item_type, "synthetic") is item
+    assert request.await_count == 1
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "snapshot",
+    [
+        [],
+        {},
+        {"skins": True},
+        {"skins": [None]},
+        {"skins": [{"uuid": "skin", "offer_uuid": "offer", "levels": [None]}]},
+        {"skins": [{"uuid": "skin", "offer_uuid": "offer"}], "bundles": [None]},
+        {"format_version": []},
+    ],
+)
+async def test_structurally_invalid_catalog_recovers(tmp_path, snapshot):
+    service = CatalogService(NS())
+    service.path = tmp_path / "skins.json"
+    service.path.write_text(json.dumps(snapshot), encoding="utf-8")
+    service.refresh = AsyncMock()
+    await service.load()
+    service.refresh.assert_awaited_once()
+
+
+async def test_invalid_catalog_and_failed_refresh_preserve_previous_indexes(tmp_path):
+    service = CatalogService(NS(request=AsyncMock(side_effect=HTTPFailure("offline"))))
+    service.path = tmp_path / "skins.json"
+    service.skins = {"old": Skin("old", "offer", "Old", None, None)}
+    service.bundles = {"old": Bundle("old", "Old", None, None, None)}
+    service.version = "old"
+    service._cache_format = CATALOG_FORMAT_VERSION
+    service._reindex()
+    service.path.write_text(
+        json.dumps(
+            {"skins": [{"uuid": "new", "offer_uuid": "new"}], "bundles": [None]}
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(HTTPFailure):
+        await service.load()
+    assert service.get_skin("offer").name == "Old"
+    assert service.get_skin("new") is None
+    assert service.get_bundle("old").name == "Old"
+    assert service.version == "old" and service._cache_format == CATALOG_FORMAT_VERSION
 
 
 async def test_gameplay_missions_join_contract_progress_with_catalog_metadata() -> None:
@@ -103,7 +523,8 @@ async def test_catalog_load_reads_file_off_event_loop(
                 {
                     "format_version": catalog_module.CATALOG_FORMAT_VERSION,
                     "version": "test",
-                    "skins": [],
+                    "skins": [{"uuid": "skin", "offer_uuid": "offer"}],
+                    "bundles": [{"uuid": "bundle"}],
                 }
             ),
             encoding="utf-8",
@@ -464,8 +885,10 @@ async def test_accessory_lookup_retries_after_a_transient_response() -> None:
     service = CatalogService(http)
     item_type = "d5f120f8-ff8c-4aac-92ea-f2b5acbe9475"
 
-    assert await service.accessory(item_type, "spray-id") is None
-    assert await service.accessory(item_type, "spray-id") is None
+    with pytest.raises(HTTPFailure):
+        await service.accessory(item_type, "spray-id")
+    with pytest.raises(HTTPFailure):
+        await service.accessory(item_type, "spray-id")
     item = await service.accessory(item_type, "spray-id")
 
     assert item is not None and item.name == "Spray"
@@ -590,6 +1013,8 @@ async def test_catalog_refresh_waits_for_file_worker_after_repeated_cancellation
             return [{"skins": [{"uuid": "skin", "displayName": "Skin"}]}]
 
         service._fetch_data = fetch_weapons
+        service._accessories[("sprays", "old")] = None
+        service._buddy_catalog = {}
         worker_started = asyncio.Event()
         release_worker = asyncio.Event()
         original_to_thread = asyncio.to_thread
@@ -614,3 +1039,4 @@ async def test_catalog_refresh_waits_for_file_worker_after_repeated_cancellation
             await asyncio.wait_for(refresh, timeout=2)
 
         assert path.exists()
+        assert service._accessories == {} and service._buddy_catalog is None

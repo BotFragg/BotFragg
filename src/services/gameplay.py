@@ -4,12 +4,64 @@ from __future__ import annotations
 
 import asyncio
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, NotRequired, TypedDict
 
 from ..models import Account
 from .auth import AuthService, riot_region
 from .catalog import CatalogService, localized_text
 from .http import HTTPClient, HTTPFailure
+
+
+class Reward(TypedDict):
+    """Validated display data for the next battlepass reward."""
+
+    name: str | None
+    type: str
+    xp: int
+    icon: str | None
+    tier_uuid: NotRequired[str | None]
+
+
+class BattlepassProgress(TypedDict):
+    """The active battlepass and its account-specific progress."""
+
+    act: str | None
+    level: int
+    progress: int
+    next_level_xp: int
+    end: datetime
+    next_reward: Reward
+
+
+class MissionTask(TypedDict):
+    """One objective's known progress and target."""
+
+    progress: int | None
+    target: int | None
+
+
+class MissionProgress(TypedDict):
+    """Mission display data, including explicitly unavailable metadata."""
+
+    type: str
+    title: str | None
+    xp: int | None
+    complete: bool
+    expires: datetime | None
+    tasks: list[MissionTask]
+    details_unavailable: NotRequired[bool]
+
+
+class Penalty(TypedDict):
+    """Normalized penalty data after validating its account identity."""
+
+    infraction: str
+    expires: datetime | None
+    games_remaining: int | None
+    platform_scope: str
+    effects: list[str]
+    warning_type: str | None
+    warning_tier: int | None
 
 
 class GameplayService:
@@ -26,7 +78,7 @@ class GameplayService:
 
     async def battlepass(
         self, account: Account, *, locale: str | None = None
-    ) -> dict[str, Any]:
+    ) -> BattlepassProgress:
         """Return the active battlepass level, XP, expiry, and next reward."""
         try:
             headers = await self.auth.auth_headers(account)
@@ -45,29 +97,39 @@ class GameplayService:
             )
         except HTTPFailure as exc:
             raise GameplayUnavailable("Could not fetch battlepass data") from exc
-        if contracts.status != 200 or not isinstance(contracts.data, dict):
+        if (
+            contracts.status != 200
+            or seasons.status != 200
+            or definitions.status != 200
+            or not isinstance(contracts.data, dict)
+        ):
             raise GameplayUnavailable("Could not fetch battlepass progress")
+        now = datetime.now(UTC)
         acts = sorted(
             (
                 item
                 for item in _api_data(seasons.data)
                 if item.get("type") == "EAresSeasonType::Act"
+                and (start := _parse_datetime(item.get("startTime"))) is not None
+                and (end := _parse_datetime(item.get("endTime"))) is not None
+                and start <= now < end
             ),
             key=lambda item: item.get("startTime", ""),
             reverse=True,
         )
-        passes = [
-            item
-            for item in _api_data(definitions.data)
-            if (item.get("content") or {}).get("relationType") == "Season"
-        ]
+        passes = []
+        for item in _api_data(definitions.data):
+            content = item.get("content")
+            if not isinstance(content, dict):
+                raise GameplayUnavailable("Battlepass content is malformed")
+            if content.get("relationType") == "Season":
+                passes.append(item)
         active = next(
             (
                 (act, definition)
                 for act in acts
                 for definition in passes
-                if (definition.get("content") or {}).get("relationUuid")
-                == act.get("uuid")
+                if definition["content"].get("relationUuid") == act.get("uuid")
             ),
             None,
         )
@@ -77,7 +139,7 @@ class GameplayService:
         contract = next(
             (
                 item
-                for item in contracts.data.get("Contracts", [])
+                for item in _rows(contracts.data.get("Contracts"))
                 if item.get("ContractDefinitionID") == definition.get("uuid")
             ),
             None,
@@ -86,28 +148,34 @@ class GameplayService:
             raise GameplayUnavailable(
                 "The active battlepass contract is not available for this account"
             )
-        level = int(contract.get("ProgressionLevelReached", 0))
-        progress = int(contract.get("ProgressionTowardsNextLevel", 0))
-        end = datetime.fromisoformat(str(act["endTime"]).replace("Z", "+00:00"))
+        level = _nonnegative_int(contract.get("ProgressionLevelReached", 0))
+        progress = _nonnegative_int(contract.get("ProgressionTowardsNextLevel", 0))
+        if level is None or progress is None:
+            raise GameplayUnavailable("Battlepass progress is malformed")
+        end = _parse_datetime(act["endTime"])
+        if end is None:
+            raise GameplayUnavailable("Battlepass expiry is malformed")
         levels = [
             entry
-            for chapter in (definition.get("content") or {}).get("chapters", [])
-            for entry in chapter.get("levels", [])
+            for chapter in _rows(definition["content"].get("chapters"))
+            for entry in _rows(chapter.get("levels"))
         ]
+        try:
+            reward = await self._reward(levels, level, locale)
+        except HTTPFailure as exc:
+            raise GameplayUnavailable("Could not fetch battlepass reward") from exc
         return {
             "act": localized_text(act.get("displayName"), locale) or None,
             "level": level,
             "progress": progress,
-            "next_level_xp": int(
-                (levels[level] if level < len(levels) else {}).get("xp") or 0
-            ),
+            "next_level_xp": reward["xp"],
             "end": end,
-            "next_reward": await self._reward(levels, level, locale),
+            "next_reward": reward,
         }
 
     async def missions(
         self, account: Account, *, locale: str | None = None
-    ) -> list[dict[str, Any]]:
+    ) -> list[MissionProgress]:
         """Join the account's live mission progress with cached catalog definitions."""
         try:
             headers = await self.auth.auth_headers(account)
@@ -132,7 +200,7 @@ class GameplayService:
             if (mission := self._mission_progress(row, definitions, locale)) is not None
         ]
 
-    async def penalties(self, account: Account) -> list[dict[str, Any]]:
+    async def penalties(self, account: Account) -> list[Penalty]:
         """Fetch and normalize an account's current Riot matchmaking penalties."""
         try:
             headers = await self.auth.auth_headers(account)
@@ -177,7 +245,7 @@ class GameplayService:
             ("XPMultiplierEffect", "xp-multiplier"),
             ("PremierRestrictionEffect", "premier-restriction"),
         )
-        result = []
+        result: list[Penalty] = []
         for row in rows:
             infraction_id = str(row.get("InfractionID") or "")
             infraction = infraction_by_id.get(infraction_id, {})
@@ -189,7 +257,7 @@ class GameplayService:
                 ),
                 infraction_id or "Unknown infraction",
             )
-            platform_values = []
+            platform_values: list[str] = []
             if row.get("ApplyToAllPlatforms") is not True:
                 for field in ("ApplyToPlatforms", "ApplyToPlatformGroups"):
                     values = row.get(field)
@@ -239,7 +307,7 @@ class GameplayService:
         row: Any,
         definitions: dict[str, dict[str, Any]],
         locale: str | None,
-    ) -> dict[str, Any] | None:
+    ) -> MissionProgress | None:
         """Normalize one Riot mission row and its objective progress for display."""
         if not isinstance(row, dict) or not (mission_id := str(row.get("ID") or "")):
             return None
@@ -273,7 +341,7 @@ class GameplayService:
         )
         mission_target = _positive_int(definition.get("progressToComplete"))
         live_objectives = list(current.items())
-        tasks: list[dict[str, Any]] = []
+        tasks: list[MissionTask] = []
         for item in mission_objectives:
             objective_id = str(item.get("objectiveUuid") or "")
             if not objective_id:
@@ -318,7 +386,7 @@ class GameplayService:
 
     async def _reward(
         self, levels: list[dict[str, Any]], level: int, locale: str | None
-    ) -> dict[str, Any]:
+    ) -> Reward:
         """Resolve the next battlepass reward to display data, including its icon."""
         if level >= 55:
             return {
@@ -327,13 +395,28 @@ class GameplayService:
                 "xp": 0,
                 "icon": None,
             }
-        reward = (levels[level] if level < len(levels) else {}).get("reward") or {}
+        if level < 0 or level >= len(levels) or not isinstance(levels[level], dict):
+            raise GameplayUnavailable("Next battlepass level is unavailable")
+        row = levels[level]
+        xp = _nonnegative_int(row.get("xp", 0))
+        reward = row.get("reward")
+        if reward is None:
+            reward = {}
+        if (
+            xp is None
+            or not isinstance(reward, dict)
+            or any(
+                reward.get(key) is not None and not isinstance(reward[key], str)
+                for key in ("type", "uuid")
+            )
+        ):
+            raise GameplayUnavailable("Next battlepass reward is malformed")
         kind, uuid = str(reward.get("type") or "Reward"), str(reward.get("uuid") or "")
         if kind == "EquippableSkinLevel" and (skin := self.catalog.get_skin(uuid)):
             return {
                 "name": skin.name_for(locale),
                 "type": kind,
-                "xp": levels[level].get("xp", 0),
+                "xp": xp,
                 "icon": skin.icon,
                 "tier_uuid": skin.tier_uuid,
             }
@@ -347,24 +430,27 @@ class GameplayService:
             return {
                 "name": item.name_for(locale),
                 "type": kind,
-                "xp": levels[level].get("xp", 0),
+                "xp": xp,
                 "icon": item.icon,
             }
         return {
             "name": None,
             "type": kind,
-            "xp": levels[level].get("xp", 0),
+            "xp": xp,
             "icon": None,
         }
 
 
 def _api_data(value: Any) -> list[dict[str, Any]]:
-    """Return a validated API response's data list or an empty list."""
-    return (
-        value.get("data", [])
-        if isinstance(value, dict) and isinstance(value.get("data"), list)
-        else []
-    )
+    """Return validated API metadata rows."""
+    return _rows(value.get("data") if isinstance(value, dict) else None)
+
+
+def _rows(value: Any) -> list[dict[str, Any]]:
+    """Reject malformed battlepass containers and rows at the API boundary."""
+    if not isinstance(value, list) or any(not isinstance(row, dict) for row in value):
+        raise GameplayUnavailable("Battlepass metadata is malformed")
+    return value
 
 
 class GameplayUnavailable(RuntimeError):
@@ -373,11 +459,11 @@ class GameplayUnavailable(RuntimeError):
 
 def _nonnegative_int(value: Any) -> int | None:
     """Convert a non-Boolean value to a nonnegative integer when possible."""
-    if isinstance(value, bool):
+    if isinstance(value, bool) or (isinstance(value, float) and not value.is_integer()):
         return None
     try:
         result = int(value)
-    except TypeError, ValueError:
+    except TypeError, ValueError, OverflowError:
         return None
     return result if result >= 0 else None
 

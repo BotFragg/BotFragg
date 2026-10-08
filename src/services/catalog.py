@@ -7,10 +7,10 @@ import json
 import logging
 import os
 import time
-from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
+from weakref import WeakValueDictionary
 
 from rapidfuzz import fuzz, process
 
@@ -72,6 +72,31 @@ def _localized_values(value: Any) -> dict[str, str]:
         for locale, text in value.items()
         if isinstance(locale, str) and isinstance(text, str) and text
     }
+
+
+def _catalog_rows(value: Any, label: str) -> list[dict[str, Any]]:
+    """Validate upstream rows and the identifiers/media consumed by catalog views."""
+    if value is None:
+        return []
+    if not isinstance(value, list) or any(not isinstance(row, dict) for row in value):
+        raise HTTPFailure(f"Invalid catalog {label}")
+    for row in value:
+        for key in (
+            "uuid",
+            "contentTierUuid",
+            "displayIcon",
+            "displayIcon2",
+            "largeArt",
+            "wideArt",
+            "fullTransparentIcon",
+            "verticalPromoImage",
+            "fullRender",
+            "swatch",
+            "streamedVideo",
+        ):
+            if row.get(key) is not None and not isinstance(row[key], str):
+                raise HTTPFailure(f"Invalid catalog {label} {key}")
+    return value
 
 
 @dataclass(slots=True)
@@ -160,8 +185,9 @@ class CatalogService:
         self.bundles: dict[str, Bundle] = {}
         self.skin_aliases: dict[str, Skin] = {}
         self._accessories: dict[tuple[str, str], Accessory | None] = {}
-        self._accessory_locks: defaultdict[tuple[str, str], asyncio.Lock] = defaultdict(
-            asyncio.Lock
+        self._accessory_generation = 0
+        self._accessory_locks: WeakValueDictionary[tuple[str, str], asyncio.Lock] = (
+            WeakValueDictionary()
         )
         self._buddy_catalog: dict[str, Accessory] | None = None
         self._buddy_catalog_lock = asyncio.Lock()
@@ -177,10 +203,10 @@ class CatalogService:
         try:
             contents = await asyncio.to_thread(self.path.read_text, "utf-8")
             raw = json.loads(contents)
-        except FileNotFoundError, json.JSONDecodeError, OSError:
+            self._deserialize(raw)
+        except OSError, UnicodeError, ValueError:
             await self.refresh()
             return
-        self._deserialize(raw)
         if self._cache_format != CATALOG_FORMAT_VERSION:
             await self.refresh()
 
@@ -188,20 +214,26 @@ class CatalogService:
         """Fetch the current weapon and bundle catalogs and save their snapshot.
 
         When ``check_version`` is true, skip rebuilding only if the upstream version
-        and local cache format are current.
+        and local cache format are current. A saved version change invalidates
+        accessory metadata, including requests that began before the refresh.
+        A failed save restores the previous catalog even during cancellation.
         """
         async with self._lock:
             version_response = await self.http.request(
                 "GET", "https://valorant-api.com/v1/version"
             )
             version_data = (
-                version_response.data.get("data", {})
+                version_response.data.get("data")
                 if isinstance(version_response.data, dict)
-                else {}
+                else None
             )
+            if version_response.status != 200 or not isinstance(version_data, dict):
+                raise HTTPFailure("Invalid VALORANT catalog version response")
             current_version = (
                 version_data.get("manifestId") or version_data.get("version") or ""
             )
+            if not isinstance(current_version, str) or not current_version:
+                raise HTTPFailure("Invalid VALORANT catalog version identifier")
             if (
                 check_version
                 and current_version
@@ -219,6 +251,7 @@ class CatalogService:
                 self.version,
                 self._cache_format,
             )
+            saved = False
             try:
                 weapons = await self._fetch_data("weapons")
                 bundles = await self._fetch_data("bundles")
@@ -239,15 +272,26 @@ class CatalogService:
                         except asyncio.CancelledError:
                             continue
                     raise
-            except Exception:
-                (
-                    self.skins,
-                    self._skin_choices,
-                    self.bundles,
-                    self.skin_aliases,
-                    self.version,
-                    self._cache_format,
-                ) = previous
+                finally:
+                    saved = (
+                        write.done()
+                        and not write.cancelled()
+                        and write.exception() is None
+                    )
+                    if saved and current_version != previous[4]:
+                        self._accessory_generation += 1
+                        self._accessories.clear()
+                        self._buddy_catalog = None
+            except Exception, asyncio.CancelledError:
+                if not saved:
+                    (
+                        self.skins,
+                        self._skin_choices,
+                        self.bundles,
+                        self.skin_aliases,
+                        self.version,
+                        self._cache_format,
+                    ) = previous
                 raise
 
     async def _fetch_data(self, kind: str) -> list[dict[str, Any]]:
@@ -260,7 +304,7 @@ class CatalogService:
         data = response.data.get("data")
         if not isinstance(data, list) or not data:
             raise HTTPFailure(f"Invalid or empty {kind} catalog response")
-        return data
+        return _catalog_rows(data, kind)
 
     async def mission_metadata(
         self,
@@ -315,9 +359,12 @@ class CatalogService:
     ) -> None:
         """Normalize weapon and bundle responses and rebuild lookup indexes."""
         skin_map: dict[str, Skin] = {}
-        for weapon in weapons:
-            for raw in weapon.get("skins") or []:
-                levels = raw.get("levels") or []
+        for weapon in _catalog_rows(weapons, "weapons"):
+            for raw in _catalog_rows(weapon.get("skins"), "skins"):
+                if not raw.get("uuid"):
+                    raise HTTPFailure("Missing catalog skin identifier")
+                levels = _catalog_rows(raw.get("levels"), "levels")
+                chromas = _catalog_rows(raw.get("chromas"), "chromas")
                 offer_uuid = str(
                     (levels[0] if levels else {}).get("uuid") or raw.get("uuid")
                 )
@@ -331,13 +378,13 @@ class CatalogService:
                     or (levels[0] if levels else {}).get("displayIcon"),
                     tier_uuid=raw.get("contentTierUuid"),
                     levels=levels,
-                    chromas=raw.get("chromas") or [],
+                    chromas=chromas,
                     names=names,
                 )
         bundle_map: dict[str, Bundle] = {}
-        for raw in bundles:
-            if not isinstance(raw, dict) or not raw.get("uuid"):
-                continue
+        for raw in _catalog_rows(bundles, "bundles"):
+            if not raw.get("uuid"):
+                raise HTTPFailure("Missing catalog bundle identifier")
             names = _localized_values(raw.get("displayName"))
             subtitles = _localized_values(raw.get("displayNameSubText"))
             descriptions = _localized_values(
@@ -396,23 +443,27 @@ class CatalogService:
             return self._accessories[key]
         if not endpoint:
             return None
-        async with self._accessory_locks[key]:
+        async with self._accessory_locks.setdefault(key, asyncio.Lock()):
             if key in self._accessories:
                 return self._accessories[key]
+            generation = self._accessory_generation
             response = await self.http.request(
                 "GET",
                 f"https://valorant-api.com/v1/{endpoint}/{uuid}?language=all",
             )
             if response.status == 404:
-                self._accessories[key] = None
+                if generation == self._accessory_generation:
+                    self._accessories[key] = None
                 return None
             if response.status != 200 or not isinstance(response.data, dict):
-                return None
+                raise HTTPFailure("Could not fetch accessory metadata")
             raw = response.data.get("data")
             if not isinstance(raw, dict):
-                return None
-            self._accessories[key] = self._accessory_from_data(endpoint, raw)
-            return self._accessories[key]
+                raise HTTPFailure("Invalid accessory metadata")
+            accessory = self._accessory_from_data(endpoint, raw)
+            if generation == self._accessory_generation:
+                self._accessories[key] = accessory
+            return accessory
 
     async def _buddy_accessory(self, uuid: str) -> Accessory | None:
         """Resolve a Riot bundle buddy by its buddy or level UUID."""
@@ -420,6 +471,7 @@ class CatalogService:
         if self._buddy_catalog is None:
             async with self._buddy_catalog_lock:
                 if self._buddy_catalog is None:
+                    generation = self._accessory_generation
                     response = await self.http.request(
                         "GET",
                         "https://valorant-api.com/v1/buddies?language=all",
@@ -432,9 +484,7 @@ class CatalogService:
                     if not isinstance(rows, list):
                         raise HTTPFailure("Could not fetch the gun buddy catalog")
                     buddies: dict[str, Accessory] = {}
-                    for buddy in rows:
-                        if not isinstance(buddy, dict):
-                            continue
+                    for buddy in _catalog_rows(rows, "buddies"):
                         names = _localized_values(buddy.get("displayName"))
                         name = localized_text(names, ENGLISH_LOCALE)
                         base_icon = buddy.get("displayIcon")
@@ -443,8 +493,8 @@ class CatalogService:
                             buddies[buddy_uuid.lower()] = Accessory(
                                 name, base_icon, names=names
                             )
-                        for level in buddy.get("levels") or []:
-                            if not isinstance(level, dict) or not level.get("uuid"):
+                        for level in _catalog_rows(buddy.get("levels"), "buddy levels"):
+                            if not level.get("uuid"):
                                 continue
                             buddies[str(level["uuid"]).lower()] = Accessory(
                                 name,
@@ -453,12 +503,15 @@ class CatalogService:
                             )
                     if not buddies:
                         raise HTTPFailure("Gun buddy catalog contained no entries")
-                    self._buddy_catalog = buddies
+                    if generation == self._accessory_generation:
+                        self._buddy_catalog = buddies
+                    return buddies.get(identifier)
         return self._buddy_catalog.get(identifier)
 
     @staticmethod
     def _accessory_from_data(endpoint: str, raw: dict[str, Any]) -> Accessory:
         """Convert endpoint-specific Riot accessory data into a common display shape."""
+        _catalog_rows([raw], endpoint)
         names = _localized_values(raw.get("displayName"))
         name = localized_text(names, ENGLISH_LOCALE)
         if endpoint == "playercards":
@@ -494,7 +547,7 @@ class CatalogService:
         if valorant_locale != ENGLISH_LOCALE:
             choice_sets.append(self._skin_choices)
 
-        scores: dict[str, int] = {}
+        scores: dict[str, float] = {}
         for search_choices in choice_sets:
             for _, score, uuid in process.extract(
                 query, search_choices, scorer=fuzz.WRatio, limit=limit
@@ -504,16 +557,12 @@ class CatalogService:
         matches = sorted(scores.items(), key=lambda match: match[1], reverse=True)
         return [self.skins[uuid] for uuid, _ in matches[:limit]]
 
-    def update_prices(self, offers: list[dict[str, Any]]) -> None:
+    def update_prices(self, prices: dict[str, int]) -> None:
         """Apply current store prices to catalog skins matched by offer identifier."""
-        for offer in offers:
-            offer_id = str(
-                offer.get("OfferID") or offer.get("Offer", {}).get("OfferID") or ""
-            )
-            cost = offer.get("Cost") or offer.get("Offer", {}).get("Cost") or {}
+        for offer_id, price in prices.items():
             skin = self.get_skin(offer_id)
-            if skin and cost:
-                skin.price = next(iter(cost.values()), skin.price)
+            if skin:
+                skin.price = price
 
     def _serialize(self) -> str:
         """Encode the current version, skins, and bundles as compact JSON."""
@@ -559,9 +608,46 @@ class CatalogService:
 
     def _deserialize(self, raw: dict[str, Any]) -> None:
         """Restore catalog records from a snapshot and rebuild lookup indexes."""
-        self.version = str(raw.get("version") or "")
-        self._cache_format = int(raw.get("format_version") or 0)
-        self.skins = {
+        if not isinstance(raw, dict):
+            raise ValueError("Invalid catalog snapshot")
+        version = raw.get("version", "")
+        cache_format = raw.get("format_version", 0)
+        if not isinstance(version, str) or type(cache_format) is not int:
+            raise ValueError("Invalid catalog version")
+        for kind in ("skins", "bundles"):
+            rows = raw.get(kind, [])
+            if not isinstance(rows, list):
+                raise ValueError(f"Invalid catalog {kind}")
+            if not rows and (kind == "skins" or cache_format == CATALOG_FORMAT_VERSION):
+                raise ValueError(f"Empty catalog {kind}")
+            for item in rows:
+                if not isinstance(item, dict):
+                    raise ValueError(f"Invalid catalog {kind} entry")
+                identifiers = ("uuid", "offer_uuid") if kind == "skins" else ("uuid",)
+                if any(
+                    not isinstance(item.get(key), str) or not item[key]
+                    for key in identifiers
+                ):
+                    raise ValueError("Invalid catalog identifier")
+                for key in ("levels", "chromas"):
+                    children = item.get(key, [])
+                    if not isinstance(children, list) or any(
+                        not isinstance(child, dict) for child in children
+                    ):
+                        raise ValueError(f"Invalid catalog {key}")
+                for key in ("name", "icon", "tier_uuid", "subtitle", "description"):
+                    if item.get(key) is not None and not isinstance(item[key], str):
+                        raise ValueError(f"Invalid catalog {key}")
+                price = item.get("price")
+                if price is not None and (type(price) is not int or price < 0):
+                    raise ValueError("Invalid catalog price")
+                for key in ("names", "subtitles", "descriptions"):
+                    names = item.get(key, {})
+                    if not isinstance(names, dict) or any(
+                        not isinstance(text, str) for text in names.values()
+                    ):
+                        raise ValueError(f"Invalid catalog {key}")
+        skins = {
             item["uuid"]: Skin(
                 uuid=item["uuid"],
                 offer_uuid=item["offer_uuid"],
@@ -582,7 +668,7 @@ class CatalogService:
             for item in raw.get("skins", [])
             if item.get("uuid") and item.get("offer_uuid")
         }
-        self.bundles = {
+        bundles = {
             item["uuid"]: Bundle(
                 uuid=item["uuid"],
                 name=str(
@@ -615,4 +701,6 @@ class CatalogService:
             for item in raw.get("bundles", [])
             if item.get("uuid")
         }
+        self.skins, self.bundles = skins, bundles
+        self.version, self._cache_format = version, cache_format
         self._reindex()

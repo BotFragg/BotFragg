@@ -1,14 +1,216 @@
-"""Behavior checks for gameplay."""
+"""Behavior and regression checks for gameplay."""
 
 from __future__ import annotations
 
 from datetime import UTC, datetime
 from types import SimpleNamespace
+from types import SimpleNamespace as NS
+from unittest.mock import AsyncMock
 
 import pytest
 
 from src.services.gameplay import GameplayService, GameplayUnavailable
 from src.services.http import HTTPFailure
+
+
+async def test_battlepass_uses_active_act_instead_of_future_act():
+    now = datetime.now(UTC)
+
+    def act(uuid, year):
+        return {
+            "uuid": uuid,
+            "type": "EAresSeasonType::Act",
+            "displayName": uuid,
+            "startTime": f"{year}-01-01T00:00:00Z",
+            "endTime": f"{year}-12-31T00:00:00Z",
+        }
+
+    def definition(uuid):
+        return {
+            "uuid": "contract-" + uuid,
+            "content": {
+                "relationType": "Season",
+                "relationUuid": uuid,
+                "chapters": [{"levels": [{"xp": 100}]}],
+            },
+        }
+
+    responses = iter(
+        [
+            {
+                "Contracts": [
+                    {
+                        "ContractDefinitionID": "contract-active",
+                        "ProgressionLevelReached": 0,
+                    }
+                ]
+            },
+            {"data": [act("active", now.year), act("future", now.year + 1)]},
+            {"data": [definition("active"), definition("future")]},
+        ]
+    )
+
+    async def request(*args, **kwargs):
+        return SimpleNamespace(status=200, data=next(responses))
+
+    gameplay = GameplayService(
+        SimpleNamespace(request=request),
+        SimpleNamespace(auth_headers=AsyncMock(return_value={})),
+        None,
+    )
+    data = await gameplay.battlepass(SimpleNamespace(puuid="synthetic", region="na"))
+    assert data["act"] == "active"
+
+
+@pytest.mark.parametrize(
+    "kind",
+    [
+        "season-row",
+        "definition-row",
+        "content",
+        "chapters",
+        "levels",
+        "level",
+        "progress",
+        "negative",
+        "infinite",
+        "boolean",
+        "next-progress",
+        "contract-row",
+        "contracts",
+        "reward",
+        "xp",
+    ],
+)
+async def test_bad_battlepass_payload_is_recoverable(kind):
+    seasons = [
+        {
+            "uuid": "act",
+            "type": "EAresSeasonType::Act",
+            "startTime": "2020-01-01T00:00:00Z",
+            "endTime": "2100-01-01T00:00:00Z",
+        }
+    ]
+    definition = {
+        "uuid": "pass",
+        "content": {
+            "relationType": "Season",
+            "relationUuid": "act",
+            "chapters": [{"levels": [{"xp": 100, "reward": {}}]}],
+        },
+    }
+    progress = {
+        "Contracts": [
+            {
+                "ContractDefinitionID": "pass",
+                "ProgressionLevelReached": 0,
+                "ProgressionTowardsNextLevel": 0,
+            }
+        ]
+    }
+    if kind == "season-row":
+        seasons.append(None)
+    elif kind == "definition-row":
+        definition = None
+    elif kind == "content":
+        definition["content"] = ["malformed"]
+    elif kind == "chapters":
+        definition["content"]["chapters"] = [None]
+    elif kind == "level":
+        definition["content"]["chapters"][0]["levels"] = [None]
+    elif kind == "levels":
+        definition["content"]["chapters"][0]["levels"] = 5
+    elif kind == "reward":
+        definition["content"]["chapters"][0]["levels"][0]["reward"] = ["malformed"]
+    elif kind == "xp":
+        definition["content"]["chapters"][0]["levels"][0]["xp"] = "malformed"
+    elif kind == "contracts":
+        progress["Contracts"] = 5
+    elif kind == "contract-row":
+        progress["Contracts"].append(None)
+    elif kind == "next-progress":
+        progress["Contracts"][0]["ProgressionTowardsNextLevel"] = "malformed"
+    elif kind == "negative":
+        progress["Contracts"][0]["ProgressionLevelReached"] = -1
+    elif kind == "infinite":
+        progress["Contracts"][0]["ProgressionLevelReached"] = float("inf")
+    elif kind == "boolean":
+        progress["Contracts"][0]["ProgressionLevelReached"] = True
+    elif kind == "progress":
+        progress["Contracts"][0]["ProgressionLevelReached"] = "malformed"
+
+    async def request(method, url, **kwargs):
+        data = (
+            {"data": seasons}
+            if "/seasons?" in url
+            else {"data": [definition]}
+            if "/contracts?" in url
+            else progress
+        )
+        return NS(status=200, data=data)
+
+    service = GameplayService(
+        NS(request=request), NS(auth_headers=AsyncMock(return_value={})), NS()
+    )
+    with pytest.raises(GameplayUnavailable):
+        await service.battlepass(NS(puuid="synthetic", region="na"))
+
+
+@pytest.mark.parametrize("level", [0, 55])
+async def test_valid_battlepass_and_finished_pass(level):
+    seasons = [
+        {
+            "uuid": "act",
+            "type": "EAresSeasonType::Act",
+            "displayName": {"en-US": "Synthetic Act"},
+            "startTime": "2020-01-01T00:00:00",
+            "endTime": "2100-01-01T00:00:00Z",
+        }
+    ]
+    definitions = [
+        {
+            "uuid": "pass",
+            "content": {
+                "relationType": "Season",
+                "relationUuid": "act",
+                "chapters": [{"levels": [{"xp": "100", "reward": {"type": "Reward"}}]}],
+            },
+        }
+    ]
+    progress = {
+        "Contracts": [
+            {
+                "ContractDefinitionID": "pass",
+                "ProgressionLevelReached": level,
+                "ProgressionTowardsNextLevel": "50",
+            }
+        ]
+    }
+
+    async def request(method, url, **kwargs):
+        data = (
+            {"data": seasons}
+            if "/seasons?" in url
+            else {"data": definitions}
+            if "/contracts?" in url
+            else progress
+        )
+        return NS(status=200, data=data)
+
+    service = GameplayService(
+        NS(request=request), NS(auth_headers=AsyncMock(return_value={})), NS()
+    )
+    result = await service.battlepass(NS(puuid="synthetic", region="na"))
+    assert result["level"] == level
+    assert result["progress"] == 50
+    assert result["act"] == "Synthetic Act"
+    assert result["end"].tzinfo is not None
+    assert (
+        result["next_level_xp"]
+        == result["next_reward"]["xp"]
+        == (100 if level == 0 else 0)
+    )
+    assert result["next_reward"]["type"] == ("Reward" if level == 0 else "Finished")
 
 
 async def test_gameplay_normalizes_transient_auth_failures() -> None:

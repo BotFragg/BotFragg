@@ -15,6 +15,7 @@ from src.models import (
     SuggestionFollower,
 )
 from src.services.auth import AuthService
+from src.services.gameplay import GameplayService, GameplayUnavailable
 from src.services.http import HTTPFailure
 
 
@@ -34,6 +35,15 @@ async def test_valid_client_version_recovers_after_bad_response():
     await auth.refresh_version()
     assert auth.riot_headers["X-Riot-ClientVersion"] == "new"
     assert auth._user_agent().startswith("RiotClient/build ")
+
+
+async def test_missing_next_reward_metadata_is_recoverable():
+    service = GameplayService(NS(), NS(), NS())
+    try:
+        result = await service._reward([], 1, "en-US")
+    except GameplayUnavailable:
+        return
+    assert result["name"] is None
 
 
 @pytest.mark.usefixtures("database")

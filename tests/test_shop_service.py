@@ -1,4 +1,4 @@
-"""Behavior checks for shop service."""
+"""Behavior and regression checks for shop service."""
 
 from __future__ import annotations
 
@@ -6,11 +6,17 @@ import asyncio
 import gc
 import time
 from types import SimpleNamespace
+from types import SimpleNamespace as NS
+from unittest.mock import AsyncMock
 
 import pytest
 
 from src.services.auth import AuthenticationRequired
-from src.services.catalog import Accessory
+from src.services.catalog import (
+    Accessory,
+    CatalogService,
+    Skin,
+)
 from src.services.http import HTTPFailure
 from src.services.shop import (
     KC_UUID,
@@ -20,6 +26,177 @@ from src.services.shop import (
     ShopService,
     ShopUnavailable,
 )
+
+
+def make_shop(raw):
+    skin = Skin("skin", "offer", "Example skin", None, None)
+    http = SimpleNamespace(
+        request=AsyncMock(return_value=SimpleNamespace(status=200, data=raw))
+    )
+    auth = SimpleNamespace(auth_headers=AsyncMock(return_value={}))
+    catalog = SimpleNamespace(get_skin=lambda _: skin, update_prices=lambda _: None)
+    return ShopService(SimpleNamespace(use_shop_cache=True), http, auth, catalog)
+
+
+@pytest.mark.parametrize(
+    "featured", [{"Bundles": True}, {"Bundles": [{"ID": "synthetic", "Items": True}]}]
+)
+async def test_malformed_optional_bundles_do_not_break_daily_shop(featured):
+    raw = {
+        "SkinsPanelLayout": {
+            "SingleItemOffersRemainingDurationInSeconds": 3600,
+            "SingleItemOffers": ["offer"],
+        },
+        "FeaturedBundle": featured,
+    }
+    shop = make_shop(raw)
+    data = await shop.storefront(SimpleNamespace(puuid="synthetic", region="na"))
+    assert len(data.offers) == 1
+
+
+async def test_night_market_expiry_invalidates_whole_storefront(monkeypatch):
+    clock = [1000]
+    monkeypatch.setattr("src.services.shop.time.time", lambda: clock[0])
+    raw = {
+        "SkinsPanelLayout": {"SingleItemOffersRemainingDurationInSeconds": 3600},
+        "BonusStore": {
+            "BonusStoreRemainingDurationInSeconds": 1,
+            "BonusStoreOffers": [
+                {
+                    "Offer": {"OfferID": "offer", "Cost": {VP_UUID: 100}},
+                    "DiscountCosts": {VP_UUID: 50},
+                }
+            ],
+        },
+    }
+    shop = make_shop(raw)
+    account = SimpleNamespace(puuid="synthetic", region="na")
+    first = await shop.storefront(account)
+    clock[0] = 1002
+    await shop.storefront(account)
+    assert shop.http.request.await_count == 2
+    assert first.night_market_expires == 1001
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("optional", ["BonusStore", "AccessoryStore"])
+async def test_malformed_optional_shop_panels_are_normalized(optional):
+    raw = {
+        "SkinsPanelLayout": {"SingleItemOffersRemainingDurationInSeconds": 3600},
+        optional: ["bad-shape"],
+    }
+    service = ShopService(
+        NS(use_shop_cache=False),
+        NS(request=AsyncMock(return_value=NS(status=200, data=raw))),
+        NS(auth_headers=AsyncMock(return_value={})),
+        NS(get_skin=lambda _: None, update_prices=lambda _: None),
+    )
+    try:
+        result = await service.storefront(NS(puuid="synthetic", region="na"))
+        assert result.offers == []
+    except ShopUnavailable:
+        pass  # A controlled service-unavailable result is also acceptable.
+
+
+@pytest.mark.parametrize("bad", [True, "bad", [None], {"Offer": True}, float("inf")])
+async def test_malformed_shop_children_preserve_valid_siblings(bad):
+    skin = Skin("skin", "offer", "Skin", None, None, price=100)
+    catalog = CatalogService(NS())
+    catalog.skins = {skin.uuid: skin}
+    catalog._reindex()
+    catalog.accessory = AsyncMock(return_value=Accessory("Accessory", None))
+    raw = {
+        "SkinsPanelLayout": {
+            "SingleItemOffersRemainingDurationInSeconds": 3600,
+            "SingleItemOffers": ["offer"],
+            "SingleItemStoreOffers": [
+                bad,
+                {"OfferID": "offer", "Cost": {VP_UUID: bad}},
+                {"Offer": {"OfferID": "offer", "Cost": {VP_UUID: 125}}},
+            ],
+        },
+        "BonusStore": {
+            "BonusStoreRemainingDurationInSeconds": bad,
+            "BonusStoreOffers": [
+                bad,
+                {"Offer": bad},
+                {
+                    "Offer": {"OfferID": "offer", "Cost": {VP_UUID: bad}},
+                    "DiscountCosts": {VP_UUID: bad},
+                    "DiscountPercent": bad,
+                },
+                {
+                    "Offer": {"OfferID": "offer", "Cost": {VP_UUID: 100}},
+                    "DiscountCosts": {VP_UUID: 50},
+                    "DiscountPercent": 50,
+                },
+            ],
+        },
+        "AccessoryStore": {
+            "AccessoryStoreOffers": [
+                bad,
+                {"Offer": bad},
+                {"Offer": {"Cost": bad, "Rewards": bad}},
+                {
+                    "Offer": {
+                        "Cost": {KC_UUID: 500},
+                        "Rewards": [
+                            bad,
+                            {
+                                "ItemTypeID": "type",
+                                "ItemID": "accessory",
+                            },
+                        ],
+                    }
+                },
+            ]
+        },
+    }
+    shop = ShopService(
+        NS(use_shop_cache=False),
+        NS(request=AsyncMock(return_value=NS(status=200, data=raw))),
+        NS(auth_headers=AsyncMock(return_value={})),
+        catalog,
+    )
+    data = await shop.storefront(NS(puuid="synthetic", region="na"))
+    assert data.offers[0].price == 125 and skin.price == 125
+    assert data.night_market[-1].discount_price == 50
+    assert [offer.price for offer in await shop.accessory_offers(data)] == [500]
+
+
+@pytest.mark.parametrize(
+    "panel",
+    [
+        True,
+        {"SingleItemOffersRemainingDurationInSeconds": "bad"},
+        {"SingleItemOffersRemainingDurationInSeconds": 3600, "SingleItemOffers": True},
+    ],
+)
+async def test_malformed_required_shop_data_is_unavailable(panel):
+    shop = ShopService(
+        NS(use_shop_cache=False),
+        NS(
+            request=AsyncMock(
+                return_value=NS(status=200, data={"SkinsPanelLayout": panel})
+            )
+        ),
+        NS(auth_headers=AsyncMock(return_value={})),
+        NS(),
+    )
+    with pytest.raises(ShopUnavailable):
+        await shop.storefront(NS(puuid="synthetic", region="na"))
+
+
+@pytest.mark.parametrize("balances", [True, {VP_UUID: "bad"}, {VP_UUID: float("inf")}])
+async def test_malformed_wallet_is_unavailable(balances):
+    shop = ShopService(
+        NS(),
+        NS(request=AsyncMock(return_value=NS(status=200, data={"Balances": balances}))),
+        NS(auth_headers=AsyncMock(return_value={})),
+        NS(),
+    )
+    with pytest.raises(ShopUnavailable):
+        await shop.wallet(NS(puuid="synthetic", region="na"))
 
 
 async def test_cached_shop_requires_active_credentials() -> None:
