@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last updated:** October 1, 2026
+**Last updated:** October 8, 2026
 
 This policy describes data handled by BotFragg when you use its Discord bot
 features. BotFragg is an independent project and is not affiliated with Riot
