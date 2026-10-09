@@ -1278,7 +1278,7 @@ Render the selected daily, Night Market, accessory, or bundle mode.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L650)
+[Source](../src/cogs/valorant/shop.py#L656)
 
 Read the values actually offered by this message's matching select menu.
 
@@ -1286,7 +1286,7 @@ Read the values actually offered by this message's matching select menu.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L664)
+[Source](../src/cogs/valorant/shop.py#L670)
 
 Revalidate a selected featured bundle against the caller's account and view.
 
@@ -1294,7 +1294,7 @@ Revalidate a selected featured bundle against the caller's account and view.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L718)
+[Source](../src/cogs/valorant/shop.py#L724)
 
 List playable levels and chromas within Discord's select-menu limit.
 
@@ -1302,7 +1302,7 @@ List playable levels and chromas within Discord's select-menu limit.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L751)
+[Source](../src/cogs/valorant/shop.py#L757)
 
 Open a private level/chroma menu for a skin offered in this message.
 
@@ -1310,7 +1310,7 @@ Open a private level/chroma menu for a skin offered in this message.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L805)
+[Source](../src/cogs/valorant/shop.py#L811)
 
 Privately return a selected video only when it belongs to that skin.
 
@@ -1318,7 +1318,7 @@ Privately return a selected video only when it belongs to that skin.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L866)
+[Source](../src/cogs/valorant/shop.py#L872)
 
 Validate the selected account and reopen the corresponding shop mode.
 
@@ -1326,7 +1326,7 @@ Validate the selected account and reopen the corresponding shop mode.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L882)
+[Source](../src/cogs/valorant/shop.py#L888)
 
 Display discounted Night Market offers for the selected Riot account.
 
@@ -1334,7 +1334,7 @@ Display discounted Night Market offers for the selected Riot account.
 
 **Scope:** `src/cogs/valorant/shop.py` · `NightMarketCog`
 
-[Source](../src/cogs/valorant/shop.py#L885)
+[Source](../src/cogs/valorant/shop.py#L891)
 
 Bind the shared shop, account, and emoji services.
 
@@ -1342,7 +1342,7 @@ Bind the shared shop, account, and emoji services.
 
 **Scope:** `src/cogs/valorant/shop.py` · `NightMarketCog`
 
-[Source](../src/cogs/valorant/shop.py#L896)
+[Source](../src/cogs/valorant/shop.py#L902)
 
 Fetch and render Night Market offers or report that none are active.
 
@@ -1350,7 +1350,7 @@ Fetch and render Night Market offers or report that none are active.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L943)
+[Source](../src/cogs/valorant/shop.py#L949)
 
 Display the selected account's three VALORANT wallet balances.
 
@@ -1358,7 +1358,7 @@ Display the selected account's three VALORANT wallet balances.
 
 **Scope:** `src/cogs/valorant/shop.py` · `BalanceCog`
 
-[Source](../src/cogs/valorant/shop.py#L946)
+[Source](../src/cogs/valorant/shop.py#L952)
 
 Bind the shared shop and user-preference services.
 
@@ -1366,7 +1366,7 @@ Bind the shared shop and user-preference services.
 
 **Scope:** `src/cogs/valorant/shop.py` · `BalanceCog`
 
-[Source](../src/cogs/valorant/shop.py#L957)
+[Source](../src/cogs/valorant/shop.py#L963)
 
 Fetch and display VP, Radianite, and Kingdom Credit balances.
 
@@ -1374,7 +1374,7 @@ Fetch and display VP, Radianite, and Kingdom Credit balances.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L1012)
+[Source](../src/cogs/valorant/shop.py#L1018)
 
 Register the shop, Night Market, and wallet-balance cogs.
 
@@ -3005,7 +3005,7 @@ Hold account-specific shop offers and separate display/cache expiries.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L79)
+[Source](../src/services/shop.py#L80)
 
 Retrieve and normalize Riot storefronts and wallet balances.
 
@@ -3013,7 +3013,7 @@ Retrieve and normalize Riot storefronts and wallet balances.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L82)
+[Source](../src/services/shop.py#L83)
 
 Bind dependencies and initialize storefront data and per-account locks.
 
@@ -3021,7 +3021,7 @@ Bind dependencies and initialize storefront data and per-account locks.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L97)
+[Source](../src/services/shop.py#L98)
 
 Return the shared in-process lock used for one account's shop requests.
 
@@ -3029,7 +3029,7 @@ Return the shared in-process lock used for one account's shop requests.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L101)
+[Source](../src/services/shop.py#L102)
 
 Remove an account's cached storefront after coordinating with active fetches.
 
@@ -3037,7 +3037,7 @@ Remove an account's cached storefront after coordinating with active fetches.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L106)
+[Source](../src/services/shop.py#L107)
 
 Release expired storefronts, including accounts no longer queried.
 
@@ -3045,7 +3045,7 @@ Release expired storefronts, including accounts no longer queried.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L116)
+[Source](../src/services/shop.py#L117)
 
 Return a fresh or unexpired cached storefront for the linked account.
 
@@ -3053,7 +3053,7 @@ Return a fresh or unexpired cached storefront for the linked account.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L136)
+[Source](../src/services/shop.py#L137)
 
 Fetch, repair claims, normalize all shop offers, and cache the result.
 
@@ -3061,7 +3061,7 @@ Fetch, repair claims, normalize all shop offers, and cache the result.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L295)
+[Source](../src/services/shop.py#L304)
 
 Request one account's regional storefront.
 
@@ -3069,7 +3069,7 @@ Request one account's regional storefront.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L306)
+[Source](../src/services/shop.py#L315)
 
 Return VP, Radianite, and Kingdom Credit balances for an account.
 
@@ -3077,7 +3077,7 @@ Return VP, Radianite, and Kingdom Credit balances for an account.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L330)
+[Source](../src/services/shop.py#L339)
 
 Resolve the storefront's accessory rewards and their Kingdom Credit prices.
 
@@ -3085,7 +3085,7 @@ Resolve the storefront's accessory rewards and their Kingdom Credit prices.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L357)
+[Source](../src/services/shop.py#L366)
 
 Extract the raw single-item store offers across Riot response shapes.
 
@@ -3093,7 +3093,7 @@ Extract the raw single-item store offers across Riot response shapes.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L364)
+[Source](../src/services/shop.py#L373)
 
 Build a skin-offer-to-VP-price lookup from the storefront payload.
 
@@ -3101,7 +3101,7 @@ Build a skin-offer-to-VP-price lookup from the storefront payload.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L381)
+[Source](../src/services/shop.py#L390)
 
 Raised when Riot does not return a usable storefront or wallet.
 
@@ -3109,7 +3109,7 @@ Raised when Riot does not return a usable storefront or wallet.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L385)
+[Source](../src/services/shop.py#L394)
 
 Parse an integer only when it meets the requested minimum.
 
@@ -3117,7 +3117,7 @@ Parse an integer only when it meets the requested minimum.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L396)
+[Source](../src/services/shop.py#L405)
 
 Treat malformed optional mappings as absent.
 
@@ -3125,7 +3125,7 @@ Treat malformed optional mappings as absent.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L401)
+[Source](../src/services/shop.py#L410)
 
 Keep only mapping entries from an optional Riot list.
 
@@ -3133,7 +3133,7 @@ Keep only mapping entries from an optional Riot list.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L410)
+[Source](../src/services/shop.py#L419)
 
 Return a price only when the source entry explicitly uses VALORANT Points.
 

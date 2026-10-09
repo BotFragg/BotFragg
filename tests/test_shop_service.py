@@ -84,6 +84,42 @@ async def test_incomplete_catalog_is_not_cached_as_a_complete_shop(known_offer):
     assert http.request.await_count == 2
 
 
+@pytest.mark.parametrize("duration", [0, 1, 259200])
+async def test_accessory_expiry_is_separate_and_invalidates_storefront(
+    monkeypatch, duration
+):
+    clock = [1000]
+    monkeypatch.setattr("src.services.shop.time.time", lambda: clock[0])
+    shop = make_shop(
+        {
+            "SkinsPanelLayout": {"SingleItemOffersRemainingDurationInSeconds": 3600},
+            "AccessoryStore": {"AccessoryStoreRemainingDurationInSeconds": duration},
+        }
+    )
+    account = NS(puuid="synthetic", region="na")
+    first = await shop.storefront(account)
+    assert first.expires == 4600
+    assert first.accessory_expires == 1000 + duration
+    assert first.cache_expires == min(4600, 1000 + duration)
+    clock[0] = first.cache_expires
+    await shop.storefront(account)
+    assert shop.http.request.await_count == 2
+
+
+@pytest.mark.parametrize("duration", [None, True, -1, "bad", [], float("inf")])
+async def test_invalid_accessory_duration_preserves_daily_shop(monkeypatch, duration):
+    monkeypatch.setattr("src.services.shop.time.time", lambda: 1000)
+    shop = make_shop(
+        {
+            "SkinsPanelLayout": {"SingleItemOffersRemainingDurationInSeconds": 3600},
+            "AccessoryStore": {"AccessoryStoreRemainingDurationInSeconds": duration},
+        }
+    )
+    data = await shop.storefront(NS(puuid="synthetic", region="na"))
+    assert data.accessory_expires is None
+    assert data.expires == data.cache_expires == 4600
+
+
 async def test_night_market_expiry_invalidates_whole_storefront(monkeypatch):
     clock = [1000]
     monkeypatch.setattr("src.services.shop.time.time", lambda: clock[0])

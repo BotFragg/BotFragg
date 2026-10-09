@@ -597,7 +597,13 @@ class ShopCog(commands.Cog):
                         interaction.locale,
                         "shop-accessory-header",
                         username=username,
-                        timestamp=timestamp(data.expires),
+                        timestamp=(
+                            timestamp(data.accessory_expires)
+                            if data.accessory_expires is not None
+                            else self.bot.translator.text(
+                                interaction.locale, "common-unknown"
+                            )
+                        ),
                     ),
                 )
             ]

@@ -1048,10 +1048,12 @@ async def test_shop_deletion_cleanup_waits_for_storefront_headers_in_flight() ->
     assert account.puuid not in service._cache
 
 
-async def test_accessory_shop_renders_catalog_item_without_changing_output(
+@pytest.mark.parametrize("accessory_expiry", [None, 4_000_259_200])
+async def test_accessory_shop_renders_catalog_item_and_own_expiry(
     monkeypatch: pytest.MonkeyPatch,
+    accessory_expiry,
 ) -> None:
-    """Verify that accessory shop renders catalog item without changing output."""
+    """Render accessory metadata with its own expiry or a localized fallback."""
     item = Accessory("Buddy", "https://example.com/buddy.png", "Limited edition")
     data = ShopData(
         offers=[],
@@ -1066,6 +1068,7 @@ async def test_accessory_shop_renders_catalog_item_without_changing_output(
         night_market=[],
         expires=4_000_000_000,
         night_market_expires=None,
+        accessory_expires=accessory_expiry,
     )
     account = SimpleNamespace(puuid="account", username="One#NA")
     account.user = NS(hide_ign=False)
@@ -1131,6 +1134,13 @@ async def test_accessory_shop_renders_catalog_item_without_changing_output(
 
     embeds = rendered["embeds"]
     assert len(embeds) == 2
+    expected_expiry = (
+        f"<t:{accessory_expiry}:R>"
+        if accessory_expiry is not None
+        else TEST_TRANSLATOR.text(TEST_LOCALE, "common-unknown")
+    )
+    assert expected_expiry in embeds[0].description
+    assert "<t:4000000000:R>" not in embeds[0].description
     assert embeds[1].title == "Buddy"
     assert embeds[1].description == "`Limited edition`\n\nKC **1,500**"
     assert embeds[1].url == item.icon

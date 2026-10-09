@@ -74,6 +74,7 @@ class ShopData:
     featured_bundles: list[FeaturedBundle] = field(default_factory=list)
     cache_expires: int | None = None
     night_market_incomplete: bool = False
+    accessory_expires: int | None = None
 
 
 class ShopService:
@@ -269,7 +270,16 @@ class ShopService:
                     expires=min(expiry_candidates) if expiry_candidates else None,
                 )
             )
+        accessory = _mapping(raw.get("AccessoryStore"))
+        accessory_duration = _int_at_least(
+            accessory.get("AccessoryStoreRemainingDurationInSeconds"), 0
+        )
+        accessory_expires = (
+            now + accessory_duration if accessory_duration is not None else None
+        )
         cache_expiries = [expires]
+        if accessory_expires is not None:
+            cache_expiries.append(accessory_expires)
         if night_expires is not None:
             cache_expiries.append(night_expires)
         cache_expiries.extend(
@@ -277,15 +287,14 @@ class ShopService:
         )
         data = ShopData(
             offers=offers,
-            accessory=_rows(
-                _mapping(raw.get("AccessoryStore")).get("AccessoryStoreOffers")
-            ),
+            accessory=_rows(accessory.get("AccessoryStoreOffers")),
             night_market=night_market,
             expires=expires,
             night_market_expires=night_expires,
             featured_bundles=featured_bundles,
             cache_expires=min(cache_expiries),
             night_market_incomplete=night_market_incomplete,
+            accessory_expires=accessory_expires,
         )
         self.catalog.update_prices(prices)
         if self.config.use_shop_cache and not night_market_incomplete:
