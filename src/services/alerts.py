@@ -205,6 +205,7 @@ async def run_daily_alerts(
             if user
             else None
         )
+        notified_expired = False
         for account in user_accounts:
             has_alerts = account.puuid in alerted_accounts
             send_daily_shop = bool(
@@ -221,10 +222,15 @@ async def run_daily_alerts(
                 )
             except AuthenticationRequired:
                 summary["expired_logins"] += 1
-                if not dry_run and await _retry_lookup(account.persisted_row().exists):
+                if (
+                    not dry_run
+                    and not notified_expired
+                    and await _retry_lookup(account.persisted_row().exists)
+                ):
                     summary["delivery_failures"] += await on_credentials_expired(
                         user_id
                     )
+                    notified_expired = True
                 continue
             except ShopUnavailable:
                 summary["shop_failures"] += 1

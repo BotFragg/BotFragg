@@ -39,8 +39,9 @@ bounded retries described below.
 Daily runs report `expired_logins`, `shop_failures`, and `delivery_failures`
 separately; `failures` is their sum. A failed shop lookup or notification delivery
 makes the daily job unhealthy even if other accounts succeed. Expired credentials
-alone do not: those users receive a re-login notice. An unsuccessful notice counts
-as a delivery failure. Recoverable per-account failures do not stop the loop or
+alone do not: those users receive one re-login notice per daily run, even when
+several accounts have expired. An unsuccessful notice counts as one delivery
+failure. Recoverable per-account failures do not stop the loop or
 re-send the day's successful notifications; health recovers after a clean daily
 run. Check Discord DM permissions as well as upstream availability when investigating.
 

@@ -449,6 +449,54 @@ async def test_daily_summary_separates_credentials_and_delivery_failures(dry_run
         notice.assert_awaited_once_with(user.id)
 
 
+@pytest.mark.parametrize("dry_run", [False, True])
+@pytest.mark.parametrize("notice_failure", [0, 1])
+async def test_expired_login_notice_is_once_per_user_per_run(
+    backend_database, dry_run, notice_failure
+):
+    skin = str(UUID(int=1))
+    for user_id, account_ids in (
+        (101, ["expired-1", "expired-2", "expired-3", "valid"]),
+        (102, ["expired-4"]),
+    ):
+        user = await User.create(id=user_id, current_account_id=account_ids[0])
+        for account_id in account_ids:
+            account = await Account.create(
+                puuid=account_id, user=user, username="Synthetic#TEST"
+            )
+            await Alert.create(account=account, skin_uuid=skin)
+
+    async def storefront(account, *, use_cache):
+        if account.puuid != "valid":
+            raise AuthenticationRequired("Synthetic expired login")
+        return shop_data(skin)
+
+    notice = AsyncMock(return_value=notice_failure)
+    delivery = AsyncMock(return_value=0)
+    for _ in range(2):
+        summary = await run_daily_alerts(
+            NS(storefront=storefront),
+            alert_concurrency=10,
+            delay_between_alerts_seconds=0,
+            dry_run=dry_run,
+            on_shop=delivery,
+            on_credentials_expired=notice,
+        )
+        assert summary["expired_logins"] == 4
+        assert summary["shops"] == summary["alerts"] == 1
+        assert summary["delivery_failures"] == (0 if dry_run else 2 * notice_failure)
+        assert summary["failures"] == 4 + summary["delivery_failures"]
+        if dry_run:
+            notice.assert_not_awaited()
+            delivery.assert_not_awaited()
+        else:
+            assert sorted(call.args[0] for call in notice.await_args_list) == [101, 102]
+            delivery.assert_awaited_once()
+            assert delivery.await_args.args[2].puuid == "valid"
+        notice.reset_mock()
+        delivery.reset_mock()
+
+
 @pytest.mark.usefixtures("database")
 async def test_daily_alert_run_preserves_selection_summary_and_batches_alert_presence(
     monkeypatch: pytest.MonkeyPatch,
