@@ -7,6 +7,10 @@
 - Retry daily alert lookups after Riot rate limits and transient database errors without replaying delivered notifications.
 - Keep unreadable stored credentials intact and isolate their failure to the affected account.
 - Reject incomplete daily shop catalogs instead of caching empty or partial results.
+- Retry saving rotated credentials before exchanging a refresh token again after a database failure.
+- Prevent commands running during data deletion from recreating personal analytics records.
+- Report incomplete Night Market catalogs as unavailable and fetch them again after catalog recovery.
+- Retry saving a shard-status message ID without posting a duplicate after a database failure.
 
 ## [1.2.0] - 2026-10-08
 

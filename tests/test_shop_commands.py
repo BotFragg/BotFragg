@@ -44,6 +44,37 @@ from tests.helpers import (
 )
 
 
+@pytest.mark.parametrize("mode", ["command", "night", "nightmarket"])
+async def test_incomplete_night_market_reports_unavailable(monkeypatch, mode):
+    account = NS(puuid="synthetic")
+    monkeypatch.setattr(
+        shop_module, "selected_account", AsyncMock(return_value=account)
+    )
+    monkeypatch.setattr(
+        shop_module, "account_for_user", AsyncMock(return_value=account)
+    )
+    data = ShopData([], [], [], 4_000_000_000, None, night_market_incomplete=True)
+    bot = _localized_bot(
+        shop=NS(storefront=AsyncMock(return_value=data)),
+        register_component=lambda *_args: None,
+    )
+    interaction = _localized_interaction(
+        user=NS(id=1),
+        response=NS(defer=AsyncMock(), is_done=lambda: True),
+        followup=NS(send=AsyncMock()),
+    )
+    if mode == "command":
+        cog = NightMarketCog(bot)
+        await cog.nightmarket.callback(cog, interaction)
+    else:
+        await ShopCog(bot).shop_mode(interaction, f"{mode},synthetic")
+    sent = interaction.followup.send.call_args.kwargs
+    assert sent["ephemeral"] is True
+    assert sent["embed"].description == TEST_TRANSLATOR.text(
+        TEST_LOCALE, "error-riot-services-unavailable"
+    )
+
+
 async def test_empty_shared_shop_sends_a_view(monkeypatch):
     from src.cogs.valorant.shop import ShopCog
     from src.services.shop import ShopData

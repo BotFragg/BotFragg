@@ -48,6 +48,8 @@ class ExtraCog(commands.Cog):
         self._latest_updates_expires = 0.0
         self._latest_updates_lock = asyncio.Lock()
         self.source_line_count: int | None
+        # shortcut: pending IDs survive only this cog; durable recovery needs an outbox.
+        self._pending_status_message: int | None = None
         try:
             self.source_line_count = sum(
                 len(path.read_text(encoding="utf-8").splitlines())
@@ -474,7 +476,12 @@ class ExtraCog(commands.Cog):
                     value=f"**Latency:** {latency}\n**Servers:** {guilds}",
                 )
             card.timestamp = datetime.now(UTC)
-            saved_message_id = await get_shard_status_message_id(channel_id)
+            saved_message_id = self._pending_status_message
+            if saved_message_id is not None:
+                await save_shard_status_message(channel_id, saved_message_id)
+                self._pending_status_message = None
+            else:
+                saved_message_id = await get_shard_status_message_id(channel_id)
             if saved_message_id:
                 try:
                     message = await channel.fetch_message(saved_message_id)
@@ -483,7 +490,9 @@ class ExtraCog(commands.Cog):
                 except discord.NotFound:
                     pass
             message = await channel.send(embed=card)
+            self._pending_status_message = message.id
             await save_shard_status_message(channel_id, message.id)
+            self._pending_status_message = None
         except discord.HTTPException:
             self.job_health.failure("shard_status")
             return

@@ -2,10 +2,97 @@
 
 from __future__ import annotations
 
+import asyncio
+
 import pytest
 
 from src.models import CommandInvocation
-from src.services.analytics import command_stats, record_command_invocation
+from src.services.accounts import delete_user_data
+from src.services.analytics import (
+    command_analytics,
+    command_stats,
+    record_command_invocation,
+)
+
+
+@pytest.mark.usefixtures("database")
+async def test_deletion_suppresses_prior_commands_but_allows_new_commands():
+    async with command_analytics(101) as cancelled:
+        await delete_user_data(101)
+        await record_command_invocation(
+            command="shop",
+            user_id=101,
+            guild_id=None,
+            channel_id=None,
+            cancelled=cancelled,
+        )
+    assert not await CommandInvocation.exists(user_id=101)
+    async with command_analytics(101) as cancelled:
+        await record_command_invocation(
+            command="ping",
+            user_id=101,
+            guild_id=None,
+            channel_id=None,
+            cancelled=cancelled,
+        )
+    assert await CommandInvocation.filter(user_id=101).count() == 1
+
+
+@pytest.mark.usefixtures("database")
+async def test_deletion_waits_for_an_active_analytics_insert(monkeypatch):
+    started, resume = asyncio.Event(), asyncio.Event()
+    original = CommandInvocation.create
+
+    async def delayed_insert(**kwargs):
+        started.set()
+        await resume.wait()
+        return await original(**kwargs)
+
+    monkeypatch.setattr(CommandInvocation, "create", delayed_insert)
+    async with command_analytics(102) as cancelled:
+        recording = asyncio.create_task(
+            record_command_invocation(
+                command="shop",
+                user_id=102,
+                guild_id=None,
+                channel_id=None,
+                cancelled=cancelled,
+            )
+        )
+        await started.wait()
+        deleting = asyncio.create_task(delete_user_data(102))
+        await asyncio.sleep(0)
+        assert not deleting.done()
+        resume.set()
+        await asyncio.gather(recording, deleting)
+    assert not await CommandInvocation.exists(user_id=102)
+
+
+@pytest.mark.usefixtures("database")
+async def test_failed_deletion_does_not_suppress_command_analytics(monkeypatch):
+    from tortoise.queryset import QuerySet
+
+    from src.models import User
+
+    original = QuerySet.delete
+
+    def failed_delete(query):
+        if query.model is User:
+            raise RuntimeError("Synthetic failed deletion")
+        return original(query)
+
+    monkeypatch.setattr(QuerySet, "delete", failed_delete)
+    async with command_analytics(103) as cancelled:
+        with pytest.raises(RuntimeError, match="failed deletion"):
+            await delete_user_data(103)
+        await record_command_invocation(
+            command="shop",
+            user_id=103,
+            guild_id=None,
+            channel_id=None,
+            cancelled=cancelled,
+        )
+    assert await CommandInvocation.exists(user_id=103)
 
 
 @pytest.mark.usefixtures("database")

@@ -16,6 +16,8 @@ import discord
 import pytest
 from cryptography.fernet import Fernet
 from tortoise import Tortoise, connections
+from tortoise.exceptions import DBConnectionError
+from tortoise.queryset import UpdateQuery
 
 from src.cogs.valorant.alerts import AlertsCog
 from src.cogs.valorant.login import LoginCog
@@ -32,7 +34,7 @@ from src.services.auth import (
     token_expiry,
 )
 from src.services.crypto import AuthVault
-from src.services.http import HTTPFailure
+from src.services.http import HTTPFailure, HTTPResult
 from src.services.shop import (
     ShopData,
     ShopService,
@@ -71,6 +73,122 @@ def auth_service(http=None):
 def refresh_jwt(**claims):
     payload = base64.urlsafe_b64encode(json.dumps(claims).encode()).decode().rstrip("=")
     return f"synthetic.{payload}.synthetic"
+
+
+@pytest.mark.usefixtures("database")
+@pytest.mark.parametrize("committed, failures", [(False, 1), (False, 4), (True, 1)])
+async def test_rotated_refresh_is_saved_without_repeating_exchange(
+    monkeypatch, committed, failures
+):
+    service = auth_service(
+        NS(
+            request=AsyncMock(
+                side_effect=[
+                    HTTPResult(
+                        200,
+                        {
+                            "access_token": _fake_access_token(),
+                            "refresh_token": "rotated",
+                        },
+                    ),
+                    HTTPResult(200, {"entitlements_token": "new-ent"}),
+                ]
+            )
+        )
+    )
+    user = await User.create(id=110)
+    account = await Account.create(
+        puuid="rotated",
+        user=user,
+        username="Synthetic#TEST",
+        auth_blob=service.vault.encrypt(
+            {"rso": _fake_access_token(-1), "refresh_token": "old"}
+        ),
+    )
+    original = UpdateQuery._execute
+    failed = 0
+
+    async def interrupted_save(query):
+        nonlocal failed
+        if query.model is Account and failed < failures:
+            failed += 1
+            if committed:
+                await original(query)
+            raise DBConnectionError("Synthetic interrupted save")
+        return await original(query)
+
+    monkeypatch.setattr(UpdateQuery, "_execute", interrupted_save)
+    for _ in range(failures):
+        with pytest.raises(DBConnectionError):
+            await service.auth_headers(account)
+    headers = await service.auth_headers(account)
+    saved = await Account.get(puuid=account.puuid)
+    assert headers["X-Riot-Entitlements-JWT"] == "new-ent"
+    assert service.vault.decrypt(saved.auth_blob)["refresh_token"] == "rotated"  # noqa: S105
+    assert service.http.request.await_count == 2
+
+
+@pytest.mark.usefixtures("database")
+@pytest.mark.parametrize("action", ["relogin", "logout", "delete"])
+async def test_pending_refresh_respects_newer_credentials_and_deletion(
+    monkeypatch, action
+):
+    service = auth_service(
+        NS(
+            request=AsyncMock(
+                return_value=HTTPResult(
+                    200,
+                    {
+                        "access_token": _fake_access_token(),
+                        "refresh_token": "rotated",
+                    },
+                )
+            )
+        )
+    )
+    owner = await User.create(id=111)
+    account = await Account.create(
+        puuid="pending",
+        user=owner,
+        username="Synthetic#TEST",
+        auth_blob=service.vault.encrypt(
+            {"rso": _fake_access_token(-1), "refresh_token": "old"}
+        ),
+    )
+    original = UpdateQuery._execute
+    failed = False
+
+    async def interrupted_save(query):
+        nonlocal failed
+        if query.model is Account and not failed:
+            failed = True
+            raise DBConnectionError("Synthetic interrupted save")
+        return await original(query)
+
+    monkeypatch.setattr(UpdateQuery, "_execute", interrupted_save)
+    with pytest.raises(DBConnectionError):
+        await service.auth_headers(account)
+    assert service._pending_refresh
+    if action == "relogin":
+        await Account.filter(puuid=account.puuid).update(
+            auth_version=1,
+            auth_blob=service.vault.encrypt(
+                {"rso": _fake_access_token(), "ent": "latest"}
+            ),
+        )
+        assert (await service.auth_headers(account))[
+            "X-Riot-Entitlements-JWT"
+        ] == "latest"
+    else:
+        if action == "logout":
+            await service.clear_credentials(account)
+        else:
+            async with service.cancel_logins(owner.id):
+                await delete_user_data(owner.id)
+        with pytest.raises(AuthenticationRequired):
+            await service.auth_headers(account)
+    assert not service._pending_refresh
+    service.http.request.assert_awaited_once()
 
 
 @pytest.mark.usefixtures("database")

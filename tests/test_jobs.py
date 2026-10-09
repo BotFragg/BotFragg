@@ -15,6 +15,7 @@ import discord
 import pytest
 from tortoise.exceptions import DBConnectionError
 
+from src.cogs import extra as extra_module
 from src.cogs.extra import ExtraCog
 from src.cogs.tasks import TasksCog
 from src.services import alerts as alert_service
@@ -22,6 +23,35 @@ from src.services.http import HTTPFailure
 from tests.helpers import (
     _localized_bot,
 )
+
+
+async def test_shard_status_retries_saved_message_id_without_posting_twice(monkeypatch):
+    class Channel(discord.abc.Messageable):
+        async def _get_channel(self):
+            return self
+
+    channel = Channel()
+    message = NS(id=111, edit=AsyncMock())
+    channel.send = AsyncMock(return_value=message)
+    channel.fetch_message = AsyncMock(return_value=message)
+    save = AsyncMock(side_effect=[DBConnectionError("Synthetic failed save"), None])
+    monkeypatch.setattr(
+        extra_module, "get_shard_status_message_id", AsyncMock(return_value=None)
+    )
+    monkeypatch.setattr(extra_module, "save_shard_status_message", save)
+    cog = ExtraCog(
+        NS(
+            config=NS(shard_status_channel_id=101),
+            shards={},
+            get_channel=lambda _: channel,
+        )
+    )
+    with pytest.raises(DBConnectionError):
+        await cog._update_shard_status()
+    await cog._update_shard_status()
+    channel.send.assert_awaited_once()
+    message.edit.assert_awaited_once()
+    assert save.await_count == 2 and save.await_args.args == (101, 111)
 
 
 @pytest.mark.usefixtures("database")

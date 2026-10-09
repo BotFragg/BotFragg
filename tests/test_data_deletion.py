@@ -15,6 +15,7 @@ import discord
 import pytest
 from cryptography.fernet import Fernet
 
+from src.bot import BotFraggCommandTree
 from src.cogs.events import EventsCog
 from src.cogs.valorant.logout import LogoutCog
 from src.localization import BotFraggTranslator
@@ -75,6 +76,71 @@ async def test_deletedata_completion_does_not_recreate_personal_data():
         interaction, SimpleNamespace(qualified_name="deletedata")
     )
     assert not await CommandInvocation.exists(user_id=102)
+
+
+@pytest.mark.usefixtures("database")
+@pytest.mark.parametrize(
+    "case", ["success", "failure", "missing", "deletedata", "autocomplete"]
+)
+async def test_command_tree_records_only_successful_commands(monkeypatch, case):
+    invoke = AsyncMock()
+    monkeypatch.setattr(discord.app_commands.CommandTree, "_call", invoke)
+    interaction = NS(
+        type=discord.InteractionType.autocomplete
+        if case == "autocomplete"
+        else discord.InteractionType.application_command,
+        data={"name": "localized-name"},
+        user=NS(id=104),
+        command=None
+        if case == "missing"
+        else NS(
+            qualified_name="deletedata" if case == "deletedata" else "settings privacy"
+        ),
+        command_failed=case == "failure",
+        guild_id=105,
+        channel_id=106,
+    )
+    await object.__new__(BotFraggCommandTree)._call(interaction)
+    invoke.assert_awaited_once()
+    rows = await CommandInvocation.filter(user_id=104)
+    assert len(rows) == (1 if case == "success" else 0)
+    if rows:
+        assert (rows[0].command, rows[0].guild_id, rows[0].channel_id) == (
+            "settings privacy",
+            105,
+            106,
+        )
+
+
+@pytest.mark.usefixtures("database")
+async def test_command_tree_suppresses_completion_after_concurrent_deletion(
+    monkeypatch,
+):
+    started, resume = asyncio.Event(), asyncio.Event()
+
+    async def invoke(tree, interaction):
+        started.set()
+        await resume.wait()
+
+    monkeypatch.setattr(discord.app_commands.CommandTree, "_call", invoke)
+    tree = object.__new__(BotFraggCommandTree)
+    interaction = NS(
+        type=discord.InteractionType.application_command,
+        data={"name": "shop"},
+        user=NS(id=105),
+        guild_id=None,
+        channel_id=None,
+        command=NS(qualified_name="shop"),
+        command_failed=False,
+    )
+    pending = asyncio.create_task(tree._call(interaction))
+    await started.wait()
+    await delete_user_data(105)
+    resume.set()
+    await pending
+    assert not await CommandInvocation.exists(user_id=105)
+    await tree._call(interaction)
+    assert await CommandInvocation.filter(user_id=105).count() == 1
 
 
 @pytest.mark.asyncio

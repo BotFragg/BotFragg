@@ -73,6 +73,7 @@ class ShopData:
     night_market_expires: int | None
     featured_bundles: list[FeaturedBundle] = field(default_factory=list)
     cache_expires: int | None = None
+    night_market_incomplete: bool = False
 
 
 class ShopService:
@@ -180,9 +181,12 @@ class ShopService:
         )
         night_expires = now + night_duration if night_duration is not None else None
         night_market: list[Offer] = []
+        night_market_incomplete = False
         for entry in _rows(bonus.get("BonusStoreOffers")):
             offer = _mapping(entry.get("Offer"))
             skin = self.catalog.get_skin(str(offer.get("OfferID") or ""))
+            if offer.get("OfferID") and skin is None:
+                night_market_incomplete = True
             price = _vp_price(offer.get("Cost"), VP_UUID)
             discounted = _vp_price(entry.get("DiscountCosts"), VP_UUID)
             percent = _int_at_least(entry.get("DiscountPercent", 0), 0)
@@ -281,9 +285,10 @@ class ShopService:
             night_market_expires=night_expires,
             featured_bundles=featured_bundles,
             cache_expires=min(cache_expiries),
+            night_market_incomplete=night_market_incomplete,
         )
         self.catalog.update_prices(prices)
-        if self.config.use_shop_cache:
+        if self.config.use_shop_cache and not night_market_incomplete:
             self._cache[account.puuid] = data
         return data
 

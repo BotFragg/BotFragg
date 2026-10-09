@@ -108,6 +108,41 @@ async def test_night_market_expiry_invalidates_whole_storefront(monkeypatch):
     assert first.night_market_expires == 1001
 
 
+async def test_incomplete_night_market_preserves_daily_and_recovers_without_cache_expiry():
+    day = Skin("day", "day-offer", "Day", None, None)
+    night = Skin("night", "night-offer", "Night", None, None)
+    catalog = CatalogService(NS())
+    catalog.skins = {day.uuid: day}
+    catalog._reindex()
+    shop = make_shop(
+        {
+            "SkinsPanelLayout": {
+                "SingleItemOffersRemainingDurationInSeconds": 86400,
+                "SingleItemOffers": [day.offer_uuid],
+            },
+            "BonusStore": {
+                "BonusStoreRemainingDurationInSeconds": 3600,
+                "BonusStoreOffers": [
+                    {
+                        "Offer": {"OfferID": night.offer_uuid, "Cost": {VP_UUID: 100}},
+                        "DiscountCosts": {VP_UUID: 50},
+                        "DiscountPercent": 50,
+                    }
+                ],
+            },
+        }
+    )
+    shop.catalog = catalog
+    account = NS(puuid="synthetic", region="na")
+    first = await shop.storefront(account)
+    assert len(first.offers) == 1 and first.night_market_incomplete
+    catalog.skins[night.uuid] = night
+    catalog._reindex()
+    recovered = await shop.storefront(account)
+    assert not recovered.night_market_incomplete and len(recovered.night_market) == 1
+    assert shop.http.request.await_count == 2
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize("optional", ["BonusStore", "AccessoryStore"])
 async def test_malformed_optional_shop_panels_are_normalized(optional):

@@ -9,7 +9,6 @@ from discord import app_commands
 from discord.ext import commands
 
 from ..bot import BotFraggBot
-from ..services.analytics import record_command_invocation
 from ..views import timestamp
 from ..views.ui import embed
 
@@ -29,7 +28,7 @@ class EventsCog(commands.Cog):
         interaction: discord.Interaction,
         command: app_commands.Command | app_commands.ContextMenu,
     ) -> None:
-        """Log completed app commands and persist their user, guild, and channel IDs."""
+        """Log completed commands; the command tree coordinates analytics with deletion."""
         log.info(
             "Application command completed",
             extra={
@@ -37,17 +36,6 @@ class EventsCog(commands.Cog):
                 "context": "guild" if interaction.guild_id else "dm",
             },
         )
-        if command.qualified_name == "deletedata":
-            return
-        try:
-            await record_command_invocation(
-                command=command.qualified_name,
-                user_id=interaction.user.id,
-                guild_id=interaction.guild_id,
-                channel_id=interaction.channel_id,
-            )
-        except Exception:
-            log.exception("Could not record command analytics")
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild) -> None:

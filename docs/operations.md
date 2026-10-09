@@ -52,6 +52,17 @@ Unreadable encrypted credentials count as a shop failure for that account and
 remain stored for recovery with the matching key. Incomplete skin catalogs also
 count as shop failures and are not cached as complete daily shops.
 
+Returned refresh credentials stay encrypted in memory until their database save
+succeeds; a later lookup retries that save before exchanging the refresh token
+again. Shard-status updates similarly retain a posted message ID until it is saved.
+Restarting during either save failure loses that pending state and can require a
+new login or leave a duplicate status message. Incomplete Night Market catalogs
+leave the daily shop usable, report Night Market as unavailable, and are not cached.
+
+Command analytics writes and personal-data deletion coordinate within one bot
+process. Commands active during a successful deletion cannot recreate their
+analytics records. Multiple bot processes require shared deletion coordination.
+
 Structured logs include background-job durations, daily run counts, failures,
 and health-state transitions. The existing privacy filter applies to these
 logs and optional GlitchTip telemetry. Frequent log/shard completion messages

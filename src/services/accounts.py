@@ -14,6 +14,7 @@ from ..models import (
     SuggestionFollower,
     User,
 )
+from .analytics import deleting_analytics
 
 _USER_PREFERENCE_FIELDS = frozenset(
     {"daily_shop_enabled", "hide_ign", "others_can_view_shop"}
@@ -181,7 +182,7 @@ async def select_account(discord_id: int, account: Account) -> None:
 
 async def delete_user_data(discord_id: int) -> bool:
     """Delete the user's stored BotFragg records and all linked Riot accounts."""
-    async with in_transaction():
+    async with deleting_analytics(discord_id), in_transaction():
         removed = await CommandInvocation.filter(user_id=discord_id).delete()
         removed += await SuggestionFollower.filter(user_id=discord_id).delete()
         removed += await Suggestion.filter(author_id=discord_id).delete()

@@ -10,6 +10,7 @@ import time
 from collections.abc import AsyncIterator, Mapping
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import Any, NotRequired, TypedDict
 from urllib.parse import parse_qs, urlencode, urlparse
 from weakref import WeakValueDictionary
@@ -75,6 +76,8 @@ class AuthService:
             WeakValueDictionary()
         )
         self._version: dict[str, Any] = {}
+        # shortcut: pending saves survive only this process; restart recovery needs durable storage.
+        self._pending_refresh: dict[tuple[str, int, datetime], tuple[int, str]] = {}
         self._pending_nonces: dict[int, tuple[str, float]] = {}
         self._login_cancellations: WeakValueDictionary[int, asyncio.Event] = (
             WeakValueDictionary()
@@ -98,6 +101,9 @@ class AuthService:
             self._pending_nonces.pop(discord_id, None)
             try:
                 yield
+                for key in list(self._pending_refresh):
+                    if key[1] == discord_id:
+                        self._pending_refresh.pop(key, None)
             finally:
                 self._pending_nonces.pop(discord_id, None)
                 self._login_cancellations.pop(discord_id, None)
@@ -293,6 +299,9 @@ class AuthService:
         async with self._locks.setdefault(account.puuid, asyncio.Lock()):
             fresh = await account.persisted_row().get_or_none()
             if not fresh:
+                self._pending_refresh.pop(
+                    (account.puuid, account.user_id, account.created_at), None
+                )
                 return AuthResult(False, account=account)
             return await self._ensure_locked(fresh, force=force)
 
@@ -300,6 +309,10 @@ class AuthService:
         self, account: Account, *, force: bool = False
     ) -> AuthResult:
         """Check token lifetime and repair or refresh credentials while holding its lock."""
+        current = await self._save_pending_refresh(account)
+        if current is None:
+            return AuthResult(False)
+        account = current
         auth = self._credentials(account)
         if not isinstance(auth.get("rso"), str) or not auth["rso"]:
             return AuthResult(False, account=account)
@@ -324,6 +337,9 @@ class AuthService:
         async with self._locks.setdefault(account.puuid, asyncio.Lock()):
             fresh = await account.persisted_row().get_or_none()
             if not fresh:
+                self._pending_refresh.pop(
+                    (account.puuid, account.user_id, account.created_at), None
+                )
                 return AuthResult(False, account=account)
             return await self._refresh_locked(fresh, force=force)
 
@@ -331,6 +347,10 @@ class AuthService:
         self, account: Account, *, force: bool = False
     ) -> AuthResult:
         """Refresh tokens with version-checked persistence to protect concurrent updates."""
+        current = await self._save_pending_refresh(account)
+        if current is None:
+            return AuthResult(False)
+        account = current
         auth = self._credentials(account)
         if (
             not force
@@ -394,20 +414,36 @@ class AuthService:
             new_auth["refresh_token"] = token_data["refresh_token"]
             new_auth["refresh_token_obtained"] = int(time.time() * 1000)
         new_auth.pop("ent", None)
-        changed = (
-            await account.persisted_row()
-            .filter(auth_version=expected_version)
-            .update(
-                auth_blob=self.vault.encrypt(new_auth),
-                auth_version=F("auth_version") + 1,
-            )
+        encrypted = self.vault.encrypt(new_auth)
+        self._pending_refresh[(account.puuid, account.user_id, account.created_at)] = (
+            expected_version,
+            encrypted,
         )
-        saved = await account.persisted_row().get_or_none()
+        saved = await self._save_pending_refresh(account)
         if saved is None:
             return AuthResult(False)
-        if not changed or saved.auth_version != expected_version + 1:
+        if saved.auth_version != expected_version + 1 or saved.auth_blob != encrypted:
             return await self._ensure_locked(saved)
         return await self._repair_entitlement(saved, new_auth)
+
+    async def _save_pending_refresh(self, account: Account) -> Account | None:
+        """Persist a returned token without repeating its exchange after a DB outage."""
+        key = (account.puuid, account.user_id, account.created_at)
+        pending = self._pending_refresh.get(key)
+        if pending is None:
+            return account
+        expected_version, encrypted = pending
+        if account.auth_version != expected_version:
+            self._pending_refresh.pop(key, None)
+            return account
+        await (
+            account.persisted_row()
+            .filter(auth_version=expected_version)
+            .update(auth_blob=encrypted, auth_version=F("auth_version") + 1)
+        )
+        current = await account.persisted_row().get_or_none()
+        self._pending_refresh.pop(key, None)
+        return current
 
     async def clear_credentials(self, account: Account) -> None:
         """Remove the selected account's Riot tokens while coordinating with refreshes."""
@@ -415,6 +451,9 @@ class AuthService:
             current = await account.persisted_row().get_or_none()
             if current:
                 await self._clear_credentials_locked(current)
+            self._pending_refresh.pop(
+                (account.puuid, account.user_id, account.created_at), None
+            )
 
     async def _clear_credentials_locked(self, account: Account) -> None:
         """Clear credentials only if the stored auth version still matches the caller."""
@@ -429,6 +468,9 @@ class AuthService:
         async with self._locks.setdefault(account.puuid, asyncio.Lock()):
             current = await account.persisted_row().get_or_none()
             if not current:
+                self._pending_refresh.pop(
+                    (account.puuid, account.user_id, account.created_at), None
+                )
                 raise AuthenticationRequired("Riot login is required")
             result = await self._ensure_locked(current)
             if not result.success or not result.account:

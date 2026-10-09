@@ -13,6 +13,7 @@ from .config import Settings
 from .database import close_database, connect_database
 from .localization import BotFraggTranslator
 from .monitoring import flush_monitoring, transaction
+from .services.analytics import command_analytics, record_command_invocation
 from .services.auth import AuthService
 from .services.catalog import CatalogService
 from .services.crypto import AuthVault
@@ -56,8 +57,26 @@ class BotFraggCommandTree(app_commands.CommandTree["BotFraggBot"]):
             return
         data: Mapping[str, object] = interaction.data or {}
         command_name = self._command_name(data)
-        with transaction(f"discord.command.{command_name}", "discord.command"):
-            await super()._call(interaction)
+        async with command_analytics(interaction.user.id) as cancelled:
+            with transaction(f"discord.command.{command_name}", "discord.command"):
+                await super()._call(interaction)
+            command = interaction.command
+            if (
+                interaction.command_failed
+                or command is None
+                or command.qualified_name == "deletedata"
+            ):
+                return
+            try:
+                await record_command_invocation(
+                    command=command.qualified_name,
+                    user_id=interaction.user.id,
+                    guild_id=interaction.guild_id,
+                    channel_id=interaction.channel_id,
+                    cancelled=cancelled,
+                )
+            except Exception:
+                log.exception("Could not record command analytics")
 
     @staticmethod
     def _command_name(data: Mapping[str, object]) -> str:

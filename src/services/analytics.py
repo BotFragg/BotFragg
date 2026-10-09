@@ -2,11 +2,43 @@
 
 from __future__ import annotations
 
+import asyncio
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+from weakref import WeakValueDictionary
+
 from tortoise.functions import Count
 
 from ..models import (
     CommandInvocation,
 )
+
+# shortcut: guards are process-local; share deletion generations before running multiple bot processes.
+_active_commands: dict[int, set[asyncio.Event]] = {}
+_analytics_locks: WeakValueDictionary[int, asyncio.Lock] = WeakValueDictionary()
+
+
+@asynccontextmanager
+async def command_analytics(user_id: int) -> AsyncIterator[asyncio.Event]:
+    """Keep a command's analytics cancellable until its completion is recorded."""
+    cancelled = asyncio.Event()
+    commands = _active_commands.setdefault(user_id, set())
+    commands.add(cancelled)
+    try:
+        yield cancelled
+    finally:
+        commands.remove(cancelled)
+        if not commands:
+            _active_commands.pop(user_id, None)
+
+
+@asynccontextmanager
+async def deleting_analytics(user_id: int) -> AsyncIterator[None]:
+    """Serialize deletion with analytics writes and cancel earlier completions."""
+    async with _analytics_locks.setdefault(user_id, asyncio.Lock()):
+        yield
+        for cancelled in _active_commands.get(user_id, ()):
+            cancelled.set()
 
 
 async def record_command_invocation(
@@ -15,14 +47,18 @@ async def record_command_invocation(
     user_id: int,
     guild_id: int | None,
     channel_id: int | None,
+    cancelled: asyncio.Event | None = None,
 ) -> None:
     """Persist a successful command invocation with its optional Discord scope."""
-    await CommandInvocation.create(
-        command=command,
-        user_id=user_id,
-        guild_id=guild_id,
-        channel_id=channel_id,
-    )
+    async with _analytics_locks.setdefault(user_id, asyncio.Lock()):
+        if cancelled is not None and cancelled.is_set():
+            return
+        await CommandInvocation.create(
+            command=command,
+            user_id=user_id,
+            guild_id=guild_id,
+            channel_id=channel_id,
+        )
 
 
 async def command_stats(
