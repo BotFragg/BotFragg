@@ -8,6 +8,7 @@ from typing import Any
 import discord
 
 from ..monitoring import transaction
+from .ui import unexpected_error
 
 ACTION_RE = re.compile(
     r"botfragg:(?P<action>[a-z_]+):(?P<owner>\d+):(?P<payload>[^:]*)"
@@ -92,8 +93,11 @@ class OwnedActionButton(discord.ui.DynamicItem[discord.ui.Button], template=ACTI
                 ephemeral=True,
             )
             return
-        with transaction(f"discord.component.{self.action}", "discord.component"):
-            await handler(interaction, self.payload)
+        try:
+            with transaction(f"discord.component.{self.action}", "discord.component"):
+                await handler(interaction, self.payload)
+        except Exception as exc:
+            await unexpected_error(interaction, exc)
 
 
 class OwnedSelect(discord.ui.DynamicItem[discord.ui.Select], template=SELECT_RE):
@@ -178,8 +182,11 @@ class OwnedSelect(discord.ui.DynamicItem[discord.ui.Select], template=SELECT_RE)
             )
             return
         selected = self.item.values[0] if self.item.values else ""
-        with transaction(f"discord.component.{self.action}", "discord.component"):
-            await handler(interaction, f"{self.payload}|{selected}")
+        try:
+            with transaction(f"discord.component.{self.action}", "discord.component"):
+                await handler(interaction, f"{self.payload}|{selected}")
+        except Exception as exc:
+            await unexpected_error(interaction, exc)
 
 
 def _error_embed(message: str) -> discord.Embed:

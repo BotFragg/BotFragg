@@ -8,7 +8,7 @@ from discord.ext import commands
 
 from ...bot import BotFraggBot
 from ...views import OwnedActionButton
-from ...views.ui import embed, localized_embed, translated, view
+from ...views.ui import embed, localized_embed, translated, unexpected_error, view
 
 
 class LoginModal(discord.ui.Modal):
@@ -54,6 +54,16 @@ class LoginModal(discord.ui.Modal):
             ),
             ephemeral=True,
         )
+
+    async def on_error(
+        self,
+        interaction: discord.Interaction,
+        error: Exception,
+        item: discord.ui.Item | None = None,
+        /,
+    ) -> None:
+        """Report unexpected login-form failures without exposing their details."""
+        await unexpected_error(interaction, error)
 
 
 class LoginCog(commands.Cog):

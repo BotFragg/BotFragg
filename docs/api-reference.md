@@ -978,11 +978,19 @@ Set a five-minute timeout and retain the authentication service owner.
 
 Redeem the submitted callback and privately report the login result.
 
+### `async def on_error(self, interaction: discord.Interaction, error: Exception, item: discord.ui.Item | None = None, /) -> None`
+
+**Scope:** `src/cogs/valorant/login.py` · `LoginModal`
+
+[Source](../src/cogs/valorant/login.py#L58)
+
+Report unexpected login-form failures without exposing their details.
+
 ### `class LoginCog(commands.Cog)`
 
 **Scope:** `src/cogs/valorant/login.py` · `module`
 
-[Source](../src/cogs/valorant/login.py#L59)
+[Source](../src/cogs/valorant/login.py#L69)
 
 Start Riot sign-in and open the callback URL entry modal.
 
@@ -990,7 +998,7 @@ Start Riot sign-in and open the callback URL entry modal.
 
 **Scope:** `src/cogs/valorant/login.py` · `LoginCog`
 
-[Source](../src/cogs/valorant/login.py#L62)
+[Source](../src/cogs/valorant/login.py#L72)
 
 Bind the bot and register the persistent login-modal action.
 
@@ -998,7 +1006,7 @@ Bind the bot and register the persistent login-modal action.
 
 **Scope:** `src/cogs/valorant/login.py` · `LoginCog`
 
-[Source](../src/cogs/valorant/login.py#L74)
+[Source](../src/cogs/valorant/login.py#L84)
 
 Start a nonce-bound login; account creation limits belong to auth.
 
@@ -1006,7 +1014,7 @@ Start a nonce-bound login; account creation limits belong to auth.
 
 **Scope:** `src/cogs/valorant/login.py` · `LoginCog`
 
-[Source](../src/cogs/valorant/login.py#L109)
+[Source](../src/cogs/valorant/login.py#L119)
 
 Open the modal where the caller pastes Riot's redirect URL.
 
@@ -1014,7 +1022,7 @@ Open the modal where the caller pastes Riot's redirect URL.
 
 **Scope:** `src/cogs/valorant/login.py` · `module`
 
-[Source](../src/cogs/valorant/login.py#L114)
+[Source](../src/cogs/valorant/login.py#L124)
 
 Register the Riot login command and modal handler.
 
@@ -3219,7 +3227,7 @@ Persistent interactive controls scoped to the Discord user who created them.
 
 **Scope:** `src/views/components.py` · `module`
 
-[Source](../src/views/components.py#L20)
+[Source](../src/views/components.py#L21)
 
 Create a persistent button whose action can only be used by its owner.
 
@@ -3227,7 +3235,7 @@ Create a persistent button whose action can only be used by its owner.
 
 **Scope:** `src/views/components.py` · `OwnedActionButton`
 
-[Source](../src/views/components.py#L23)
+[Source](../src/views/components.py#L24)
 
 Build a stable custom ID containing the action, owner, and payload.
 
@@ -3235,7 +3243,7 @@ Build a stable custom ID containing the action, owner, and payload.
 
 **Scope:** `src/views/components.py` · `OwnedActionButton`
 
-[Source](../src/views/components.py#L49)
+[Source](../src/views/components.py#L50)
 
 Reconstruct a persistent button from its custom ID and visible style.
 
@@ -3243,7 +3251,7 @@ Reconstruct a persistent button from its custom ID and visible style.
 
 **Scope:** `src/views/components.py` · `OwnedActionButton`
 
-[Source](../src/views/components.py#L68)
+[Source](../src/views/components.py#L69)
 
 Reject interactions from users other than the button's recorded owner.
 
@@ -3251,7 +3259,7 @@ Reject interactions from users other than the button's recorded owner.
 
 **Scope:** `src/views/components.py` · `OwnedActionButton`
 
-[Source](../src/views/components.py#L82)
+[Source](../src/views/components.py#L83)
 
 Dispatch the button action to its registered handler inside a trace.
 
@@ -3259,7 +3267,7 @@ Dispatch the button action to its registered handler inside a trace.
 
 **Scope:** `src/views/components.py` · `module`
 
-[Source](../src/views/components.py#L99)
+[Source](../src/views/components.py#L103)
 
 Create a persistent select menu whose action is restricted to its owner.
 
@@ -3267,7 +3275,7 @@ Create a persistent select menu whose action is restricted to its owner.
 
 **Scope:** `src/views/components.py` · `OwnedSelect`
 
-[Source](../src/views/components.py#L102)
+[Source](../src/views/components.py#L106)
 
 Build a stable custom ID and a translated placeholder when options are empty.
 
@@ -3275,7 +3283,7 @@ Build a stable custom ID and a translated placeholder when options are empty.
 
 **Scope:** `src/views/components.py` · `OwnedSelect`
 
-[Source](../src/views/components.py#L134)
+[Source](../src/views/components.py#L138)
 
 Reconstruct a persistent select menu from its ID and current options.
 
@@ -3283,7 +3291,7 @@ Reconstruct a persistent select menu from its ID and current options.
 
 **Scope:** `src/views/components.py` · `OwnedSelect`
 
-[Source](../src/views/components.py#L153)
+[Source](../src/views/components.py#L157)
 
 Reject interactions from users other than the menu's recorded owner.
 
@@ -3291,7 +3299,7 @@ Reject interactions from users other than the menu's recorded owner.
 
 **Scope:** `src/views/components.py` · `OwnedSelect`
 
-[Source](../src/views/components.py#L167)
+[Source](../src/views/components.py#L171)
 
 Dispatch the selected value with the menu payload to its registered handler.
 
@@ -3299,7 +3307,7 @@ Dispatch the selected value with the menu payload to its registered handler.
 
 **Scope:** `src/views/components.py` · `module`
 
-[Source](../src/views/components.py#L185)
+[Source](../src/views/components.py#L192)
 
 Build a compact red embed for an invalid or unavailable component action.
 
@@ -3355,7 +3363,7 @@ VALORANT cog presentation helpers for names, views, embeds, and errors.
 
 **Scope:** `src/views/ui.py` · `module`
 
-[Source](../src/views/ui.py#L15)
+[Source](../src/views/ui.py#L17)
 
 Keyword arguments for an embed response with optional controls.
 
@@ -3363,7 +3371,7 @@ Keyword arguments for an embed response with optional controls.
 
 **Scope:** `src/views/ui.py` · `module`
 
-[Source](../src/views/ui.py#L28)
+[Source](../src/views/ui.py#L31)
 
 Return a generic account label when the user has chosen to hide their name.
 
@@ -3371,7 +3379,7 @@ Return a generic account label when the user has chosen to hide their name.
 
 **Scope:** `src/views/ui.py` · `module`
 
-[Source](../src/views/ui.py#L41)
+[Source](../src/views/ui.py#L44)
 
 Format account-name matches for Discord's bounded autocomplete menu.
 
@@ -3379,7 +3387,7 @@ Format account-name matches for Discord's bounded autocomplete menu.
 
 **Scope:** `src/views/ui.py` · `module`
 
-[Source](../src/views/ui.py#L52)
+[Source](../src/views/ui.py#L55)
 
 Create a persistent view containing the supplied Discord components.
 
@@ -3387,7 +3395,7 @@ Create a persistent view containing the supplied Discord components.
 
 **Scope:** `src/views/ui.py` · `module`
 
-[Source](../src/views/ui.py#L60)
+[Source](../src/views/ui.py#L63)
 
 Build a standard BotFragg embed with optional description, title, and colour.
 
@@ -3395,7 +3403,7 @@ Build a standard BotFragg embed with optional description, title, and colour.
 
 **Scope:** `src/views/ui.py` · `module`
 
-[Source](../src/views/ui.py#L67)
+[Source](../src/views/ui.py#L70)
 
 Format one message using the caller's Discord locale.
 
@@ -3403,7 +3411,7 @@ Format one message using the caller's Discord locale.
 
 **Scope:** `src/views/ui.py` · `module`
 
-[Source](../src/views/ui.py#L74)
+[Source](../src/views/ui.py#L77)
 
 Build an embed from catalog message IDs and the caller's locale.
 
@@ -3411,6 +3419,14 @@ Build an embed from catalog message IDs and the caller's locale.
 
 **Scope:** `src/views/ui.py` · `module`
 
-[Source](../src/views/ui.py#L95)
+[Source](../src/views/ui.py#L98)
 
 Send a private error embed using the interaction's available response path.
+
+### `async def unexpected_error(interaction: discord.Interaction, exception: Exception) -> None`
+
+**Scope:** `src/views/ui.py` · `module`
+
+[Source](../src/views/ui.py#L113)
+
+Log an unexpected interaction failure and send a private generic response.

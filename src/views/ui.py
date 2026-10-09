@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Any, NotRequired, TypedDict
 
+import aiohttp
 import discord
 from discord import app_commands
 
@@ -23,6 +25,7 @@ class EmbedMessage(TypedDict):
 
 RED = 0xFD4553
 DARK = 0x202225
+log = logging.getLogger(__name__)
 
 
 def _account_display_name(
@@ -105,3 +108,14 @@ async def error(
         await interaction.followup.send(embed=embed(message), ephemeral=True)
     else:
         await interaction.response.send_message(embed=embed(message), ephemeral=True)
+
+
+async def unexpected_error(
+    interaction: discord.Interaction, exception: Exception
+) -> None:
+    """Log an unexpected interaction failure and send a private generic response."""
+    log.error("Interaction failed", exc_info=exception)
+    try:
+        await error(interaction, "error-command-failed")
+    except discord.HTTPException, aiohttp.ClientError, OSError:
+        log.warning("Could not deliver interaction error response")
