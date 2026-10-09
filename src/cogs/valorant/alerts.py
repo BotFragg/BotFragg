@@ -282,7 +282,7 @@ class AlertsCog(commands.Cog):
             await error(interaction, "test-alerts-needs-active-alert")
             return
         try:
-            auth = await self.bot.auth.ensure(account)
+            auth = await self.bot.auth.ensure(alert.account)
         except HTTPFailure:
             await error(
                 interaction,

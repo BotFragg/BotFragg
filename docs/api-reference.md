@@ -770,7 +770,7 @@ Show the caller's accounts privately when their name-hiding preference is on.
 
 **Scope:** `src/cogs/valorant/accounts.py` · `AccountsCog`
 
-[Source](../src/cogs/valorant/accounts.py#L203)
+[Source](../src/cogs/valorant/accounts.py#L208)
 
 Refresh an account page privately when an old public list now hides names.
 
@@ -778,7 +778,7 @@ Refresh an account page privately when an old public list now hides names.
 
 **Scope:** `src/cogs/valorant/accounts.py` · `module`
 
-[Source](../src/cogs/valorant/accounts.py#L237)
+[Source](../src/cogs/valorant/accounts.py#L248)
 
 Register the linked-account commands and component handlers.
 

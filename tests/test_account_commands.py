@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from types import SimpleNamespace
 from types import SimpleNamespace as NS
 from unittest.mock import AsyncMock
@@ -125,6 +126,76 @@ async def test_account_list_preserves_normal_visibility(command_accounts, hide):
     assert "SecretTwo#NA" in sent["embed"].description
 
 
+@pytest.mark.parametrize("route", ["list", "page"])
+@pytest.mark.parametrize("stage", ["defer", "list"])
+@pytest.mark.parametrize("relink", [False, True])
+async def test_account_lists_reject_profile_changes_during_preparation(
+    command_accounts, monkeypatch, route, stage, relink
+):
+    import src.cogs.valorant.accounts as module
+
+    owner, _ = command_accounts
+    original_list = module.list_accounts
+    changed = False
+
+    async def replace_profile():
+        nonlocal changed
+        if changed:
+            return
+        changed = True
+        await delete_user_data(owner.id)
+        if relink:
+            replacement = await User.create(id=owner.id, current_account_id="first")
+            assert replacement.created_at != owner.created_at
+            await Account.create(
+                puuid="first", user=replacement, username="NewProfile#TEST"
+            )
+
+    async def list_accounts(user_id):
+        accounts = await original_list(user_id)
+        if stage == "list":
+            await replace_profile()
+        return accounts
+
+    async def defer(**kwargs):
+        if stage == "defer":
+            await replace_profile()
+
+    monkeypatch.setattr(module, "list_accounts", list_accounts)
+    interaction = _localized_interaction(
+        user=NS(id=owner.id),
+        response=NS(defer=AsyncMock(side_effect=defer), is_done=lambda: True),
+        followup=NS(send=AsyncMock()),
+        edit_original_response=AsyncMock(),
+        message=NS(flags=NS(ephemeral=False)),
+    )
+    cog = AccountsCog(_localized_bot(register_component=lambda *args: None))
+
+    async def invoke():
+        if route == "list":
+            await AccountsCog.accounts.callback(cog, interaction)
+        else:
+            await cog.accounts_page(interaction, "0")
+
+    await invoke()
+    interaction.edit_original_response.assert_not_awaited()
+    sent = interaction.followup.send.await_args.kwargs
+    key = "error-not-registered" if route == "list" else "accounts-none-left"
+    assert sent["embed"].description == TEST_TRANSLATOR.text(TEST_LOCALE, key)
+    assert "view" not in sent
+    assert not await Account.exists(puuid="target")
+    if relink:
+        interaction.followup.send.reset_mock()
+        await invoke()
+        sent = (
+            interaction.followup.send.await_args.kwargs
+            if route == "list"
+            else interaction.edit_original_response.await_args.kwargs
+        )
+        assert "NewProfile#TEST" in sent["embed"].description
+        assert "Secret" not in sent["embed"].description
+
+
 async def test_account_command_uses_one_consistent_account_list(database, monkeypatch):
     import src.cogs.valorant.accounts as cog_module
 
@@ -194,7 +265,12 @@ async def test_stale_command_selection_returns_account_not_found(database, monke
 async def test_account_paging_respects_current_privacy(monkeypatch, hide, ephemeral):
     import src.cogs.valorant.accounts as module
 
-    user = NS(id=101, hide_ign=hide, current_account_id="0")
+    user = NS(
+        id=101,
+        hide_ign=hide,
+        current_account_id="0",
+        created_at=datetime(2026, 1, 1, tzinfo=UTC),
+    )
     accounts = [
         NS(puuid=str(index), username=f"SyntheticName{index}#AUDIT")
         for index in range(26)

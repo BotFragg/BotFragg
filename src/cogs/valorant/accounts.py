@@ -176,12 +176,17 @@ class AccountsCog(commands.Cog):
     )
     async def accounts(self, interaction: discord.Interaction) -> None:
         """Show the caller's accounts privately when their name-hiding preference is on."""
-        user = await get_user(interaction.user.id)
-        ephemeral = bool(user and user.hide_ign)
+        original_user = await get_user(interaction.user.id)
+        ephemeral = bool(original_user and original_user.hide_ign)
         await interaction.response.defer(thinking=True, ephemeral=ephemeral)
         accounts = await list_accounts(interaction.user.id)
         user = await get_user(interaction.user.id)
-        if not user or not accounts:
+        if (
+            not original_user
+            or not user
+            or user.created_at != original_user.created_at
+            or not accounts
+        ):
             await error(interaction, "error-not-registered")
             return
         controls = self._accounts_view(interaction.user.id, len(accounts), 0)
@@ -204,6 +209,7 @@ class AccountsCog(commands.Cog):
         self, interaction: discord.Interaction, payload: str
     ) -> None:
         """Refresh an account page privately when an old public list now hides names."""
+        original_user = await get_user(interaction.user.id)
         await interaction.response.defer()
         try:
             page = int(payload)
@@ -212,7 +218,12 @@ class AccountsCog(commands.Cog):
             return
         accounts = await list_accounts(interaction.user.id)
         user = await get_user(interaction.user.id)
-        if not user or not accounts:
+        if (
+            not original_user
+            or not user
+            or user.created_at != original_user.created_at
+            or not accounts
+        ):
             await error(interaction, "accounts-none-left")
             return
         card = self._accounts_embed(
