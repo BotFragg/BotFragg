@@ -135,6 +135,9 @@ def _scrub_event(event: Event) -> Event:
     """Remove request data and sensitive values from an error event."""
     event = _scrub(event)
     event.pop("request", None)
+    logentry = event.get("logentry")
+    if isinstance(logentry, dict):
+        logentry.pop("params", None)
     return event
 
 
@@ -160,6 +163,11 @@ def _scrub_log(log: Log, hint: dict[str, Any]) -> Log | None:
         return None
     if "://" in str(log.get("body") or ""):
         log["body"] = "HTTP request"
+    log["attributes"] = {
+        key: value
+        for key, value in attributes.items()
+        if not key.startswith("sentry.message.parameter.")
+    }
     return _scrub(log)
 
 

@@ -12,11 +12,83 @@ from types import SimpleNamespace as NS
 import aiohttp
 import discord
 import pytest
+import sentry_sdk
+from sentry_sdk.integrations.logging import LoggingIntegration
+from sentry_sdk.transport import Transport
 
 from src import main as entrypoint
 from src import monitoring
 from src.cogs.tasks import DiscordLogHandler, TasksCog
 from src.monitoring import StructuredFormatter, _scrub
+
+
+@pytest.mark.parametrize(
+    ("logger_name", "message", "sensitive"),
+    [
+        (
+            "discord.state",
+            "Timed out waiting for guild ID %s after %.2fs.",
+            123456789012345678,
+        ),
+        (
+            "src.services.auth",
+            "Auth request failed token=%s after %.2fs.",
+            "AUDIT_SYNTHETIC_SECRET",
+        ),
+    ],
+)
+def test_sdk_telemetry_discards_raw_logging_parameters(logger_name, message, sensitive):
+    class OfflineTransport(Transport):
+        def __init__(self):
+            super().__init__()
+            self.envelopes = []
+
+        def capture_envelope(self, envelope):
+            self.envelopes.append(envelope)
+
+    transport = OfflineTransport()
+    integration = LoggingIntegration(sentry_logs_level=logging.INFO)
+    client = sentry_sdk.Client(
+        dsn="https://synthetic@monitoring.example/1",
+        transport=transport,
+        default_integrations=False,
+        auto_enabling_integrations=False,
+        integrations=[integration],
+        enable_logs=True,
+        send_default_pii=False,
+        include_local_variables=False,
+        before_send=lambda event, hint: monitoring._scrub_event(event),
+        before_send_log=monitoring._scrub_log,
+    )
+    try:
+        with sentry_sdk.isolation_scope() as scope:
+            scope.set_client(client)
+            record = logging.LogRecord(
+                logger_name,
+                logging.ERROR,
+                "synthetic.py",
+                1,
+                message,
+                (sensitive, 1.25),
+                None,
+            )
+            record.job = "audit"
+            integration._handle_record(record)
+            integration._handle_sentry_logs_record(record)
+            client.flush(timeout=2)
+        payloads = {
+            item.type: json.loads(item.get_bytes())
+            for envelope in transport.envelopes
+            for item in envelope.items
+        }
+        assert {"event", "log"} <= payloads.keys()
+        for kind in ("event", "log"):
+            encoded = json.dumps(payloads[kind])
+            assert str(sensitive) not in encoded
+            assert "[Filtered]" in encoded
+            assert "1.25" in encoded and "audit" in encoded
+    finally:
+        client.close(timeout=2)
 
 
 @pytest.mark.parametrize(

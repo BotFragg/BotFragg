@@ -1822,7 +1822,7 @@ Remove request data and sensitive values from an error event.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L141)
+[Source](../src/monitoring.py#L144)
 
 Remove request payloads and HTTP span details from a transaction.
 
@@ -1830,7 +1830,7 @@ Remove request payloads and HTTP span details from a transaction.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L152)
+[Source](../src/monitoring.py#L155)
 
 Keep BotFragg logs and serious Discord errors after removing URL data.
 
@@ -1838,7 +1838,7 @@ Keep BotFragg logs and serious Discord errors after removing URL data.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L166)
+[Source](../src/monitoring.py#L174)
 
 Return the installed BotFragg release label or an unknown fallback.
 
@@ -1846,7 +1846,7 @@ Return the installed BotFragg release label or an unknown fallback.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L174)
+[Source](../src/monitoring.py#L182)
 
 Enable privacy-filtered GlitchTip telemetry when a DSN is configured.
 
@@ -1854,7 +1854,7 @@ Enable privacy-filtered GlitchTip telemetry when a DSN is configured.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L204)
+[Source](../src/monitoring.py#L212)
 
 Start a GlitchTip transaction with the supplied name and operation.
 
@@ -1862,7 +1862,7 @@ Start a GlitchTip transaction with the supplied name and operation.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L209)
+[Source](../src/monitoring.py#L217)
 
 End the current monitoring session and flush queued telemetry.
 
