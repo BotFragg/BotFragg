@@ -6,6 +6,7 @@ import asyncio
 import logging
 from pathlib import Path
 
+import aiohttp
 import discord
 
 from ..config import ROOT
@@ -49,7 +50,7 @@ class ApplicationEmojiService:
                 *SKIN_TIER_EMOJIS.values(),
             ):
                 await self._get_or_create(name, ROOT / "assets" / filename)
-        except discord.HTTPException:
+        except discord.HTTPException, aiohttp.ClientError, OSError:
             log.warning("Could not warm application emoji cache; using text fallbacks")
 
     async def currency(self, kind: str) -> str:
@@ -89,7 +90,7 @@ class ApplicationEmojiService:
                 emoji = await self.client.create_application_emoji(
                     name=name, image=image
                 )
-            except OSError, discord.HTTPException:
+            except OSError, discord.HTTPException, aiohttp.ClientError:
                 log.warning(
                     "Could not create application emoji %s", name, exc_info=True
                 )

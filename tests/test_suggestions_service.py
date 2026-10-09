@@ -6,9 +6,11 @@ import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
+import aiohttp
 import discord
 import pytest
 from tortoise import Tortoise
+from tortoise.queryset import QuerySet
 
 from src.cogs.suggestions import SuggestionsCog
 from src.localization import BotFraggTranslator
@@ -24,6 +26,230 @@ from src.services.suggestions import (
     unfollow_suggestion,
 )
 from tests.helpers import _localized_bot, _localized_interaction
+
+
+@pytest.mark.usefixtures("backend_database")
+@pytest.mark.parametrize(
+    "failure", [aiohttp.ServerDisconnectedError, TimeoutError, OSError]
+)
+@pytest.mark.parametrize("stage", ["fetch", "send"])
+async def test_submission_transport_failure_leaves_no_unposted_request(failure, stage):
+    class Channel(discord.abc.Messageable):
+        send = AsyncMock(side_effect=failure("Synthetic failure"))
+
+    channel = Channel()
+    cog = SuggestionsCog(
+        _localized_bot(
+            config=SimpleNamespace(suggestion_log_channel_id=201),
+            get_channel=lambda _: channel if stage == "send" else None,
+            fetch_channel=AsyncMock(side_effect=failure("Synthetic failure")),
+        )
+    )
+    interaction = _localized_interaction(
+        user=SimpleNamespace(
+            id=101, display_avatar=SimpleNamespace(url="https://example.com/avatar.png")
+        ),
+        guild_locale=None,
+        guild=None,
+        response=SimpleNamespace(defer=AsyncMock(), is_done=lambda: True),
+        followup=SimpleNamespace(send=AsyncMock()),
+    )
+
+    await SuggestionsCog.suggest.callback(cog, interaction, "Synthetic request")
+
+    assert not await Suggestion.exists() and not await SuggestionFollower.exists()
+    assert interaction.followup.send.await_args.kwargs["ephemeral"]
+
+
+@pytest.mark.usefixtures("backend_database")
+@pytest.mark.parametrize(
+    "failure", [aiohttp.ServerDisconnectedError, TimeoutError, OSError]
+)
+@pytest.mark.parametrize("stage", ["channel", "message", "edit", "user", "send"])
+async def test_review_transport_failure_does_not_skip_other_followers(failure, stage):
+    suggestion = await create_suggestion(101, "Synthetic request", 201)
+    await record_suggestion_delivery(suggestion, 301)
+    await follow_suggestion(suggestion.id, 202)
+    await follow_suggestion(suggestion.id, 303)
+    sent, attempted = set(), set()
+    failed = False
+
+    async def deliver(user_id, **kwargs):
+        nonlocal failed
+        attempted.add(user_id)
+        if stage == "send" and not failed:
+            failed = True
+            raise failure("Synthetic failure")
+        sent.add(user_id)
+
+    def user(user_id):
+        async def send(**kwargs):
+            await deliver(user_id, **kwargs)
+
+        return SimpleNamespace(send=send)
+
+    async def fetch_user(user_id):
+        nonlocal failed
+        if not failed:
+            attempted.add(user_id)
+            failed = True
+            raise failure("Synthetic failure")
+        return user(user_id)
+
+    class Channel(discord.abc.Messageable):
+        async def fetch_message(self, message_id):
+            if stage == "message":
+                raise failure("Synthetic failure")
+            return SimpleNamespace(
+                edit=AsyncMock(
+                    side_effect=failure("Synthetic failure")
+                    if stage == "edit"
+                    else None
+                )
+            )
+
+    channel = Channel()
+    cog = SuggestionsCog(
+        _localized_bot(
+            is_owner=AsyncMock(return_value=True),
+            get_channel=lambda _: None if stage == "channel" else channel,
+            fetch_channel=AsyncMock(side_effect=failure("Synthetic failure")),
+            get_user=lambda user_id: None if stage == "user" else user(user_id),
+            fetch_user=fetch_user,
+        )
+    )
+    interaction = _localized_interaction(
+        user=SimpleNamespace(id=999),
+        response=SimpleNamespace(defer=AsyncMock()),
+        followup=SimpleNamespace(send=AsyncMock()),
+    )
+
+    await cog._review_suggestion(
+        interaction, suggestion.id, "Synthetic reason", "approved"
+    )
+
+    assert attempted == {101, 202, 303}
+    assert len(sent) == (2 if stage in {"user", "send"} else 3)
+    assert (await Suggestion.get(id=suggestion.id)).status == "approved"
+    assert (
+        "approved" in interaction.followup.send.await_args.kwargs["embed"].description
+    )
+
+
+@pytest.mark.usefixtures("backend_database")
+@pytest.mark.parametrize("outcome", ["pending", "reviewed", "deleted"])
+async def test_posted_suggestion_recovers_database_link_without_reposting(
+    monkeypatch, outcome
+):
+    message = SimpleNamespace(id=301, edit=AsyncMock())
+
+    class Channel(discord.abc.Messageable):
+        send = AsyncMock(return_value=message)
+        fetch_message = AsyncMock(return_value=message)
+
+    channel = Channel()
+    cog = SuggestionsCog(
+        _localized_bot(
+            config=SimpleNamespace(suggestion_log_channel_id=201),
+            get_channel=lambda _: channel,
+        )
+    )
+    monkeypatch.setattr(cog.delivery_retry, "start", lambda: None)
+    original_update = QuerySet.update
+    failures = 2
+
+    def update(query, **kwargs):
+        nonlocal failures
+        if query.model is Suggestion and "log_message_id" in kwargs and failures:
+            failures -= 1
+            raise ConnectionResetError("Synthetic database failure")
+        return original_update(query, **kwargs)
+
+    monkeypatch.setattr(QuerySet, "update", update)
+    interaction = _localized_interaction(
+        user=SimpleNamespace(
+            id=101, display_avatar=SimpleNamespace(url="https://example.com/avatar.png")
+        ),
+        guild_locale=None,
+        guild=None,
+        response=SimpleNamespace(defer=AsyncMock(), is_done=lambda: True),
+        followup=SimpleNamespace(send=AsyncMock()),
+    )
+    await SuggestionsCog.suggest.callback(cog, interaction, "Synthetic request")
+    record = await Suggestion.get(author_id=101)
+    assert record.log_message_id is None and record.id in cog._pending_deliveries
+    assert (
+        "submitted" in interaction.followup.send.await_args.kwargs["embed"].description
+    )
+    await cog.delivery_retry()
+    assert record.id in cog._pending_deliveries
+    if outcome == "reviewed":
+        await review_suggestion(record.id, "approved", "Synthetic reason")
+    elif outcome == "deleted":
+        await delete_user_data(101)
+
+    await cog.delivery_retry()
+
+    assert not cog._pending_deliveries
+    channel.send.assert_awaited_once()
+    if outcome == "deleted":
+        assert not await Suggestion.exists() and not await SuggestionFollower.exists()
+        message.edit.assert_not_awaited()
+    else:
+        assert await Suggestion.all().count() == 1
+        assert (await Suggestion.get(id=record.id)).log_message_id == 301
+        if outcome == "reviewed":
+            message.edit.assert_awaited_once()
+            assert "Approved" in message.edit.await_args.kwargs["embed"].title
+        else:
+            message.edit.assert_not_awaited()
+
+
+@pytest.mark.usefixtures("backend_database")
+async def test_delivery_retry_runs_automatically_and_stops_after_recovery(monkeypatch):
+    record = await create_suggestion(101, "Synthetic request", 201)
+    cog = SuggestionsCog(_localized_bot())
+    cog.delivery_retry.change_interval(seconds=0.01)
+    original_update = QuerySet.update
+    failures = 2
+
+    def update(query, **kwargs):
+        nonlocal failures
+        if query.model is Suggestion and "log_message_id" in kwargs and failures:
+            failures -= 1
+            raise ConnectionResetError("Synthetic database failure")
+        return original_update(query, **kwargs)
+
+    monkeypatch.setattr(QuerySet, "update", update)
+    try:
+        await cog._record_delivery(record, 301)
+        await asyncio.wait_for(cog.delivery_retry.get_task(), 2)
+        assert not cog._pending_deliveries and not cog.delivery_retry.is_running()
+        assert (await Suggestion.get(id=record.id)).log_message_id == 301
+        # A later outage must restart the stopped retry loop.
+        failures = 2
+        await cog._record_delivery(record, 302)
+        await asyncio.wait_for(cog.delivery_retry.get_task(), 2)
+        assert (await Suggestion.get(id=record.id)).log_message_id == 302
+        assert not cog._pending_deliveries
+    finally:
+        await cog.cog_unload()
+
+
+@pytest.mark.usefixtures("backend_database")
+async def test_unloading_suggestions_cancels_delivery_retry(monkeypatch):
+    record = await create_suggestion(101, "Synthetic request", 201)
+    cog = SuggestionsCog(_localized_bot())
+
+    def fail_update(query, **kwargs):
+        raise ConnectionResetError("Synthetic database failure")
+
+    monkeypatch.setattr(QuerySet, "update", fail_update)
+    await cog._record_delivery(record, 301)
+    task = cog.delivery_retry.get_task()
+    await cog.cog_unload()
+    assert task.done() and not cog.delivery_retry.is_running()
+    assert (await Suggestion.get(id=record.id)).log_message_id is None
 
 
 @pytest.mark.usefixtures("backend_database")

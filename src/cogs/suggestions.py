@@ -2,13 +2,17 @@
 
 from __future__ import annotations
 
+import asyncio
+import logging
 from typing import Literal
 
+import aiohttp
 import discord
 from discord import app_commands
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 from ..bot import BotFraggBot
+from ..database import TRANSIENT_DATABASE_ERRORS
 from ..models import Suggestion
 from ..services.suggestions import (
     create_suggestion,
@@ -19,6 +23,9 @@ from ..services.suggestions import (
     unfollow_suggestion,
 )
 from ..views.ui import embed, error, translated
+
+log = logging.getLogger(__name__)
+DISCORD_DELIVERY_ERRORS = (discord.HTTPException, aiohttp.ClientError, OSError)
 
 
 class SuggestionsCog(commands.Cog):
@@ -35,6 +42,37 @@ class SuggestionsCog(commands.Cog):
     def __init__(self, bot: BotFraggBot) -> None:
         """Bind suggestion commands to the running bot."""
         self.bot = bot
+        # shortcut: pending IDs survive only this cog; durable recovery needs an outbox.
+        self._pending_deliveries: dict[int, tuple[Suggestion, int]] = {}
+
+    async def cog_unload(self) -> None:
+        """Cancel and await pending delivery retries during extension shutdown."""
+        task = self.delivery_retry.get_task()
+        self.delivery_retry.cancel()
+        if task is not None and task is not asyncio.current_task():
+            await asyncio.gather(task, return_exceptions=True)
+
+    async def _record_delivery(self, suggestion: Suggestion, message_id: int) -> None:
+        """Save a posted message ID, retaining it for retry during database outages."""
+        self._pending_deliveries[suggestion.id] = (suggestion, message_id)
+        try:
+            delivered = await record_suggestion_delivery(suggestion, message_id)
+        except TRANSIENT_DATABASE_ERRORS:
+            log.warning("Could not save suggestion delivery; retrying", exc_info=True)
+            if not self.delivery_retry.is_running():
+                self.delivery_retry.start()
+            return
+        self._pending_deliveries.pop(suggestion.id, None)
+        if delivered is not None and delivered.status != "pending":
+            await self._update_suggestion_log(delivered)
+
+    @tasks.loop(seconds=30)
+    async def delivery_retry(self) -> None:
+        """Retry posted message links without reposting or recreating deleted records."""
+        for suggestion, message_id in list(self._pending_deliveries.values()):
+            await self._record_delivery(suggestion, message_id)
+        if not self._pending_deliveries:
+            self.delivery_retry.stop()
 
     @app_commands.command(
         name=app_commands.locale_str("suggest", key="command-suggest-name"),
@@ -69,7 +107,7 @@ class SuggestionsCog(commands.Cog):
         if channel is None:
             try:
                 channel = await self.bot.fetch_channel(channel_id)
-            except discord.HTTPException:
+            except DISCORD_DELIVERY_ERRORS:
                 await error(interaction, "suggestion-channel-unavailable")
                 return
         if not isinstance(channel, discord.abc.Messageable):
@@ -96,13 +134,11 @@ class SuggestionsCog(commands.Cog):
         )
         try:
             message = await channel.send(embed=card)
-        except discord.HTTPException:
+        except DISCORD_DELIVERY_ERRORS:
             await delete_suggestion(record.id)
             await error(interaction, "suggestion-delivery-failed")
             return
-        delivered = await record_suggestion_delivery(record, message.id)
-        if delivered is not None and delivered.status != "pending":
-            await self._update_suggestion_log(delivered)
+        await self._record_delivery(record, message.id)
         await interaction.followup.send(
             embed=embed(
                 translated(
@@ -255,7 +291,7 @@ class SuggestionsCog(commands.Cog):
                 user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
                 user_locale = getattr(user, "locale", discord.Locale.american_english)
                 await user.send(embed=self._review_card(suggestion, user_locale))
-            except discord.HTTPException:
+            except DISCORD_DELIVERY_ERRORS:
                 continue
         await interaction.followup.send(
             embed=embed(f"Suggestion **#{id}** has been **{status}**."),
@@ -298,7 +334,7 @@ class SuggestionsCog(commands.Cog):
                         title=f"Suggestion #{suggestion.id} — {status}",
                     )
                 )
-        except discord.HTTPException:
+        except DISCORD_DELIVERY_ERRORS:
             return
 
 

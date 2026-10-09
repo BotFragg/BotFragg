@@ -430,7 +430,7 @@ Discord suggestion submission, following, and owner-only review commands.
 
 **Scope:** `src/cogs/suggestions.py` · `module`
 
-[Source](../src/cogs/suggestions.py#L24)
+[Source](../src/cogs/suggestions.py#L31)
 
 Own the public suggestion workflow and its review notifications.
 
@@ -438,15 +438,39 @@ Own the public suggestion workflow and its review notifications.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L35)
+[Source](../src/cogs/suggestions.py#L42)
 
 Bind suggestion commands to the running bot.
+
+### `async def cog_unload(self) -> None`
+
+**Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
+
+[Source](../src/cogs/suggestions.py#L48)
+
+Cancel and await pending delivery retries during extension shutdown.
+
+### `async def _record_delivery(self, suggestion: Suggestion, message_id: int) -> None`
+
+**Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
+
+[Source](../src/cogs/suggestions.py#L55)
+
+Save a posted message ID, retaining it for retry during database outages.
+
+### `async def delivery_retry(self) -> None`
+
+**Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
+
+[Source](../src/cogs/suggestions.py#L70)
+
+Retry posted message links without reposting or recreating deleted records.
 
 ### `async def suggest(self, interaction: discord.Interaction, suggestion: app_commands.Range[str, 1, 1000]) -> None`
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L57)
+[Source](../src/cogs/suggestions.py#L95)
 
 Persist a feature suggestion and publish it to the configured log channel.
 
@@ -454,7 +478,7 @@ Persist a feature suggestion and publish it to the configured log channel.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L133)
+[Source](../src/cogs/suggestions.py#L169)
 
 Follow a pending suggestion or privately show its existing review.
 
@@ -462,7 +486,7 @@ Follow a pending suggestion or privately show its existing review.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L173)
+[Source](../src/cogs/suggestions.py#L209)
 
 Remove the caller's follow from another user's suggestion.
 
@@ -470,7 +494,7 @@ Remove the caller's follow from another user's suggestion.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L202)
+[Source](../src/cogs/suggestions.py#L238)
 
 Submit an owner-only approval review for the selected suggestion.
 
@@ -478,7 +502,7 @@ Submit an owner-only approval review for the selected suggestion.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L217)
+[Source](../src/cogs/suggestions.py#L253)
 
 Submit an owner-only denial review for the selected suggestion.
 
@@ -486,7 +510,7 @@ Submit an owner-only denial review for the selected suggestion.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L226)
+[Source](../src/cogs/suggestions.py#L262)
 
 Authorize a review, update its record, and notify its followers.
 
@@ -494,7 +518,7 @@ Authorize a review, update its record, and notify its followers.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L265)
+[Source](../src/cogs/suggestions.py#L301)
 
 Render the localized review shared by follower DMs and completed tracking.
 
@@ -502,7 +526,7 @@ Render the localized review shared by follower DMs and completed tracking.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L283)
+[Source](../src/cogs/suggestions.py#L319)
 
 Edit the original suggestion post with the final status and review reason.
 
@@ -510,7 +534,7 @@ Edit the original suggestion post with the final status and review reason.
 
 **Scope:** `src/cogs/suggestions.py` · `module`
 
-[Source](../src/cogs/suggestions.py#L305)
+[Source](../src/cogs/suggestions.py#L341)
 
 Register suggestion commands and review handlers.
 
@@ -2619,7 +2643,7 @@ Cache Discord application emojis and create them from bundled image assets.
 
 **Scope:** `src/services/emojis.py` · `module`
 
-[Source](../src/services/emojis.py#L29)
+[Source](../src/services/emojis.py#L30)
 
 Application emoji cache with safe text fallbacks.
 
@@ -2627,7 +2651,7 @@ Application emoji cache with safe text fallbacks.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L32)
+[Source](../src/services/emojis.py#L33)
 
 Bind the Discord client and initialize the serialized emoji cache.
 
@@ -2635,7 +2659,7 @@ Bind the Discord client and initialize the serialized emoji cache.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L38)
+[Source](../src/services/emojis.py#L39)
 
 Load existing application emojis and create any bundled assets that are missing.
 
@@ -2643,7 +2667,7 @@ Load existing application emojis and create any bundled assets that are missing.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L55)
+[Source](../src/services/emojis.py#L56)
 
 Return the emoji for VP, Radianite, or Kingdom Credits, if available.
 
@@ -2651,7 +2675,7 @@ Return the emoji for VP, Radianite, or Kingdom Credits, if available.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L60)
+[Source](../src/services/emojis.py#L61)
 
 Return the filled and empty battlepass progress-bar emoji strings.
 
@@ -2659,7 +2683,7 @@ Return the filled and empty battlepass progress-bar emoji strings.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L67)
+[Source](../src/services/emojis.py#L68)
 
 Return a cached application emoji for a skin tier, if available.
 
@@ -2667,7 +2691,7 @@ Return a cached application emoji for a skin tier, if available.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L75)
+[Source](../src/services/emojis.py#L76)
 
 Prefix a skin name with its cached tier emoji when available.
 
@@ -2675,7 +2699,7 @@ Prefix a skin name with its cached tier emoji when available.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L80)
+[Source](../src/services/emojis.py#L81)
 
 Resolve or create one application emoji, returning empty text on failure.
 

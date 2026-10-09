@@ -57,8 +57,12 @@ count as shop failures and are not cached as complete daily shops.
 Returned refresh credentials stay encrypted in memory until their database save
 succeeds; a later lookup retries that save before exchanging the refresh token
 again. Shard-status updates similarly retain a posted message ID until it is saved.
-Restarting during either save failure loses that pending state and can require a
-new login or leave a duplicate status message. Incomplete Night Market catalogs
+Suggestion posts retain their message IDs and retry failed database saves every
+30 seconds without reposting. Deleted suggestions are discarded, and reviews
+completed during an outage are applied to the post when its link is saved.
+Restarting loses pending state; unloading a notification cog also loses its
+pending IDs. This can require a new login, leave a duplicate status message, or
+leave an unlinked suggestion post. Incomplete Night Market catalogs
 leave the daily shop usable, report Night Market as unavailable, and are not cached.
 
 Command analytics, suggestion writes, and personal-data deletion coordinate
