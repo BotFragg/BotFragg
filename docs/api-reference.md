@@ -2643,7 +2643,7 @@ Cache Discord application emojis and create them from bundled image assets.
 
 **Scope:** `src/services/emojis.py` · `module`
 
-[Source](../src/services/emojis.py#L30)
+[Source](../src/services/emojis.py#L31)
 
 Application emoji cache with safe text fallbacks.
 
@@ -2651,7 +2651,7 @@ Application emoji cache with safe text fallbacks.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L33)
+[Source](../src/services/emojis.py#L34)
 
 Bind the Discord client and initialize the serialized emoji cache.
 
@@ -2659,7 +2659,7 @@ Bind the Discord client and initialize the serialized emoji cache.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L39)
+[Source](../src/services/emojis.py#L41)
 
 Load existing application emojis and create any bundled assets that are missing.
 
@@ -2667,7 +2667,7 @@ Load existing application emojis and create any bundled assets that are missing.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L56)
+[Source](../src/services/emojis.py#L58)
 
 Return the emoji for VP, Radianite, or Kingdom Credits, if available.
 
@@ -2675,7 +2675,7 @@ Return the emoji for VP, Radianite, or Kingdom Credits, if available.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L61)
+[Source](../src/services/emojis.py#L63)
 
 Return the filled and empty battlepass progress-bar emoji strings.
 
@@ -2683,7 +2683,7 @@ Return the filled and empty battlepass progress-bar emoji strings.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L68)
+[Source](../src/services/emojis.py#L70)
 
 Return a cached application emoji for a skin tier, if available.
 
@@ -2691,7 +2691,7 @@ Return a cached application emoji for a skin tier, if available.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L76)
+[Source](../src/services/emojis.py#L78)
 
 Prefix a skin name with its cached tier emoji when available.
 
@@ -2699,7 +2699,7 @@ Prefix a skin name with its cached tier emoji when available.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L81)
+[Source](../src/services/emojis.py#L83)
 
 Resolve or create one application emoji, returning empty text on failure.
 

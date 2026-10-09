@@ -77,6 +77,10 @@ logs and optional GlitchTip telemetry. Frequent log/shard completion messages
 are omitted to avoid feeding log delivery its own logs; their evidence remains
 in the heartbeat. Job history is process-local and resets on restart.
 
+GlitchTip receives filtered log messages without the SDK's raw logging parameters.
+Failed application emoji creation uses text fallbacks and waits 30 seconds before
+retrying the same emoji. Other emoji names can still be created during that cooldown.
+
 ## Responding to an unhealthy process
 
 1. Inspect the heartbeat's `problems` and structured logs. For `database`,

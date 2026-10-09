@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from pathlib import Path
 
 import aiohttp
@@ -34,6 +35,7 @@ class ApplicationEmojiService:
         """Bind the Discord client and initialize the serialized emoji cache."""
         self.client = client
         self._emojis: dict[str, discord.Emoji] = {}
+        self._retry_at: dict[str, float] = {}
         self._lock = asyncio.Lock()
 
     async def warm(self) -> None:
@@ -82,18 +84,24 @@ class ApplicationEmojiService:
         """Resolve or create one application emoji, returning empty text on failure."""
         if emoji := self._emojis.get(name):
             return str(emoji)
+        if time.monotonic() < self._retry_at.get(name, 0):
+            return ""
         async with self._lock:
             if emoji := self._emojis.get(name):
                 return str(emoji)
+            if time.monotonic() < self._retry_at.get(name, 0):
+                return ""
             try:
                 image = await asyncio.to_thread(source.read_bytes)
                 emoji = await self.client.create_application_emoji(
                     name=name, image=image
                 )
             except OSError, discord.HTTPException, aiohttp.ClientError:
+                self._retry_at[name] = time.monotonic() + 30
                 log.warning(
                     "Could not create application emoji %s", name, exc_info=True
                 )
                 return ""
             self._emojis[name] = emoji
+            self._retry_at.pop(name, None)
             return str(emoji)
