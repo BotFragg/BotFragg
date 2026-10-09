@@ -8,6 +8,7 @@ from collections import deque
 from datetime import UTC, datetime, time, timedelta
 from time import time as unix_time
 
+import aiohttp
 import discord
 from discord.ext import commands, tasks
 
@@ -25,6 +26,7 @@ from ..views.ui import embed, view
 from .extra import ExtraCog
 
 log = logging.getLogger(__name__)
+DISCORD_DELIVERY_ERRORS = (discord.HTTPException, aiohttp.ClientError, OSError)
 
 
 class DiscordLogHandler(logging.Handler):
@@ -162,15 +164,19 @@ class TasksCog(commands.Cog):
         """DM an owner-scoped skin alert and report whether delivery succeeded."""
         try:
             user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
-            current = (
-                await alert.persisted_row()
-                .filter(account__user_id=user_id)
-                .select_related("account")
-                .get_or_none()
-            )
-            if current is None:
-                return True
-            alert = current
+        except DISCORD_DELIVERY_ERRORS:
+            log.warning("Could not deliver alert notification")
+            return False
+        current = (
+            await alert.persisted_row()
+            .filter(account__user_id=user_id)
+            .select_related("account")
+            .get_or_none()
+        )
+        if current is None:
+            return True
+        alert = current
+        try:
             locale = discord.Locale.american_english
             skin_name = self.bot.emoji_service.skin_name(
                 offer.skin.name_for(locale)
@@ -198,7 +204,7 @@ class TasksCog(commands.Cog):
                 )
             )
             await user.send(embed=card, view=controls)
-        except discord.HTTPException:
+        except DISCORD_DELIVERY_ERRORS:
             log.warning("Could not deliver alert notification")
             return False
         return True
@@ -211,15 +217,19 @@ class TasksCog(commands.Cog):
             target = self.bot.get_user(user.id) or await self.bot.fetch_user(user.id)
             locale = discord.Locale.american_english
             vp = await self.bot.emoji_service.currency("vp") or "VP"
-            current = await account.persisted_row().select_related("user").get_or_none()
-            if (
-                current is None
-                or current.user_id != user.id
-                or not current.user.daily_shop_enabled
-                or current.user.current_account_id != current.puuid
-            ):
-                return True
-            account = current
+        except DISCORD_DELIVERY_ERRORS:
+            log.warning("Could not deliver daily shop notification")
+            return False
+        current = await account.persisted_row().select_related("user").get_or_none()
+        if (
+            current is None
+            or current.user_id != user.id
+            or not current.user.daily_shop_enabled
+            or current.user.current_account_id != current.puuid
+        ):
+            return True
+        account = current
+        try:
             cards = offer_cards(
                 self.bot.translator.text(
                     locale,
@@ -249,7 +259,7 @@ class TasksCog(commands.Cog):
                 embeds=cards,
                 view=controls if controls.children else None,  # type: ignore[arg-type]
             )
-        except discord.HTTPException:
+        except DISCORD_DELIVERY_ERRORS:
             log.warning("Could not deliver daily shop notification")
             return False
         return True
@@ -264,7 +274,7 @@ class TasksCog(commands.Cog):
                     self.bot.translator.text(locale, "alerts-credentials-expired")
                 )
             )
-        except discord.HTTPException:
+        except DISCORD_DELIVERY_ERRORS:
             log.warning("Could not notify user about expired Riot credentials")
             return 1
         return 0
@@ -295,7 +305,7 @@ class TasksCog(commands.Cog):
             await self._flush_logs()
 
     async def _flush_logs(self) -> None:
-        """Send buffered log lines to Discord and requeue them after HTTP failures."""
+        """Send buffered log lines to Discord and requeue them after delivery failures."""
         if not self.discord_log_handler.messages or not self.bot.config.log_channel_id:
             return
         lines: list[str] = []
@@ -324,7 +334,7 @@ class TasksCog(commands.Cog):
                     colour=0x202225,
                 )
             )
-        except discord.HTTPException:
+        except DISCORD_DELIVERY_ERRORS:
             self.job_health["log_flush"].failure("log_flush")
             for line in reversed(lines):
                 self.discord_log_handler.messages.appendleft(line)

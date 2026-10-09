@@ -11,9 +11,11 @@ from types import SimpleNamespace as NS
 from unittest.mock import AsyncMock, Mock
 from uuid import UUID
 
+import aiohttp
 import asyncpg
 import discord
 import pytest
+from tortoise import connections
 from tortoise.exceptions import DBConnectionError
 
 from src.cogs import extra as extra_module
@@ -22,12 +24,149 @@ from src.cogs.tasks import TasksCog
 from src.models import Account, Alert, User
 from src.services import alerts as alert_service
 from src.services.accounts import delete_user_data
+from src.services.auth import AuthenticationRequired
 from src.services.catalog import Skin
 from src.services.http import HTTPFailure
 from src.services.shop import Offer, ShopData
 from tests.helpers import (
     _localized_bot,
 )
+
+
+@pytest.mark.parametrize("mode", ["skin", "daily", "expired"])
+@pytest.mark.parametrize("stage", ["fetch", "send"])
+@pytest.mark.parametrize(
+    "failure", [aiohttp.ServerDisconnectedError, TimeoutError, OSError]
+)
+async def test_daily_delivery_transport_failure_does_not_stop_or_replay_runs(
+    backend_database, monkeypatch, mode, stage, failure
+):
+    skin = Skin(str(UUID(int=1)), "offer", "Skin", None, None)
+    shop = ShopData([Offer(skin, 100, 4_000_000_000)], [], [], 4_000_000_000, None)
+    for user_id in (101, 102, 103):
+        owner = await User.create(
+            id=user_id,
+            daily_shop_enabled=mode == "daily",
+            current_account_id=str(user_id),
+        )
+        account = await Account.create(
+            puuid=str(user_id), user=owner, username="Synthetic#TEST"
+        )
+        if mode != "daily":
+            await Alert.create(account=account, skin_uuid=skin.uuid)
+    delivered = []
+    failed = False
+
+    def interrupt(user_id, current_stage):
+        nonlocal failed
+        if user_id == 101 and current_stage == stage and not failed:
+            failed = True
+            raise failure("Synthetic Discord disconnect")
+
+    async def fetch_user(user_id):
+        interrupt(user_id, "fetch")
+
+        async def send(**kwargs):
+            interrupt(user_id, "send")
+            delivered.append((cog.daily_alerts.current_loop, user_id))
+
+        return NS(send=send)
+
+    cog = TasksCog(
+        _localized_bot(
+            config=NS(
+                user_agent_interval_minutes=15,
+                game_version_interval_minutes=15,
+                alert_time_utc=utc_time(0, 0),
+                log_flush_interval_seconds=10,
+                alert_concurrency=1,
+                delay_between_alerts_seconds=0,
+                link_item_image=False,
+            ),
+            wait_until_ready=AsyncMock(),
+            get_user=lambda _: None,
+            fetch_user=fetch_user,
+            emoji_service=NS(
+                currency=AsyncMock(return_value="VP"),
+                skin_name=lambda name, tier: name,
+                skin_emoji=lambda tier: "",
+            ),
+            shop=NS(
+                storefront=AsyncMock(
+                    side_effect=AuthenticationRequired("Synthetic expired login")
+                )
+                if mode == "expired"
+                else AsyncMock(return_value=shop)
+            ),
+        )
+    )
+    today = datetime(2026, 10, 9, tzinfo=UTC)
+    tomorrow = today + timedelta(days=1)
+    slots = []
+
+    async def wait_until(slot):
+        slots.append(slot)
+
+    loop = cog.daily_alerts
+    loop.count = 2
+    summaries = []
+    run = cog.run_alerts
+
+    async def record_run():
+        summary = await run()
+        summaries.append(summary)
+        return summary
+
+    monkeypatch.setattr(cog, "run_alerts", record_run)
+    monkeypatch.setattr(loop, "_try_sleep_until", wait_until)
+    monkeypatch.setattr(
+        loop,
+        "_get_next_sleep_time",
+        Mock(side_effect=[today, tomorrow, tomorrow + timedelta(days=1)]),
+    )
+    await loop._loop(cog)
+    assert slots == [today, tomorrow]
+    assert sorted(delivered) == [(0, 102), (0, 103), (1, 101), (1, 102), (1, 103)]
+    assert not loop.failed()
+    assert [summary["delivery_failures"] for summary in summaries] == [1, 0]
+    assert all(summary["shop_failures"] == 0 for summary in summaries)
+    assert cog.job_health["daily_alerts"].failures == 1
+    assert cog.job_health["daily_alerts"].last_success is not None
+
+
+@pytest.mark.parametrize("mode", ["alert", "daily"])
+@pytest.mark.parametrize("failure", [TimeoutError, OSError])
+async def test_delivery_database_failures_are_not_swallowed(
+    backend_database, monkeypatch, mode, failure
+):
+    owner = await User.create(
+        id=101, daily_shop_enabled=True, current_account_id="synthetic"
+    )
+    account = await Account.create(
+        puuid="synthetic", user=owner, username="Synthetic#TEST"
+    )
+    skin = Skin(str(UUID(int=1)), "offer", "Skin", None, None)
+    alert = await Alert.create(account=account, skin_uuid=skin.uuid)
+    target = NS(send=AsyncMock())
+    cog = NS(
+        bot=_localized_bot(
+            get_user=lambda _: target,
+            emoji_service=NS(currency=AsyncMock(return_value="VP")),
+        )
+    )
+    monkeypatch.setattr(
+        connections.get("default"),
+        "execute_query",
+        AsyncMock(side_effect=failure("Synthetic DB outage")),
+    )
+    with pytest.raises(failure, match="DB outage"):
+        if mode == "daily":
+            await TasksCog._send_daily_shop(
+                cog, owner, account, ShopData([], [], [], 0, None)
+            )
+        else:
+            await TasksCog._send_alert(cog, owner.id, alert, Offer(skin, 100, 0))
+    target.send.assert_not_awaited()
 
 
 @pytest.mark.usefixtures("database")

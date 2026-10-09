@@ -9,6 +9,7 @@ from datetime import time as daytime
 from types import SimpleNamespace
 from types import SimpleNamespace as NS
 
+import aiohttp
 import discord
 import pytest
 
@@ -16,6 +17,54 @@ from src import main as entrypoint
 from src import monitoring
 from src.cogs.tasks import DiscordLogHandler, TasksCog
 from src.monitoring import StructuredFormatter, _scrub
+
+
+@pytest.mark.parametrize(
+    "path, expected",
+    [
+        (
+            "channels/123456789012345678/messages/234567890123456789",
+            "channels/[Filtered]/messages/[Filtered]",
+        ),
+        (
+            "guilds/123456789012345678/members/234567890123456789",
+            "guilds/[Filtered]/members/[Filtered]",
+        ),
+        (
+            "guilds/123456789012345678/roles/234567890123456789",
+            "guilds/[Filtered]/roles/[Filtered]",
+        ),
+        ("users/123456789012345678", "users/[Filtered]"),
+        (
+            "webhooks/123456789012345678/AUDIT_SYNTHETIC_TOKEN",
+            "webhooks/[Filtered]/[Filtered]",
+        ),
+        (
+            "interactions/123456789012345678/AUDIT_SYNTHETIC_TOKEN/callback",
+            "interactions/[Filtered]/[Filtered]/callback",
+        ),
+        (
+            "applications/123456789012345678/commands",
+            "applications/[Filtered]/commands",
+        ),
+        ("users/@me", "users/@me"),
+    ],
+)
+def test_rate_limit_warnings_scrub_discord_url_identifiers(path, expected):
+    url = f"https://discord.com/api/v10/{path}"
+    record = logging.LogRecord(
+        "discord.http",
+        logging.WARNING,
+        "http.py",
+        1,
+        "We are being rate limited. POST %s responded with 429. Retrying in 1s.",
+        (url,),
+        None,
+    )
+    formatted = json.loads(StructuredFormatter().format(record))["message"]
+    filtered_url = f"https://discord.com/api/v10/{expected}"
+    assert filtered_url in formatted
+    assert _scrub({"exception": {"url": url}}) == {"exception": {"url": filtered_url}}
 
 
 @pytest.mark.parametrize("verbose", [False, True])
@@ -115,14 +164,31 @@ async def test_log_flush_bounds_single_oversized_record():
     )
 
 
-async def test_split_log_retries_preserve_content_and_order():
+@pytest.mark.parametrize(
+    "failure",
+    [discord.HTTPException, aiohttp.ServerDisconnectedError, TimeoutError, OSError],
+)
+@pytest.mark.parametrize("stage", ["fetch", "send"])
+async def test_split_log_retries_preserve_content_and_order(failure, stage):
     attempts, delivered = [], []
+    interrupted = False
+
+    def interrupt(current_stage):
+        nonlocal interrupted
+        if current_stage == stage and not interrupted:
+            interrupted = True
+            if failure is discord.HTTPException:
+                raise failure(NS(status=503, reason="Unavailable"), "retry")
+            raise failure("Synthetic Discord disconnect")
 
     async def send(*, embed):
         attempts.append(embed.description)
-        if len(attempts) == 1:
-            raise discord.HTTPException(NS(status=503, reason="Unavailable"), "retry")
+        interrupt("send")
         delivered.append(embed.description[4:-4])
+
+    async def fetch_channel(_):
+        interrupt("fetch")
+        return NS(send=send)
 
     cog = TasksCog(
         NS(
@@ -133,16 +199,20 @@ async def test_split_log_retries_preserve_content_and_order():
                 log_flush_interval_seconds=10,
                 log_channel_id=123,
             ),
-            get_channel=lambda _: NS(send=send),
+            get_channel=lambda _: None,
+            fetch_channel=fetch_channel,
         )
     )
     cog.discord_log_handler.messages.extend(["x" * 8000, "last"])
     for _ in range(4):
         await TasksCog.log_flush.coro(cog)
-    assert attempts[0] == attempts[1]
+    if stage == "send":
+        assert attempts[0] == attempts[1]
     assert all(len(attempt) <= 4096 for attempt in attempts)
     assert "".join(delivered) == "x" * 8000 + "\nlast"
     assert not cog.discord_log_handler.messages
+    assert cog.job_health["log_flush"].failures == 1
+    assert cog.job_health["log_flush"].last_success is not None
     for loop in (
         cog.daily_alerts,
         cog.version_refresh,

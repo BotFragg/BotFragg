@@ -42,6 +42,10 @@ _DISCORD_ID = re.compile(
     r"interaction|message)(?:[ _-]?id)?(?:\s*[:=]\s*|\s+)\d{15,22}\b"
     r"|<[@#][!&]?\d{15,22}>"
 )
+_DISCORD_URL_ID = re.compile(
+    r"(?i)(/(?:channels|guilds|users|members|messages|roles|webhooks|"
+    r"interactions|applications)/)\d{15,22}\b"
+)
 _LABELED_SECRET = re.compile(
     r"(?i)\b(authorization|cookie|credential|password|secret|token|rso|idt|ent|"
     r"auth[_ -]?blob|access[_ -]?token|refresh[_ -]?token|id[_ -]?token)\b"
@@ -108,6 +112,7 @@ def _scrub(value: Any) -> Any:
         )
         value = _JWT.sub("[Filtered]", value)
         value = _UUID.sub("[Filtered]", value)
+        value = _DISCORD_URL_ID.sub(r"\1[Filtered]", value)
         return _DISCORD_ID.sub("[Filtered]", value)
     return value
 

@@ -522,7 +522,7 @@ Background loops for daily alerts, catalog refresh, and Discord log delivery.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L30)
+[Source](../src/cogs/tasks.py#L32)
 
 Buffer privacy-filtered structured log lines for periodic Discord delivery.
 
@@ -530,7 +530,7 @@ Buffer privacy-filtered structured log lines for periodic Discord delivery.
 
 **Scope:** `src/cogs/tasks.py` · `DiscordLogHandler`
 
-[Source](../src/cogs/tasks.py#L33)
+[Source](../src/cogs/tasks.py#L35)
 
 Create a bounded log buffer using BotFragg's privacy-aware formatter.
 
@@ -538,7 +538,7 @@ Create a bounded log buffer using BotFragg's privacy-aware formatter.
 
 **Scope:** `src/cogs/tasks.py` · `DiscordLogHandler`
 
-[Source](../src/cogs/tasks.py#L39)
+[Source](../src/cogs/tasks.py#L41)
 
 Format a log record into the buffer or delegate failures to logging.
 
@@ -546,7 +546,7 @@ Format a log record into the buffer or delegate failures to logging.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L47)
+[Source](../src/cogs/tasks.py#L49)
 
 Own periodic application jobs and stop them cleanly when unloaded.
 
@@ -554,7 +554,7 @@ Own periodic application jobs and stop them cleanly when unloaded.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L50)
+[Source](../src/cogs/tasks.py#L52)
 
 Set job intervals from settings and prepare the optional log handler.
 
@@ -562,7 +562,7 @@ Set job intervals from settings and prepare the optional log handler.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L83)
+[Source](../src/cogs/tasks.py#L85)
 
 Start background loops and attach the log handler when configured.
 
@@ -570,7 +570,7 @@ Start background loops and attach the log handler when configured.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L94)
+[Source](../src/cogs/tasks.py#L96)
 
 Cancel and await all active loops, then detach the root log handler.
 
@@ -578,7 +578,7 @@ Cancel and await all active loops, then detach the root log handler.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L117)
+[Source](../src/cogs/tasks.py#L119)
 
 Run the daily shop and skin-alert job inside a monitoring transaction.
 
@@ -586,7 +586,7 @@ Run the daily shop and skin-alert job inside a monitoring transaction.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L131)
+[Source](../src/cogs/tasks.py#L133)
 
 Process eligible users' shops and return counts for the completed run.
 
@@ -594,7 +594,7 @@ Process eligible users' shops and return counts for the completed run.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L144)
+[Source](../src/cogs/tasks.py#L146)
 
 Deliver matching alerts and the optional daily shop; count failed DMs.
 
@@ -602,7 +602,7 @@ Deliver matching alerts and the optional daily shop; count failed DMs.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L161)
+[Source](../src/cogs/tasks.py#L163)
 
 DM an owner-scoped skin alert and report whether delivery succeeded.
 
@@ -610,7 +610,7 @@ DM an owner-scoped skin alert and report whether delivery succeeded.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L206)
+[Source](../src/cogs/tasks.py#L212)
 
 DM the selected account's daily shop and report delivery success.
 
@@ -618,7 +618,7 @@ DM the selected account's daily shop and report delivery success.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L257)
+[Source](../src/cogs/tasks.py#L267)
 
 Notify a user that credentials expired and return the delivery failure count.
 
@@ -626,7 +626,7 @@ Notify a user that credentials expired and return the delivery failure count.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L273)
+[Source](../src/cogs/tasks.py#L283)
 
 Refresh the Riot client version used in authenticated API requests.
 
@@ -634,7 +634,7 @@ Refresh the Riot client version used in authenticated API requests.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L282)
+[Source](../src/cogs/tasks.py#L292)
 
 Refresh the VALORANT catalog when its upstream version changes.
 
@@ -642,7 +642,7 @@ Refresh the VALORANT catalog when its upstream version changes.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L292)
+[Source](../src/cogs/tasks.py#L302)
 
 Measure log delivery, preserving the queue after Discord failures.
 
@@ -650,15 +650,15 @@ Measure log delivery, preserving the queue after Discord failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L297)
+[Source](../src/cogs/tasks.py#L307)
 
-Send buffered log lines to Discord and requeue them after HTTP failures.
+Send buffered log lines to Discord and requeue them after delivery failures.
 
 ### `async def health_watch(self) -> None`
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L333)
+[Source](../src/cogs/tasks.py#L343)
 
 Publish Discord, database, and scheduled-job health for Docker and operators.
 
@@ -666,7 +666,7 @@ Publish Discord, database, and scheduled-job health for Docker and operators.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L384)
+[Source](../src/cogs/tasks.py#L394)
 
 Wait for Discord readiness before starting any background job.
 
@@ -674,7 +674,7 @@ Wait for Discord readiness before starting any background job.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L389)
+[Source](../src/cogs/tasks.py#L399)
 
 Register the background-task cog with the bot.
 
@@ -1758,7 +1758,7 @@ Structured logging and privacy filters for logs and GlitchTip events.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L64)
+[Source](../src/monitoring.py#L68)
 
 Format log records as JSON after filtering sensitive values.
 
@@ -1766,7 +1766,7 @@ Format log records as JSON after filtering sensitive values.
 
 **Scope:** `src/monitoring.py` · `StructuredFormatter`
 
-[Source](../src/monitoring.py#L67)
+[Source](../src/monitoring.py#L71)
 
 Serialize a scrubbed log record and its safe structured fields.
 
@@ -1774,7 +1774,7 @@ Serialize a scrubbed log record and its safe structured fields.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L86)
+[Source](../src/monitoring.py#L90)
 
 Filter credentials and personal identifiers from nested event data.
 
@@ -1782,7 +1782,7 @@ Filter credentials and personal identifiers from nested event data.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L115)
+[Source](../src/monitoring.py#L120)
 
 Drop network and unrelated log breadcrumbs, then scrub retained data.
 
@@ -1790,7 +1790,7 @@ Drop network and unrelated log breadcrumbs, then scrub retained data.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L129)
+[Source](../src/monitoring.py#L134)
 
 Remove request data and sensitive values from an error event.
 
@@ -1798,7 +1798,7 @@ Remove request data and sensitive values from an error event.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L136)
+[Source](../src/monitoring.py#L141)
 
 Remove request payloads and HTTP span details from a transaction.
 
@@ -1806,7 +1806,7 @@ Remove request payloads and HTTP span details from a transaction.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L147)
+[Source](../src/monitoring.py#L152)
 
 Keep BotFragg logs and serious Discord errors after removing URL data.
 
@@ -1814,7 +1814,7 @@ Keep BotFragg logs and serious Discord errors after removing URL data.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L161)
+[Source](../src/monitoring.py#L166)
 
 Return the installed BotFragg release label or an unknown fallback.
 
@@ -1822,7 +1822,7 @@ Return the installed BotFragg release label or an unknown fallback.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L169)
+[Source](../src/monitoring.py#L174)
 
 Enable privacy-filtered GlitchTip telemetry when a DSN is configured.
 
@@ -1830,7 +1830,7 @@ Enable privacy-filtered GlitchTip telemetry when a DSN is configured.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L199)
+[Source](../src/monitoring.py#L204)
 
 Start a GlitchTip transaction with the supplied name and operation.
 
@@ -1838,7 +1838,7 @@ Start a GlitchTip transaction with the supplied name and operation.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L204)
+[Source](../src/monitoring.py#L209)
 
 End the current monitoring session and flush queued telemetry.
 
