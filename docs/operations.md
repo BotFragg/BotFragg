@@ -44,6 +44,14 @@ as a delivery failure. Recoverable per-account failures do not stop the loop or
 re-send the day's successful notifications; health recovers after a clean daily
 run. Check Discord DM permissions as well as upstream availability when investigating.
 
+Daily lookups get at most three attempts: rate limits wait for the HTTP client's
+bounded host cooldown, and transient database errors wait five seconds between
+attempts. Only the failed lookup is retried; delivered notifications are not
+replayed. Exhausted database retries leave recovery to the next scheduled run.
+Unreadable encrypted credentials count as a shop failure for that account and
+remain stored for recovery with the matching key. Incomplete skin catalogs also
+count as shop failures and are not cached as complete daily shops.
+
 Structured logs include background-job durations, daily run counts, failures,
 and health-state transitions. The existing privacy filter applies to these
 logs and optional GlitchTip telemetry. Frequent log/shard completion messages

@@ -86,9 +86,7 @@ class HTTPClient:
         host = urlsplit(url).hostname or "unknown"
         retry_at = self._limited_until.get(host, 0)
         if retry_at > time.monotonic():
-            raise HTTPFailure(
-                f"Rate limited for {retry_at - time.monotonic():.0f} seconds"
-            )
+            raise RateLimited(retry_at - time.monotonic())
         if self.config.log_urls:
             log.info("%s %s", method, _safe_log_url(url))
         try:
@@ -109,9 +107,7 @@ class HTTPClient:
                         self._limited_until.get(host, 0), time.monotonic() + seconds
                     )
                     self._limited_until[host] = retry_at
-                    raise HTTPFailure(
-                        f"Rate limited for {retry_at - time.monotonic():.0f} seconds"
-                    )
+                    raise RateLimited(retry_at - time.monotonic())
                 return HTTPResult(response.status, body)
         except TimeoutError as exc:
             raise HTTPFailure("Request timed out") from exc
@@ -137,3 +133,12 @@ class HTTPClient:
 
 class HTTPFailure(RuntimeError):
     """Raised for rate limits, transport/decoding failures, and request timeouts."""
+
+
+class RateLimited(HTTPFailure):
+    """Expose the remaining host cooldown to callers that can defer a lookup."""
+
+    def __init__(self, retry_after: float) -> None:
+        """Retain the failure message and a nonnegative retry delay."""
+        self.retry_after = max(0, retry_after)
+        super().__init__(f"Rate limited for {self.retry_after:.0f} seconds")

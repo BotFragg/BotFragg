@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Fixed
+
+- Retry daily alert lookups after Riot rate limits and transient database errors without replaying delivered notifications.
+- Keep unreadable stored credentials intact and isolate their failure to the affected account.
+- Reject incomplete daily shop catalogs instead of caching empty or partial results.
+
 ## [1.2.0] - 2026-10-08
 
 ### Added

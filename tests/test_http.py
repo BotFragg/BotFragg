@@ -14,7 +14,7 @@ from discord.ext.tasks import ExponentialBackoff
 
 from src.cogs.tasks import TasksCog
 from src.services.auth import AuthService
-from src.services.http import HTTPClient, HTTPFailure, _safe_log_url
+from src.services.http import HTTPClient, HTTPFailure, RateLimited, _safe_log_url
 
 
 @asynccontextmanager
@@ -118,12 +118,14 @@ async def test_retry_after_sets_the_requested_host_cooldown(as_date):
         http = client()
         await http.start()
         try:
-            with pytest.raises(HTTPFailure):
+            with pytest.raises(RateLimited) as failure:
                 await http.request("GET", url)
+            assert 598 <= failure.value.retry_after <= 602
             remaining = http._limited_until["127.0.0.1"] - time.monotonic()
             assert 598 <= remaining <= 602
-            with pytest.raises(HTTPFailure):
+            with pytest.raises(RateLimited) as failure:
                 await http.request("GET", url)
+            assert 598 <= failure.value.retry_after <= 602
         finally:
             await http.close()
 

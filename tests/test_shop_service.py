@@ -54,6 +54,36 @@ async def test_malformed_optional_bundles_do_not_break_daily_shop(featured):
     assert len(data.offers) == 1
 
 
+@pytest.mark.parametrize("known_offer", [False, True])
+async def test_incomplete_catalog_is_not_cached_as_a_complete_shop(known_offer):
+    catalog = CatalogService(NS())
+    first = Skin("first", "first-offer", "First", None, None)
+    second = Skin("second", "second-offer", "Second", None, None)
+    catalog.skins = {first.uuid: first} if known_offer else {}
+    catalog._reindex()
+    raw = {
+        "SkinsPanelLayout": {
+            "SingleItemOffersRemainingDurationInSeconds": 86400,
+            "SingleItemOffers": [first.offer_uuid, second.offer_uuid],
+        }
+    }
+    http = NS(request=AsyncMock(return_value=NS(status=200, data=raw)))
+    shop = ShopService(
+        NS(use_shop_cache=True),
+        http,
+        NS(auth_headers=AsyncMock(return_value={})),
+        catalog,
+    )
+    account = NS(puuid="synthetic", region="na")
+    with pytest.raises(ShopUnavailable, match="catalog"):
+        await shop.storefront(account)
+    catalog.skins = {first.uuid: first, second.uuid: second}
+    catalog._reindex()
+    recovered = await shop.storefront(account)
+    assert [offer.skin.uuid for offer in recovered.offers] == [first.uuid, second.uuid]
+    assert http.request.await_count == 2
+
+
 async def test_night_market_expiry_invalidates_whole_storefront(monkeypatch):
     clock = [1000]
     monkeypatch.setattr("src.services.shop.time.time", lambda: clock[0])

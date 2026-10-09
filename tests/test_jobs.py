@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from datetime import time as utc_time
 from types import SimpleNamespace
 from types import SimpleNamespace as NS
@@ -17,6 +17,7 @@ from tortoise.exceptions import DBConnectionError
 
 from src.cogs.extra import ExtraCog
 from src.cogs.tasks import TasksCog
+from src.services import alerts as alert_service
 from src.services.http import HTTPFailure
 from tests.helpers import (
     _localized_bot,
@@ -105,6 +106,51 @@ async def test_refresh_loop_survives_transient_http_failure():
         loop.cancel()
         await asyncio.gather(task, return_exceptions=True)
     assert not loop.failed()
+
+
+async def test_clock_scheduled_daily_job_recovers_database_read_in_same_run(
+    monkeypatch,
+):
+    lookup = AsyncMock(side_effect=[DBConnectionError("Synthetic restart"), set()])
+    delay = AsyncMock()
+    monkeypatch.setattr(alert_service, "user_ids_with_alerts", lookup)
+    monkeypatch.setattr(
+        alert_service, "daily_shop_user_ids", AsyncMock(return_value=set())
+    )
+    monkeypatch.setattr(alert_service.asyncio, "sleep", delay)
+    cog = TasksCog(
+        NS(
+            config=NS(
+                user_agent_interval_minutes=15,
+                game_version_interval_minutes=15,
+                alert_time_utc=(datetime.now(UTC) + timedelta(seconds=1)).timetz(),
+                log_flush_interval_seconds=10,
+                alert_concurrency=1,
+                delay_between_alerts_seconds=0,
+            ),
+            wait_until_ready=AsyncMock(),
+            shop=NS(),
+        )
+    )
+    complete = asyncio.Event()
+    original = cog.run_alerts
+
+    async def run():
+        summary = await original()
+        complete.set()
+        return summary
+
+    cog.run_alerts = run
+    task = cog.daily_alerts.start()
+    try:
+        await asyncio.wait_for(complete.wait(), 5)
+        assert lookup.await_count == 2
+        delay.assert_any_await(5)
+        assert cog.job_health["daily_alerts"].last_success is not None
+        assert not cog.daily_alerts.failed()
+    finally:
+        cog.daily_alerts.cancel()
+        await asyncio.gather(task, return_exceptions=True)
 
 
 @pytest.mark.parametrize("job", ["daily", "shard"])

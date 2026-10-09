@@ -74,6 +74,23 @@ def refresh_jwt(**claims):
 
 
 @pytest.mark.usefixtures("database")
+@pytest.mark.parametrize("operation", ["ensure", "refresh", "auth_headers"])
+async def test_unreadable_credentials_are_recoverable_and_preserved(operation):
+    user = await User.create(id=108)
+    account = await Account.create(
+        puuid="unreadable",
+        user=user,
+        username="Synthetic#TEST",
+        auth_blob="invalid-ciphertext",
+    )
+    auth = auth_service()
+    with pytest.raises(HTTPFailure, match="credentials"):
+        await getattr(auth, operation)(account)
+    saved = await Account.get(puuid=account.puuid)
+    assert saved.auth_blob == "invalid-ciphertext" and saved.auth_version == 0
+
+
+@pytest.mark.usefixtures("database")
 async def test_login_can_reauthenticate_an_account_at_capacity():
     user = await User.create(id=103)
     await Account.create(

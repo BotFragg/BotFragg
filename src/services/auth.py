@@ -80,6 +80,13 @@ class AuthService:
             WeakValueDictionary()
         )
 
+    def _credentials(self, account: Account) -> dict[str, Any]:
+        """Normalize unreadable credentials without overwriting the stored blob."""
+        try:
+            return self.vault.decrypt(account.auth_blob)
+        except ValueError as exc:
+            raise HTTPFailure("Stored Riot credentials cannot be read") from exc
+
     @asynccontextmanager
     async def cancel_logins(self, discord_id: int) -> AsyncIterator[None]:
         """Invalidate login attempts and serialize deletion with their database commits."""
@@ -293,7 +300,7 @@ class AuthService:
         self, account: Account, *, force: bool = False
     ) -> AuthResult:
         """Check token lifetime and repair or refresh credentials while holding its lock."""
-        auth = self.vault.decrypt(account.auth_blob)
+        auth = self._credentials(account)
         if not isinstance(auth.get("rso"), str) or not auth["rso"]:
             return AuthResult(False, account=account)
         remaining = token_expiry(auth["rso"]) - time.time()
@@ -324,7 +331,7 @@ class AuthService:
         self, account: Account, *, force: bool = False
     ) -> AuthResult:
         """Refresh tokens with version-checked persistence to protect concurrent updates."""
-        auth = self.vault.decrypt(account.auth_blob)
+        auth = self._credentials(account)
         if (
             not force
             and token_expiry(auth.get("rso")) - time.time()
@@ -427,7 +434,7 @@ class AuthService:
             if not result.success or not result.account:
                 raise AuthenticationRequired("Riot login is required")
             current = result.account
-            auth = self.vault.decrypt(current.auth_blob)
+            auth = self._credentials(current)
             if any(
                 not isinstance(auth.get(key), str) or not auth[key]
                 for key in ("rso", "ent")
@@ -467,7 +474,7 @@ class AuthService:
             return AuthResult(False)
         if changed:
             return AuthResult(True, account=current)
-        current_auth = self.vault.decrypt(current.auth_blob)
+        current_auth = self._credentials(current)
         usable = (
             all(
                 isinstance(current_auth.get(key), str) and current_auth[key]

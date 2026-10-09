@@ -172,6 +172,8 @@ class ShopService:
             for offer_id in offer_ids
             if (skin := self.catalog.get_skin(str(offer_id)))
         ]
+        if len(offers) != len(offer_ids):
+            raise ShopUnavailable("Skin catalog is incomplete")
         bonus = _mapping(raw.get("BonusStore"))
         night_duration = _int_at_least(
             bonus.get("BonusStoreRemainingDurationInSeconds"), 0

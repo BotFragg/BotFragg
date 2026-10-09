@@ -10,7 +10,7 @@ from uuid import UUID
 
 import pytest
 from cryptography.fernet import Fernet
-from tortoise.exceptions import IntegrityError
+from tortoise.exceptions import DBConnectionError, IntegrityError
 
 from src.models import (
     Account,
@@ -38,12 +38,183 @@ from src.services.catalog import (
     Skin,
 )
 from src.services.crypto import AuthVault
+from src.services.http import HTTPResult, RateLimited
 from src.services.shop import (
     Offer,
     ShopData,
     ShopService,
     ShopUnavailable,
 )
+
+
+@pytest.mark.parametrize("failure", ["database", "rate_limit", "ordinary_shop"])
+async def test_lookup_retries_are_bounded_and_only_transient(failure, monkeypatch):
+    if failure == "database":
+        error = DBConnectionError("Synthetic outage")
+    else:
+        error = ShopUnavailable("Synthetic outage")
+        if failure == "rate_limit":
+            error.__cause__ = RateLimited(60)
+    operation = AsyncMock(side_effect=error)
+    delay = AsyncMock()
+    monkeypatch.setattr(alert_service.asyncio, "sleep", delay)
+    with pytest.raises(type(error)):
+        await alert_service._retry_lookup(operation)
+    assert operation.await_count == (1 if failure == "ordinary_shop" else 3)
+    assert delay.await_count == (0 if failure == "ordinary_shop" else 2)
+
+
+async def test_lookup_retry_preserves_cancellation(monkeypatch):
+    operation = AsyncMock(side_effect=DBConnectionError("Synthetic outage"))
+    monkeypatch.setattr(
+        alert_service.asyncio, "sleep", AsyncMock(side_effect=asyncio.CancelledError)
+    )
+    with pytest.raises(asyncio.CancelledError):
+        await alert_service._retry_lookup(operation)
+    operation.assert_awaited_once()
+
+
+@pytest.mark.usefixtures("database")
+async def test_daily_rate_limit_retries_the_account_before_advancing(monkeypatch):
+    owner = await User.create(id=108)
+    accounts = [
+        await Account.create(puuid=f"retry-{i}", user=owner, username="Synthetic#TEST")
+        for i in range(2)
+    ]
+    skin = Skin(str(UUID(int=1)), "offer", "Synthetic", None, None)
+    for account in accounts:
+        await Alert.create(account=account, skin_uuid=skin.uuid)
+    raw = {
+        "SkinsPanelLayout": {
+            "SingleItemOffersRemainingDurationInSeconds": 86400,
+            "SingleItemOffers": ["offer"],
+        }
+    }
+    http = NS(
+        request=AsyncMock(
+            side_effect=[
+                RateLimited(60),
+                HTTPResult(200, raw),
+                HTTPResult(200, raw),
+            ]
+        )
+    )
+    shop = ShopService(
+        NS(use_shop_cache=False),
+        http,
+        NS(auth_headers=AsyncMock(return_value={})),
+        NS(get_skin=lambda _: skin, update_prices=lambda _: None),
+    )
+    delay = AsyncMock()
+    delivery = AsyncMock(return_value=0)
+    monkeypatch.setattr(alert_service.asyncio, "sleep", delay)
+    summary = await run_daily_alerts(
+        shop,
+        alert_concurrency=1,
+        delay_between_alerts_seconds=0,
+        dry_run=False,
+        on_shop=delivery,
+        on_credentials_expired=AsyncMock(return_value=0),
+    )
+    assert summary["shops"] == 2 and summary["failures"] == 0
+    delay.assert_awaited_once_with(60)
+    assert [call.args[2].puuid for call in delivery.await_args_list] == [
+        account.puuid for account in accounts
+    ]
+
+
+@pytest.mark.usefixtures("database")
+async def test_daily_database_retry_does_not_repeat_delivered_accounts(monkeypatch):
+    owner = await User.create(id=109)
+    accounts = [
+        await Account.create(puuid=f"db-{i}", user=owner, username="Synthetic#TEST")
+        for i in range(2)
+    ]
+    skin = str(UUID(int=1))
+    for account in accounts:
+        await Alert.create(account=account, skin_uuid=skin)
+    original_matches = alert_service.matching_alerts_for_skins
+    failed = False
+
+    async def matches(account, skins):
+        nonlocal failed
+        if account.puuid == accounts[1].puuid and not failed:
+            failed = True
+            raise DBConnectionError("Synthetic interrupted read")
+        return await original_matches(account, skins)
+
+    delay = AsyncMock()
+    delivery = AsyncMock(return_value=0)
+    monkeypatch.setattr(alert_service, "matching_alerts_for_skins", matches)
+    monkeypatch.setattr(alert_service.asyncio, "sleep", delay)
+    summary = await run_daily_alerts(
+        NS(storefront=AsyncMock(return_value=shop_data(skin))),
+        alert_concurrency=1,
+        delay_between_alerts_seconds=0,
+        dry_run=False,
+        on_shop=delivery,
+        on_credentials_expired=AsyncMock(return_value=0),
+    )
+    assert summary["shops"] == 2 and summary["alerts"] == 2
+    assert summary["failures"] == 0
+    delay.assert_awaited_once_with(5)
+    assert [call.args[2].puuid for call in delivery.await_args_list] == [
+        account.puuid for account in accounts
+    ]
+
+
+@pytest.mark.usefixtures("database")
+async def test_unreadable_credentials_do_not_abort_other_daily_accounts():
+    from tests.helpers import _fake_access_token
+
+    owner = await User.create(id=110)
+    vault = AuthVault(Fernet.generate_key().decode())
+    bad = await Account.create(
+        puuid="bad", user=owner, username="Bad#TEST", auth_blob="invalid-ciphertext"
+    )
+    good = await Account.create(
+        puuid="good",
+        user=owner,
+        username="Good#TEST",
+        auth_blob=vault.encrypt({"rso": _fake_access_token(), "ent": "synthetic"}),
+    )
+    skin = Skin(str(UUID(int=1)), "offer", "Synthetic", None, None)
+    for account in (bad, good):
+        await Alert.create(account=account, skin_uuid=skin.uuid)
+    config = NS(use_shop_cache=False, token_refresh_buffer_minutes=5)
+    http = NS(
+        request=AsyncMock(
+            return_value=HTTPResult(
+                200,
+                {
+                    "SkinsPanelLayout": {
+                        "SingleItemOffersRemainingDurationInSeconds": 86400,
+                        "SingleItemOffers": ["offer"],
+                    }
+                },
+            )
+        )
+    )
+    shop = ShopService(
+        config,
+        http,
+        AuthService(config, http, vault),
+        NS(get_skin=lambda _: skin, update_prices=lambda _: None),
+    )
+    delivery, notice = AsyncMock(return_value=0), AsyncMock(return_value=0)
+    summary = await run_daily_alerts(
+        shop,
+        alert_concurrency=1,
+        delay_between_alerts_seconds=0,
+        dry_run=False,
+        on_shop=delivery,
+        on_credentials_expired=notice,
+    )
+    assert summary["shop_failures"] == 1 and summary["shops"] == 1
+    delivery.assert_awaited_once()
+    assert delivery.await_args.args[2].puuid == good.puuid
+    notice.assert_not_awaited()
+    assert (await Account.get(puuid=bad.puuid)).auth_blob == "invalid-ciphertext"
 
 
 @pytest.mark.usefixtures("database")
