@@ -208,10 +208,18 @@ async def test_unreadable_credentials_are_recoverable_and_preserved(operation):
     assert saved.auth_blob == "invalid-ciphertext" and saved.auth_version == 0
 
 
-@pytest.mark.parametrize("operation", ["ensure", "refresh", "auth_headers"])
-@pytest.mark.parametrize("deletion", ["failed", "deleted", "relinked"])
+@pytest.mark.parametrize(
+    "operation, phase",
+    [
+        (operation, phase)
+        for operation in ("ensure", "refresh", "auth_headers")
+        for phase in ("initial_read", "exchange", "entitlement")
+        if operation != "refresh" or phase != "entitlement"
+    ],
+)
+@pytest.mark.parametrize("deletion", ["failed", "deleted", "relinked", "retried"])
 async def test_inflight_refresh_respects_successful_deletion(
-    backend_database, monkeypatch, operation, deletion
+    backend_database, monkeypatch, operation, deletion, phase
 ):
     service = auth_service()
     owner = await User.create(id=112)
@@ -220,14 +228,20 @@ async def test_inflight_refresh_respects_successful_deletion(
         user=owner,
         username="Synthetic#TEST",
         auth_blob=service.vault.encrypt(
-            {"rso": _fake_access_token(-1), "refresh_token": "old"}
+            {
+                "rso": _fake_access_token()
+                if phase == "entitlement"
+                else _fake_access_token(-1),
+                "refresh_token": "old",
+            }
         ),
     )
     entered, resume = asyncio.Event(), asyncio.Event()
 
     async def exchange(*args, **kwargs):
-        entered.set()
-        await resume.wait()
+        if phase == "exchange":
+            entered.set()
+            await resume.wait()
         return HTTPResult(
             200,
             {
@@ -237,10 +251,38 @@ async def test_inflight_refresh_respects_successful_deletion(
         )
 
     service.http = NS(request=AsyncMock(side_effect=exchange))
-    service._entitlement = AsyncMock(return_value="new-ent")
+
+    async def entitlement(auth):
+        if phase == "entitlement" and not resume.is_set():
+            entered.set()
+            await resume.wait()
+            return None
+        return "new-ent"
+
+    service._entitlement = AsyncMock(side_effect=entitlement)
+    if phase == "initial_read":
+        connection = connections.get("default")
+        original_query = connection.execute_query
+
+        async def delayed_read(query, values=None):
+            result = await original_query(query, values)
+            if (
+                query.startswith("SELECT")
+                and '"account"' in query
+                and not entered.is_set()
+            ):
+                entered.set()
+                await resume.wait()
+            return result
+
+        monkeypatch.setattr(connection, "execute_query", delayed_read)
     task = asyncio.create_task(getattr(service, operation)(account))
     try:
         await asyncio.wait_for(entered.wait(), timeout=5)
+        if deletion == "retried":
+            with pytest.raises(DBConnectionError):
+                async with service.cancel_logins(owner.id):
+                    raise DBConnectionError("Synthetic first deletion rollback")
         if deletion != "failed":
             async with service.cancel_logins(owner.id):
                 assert await delete_user_data(owner.id)
@@ -279,7 +321,9 @@ async def test_inflight_refresh_respects_successful_deletion(
             else:
                 assert not (await task).success
             assert not service._pending_refresh
-            service._entitlement.assert_not_awaited()
+            assert service._entitlement.await_count == (
+                1 if phase == "entitlement" else 0
+            )
             if deletion == "relinked":
                 saved = await Account.get(puuid=account.puuid)
                 assert saved.auth_blob == replacement.auth_blob
@@ -298,7 +342,10 @@ async def test_inflight_refresh_respects_successful_deletion(
             saved = await Account.get(puuid=account.puuid)
             assert service.vault.decrypt(saved.auth_blob)["refresh_token"] == "rotated"  # noqa: S105
             assert not service._pending_refresh
-        assert service.http.request.await_count == (2 if deletion == "relinked" else 1)
+        initial_requests = int(phase == "exchange" or deletion == "failed")
+        assert service.http.request.await_count == initial_requests + int(
+            deletion == "relinked"
+        )
     finally:
         resume.set()
         if not task.done():
@@ -586,7 +633,9 @@ async def test_refresh_does_not_attach_old_tokens_to_a_newer_version(
         return NS(get_or_none=read_after_login)
 
     monkeypatch.setattr(Account, "persisted_row", row)
-    result = await service._refresh_locked(account, force=True)
+    result = await service._refresh_locked(
+        account, cancelled=asyncio.Event(), force=True
+    )
     saved = await Account.get(puuid=account.puuid)
     assert result.success and saved.auth_version == 2
     assert vault.decrypt(saved.auth_blob) == login_auth

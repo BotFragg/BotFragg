@@ -15,8 +15,11 @@ def main() -> None:
     handler = logging.StreamHandler()
     handler.setFormatter(StructuredFormatter())
     logging.basicConfig(
-        level=logging.DEBUG if config.verbose_logging else logging.INFO,
+        level=logging.INFO,
         handlers=[handler],
+    )
+    logging.getLogger("src").setLevel(
+        logging.DEBUG if config.verbose_logging else logging.INFO
     )
     configure_monitoring(config)
     bot = BotFraggBot(config)

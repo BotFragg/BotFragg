@@ -36,6 +36,45 @@ from tests.helpers import (
 )
 
 
+async def test_failed_extension_load_cleans_handlers_and_allows_retry(monkeypatch):
+    name = "src.cogs.valorant.accounts"
+    for extension in ("accounts", "settings"):
+        module = f"src.cogs.valorant.{extension}"
+        monkeypatch.setitem(sys.modules, module, sys.modules[module])
+        monkeypatch.setattr(
+            sys.modules["src.cogs.valorant"], extension, sys.modules[module]
+        )
+    config = SimpleNamespace(
+        shard_count=None, token_encryption_key=Fernet.generate_key().decode()
+    )
+
+    async def collision(interaction):
+        pass
+
+    async with BotFraggBot(config) as bot:
+        await bot.load_extension("src.cogs.valorant.settings")
+        existing = dict(bot.component_handlers)
+        with pytest.raises(discord.ClientException, match="already loaded"):
+            await bot.add_cog(bot.get_cog("SettingsCog"))
+        assert bot.component_handlers == existing
+        bot.tree.add_command(
+            discord.app_commands.Command(
+                name="account", description="Synthetic collision", callback=collision
+            )
+        )
+        with pytest.raises(commands.ExtensionFailed):
+            await bot.load_extension(name)
+        assert bot.get_cog("AccountsCog") is None
+        assert bot.component_handlers == existing
+        bot.tree.remove_command("account")
+        await bot.load_extension(name)
+        assert "accounts_page" in bot.component_handlers
+        assert all(
+            bot.component_handlers[action] == handler
+            for action, handler in existing.items()
+        )
+
+
 @pytest.mark.parametrize(
     "extension", ["accounts", "alerts", "login", "penalties", "settings", "shop"]
 )

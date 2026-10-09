@@ -94,11 +94,27 @@ Log failed prefix commands and reply with a generic error message.
 
 Register a persistent component action, rejecting duplicate action names.
 
-### `async def remove_cog(self, name: str, /, *, guild: discord.abc.Snowflake | None = discord.utils.MISSING, guilds: Sequence[discord.abc.Snowflake] = discord.utils.MISSING) -> commands.Cog | None`
+### `def _remove_component_handlers(self, cog: commands.Cog) -> None`
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
 [Source](../src/bot.py#L198)
+
+Discard only the handlers bound to the given cog instance.
+
+### `async def add_cog(self, cog: commands.Cog, /, *, override: bool = False, guild: discord.abc.Snowflake | None = discord.utils.MISSING, guilds: Sequence[discord.abc.Snowflake] = discord.utils.MISSING) -> None`
+
+**Scope:** `src/bot.py` · `BotFraggBot`
+
+[Source](../src/bot.py#L206)
+
+Discard a failed cog's component handlers so loading it can be retried.
+
+### `async def remove_cog(self, name: str, /, *, guild: discord.abc.Snowflake | None = discord.utils.MISSING, guilds: Sequence[discord.abc.Snowflake] = discord.utils.MISSING) -> commands.Cog | None`
+
+**Scope:** `src/bot.py` · `BotFraggBot`
+
+[Source](../src/bot.py#L226)
 
 Remove a cog's component handlers along with its commands and listeners.
 
@@ -106,7 +122,7 @@ Remove a cog's component handlers along with its commands and listeners.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L216)
+[Source](../src/bot.py#L240)
 
 Initialize shared resources, load extensions, and optionally sync commands.
 
@@ -114,7 +130,7 @@ Initialize shared resources, load extensions, and optionally sync commands.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L253)
+[Source](../src/bot.py#L277)
 
 Set the online activity and log the connected shard and guild counts.
 
@@ -122,7 +138,7 @@ Set the online activity and log the connected shard and guild counts.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L266)
+[Source](../src/bot.py#L290)
 
 Close Discord, Riot HTTP, database, and monitoring resources in order.
 
@@ -2126,7 +2142,7 @@ Serialize deletion with login commits and discard late tokens after success.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L111)
+[Source](../src/services/auth.py#L112)
 
 Fetch Riot's current client version for authenticated request headers.
 
@@ -2134,7 +2150,7 @@ Fetch Riot's current client version for authenticated request headers.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L130)
+[Source](../src/services/auth.py#L131)
 
 Return the platform and current client-version headers expected by Riot.
 
@@ -2142,7 +2158,7 @@ Return the platform and current client-version headers expected by Riot.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L140)
+[Source](../src/services/auth.py#L141)
 
 Create a Riot authorization URL and retain a short-lived per-user nonce.
 
@@ -2150,7 +2166,7 @@ Create a Riot authorization URL and retain a short-lived per-user nonce.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L155)
+[Source](../src/services/auth.py#L156)
 
 Exchange a callback code, verify its nonce, and securely link the account.
 
@@ -2162,15 +2178,15 @@ rejected without replacing the existing owner.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L297)
+[Source](../src/services/auth.py#L298)
 
 Serialize credential checks for an account and return its usable auth state.
 
-### `async def _ensure_locked(self, account: Account, *, force: bool = False) -> AuthResult`
+### `async def _ensure_locked(self, account: Account, *, cancelled: asyncio.Event, force: bool = False) -> AuthResult`
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L308)
+[Source](../src/services/auth.py#L312)
 
 Check token lifetime and repair or refresh credentials while holding its lock.
 
@@ -2178,15 +2194,15 @@ Check token lifetime and repair or refresh credentials while holding its lock.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L335)
+[Source](../src/services/auth.py#L341)
 
 Refresh one account's Riot tokens under its per-account lock.
 
-### `async def _refresh_locked(self, account: Account, *, force: bool = False) -> AuthResult`
+### `async def _refresh_locked(self, account: Account, *, cancelled: asyncio.Event, force: bool = False) -> AuthResult`
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L346)
+[Source](../src/services/auth.py#L355)
 
 Refresh tokens with version-checked persistence to protect concurrent updates.
 
@@ -2194,7 +2210,7 @@ Refresh tokens with version-checked persistence to protect concurrent updates.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L434)
+[Source](../src/services/auth.py#L446)
 
 Persist a returned token without repeating its exchange after a DB outage.
 
@@ -2202,7 +2218,7 @@ Persist a returned token without repeating its exchange after a DB outage.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L453)
+[Source](../src/services/auth.py#L465)
 
 Remove the selected account's Riot tokens while coordinating with refreshes.
 
@@ -2210,7 +2226,7 @@ Remove the selected account's Riot tokens while coordinating with refreshes.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L463)
+[Source](../src/services/auth.py#L475)
 
 Clear credentials only if the stored auth version still matches the caller.
 
@@ -2218,15 +2234,15 @@ Clear credentials only if the stored auth version still matches the caller.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L471)
+[Source](../src/services/auth.py#L483)
 
 Return fresh Riot authorization headers or raise when login is required.
 
-### `async def _repair_entitlement(self, account: Account, auth: Mapping[str, Any], *, refresh_on_missing: bool = False) -> AuthResult`
+### `async def _repair_entitlement(self, account: Account, auth: Mapping[str, Any], *, cancelled: asyncio.Event, refresh_on_missing: bool = False) -> AuthResult`
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L496)
+[Source](../src/services/auth.py#L511)
 
 Fetch and persist an entitlement token, optionally refreshing on absence.
 
@@ -2234,7 +2250,7 @@ Fetch and persist an entitlement token, optionally refreshing on absence.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L535)
+[Source](../src/services/auth.py#L555)
 
 Release abandoned login attempts after their ten-minute lifetime.
 
@@ -2242,7 +2258,7 @@ Release abandoned login attempts after their ten-minute lifetime.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L544)
+[Source](../src/services/auth.py#L564)
 
 Fetch the Riot game name and tag line associated with an access token.
 
@@ -2250,7 +2266,7 @@ Fetch the Riot game name and tag line associated with an access token.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L561)
+[Source](../src/services/auth.py#L581)
 
 Request an entitlement token and surface transient Riot failures.
 
@@ -2258,7 +2274,7 @@ Request an entitlement token and surface transient Riot failures.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L586)
+[Source](../src/services/auth.py#L606)
 
 Resolve the VALORANT shard affinity associated with an ID token.
 
@@ -2266,7 +2282,7 @@ Resolve the VALORANT shard affinity associated with an ID token.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L608)
+[Source](../src/services/auth.py#L628)
 
 Build the Riot authentication user agent from the latest client build.
 
@@ -2274,7 +2290,7 @@ Build the Riot authentication user agent from the latest client build.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L618)
+[Source](../src/services/auth.py#L638)
 
 Validate token response fields before using or persisting credentials.
 
@@ -2282,7 +2298,7 @@ Validate token response fields before using or persisting credentials.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L633)
+[Source](../src/services/auth.py#L653)
 
 Decode a JWT payload for claim lookup without performing signature validation.
 
@@ -2290,7 +2306,7 @@ Decode a JWT payload for claim lookup without performing signature validation.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L646)
+[Source](../src/services/auth.py#L666)
 
 Return the token's Unix expiry time, or zero when it cannot be decoded.
 
@@ -2298,7 +2314,7 @@ Return the token's Unix expiry time, or zero when it cannot be decoded.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L654)
+[Source](../src/services/auth.py#L674)
 
 Map missing and LATAM/Brazil affinities to Riot's North America API host.
 
@@ -2306,7 +2322,7 @@ Map missing and LATAM/Brazil affinities to Riot's North America API host.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L659)
+[Source](../src/services/auth.py#L679)
 
 Raised when a Riot request cannot proceed without a new user login.
 

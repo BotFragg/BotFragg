@@ -12,9 +12,41 @@ from types import SimpleNamespace as NS
 import discord
 import pytest
 
+from src import main as entrypoint
 from src import monitoring
 from src.cogs.tasks import DiscordLogHandler, TasksCog
 from src.monitoring import StructuredFormatter, _scrub
+
+
+@pytest.mark.parametrize("verbose", [False, True])
+def test_verbose_logging_keeps_dependency_payloads_out_of_logs(
+    monkeypatch, capsys, verbose
+):
+    root = logging.getLogger()
+    monkeypatch.setattr(root, "handlers", [])
+    monkeypatch.setattr(root, "level", logging.NOTSET)
+    for name in ("src", "discord.gateway", "tortoise.db_client", "aiosqlite"):
+        monkeypatch.setattr(logging.getLogger(name), "level", logging.NOTSET)
+    config = NS(verbose_logging=verbose, discord_token=None)
+    monkeypatch.setattr(entrypoint.Settings, "from_env", lambda: config)
+    monkeypatch.setattr(entrypoint, "configure_monitoring", lambda _: None)
+
+    def run(*args, **kwargs):
+        logging.getLogger("src.bot").debug("Application diagnostic")
+        for name in ("discord.gateway", "tortoise.db_client", "aiosqlite"):
+            logging.getLogger(name).debug("Private payload %s", "SYNTHETIC_PRIVATE")
+            logging.getLogger(name).warning("Dependency warning")
+
+    monkeypatch.setattr(entrypoint, "BotFraggBot", lambda _: NS(run=run))
+    try:
+        entrypoint.main()
+        output = capsys.readouterr().err
+        assert ("Application diagnostic" in output) is verbose
+        assert "SYNTHETIC_PRIVATE" not in output
+        assert "Dependency warning" in output
+    finally:
+        for handler in root.handlers:
+            handler.close()
 
 
 def test_formatter_removes_webhook_and_interaction_tokens():

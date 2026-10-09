@@ -195,6 +195,34 @@ class BotFraggBot(commands.AutoShardedBot):
             raise RuntimeError(f"Component action already registered: {action}")
         self.component_handlers[action] = handler
 
+    def _remove_component_handlers(self, cog: commands.Cog) -> None:
+        """Discard only the handlers bound to the given cog instance."""
+        self.component_handlers = {
+            action: handler
+            for action, handler in self.component_handlers.items()
+            if getattr(handler, "__self__", None) is not cog
+        }
+
+    async def add_cog(
+        self,
+        cog: commands.Cog,
+        /,
+        *,
+        override: bool = False,
+        guild: discord.abc.Snowflake | None = discord.utils.MISSING,
+        guilds: Sequence[discord.abc.Snowflake] = discord.utils.MISSING,
+    ) -> None:
+        """Discard a failed cog's component handlers so loading it can be retried."""
+        try:
+            await super().add_cog(cog, override=override, guild=guild, guilds=guilds)
+        except BaseException:
+            if (
+                isinstance(cog, commands.Cog)
+                and self.get_cog(cog.qualified_name) is not cog
+            ):
+                self._remove_component_handlers(cog)
+            raise
+
     async def remove_cog(
         self,
         name: str,
@@ -206,11 +234,7 @@ class BotFraggBot(commands.AutoShardedBot):
         """Remove a cog's component handlers along with its commands and listeners."""
         cog = await super().remove_cog(name, guild=guild, guilds=guilds)
         if cog is not None:
-            self.component_handlers = {
-                action: handler
-                for action, handler in self.component_handlers.items()
-                if getattr(handler, "__self__", None) is not cog
-            }
+            self._remove_component_handlers(cog)
         return cog
 
     async def setup_hook(self) -> None:

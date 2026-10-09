@@ -106,7 +106,8 @@ class AuthService:
                         self._pending_refresh.pop(key, None)
             finally:
                 self._pending_nonces.pop(discord_id, None)
-                self._login_cancellations.pop(discord_id, None)
+                if cancelled.is_set():
+                    self._login_cancellations.pop(discord_id, None)
 
     async def refresh_version(self) -> None:
         """Fetch Riot's current client version for authenticated request headers."""
@@ -296,6 +297,9 @@ class AuthService:
 
     async def ensure(self, account: Account, *, force: bool = False) -> AuthResult:
         """Serialize credential checks for an account and return its usable auth state."""
+        cancelled = self._login_cancellations.setdefault(
+            account.user_id, asyncio.Event()
+        )
         async with self._locks.setdefault(account.puuid, asyncio.Lock()):
             fresh = await account.persisted_row().get_or_none()
             if not fresh:
@@ -303,14 +307,16 @@ class AuthService:
                     (account.puuid, account.user_id, account.created_at), None
                 )
                 return AuthResult(False, account=account)
-            return await self._ensure_locked(fresh, force=force)
+            return await self._ensure_locked(fresh, cancelled=cancelled, force=force)
 
     async def _ensure_locked(
-        self, account: Account, *, force: bool = False
+        self, account: Account, *, cancelled: asyncio.Event, force: bool = False
     ) -> AuthResult:
         """Check token lifetime and repair or refresh credentials while holding its lock."""
+        if cancelled.is_set():
+            return AuthResult(False)
         current = await self._save_pending_refresh(account)
-        if current is None:
+        if current is None or cancelled.is_set():
             return AuthResult(False)
         account = current
         auth = self._credentials(account)
@@ -321,7 +327,7 @@ class AuthService:
             if isinstance(auth.get("ent"), str) and auth["ent"]:
                 return AuthResult(True, account=account)
             return await self._repair_entitlement(
-                account, auth, refresh_on_missing=True
+                account, auth, cancelled=cancelled, refresh_on_missing=True
             )
         if not self.config.auto_refresh_tokens:
             return AuthResult(
@@ -330,10 +336,13 @@ class AuthService:
                 and bool(auth["ent"]),
                 account=account,
             )
-        return await self._refresh_locked(account, force=force)
+        return await self._refresh_locked(account, cancelled=cancelled, force=force)
 
     async def refresh(self, account: Account, *, force: bool = False) -> AuthResult:
         """Refresh one account's Riot tokens under its per-account lock."""
+        cancelled = self._login_cancellations.setdefault(
+            account.user_id, asyncio.Event()
+        )
         async with self._locks.setdefault(account.puuid, asyncio.Lock()):
             fresh = await account.persisted_row().get_or_none()
             if not fresh:
@@ -341,17 +350,16 @@ class AuthService:
                     (account.puuid, account.user_id, account.created_at), None
                 )
                 return AuthResult(False, account=account)
-            return await self._refresh_locked(fresh, force=force)
+            return await self._refresh_locked(fresh, cancelled=cancelled, force=force)
 
     async def _refresh_locked(
-        self, account: Account, *, force: bool = False
+        self, account: Account, *, cancelled: asyncio.Event, force: bool = False
     ) -> AuthResult:
         """Refresh tokens with version-checked persistence to protect concurrent updates."""
-        cancelled = self._login_cancellations.setdefault(
-            account.user_id, asyncio.Event()
-        )
+        if cancelled.is_set():
+            return AuthResult(False)
         current = await self._save_pending_refresh(account)
-        if current is None:
+        if current is None or cancelled.is_set():
             return AuthResult(False)
         account = current
         auth = self._credentials(account)
@@ -405,7 +413,11 @@ class AuthService:
             if current.auth_version == expected_version:
                 await self._clear_credentials_locked(current)
                 current = await account.persisted_row().get_or_none()
-            return await self._ensure_locked(current) if current else AuthResult(False)
+            return (
+                await self._ensure_locked(current, cancelled=cancelled)
+                if current
+                else AuthResult(False)
+            )
         if response.status != 200:
             raise HTTPFailure(
                 f"Riot token refresh failed with status {response.status}"
@@ -425,11 +437,11 @@ class AuthService:
             encrypted,
         )
         saved = await self._save_pending_refresh(account)
-        if saved is None:
+        if saved is None or cancelled.is_set():
             return AuthResult(False)
         if saved.auth_version != expected_version + 1 or saved.auth_blob != encrypted:
-            return await self._ensure_locked(saved)
-        return await self._repair_entitlement(saved, new_auth)
+            return await self._ensure_locked(saved, cancelled=cancelled)
+        return await self._repair_entitlement(saved, new_auth, cancelled=cancelled)
 
     async def _save_pending_refresh(self, account: Account) -> Account | None:
         """Persist a returned token without repeating its exchange after a DB outage."""
@@ -470,6 +482,9 @@ class AuthService:
 
     async def auth_headers(self, account: Account) -> dict[str, str]:
         """Return fresh Riot authorization headers or raise when login is required."""
+        cancelled = self._login_cancellations.setdefault(
+            account.user_id, asyncio.Event()
+        )
         async with self._locks.setdefault(account.puuid, asyncio.Lock()):
             current = await account.persisted_row().get_or_none()
             if not current:
@@ -477,7 +492,7 @@ class AuthService:
                     (account.puuid, account.user_id, account.created_at), None
                 )
                 raise AuthenticationRequired("Riot login is required")
-            result = await self._ensure_locked(current)
+            result = await self._ensure_locked(current, cancelled=cancelled)
             if not result.success or not result.account:
                 raise AuthenticationRequired("Riot login is required")
             current = result.account
@@ -498,13 +513,18 @@ class AuthService:
         account: Account,
         auth: Mapping[str, Any],
         *,
+        cancelled: asyncio.Event,
         refresh_on_missing: bool = False,
     ) -> AuthResult:
         """Fetch and persist an entitlement token, optionally refreshing on absence."""
         entitlement = await self._entitlement(auth)
+        if cancelled.is_set():
+            return AuthResult(False)
         if not entitlement:
             if refresh_on_missing:
-                return await self._refresh_locked(account, force=True)
+                return await self._refresh_locked(
+                    account, cancelled=cancelled, force=True
+                )
             return AuthResult(False, account=account)
         new_auth = dict(auth)
         new_auth["ent"] = entitlement
@@ -517,7 +537,7 @@ class AuthService:
             )
         )
         current = await account.persisted_row().get_or_none()
-        if current is None:
+        if current is None or cancelled.is_set():
             return AuthResult(False)
         if changed:
             return AuthResult(True, account=current)
