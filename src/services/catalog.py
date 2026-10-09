@@ -19,6 +19,7 @@ from .http import HTTPClient, HTTPFailure
 ENGLISH_LOCALE = "en-US"
 MISSION_METADATA_TTL = 1800
 MISSION_METADATA_RETRY_SECONDS = 30
+ACCESSORY_METADATA_RETRY_SECONDS = 30
 CATALOG_FORMAT_VERSION = 4
 BUDDY_ITEM_TYPE_ID = "dd3bf334-87f3-40bd-b043-682a57a8dc3a"
 DISCORD_TO_VALORANT_LOCALE = {
@@ -186,11 +187,13 @@ class CatalogService:
         self.bundles: dict[str, Bundle] = {}
         self.skin_aliases: dict[str, Skin] = {}
         self._accessories: dict[tuple[str, str], Accessory | None] = {}
+        self._accessory_retry_at: dict[tuple[str, str], float] = {}
         self._accessory_generation = 0
         self._accessory_locks: WeakValueDictionary[tuple[str, str], asyncio.Lock] = (
             WeakValueDictionary()
         )
         self._buddy_catalog: dict[str, Accessory] | None = None
+        self._buddy_retry_at = 0.0
         self._buddy_catalog_lock = asyncio.Lock()
         self._mission_definitions: dict[str, dict[str, Any]] = {}
         self._mission_metadata_loaded_at: float | None = None
@@ -283,7 +286,9 @@ class CatalogService:
                     if saved and current_version != previous[4]:
                         self._accessory_generation += 1
                         self._accessories.clear()
+                        self._accessory_retry_at.clear()
                         self._buddy_catalog = None
+                        self._buddy_retry_at = 0.0
             except Exception, asyncio.CancelledError:
                 if not saved:
                     (
@@ -455,23 +460,32 @@ class CatalogService:
         async with self._accessory_locks.setdefault(key, asyncio.Lock()):
             if key in self._accessories:
                 return self._accessories[key]
-            generation = self._accessory_generation
-            response = await self.http.request(
-                "GET",
-                f"https://valorant-api.com/v1/{endpoint}/{uuid}?language=all",
-            )
-            if response.status == 404:
-                if generation == self._accessory_generation:
-                    self._accessories[key] = None
-                return None
-            if response.status != 200 or not isinstance(response.data, dict):
+            if time.monotonic() < self._accessory_retry_at.get(key, 0.0):
                 raise HTTPFailure("Could not fetch accessory metadata")
-            raw = response.data.get("data")
-            if not isinstance(raw, dict):
-                raise HTTPFailure("Invalid accessory metadata")
-            accessory = self._accessory_from_data(endpoint, raw)
+            generation = self._accessory_generation
+            try:
+                response = await self.http.request(
+                    "GET",
+                    f"https://valorant-api.com/v1/{endpoint}/{uuid}?language=all",
+                )
+                if response.status == 404:
+                    accessory = None
+                else:
+                    if response.status != 200 or not isinstance(response.data, dict):
+                        raise HTTPFailure("Could not fetch accessory metadata")
+                    raw = response.data.get("data")
+                    if not isinstance(raw, dict):
+                        raise HTTPFailure("Invalid accessory metadata")
+                    accessory = self._accessory_from_data(endpoint, raw)
+            except HTTPFailure:
+                if generation == self._accessory_generation:
+                    self._accessory_retry_at[key] = (
+                        time.monotonic() + ACCESSORY_METADATA_RETRY_SECONDS
+                    )
+                raise
             if generation == self._accessory_generation:
                 self._accessories[key] = accessory
+                self._accessory_retry_at.pop(key, None)
             return accessory
 
     async def _buddy_accessory(self, uuid: str) -> Accessory | None:
@@ -480,40 +494,53 @@ class CatalogService:
         if self._buddy_catalog is None:
             async with self._buddy_catalog_lock:
                 if self._buddy_catalog is None:
-                    generation = self._accessory_generation
-                    response = await self.http.request(
-                        "GET",
-                        "https://valorant-api.com/v1/buddies?language=all",
-                    )
-                    rows = (
-                        response.data.get("data")
-                        if response.status == 200 and isinstance(response.data, dict)
-                        else None
-                    )
-                    if not isinstance(rows, list):
+                    if time.monotonic() < self._buddy_retry_at:
                         raise HTTPFailure("Could not fetch the gun buddy catalog")
-                    buddies: dict[str, Accessory] = {}
-                    for buddy in _catalog_rows(rows, "buddies"):
-                        names = _localized_values(buddy.get("displayName"))
-                        name = localized_text(names, ENGLISH_LOCALE)
-                        base_icon = buddy.get("displayIcon")
-                        buddy_uuid = str(buddy.get("uuid") or "")
-                        if buddy_uuid:
-                            buddies[buddy_uuid.lower()] = Accessory(
-                                name, base_icon, names=names
+                    generation = self._accessory_generation
+                    try:
+                        response = await self.http.request(
+                            "GET",
+                            "https://valorant-api.com/v1/buddies?language=all",
+                        )
+                        rows = (
+                            response.data.get("data")
+                            if response.status == 200
+                            and isinstance(response.data, dict)
+                            else None
+                        )
+                        if not isinstance(rows, list):
+                            raise HTTPFailure("Could not fetch the gun buddy catalog")
+                        buddies: dict[str, Accessory] = {}
+                        for buddy in _catalog_rows(rows, "buddies"):
+                            names = _localized_values(buddy.get("displayName"))
+                            name = localized_text(names, ENGLISH_LOCALE)
+                            base_icon = buddy.get("displayIcon")
+                            buddy_uuid = str(buddy.get("uuid") or "")
+                            if buddy_uuid:
+                                buddies[buddy_uuid.lower()] = Accessory(
+                                    name, base_icon, names=names
+                                )
+                            for level in _catalog_rows(
+                                buddy.get("levels"), "buddy levels"
+                            ):
+                                if not level.get("uuid"):
+                                    continue
+                                buddies[str(level["uuid"]).lower()] = Accessory(
+                                    name,
+                                    level.get("displayIcon") or base_icon,
+                                    names=names,
+                                )
+                        if not buddies:
+                            raise HTTPFailure("Gun buddy catalog contained no entries")
+                    except HTTPFailure:
+                        if generation == self._accessory_generation:
+                            self._buddy_retry_at = (
+                                time.monotonic() + ACCESSORY_METADATA_RETRY_SECONDS
                             )
-                        for level in _catalog_rows(buddy.get("levels"), "buddy levels"):
-                            if not level.get("uuid"):
-                                continue
-                            buddies[str(level["uuid"]).lower()] = Accessory(
-                                name,
-                                level.get("displayIcon") or base_icon,
-                                names=names,
-                            )
-                    if not buddies:
-                        raise HTTPFailure("Gun buddy catalog contained no entries")
+                        raise
                     if generation == self._accessory_generation:
                         self._buddy_catalog = buddies
+                        self._buddy_retry_at = 0.0
                     return buddies.get(identifier)
         return self._buddy_catalog.get(identifier)
 

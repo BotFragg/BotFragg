@@ -2366,7 +2366,7 @@ VALORANT skin, bundle, accessory, and mission metadata with a local cache.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L46)
+[Source](../src/services/catalog.py#L47)
 
 Resolve VALORANT-API text for a Discord locale with English fallback.
 
@@ -2374,7 +2374,7 @@ Resolve VALORANT-API text for a Discord locale with English fallback.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L65)
+[Source](../src/services/catalog.py#L66)
 
 Normalize a localized string or locale map into nonempty values.
 
@@ -2382,7 +2382,7 @@ Normalize a localized string or locale map into nonempty values.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L78)
+[Source](../src/services/catalog.py#L79)
 
 Validate upstream rows and the identifiers/media consumed by catalog views.
 
@@ -2390,7 +2390,7 @@ Validate upstream rows and the identifiers/media consumed by catalog views.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L104)
+[Source](../src/services/catalog.py#L105)
 
 Hold normalized skin identity, display data, pricing, levels, and chromas.
 
@@ -2398,7 +2398,7 @@ Hold normalized skin identity, display data, pricing, levels, and chromas.
 
 **Scope:** `src/services/catalog.py` · `Skin`
 
-[Source](../src/services/catalog.py#L117)
+[Source](../src/services/catalog.py#L118)
 
 Return this skin's localized or English name, or empty when missing.
 
@@ -2406,7 +2406,7 @@ Return this skin's localized or English name, or empty when missing.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L125)
+[Source](../src/services/catalog.py#L126)
 
 Hold static display metadata for a VALORANT bundle.
 
@@ -2414,7 +2414,7 @@ Hold static display metadata for a VALORANT bundle.
 
 **Scope:** `src/services/catalog.py` · `Bundle`
 
-[Source](../src/services/catalog.py#L137)
+[Source](../src/services/catalog.py#L138)
 
 Return this bundle's localized or English name, or empty when missing.
 
@@ -2422,7 +2422,7 @@ Return this bundle's localized or English name, or empty when missing.
 
 **Scope:** `src/services/catalog.py` · `Bundle`
 
-[Source](../src/services/catalog.py#L143)
+[Source](../src/services/catalog.py#L144)
 
 Return this bundle's localized subtitle, if available.
 
@@ -2430,7 +2430,7 @@ Return this bundle's localized subtitle, if available.
 
 **Scope:** `src/services/catalog.py` · `Bundle`
 
-[Source](../src/services/catalog.py#L147)
+[Source](../src/services/catalog.py#L148)
 
 Return this bundle's localized description, if available.
 
@@ -2438,7 +2438,7 @@ Return this bundle's localized description, if available.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L156)
+[Source](../src/services/catalog.py#L157)
 
 Hold normalized display data for a non-skin cosmetic reward.
 
@@ -2446,7 +2446,7 @@ Hold normalized display data for a non-skin cosmetic reward.
 
 **Scope:** `src/services/catalog.py` · `Accessory`
 
-[Source](../src/services/catalog.py#L165)
+[Source](../src/services/catalog.py#L166)
 
 Return this accessory's localized name, or empty when metadata is missing.
 
@@ -2454,7 +2454,7 @@ Return this accessory's localized name, or empty when metadata is missing.
 
 **Scope:** `src/services/catalog.py` · `Accessory`
 
-[Source](../src/services/catalog.py#L169)
+[Source](../src/services/catalog.py#L170)
 
 Return localized accessory title text, if available.
 
@@ -2462,7 +2462,7 @@ Return localized accessory title text, if available.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L177)
+[Source](../src/services/catalog.py#L178)
 
 Load, refresh, search, and cache VALORANT catalog data.
 
@@ -2470,7 +2470,7 @@ Load, refresh, search, and cache VALORANT catalog data.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L180)
+[Source](../src/services/catalog.py#L181)
 
 Prepare in-memory indexes and the working-directory catalog snapshot.
 
@@ -2478,7 +2478,7 @@ Prepare in-memory indexes and the working-directory catalog snapshot.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L203)
+[Source](../src/services/catalog.py#L206)
 
 Load the saved catalog off the event loop or fetch a fresh snapshot.
 
@@ -2486,7 +2486,7 @@ Load the saved catalog off the event loop or fetch a fresh snapshot.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L215)
+[Source](../src/services/catalog.py#L218)
 
 Fetch the current weapon and bundle catalogs and save their snapshot.
 
@@ -2499,7 +2499,7 @@ A failed save restores the previous catalog even during cancellation.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L299)
+[Source](../src/services/catalog.py#L304)
 
 Fetch one catalog endpoint and return its validated data rows.
 
@@ -2507,7 +2507,7 @@ Fetch one catalog endpoint and return its validated data rows.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L311)
+[Source](../src/services/catalog.py#L316)
 
 Cache mission definitions for 30 minutes and failed refreshes for 30 seconds.
 
@@ -2515,7 +2515,7 @@ Cache mission definitions for 30 minutes and failed refreshes for 30 seconds.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L364)
+[Source](../src/services/catalog.py#L369)
 
 Normalize weapon and bundle responses and rebuild lookup indexes.
 
@@ -2523,7 +2523,7 @@ Normalize weapon and bundle responses and rebuild lookup indexes.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L419)
+[Source](../src/services/catalog.py#L424)
 
 Index skins by their UUID, offer UUID, and level UUID aliases.
 
@@ -2531,7 +2531,7 @@ Index skins by their UUID, offer UUID, and level UUID aliases.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L430)
+[Source](../src/services/catalog.py#L435)
 
 Resolve a skin from any indexed base, offer, or level identifier.
 
@@ -2539,7 +2539,7 @@ Resolve a skin from any indexed base, offer, or level identifier.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L434)
+[Source](../src/services/catalog.py#L439)
 
 Resolve bundle metadata by its Riot UUID.
 
@@ -2547,7 +2547,7 @@ Resolve bundle metadata by its Riot UUID.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L439)
+[Source](../src/services/catalog.py#L444)
 
 Fetch and cache a supported accessory using its Riot item type ID.
 
@@ -2555,7 +2555,7 @@ Fetch and cache a supported accessory using its Riot item type ID.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L477)
+[Source](../src/services/catalog.py#L491)
 
 Resolve a Riot bundle buddy by its buddy or level UUID.
 
@@ -2563,7 +2563,7 @@ Resolve a Riot bundle buddy by its buddy or level UUID.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L521)
+[Source](../src/services/catalog.py#L548)
 
 Convert endpoint-specific Riot accessory data into a common display shape.
 
@@ -2571,7 +2571,7 @@ Convert endpoint-specific Riot accessory data into a common display shape.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L547)
+[Source](../src/services/catalog.py#L574)
 
 Search localized names first, retaining English-name fallback matches.
 
@@ -2579,7 +2579,7 @@ Search localized names first, retaining English-name fallback matches.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L569)
+[Source](../src/services/catalog.py#L596)
 
 Apply current store prices to catalog skins matched by offer identifier.
 
@@ -2587,7 +2587,7 @@ Apply current store prices to catalog skins matched by offer identifier.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L576)
+[Source](../src/services/catalog.py#L603)
 
 Encode the current version, skins, and bundles as compact JSON.
 
@@ -2595,7 +2595,7 @@ Encode the current version, skins, and bundles as compact JSON.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L611)
+[Source](../src/services/catalog.py#L638)
 
 Write a complete catalog snapshot through a temporary file replacement.
 
@@ -2603,7 +2603,7 @@ Write a complete catalog snapshot through a temporary file replacement.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L618)
+[Source](../src/services/catalog.py#L645)
 
 Restore catalog records from a snapshot and rebuild lookup indexes.
 

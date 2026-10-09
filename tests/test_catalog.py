@@ -97,6 +97,129 @@ async def test_failed_mission_metadata_refresh_has_shared_cooldown(
 
 
 @pytest.mark.parametrize("buddy", [False, True])
+@pytest.mark.parametrize("failure", ["transport", "status", "malformed", "validation"])
+async def test_failed_accessory_metadata_has_shared_cooldown(
+    monkeypatch, buddy, failure
+):
+    now = [2000.0]
+    monkeypatch.setattr(catalog_module.time, "monotonic", lambda: now[0])
+    recovered = False
+
+    async def request(*args, **kwargs):
+        await asyncio.sleep(0)
+        if not recovered:
+            now[0] += 5
+        if not recovered and failure == "transport":
+            raise HTTPFailure("Synthetic metadata outage")
+        item = {"uuid": "item", "displayName": "Fresh"}
+        if not recovered and failure == "validation":
+            item["displayIcon"] = []
+        data = [item] if buddy else item
+        return NS(
+            status=503 if not recovered and failure == "status" else 200,
+            data={"data": None if not recovered and failure == "malformed" else data},
+        )
+
+    http = NS(request=AsyncMock(side_effect=request))
+    service = CatalogService(http)
+    item_type = (
+        catalog_module.BUDDY_ITEM_TYPE_ID
+        if buddy
+        else "d5f120f8-ff8c-4aac-92ea-f2b5acbe9475"
+    )
+    results = await asyncio.gather(
+        *(
+            service.accessory(item_type, str(index) if buddy else "item")
+            for index in range(10)
+        ),
+        return_exceptions=True,
+    )
+    assert all(isinstance(result, HTTPFailure) for result in results)
+    assert http.request.await_count == 1
+    assert service._accessories == {} and service._buddy_catalog is None
+    recovered = True
+    now[0] += 29
+    with pytest.raises(HTTPFailure):
+        await service.accessory(item_type, "item")
+    assert http.request.await_count == 1
+    now[0] += 1
+    result = await service.accessory(item_type, "item")
+    assert result.name == "Fresh"
+    assert await service.accessory(item_type, "item") is result
+    assert http.request.await_count == 2
+
+
+async def test_accessory_failure_cooldown_is_per_item():
+    http = NS(request=AsyncMock(side_effect=HTTPFailure("Synthetic outage")))
+    service = CatalogService(http)
+    item_type = "d5f120f8-ff8c-4aac-92ea-f2b5acbe9475"
+    with pytest.raises(HTTPFailure):
+        await service.accessory(item_type, "first")
+    http.request.side_effect = None
+    http.request.return_value = NS(status=200, data={"data": {"displayName": "Second"}})
+    assert (await service.accessory(item_type, "second")).name == "Second"
+    with pytest.raises(HTTPFailure):
+        await service.accessory(item_type, "first")
+    assert http.request.await_count == 2
+
+
+@pytest.mark.parametrize("buddy", [False, True])
+async def test_catalog_version_change_clears_accessory_failure_cooldown(
+    changing_catalog, buddy
+):
+    service, state = changing_catalog
+    await service.refresh()
+    request = service.http.request
+    service.http.request = AsyncMock(side_effect=HTTPFailure("Synthetic outage"))
+    item_type = (
+        catalog_module.BUDDY_ITEM_TYPE_ID
+        if buddy
+        else "d5f120f8-ff8c-4aac-92ea-f2b5acbe9475"
+    )
+    with pytest.raises(HTTPFailure):
+        await service.accessory(item_type, "item")
+    service.http.request = request
+    state.version = "v2"
+    await service.refresh(check_version=True)
+    assert (await service.accessory(item_type, "item")).name == "v2"
+
+
+@pytest.mark.parametrize("buddy", [False, True])
+async def test_inflight_failure_cannot_block_new_catalog_generation(
+    changing_catalog, buddy
+):
+    service, state = changing_catalog
+    await service.refresh()
+    started, release = asyncio.Event(), asyncio.Event()
+    request = service.http.request
+
+    async def delayed_failure(method, url):
+        if "/buddies?" in url or "/sprays/" in url:
+            started.set()
+            await release.wait()
+            raise HTTPFailure("Synthetic outage")
+        return await request(method, url)
+
+    service.http.request = delayed_failure
+    item_type = (
+        catalog_module.BUDDY_ITEM_TYPE_ID
+        if buddy
+        else "d5f120f8-ff8c-4aac-92ea-f2b5acbe9475"
+    )
+    lookup = asyncio.create_task(service.accessory(item_type, "item"))
+    try:
+        await asyncio.wait_for(started.wait(), 1)
+        state.version = "v2"
+        await service.refresh(check_version=True)
+    finally:
+        release.set()
+        with pytest.raises(HTTPFailure):
+            await asyncio.wait_for(lookup, 1)
+    service.http.request = request
+    assert (await service.accessory(item_type, "item")).name == "v2"
+
+
+@pytest.mark.parametrize("buddy", [False, True])
 @pytest.mark.parametrize("missing", [False, True])
 async def test_catalog_version_change_refreshes_accessory_metadata(
     changing_catalog, buddy, missing
@@ -345,7 +468,9 @@ async def test_upstream_catalog_failure_preserves_cache_and_retries(
     assert catalog.version == "new"
 
 
-async def test_bad_buddy_level_container_is_retryable():
+async def test_bad_buddy_level_container_is_retryable(monkeypatch):
+    now = [2000.0]
+    monkeypatch.setattr(catalog_module.time, "monotonic", lambda: now[0])
     catalog = CatalogService(
         NS(
             request=AsyncMock(
@@ -369,6 +494,7 @@ async def test_bad_buddy_level_container_is_retryable():
             }
         ]
     }
+    now[0] += 30
     item = await catalog.accessory("dd3bf334-87f3-40bd-b043-682a57a8dc3a", "level")
     assert item.name_for(discord.Locale.french) == "Copain"
     assert item.icon == "https://example.com/buddy.png"
@@ -427,7 +553,11 @@ async def test_buddy_optional_levels_remain_supported(levels):
         ("03a572de-4234-31ed-d344-ababa488f981", "displayIcon"),
     ],
 )
-async def test_accessory_media_is_validated_before_caching(item_type, field):
+async def test_accessory_media_is_validated_before_caching(
+    monkeypatch, item_type, field
+):
+    now = [2000.0]
+    monkeypatch.setattr(catalog_module.time, "monotonic", lambda: now[0])
     request = AsyncMock(
         return_value=NS(
             status=200,
@@ -441,6 +571,7 @@ async def test_accessory_media_is_validated_before_caching(item_type, field):
     request.return_value.data = {
         "data": {"displayName": "Recovered", field: "https://example.com/recovered.png"}
     }
+    now[0] += 30
     recovered = await catalog.accessory(item_type, "synthetic")
     assert recovered.icon == "https://example.com/recovered.png"
     assert await catalog.accessory(item_type, "synthetic") is recovered
@@ -936,8 +1067,10 @@ async def test_concurrent_accessory_lookups_share_one_request() -> None:
     assert results[0] == results[1]
 
 
-async def test_accessory_lookup_retries_after_a_transient_response() -> None:
+async def test_accessory_lookup_retries_after_a_transient_response(monkeypatch) -> None:
     """Verify that temporary accessory API failures are not cached as missing items."""
+    now = [2000.0]
+    monkeypatch.setattr(catalog_module.time, "monotonic", lambda: now[0])
 
     class HTTP:
         """Return a temporary failure followed by a valid accessory response."""
@@ -962,8 +1095,10 @@ async def test_accessory_lookup_retries_after_a_transient_response() -> None:
 
     with pytest.raises(HTTPFailure):
         await service.accessory(item_type, "spray-id")
+    now[0] += 30
     with pytest.raises(HTTPFailure):
         await service.accessory(item_type, "spray-id")
+    now[0] += 30
     item = await service.accessory(item_type, "spray-id")
 
     assert item is not None and item.name == "Spray"
