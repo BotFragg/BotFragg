@@ -10,7 +10,6 @@ from time import time as unix_time
 
 import discord
 from discord.ext import commands, tasks
-from tortoise.exceptions import DBConnectionError
 
 from ..bot import BotFraggBot
 from ..database import TRANSIENT_DATABASE_ERRORS, ping_database
@@ -59,7 +58,6 @@ class TasksCog(commands.Cog):
         )
         self.version_refresh.add_exception_type(HTTPFailure)
         self.catalog_refresh.add_exception_type(HTTPFailure)
-        self.daily_alerts.add_exception_type(DBConnectionError)
         self.daily_alerts.change_interval(time=bot.config.alert_time_utc)
         self.discord_log_handler = DiscordLogHandler()
         self.log_flush.change_interval(seconds=bot.config.log_flush_interval_seconds)
@@ -126,10 +124,9 @@ class TasksCog(commands.Cog):
                 summary = await self.run_alerts()
                 if summary["shop_failures"] or summary["delivery_failures"]:
                     self.job_health["daily_alerts"].failure("daily_alerts")
-            except* TRANSIENT_DATABASE_ERRORS as exc:
-                raise DBConnectionError(
-                    "Daily alert database connection interrupted"
-                ) from exc
+            except* TRANSIENT_DATABASE_ERRORS:
+                # Clock-loop retries can execute the next scheduled day's run twice.
+                self.job_health["daily_alerts"].failure("daily_alerts")
 
     async def run_alerts(self) -> dict[str, int]:
         """Process eligible users' shops and return counts for the completed run."""
@@ -165,6 +162,20 @@ class TasksCog(commands.Cog):
         """DM an owner-scoped skin alert and report whether delivery succeeded."""
         try:
             user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
+            current = (
+                await Alert.filter(
+                    id=alert.id,
+                    created_at=alert.created_at,
+                    account_id=alert.account.puuid,
+                    account__user_id=user_id,
+                    account__created_at=alert.account.created_at,
+                )
+                .select_related("account")
+                .get_or_none()
+            )
+            if current is None:
+                return True
+            alert = current
             locale = discord.Locale.american_english
             skin_name = self.bot.emoji_service.skin_name(
                 offer.skin.name_for(locale)
@@ -205,6 +216,15 @@ class TasksCog(commands.Cog):
             target = self.bot.get_user(user.id) or await self.bot.fetch_user(user.id)
             locale = discord.Locale.american_english
             vp = await self.bot.emoji_service.currency("vp") or "VP"
+            current = await account.persisted_row().select_related("user").get_or_none()
+            if (
+                current is None
+                or current.user_id != user.id
+                or not current.user.daily_shop_enabled
+                or current.user.current_account_id != current.puuid
+            ):
+                return True
+            account = current
             cards = offer_cards(
                 self.bot.translator.text(
                     locale,

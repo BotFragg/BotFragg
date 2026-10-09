@@ -12,7 +12,9 @@ from tortoise import Tortoise
 
 from src.cogs.suggestions import SuggestionsCog
 from src.localization import BotFraggTranslator
-from src.models import Suggestion, SuggestionFollower
+from src.models import Suggestion, SuggestionFollower, User
+from src.services.accounts import delete_user_data
+from src.services.analytics import command_analytics
 from src.services.suggestions import (
     count_suggestions_by_author,
     create_suggestion,
@@ -22,6 +24,97 @@ from src.services.suggestions import (
     unfollow_suggestion,
 )
 from tests.helpers import _localized_bot, _localized_interaction
+
+
+@pytest.mark.usefixtures("backend_database")
+async def test_pending_submission_cannot_recreate_deleted_records():
+    await User.create(id=101)
+
+    class Channel(discord.abc.Messageable):
+        send = AsyncMock(return_value=SimpleNamespace(id=301))
+
+    channel = Channel()
+
+    async def fetch_channel(_):
+        await delete_user_data(101)
+        return channel
+
+    bot = _localized_bot(
+        config=SimpleNamespace(suggestion_log_channel_id=201),
+        get_channel=lambda _: None,
+        fetch_channel=fetch_channel,
+    )
+    interaction = _localized_interaction(
+        user=SimpleNamespace(
+            id=101, display_avatar=SimpleNamespace(url="https://example.com/avatar.png")
+        ),
+        response=SimpleNamespace(defer=AsyncMock(), is_done=lambda: True),
+        followup=SimpleNamespace(send=AsyncMock()),
+        guild=None,
+        guild_locale=None,
+    )
+    async with command_analytics(101):
+        await SuggestionsCog.suggest.callback(
+            SuggestionsCog(bot), interaction, "Synthetic request"
+        )
+    assert not await Suggestion.exists(author_id=101)
+    assert not await SuggestionFollower.exists(user_id=101)
+    channel.send.assert_not_awaited()
+    assert interaction.followup.send.await_args.kwargs["ephemeral"]
+    async with command_analytics(101):
+        assert (
+            await create_suggestion(101, "New request after deletion", None) is not None
+        )
+
+
+@pytest.mark.usefixtures("backend_database")
+async def test_deletion_cancels_pending_follow_but_allows_new_follow():
+    suggestion = await create_suggestion(101, "Synthetic request", None)
+    async with command_analytics(202):
+        await delete_user_data(202)
+        assert await follow_suggestion(suggestion.id, 202) is None
+    assert not await SuggestionFollower.exists(user_id=202)
+    async with command_analytics(202):
+        assert await follow_suggestion(suggestion.id, 202) is True
+
+
+@pytest.mark.usefixtures("backend_database")
+@pytest.mark.parametrize("operation", ["create", "follow"])
+async def test_deletion_waits_for_active_suggestion_writes(monkeypatch, operation):
+    suggestion = await create_suggestion(101, "Synthetic request", None)
+    started, resume = asyncio.Event(), asyncio.Event()
+    model, method = (
+        (Suggestion, "create")
+        if operation == "create"
+        else (SuggestionFollower, "get_or_create")
+    )
+    original = getattr(model, method)
+
+    async def delayed_write(*args, **kwargs):
+        started.set()
+        await resume.wait()
+        return await original(*args, **kwargs)
+
+    monkeypatch.setattr(model, method, delayed_write)
+
+    async def write():
+        async with command_analytics(202):
+            if operation == "create":
+                await create_suggestion(202, "Pending request", None)
+            else:
+                await follow_suggestion(suggestion.id, 202)
+
+    writing = asyncio.create_task(write())
+    await asyncio.wait_for(started.wait(), 2)
+    deleting = asyncio.create_task(delete_user_data(202))
+    try:
+        await asyncio.sleep(0)
+        assert not deleting.done()
+    finally:
+        resume.set()
+        await asyncio.wait_for(asyncio.gather(writing, deleting), 2)
+    assert not await Suggestion.exists(author_id=202)
+    assert not await SuggestionFollower.exists(user_id=202)
 
 
 @pytest.mark.usefixtures("database")

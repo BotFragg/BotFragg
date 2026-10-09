@@ -76,6 +76,9 @@ class SuggestionsCog(commands.Cog):
             await error(interaction, "suggestion-channel-not-messageable")
             return
         record = await create_suggestion(interaction.user.id, suggestion, channel_id)
+        if record is None:
+            await error(interaction, "error-command-failed")
+            return
         log_locale = interaction.guild_locale or interaction.locale
         card = embed(
             f"> {suggestion}",

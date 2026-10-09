@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Awaitable, Callable, Mapping
+from collections.abc import Awaitable, Callable, Mapping, Sequence
 
 import discord
 from discord import app_commands
@@ -194,6 +194,24 @@ class BotFraggBot(commands.AutoShardedBot):
         if action in self.component_handlers:
             raise RuntimeError(f"Component action already registered: {action}")
         self.component_handlers[action] = handler
+
+    async def remove_cog(
+        self,
+        name: str,
+        /,
+        *,
+        guild: discord.abc.Snowflake | None = discord.utils.MISSING,
+        guilds: Sequence[discord.abc.Snowflake] = discord.utils.MISSING,
+    ) -> commands.Cog | None:
+        """Remove a cog's component handlers along with its commands and listeners."""
+        cog = await super().remove_cog(name, guild=guild, guilds=guilds)
+        if cog is not None:
+            self.component_handlers = {
+                action: handler
+                for action, handler in self.component_handlers.items()
+                if getattr(handler, "__self__", None) is not cog
+            }
+        return cog
 
     async def setup_hook(self) -> None:
         """Initialize shared resources, load extensions, and optionally sync commands."""

@@ -73,3 +73,16 @@ async def migration_url(request):
     else:
         async with isolated_postgres() as url:
             yield url
+
+
+@pytest_asyncio.fixture
+async def backend_database(migration_url):
+    """Initialize and close an isolated database on each supported backend."""
+    await Tortoise.init(
+        db_url=migration_url, modules={"models": ["src.models.entities"]}
+    )
+    await Tortoise.generate_schemas()
+    try:
+        yield
+    finally:
+        await Tortoise.close_connections()

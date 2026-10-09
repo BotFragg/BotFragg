@@ -94,11 +94,19 @@ Log failed prefix commands and reply with a generic error message.
 
 Register a persistent component action, rejecting duplicate action names.
 
-### `async def setup_hook(self) -> None`
+### `async def remove_cog(self, name: str, /, *, guild: discord.abc.Snowflake | None = discord.utils.MISSING, guilds: Sequence[discord.abc.Snowflake] = discord.utils.MISSING) -> commands.Cog | None`
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
 [Source](../src/bot.py#L198)
+
+Remove a cog's component handlers along with its commands and listeners.
+
+### `async def setup_hook(self) -> None`
+
+**Scope:** `src/bot.py` · `BotFraggBot`
+
+[Source](../src/bot.py#L216)
 
 Initialize shared resources, load extensions, and optionally sync commands.
 
@@ -106,7 +114,7 @@ Initialize shared resources, load extensions, and optionally sync commands.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L235)
+[Source](../src/bot.py#L253)
 
 Set the online activity and log the connected shard and guild counts.
 
@@ -114,7 +122,7 @@ Set the online activity and log the connected shard and guild counts.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L248)
+[Source](../src/bot.py#L266)
 
 Close Discord, Riot HTTP, database, and monitoring resources in order.
 
@@ -430,7 +438,7 @@ Persist a feature suggestion and publish it to the configured log channel.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L130)
+[Source](../src/cogs/suggestions.py#L133)
 
 Follow a pending suggestion or privately show its existing review.
 
@@ -438,7 +446,7 @@ Follow a pending suggestion or privately show its existing review.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L170)
+[Source](../src/cogs/suggestions.py#L173)
 
 Remove the caller's follow from another user's suggestion.
 
@@ -446,7 +454,7 @@ Remove the caller's follow from another user's suggestion.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L199)
+[Source](../src/cogs/suggestions.py#L202)
 
 Submit an owner-only approval review for the selected suggestion.
 
@@ -454,7 +462,7 @@ Submit an owner-only approval review for the selected suggestion.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L214)
+[Source](../src/cogs/suggestions.py#L217)
 
 Submit an owner-only denial review for the selected suggestion.
 
@@ -462,7 +470,7 @@ Submit an owner-only denial review for the selected suggestion.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L223)
+[Source](../src/cogs/suggestions.py#L226)
 
 Authorize a review, update its record, and notify its followers.
 
@@ -470,7 +478,7 @@ Authorize a review, update its record, and notify its followers.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L262)
+[Source](../src/cogs/suggestions.py#L265)
 
 Render the localized review shared by follower DMs and completed tracking.
 
@@ -478,7 +486,7 @@ Render the localized review shared by follower DMs and completed tracking.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L280)
+[Source](../src/cogs/suggestions.py#L283)
 
 Edit the original suggestion post with the final status and review reason.
 
@@ -486,7 +494,7 @@ Edit the original suggestion post with the final status and review reason.
 
 **Scope:** `src/cogs/suggestions.py` · `module`
 
-[Source](../src/cogs/suggestions.py#L302)
+[Source](../src/cogs/suggestions.py#L305)
 
 Register suggestion commands and review handlers.
 
@@ -498,7 +506,7 @@ Background loops for daily alerts, catalog refresh, and Discord log delivery.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L31)
+[Source](../src/cogs/tasks.py#L30)
 
 Buffer privacy-filtered structured log lines for periodic Discord delivery.
 
@@ -506,7 +514,7 @@ Buffer privacy-filtered structured log lines for periodic Discord delivery.
 
 **Scope:** `src/cogs/tasks.py` · `DiscordLogHandler`
 
-[Source](../src/cogs/tasks.py#L34)
+[Source](../src/cogs/tasks.py#L33)
 
 Create a bounded log buffer using BotFragg's privacy-aware formatter.
 
@@ -514,7 +522,7 @@ Create a bounded log buffer using BotFragg's privacy-aware formatter.
 
 **Scope:** `src/cogs/tasks.py` · `DiscordLogHandler`
 
-[Source](../src/cogs/tasks.py#L40)
+[Source](../src/cogs/tasks.py#L39)
 
 Format a log record into the buffer or delegate failures to logging.
 
@@ -522,7 +530,7 @@ Format a log record into the buffer or delegate failures to logging.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L48)
+[Source](../src/cogs/tasks.py#L47)
 
 Own periodic application jobs and stop them cleanly when unloaded.
 
@@ -530,7 +538,7 @@ Own periodic application jobs and stop them cleanly when unloaded.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L51)
+[Source](../src/cogs/tasks.py#L50)
 
 Set job intervals from settings and prepare the optional log handler.
 
@@ -538,7 +546,7 @@ Set job intervals from settings and prepare the optional log handler.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L85)
+[Source](../src/cogs/tasks.py#L83)
 
 Start background loops and attach the log handler when configured.
 
@@ -546,7 +554,7 @@ Start background loops and attach the log handler when configured.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L96)
+[Source](../src/cogs/tasks.py#L94)
 
 Cancel and await all active loops, then detach the root log handler.
 
@@ -554,7 +562,7 @@ Cancel and await all active loops, then detach the root log handler.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L119)
+[Source](../src/cogs/tasks.py#L117)
 
 Run the daily shop and skin-alert job inside a monitoring transaction.
 
@@ -562,7 +570,7 @@ Run the daily shop and skin-alert job inside a monitoring transaction.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L134)
+[Source](../src/cogs/tasks.py#L131)
 
 Process eligible users' shops and return counts for the completed run.
 
@@ -570,7 +578,7 @@ Process eligible users' shops and return counts for the completed run.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L147)
+[Source](../src/cogs/tasks.py#L144)
 
 Deliver matching alerts and the optional daily shop; count failed DMs.
 
@@ -578,7 +586,7 @@ Deliver matching alerts and the optional daily shop; count failed DMs.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L164)
+[Source](../src/cogs/tasks.py#L161)
 
 DM an owner-scoped skin alert and report whether delivery succeeded.
 
@@ -586,7 +594,7 @@ DM an owner-scoped skin alert and report whether delivery succeeded.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L200)
+[Source](../src/cogs/tasks.py#L211)
 
 DM the selected account's daily shop and report delivery success.
 
@@ -594,7 +602,7 @@ DM the selected account's daily shop and report delivery success.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L242)
+[Source](../src/cogs/tasks.py#L262)
 
 Notify a user that credentials expired and return the delivery failure count.
 
@@ -602,7 +610,7 @@ Notify a user that credentials expired and return the delivery failure count.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L258)
+[Source](../src/cogs/tasks.py#L278)
 
 Refresh the Riot client version used in authenticated API requests.
 
@@ -610,7 +618,7 @@ Refresh the Riot client version used in authenticated API requests.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L267)
+[Source](../src/cogs/tasks.py#L287)
 
 Refresh the VALORANT catalog when its upstream version changes.
 
@@ -618,7 +626,7 @@ Refresh the VALORANT catalog when its upstream version changes.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L277)
+[Source](../src/cogs/tasks.py#L297)
 
 Measure log delivery, preserving the queue after Discord failures.
 
@@ -626,7 +634,7 @@ Measure log delivery, preserving the queue after Discord failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L282)
+[Source](../src/cogs/tasks.py#L302)
 
 Send buffered log lines to Discord and requeue them after HTTP failures.
 
@@ -634,7 +642,7 @@ Send buffered log lines to Discord and requeue them after HTTP failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L318)
+[Source](../src/cogs/tasks.py#L338)
 
 Publish Discord, database, and scheduled-job health for Docker and operators.
 
@@ -642,7 +650,7 @@ Publish Discord, database, and scheduled-job health for Docker and operators.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L369)
+[Source](../src/cogs/tasks.py#L389)
 
 Wait for Discord readiness before starting any background job.
 
@@ -650,7 +658,7 @@ Wait for Discord readiness before starting any background job.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L374)
+[Source](../src/cogs/tasks.py#L394)
 
 Register the background-task cog with the bot.
 
@@ -1999,23 +2007,31 @@ Persistence and orchestration for analytics.
 
 **Scope:** `src/services/analytics.py` · `module`
 
-[Source](../src/services/analytics.py#L22)
+[Source](../src/services/analytics.py#L26)
 
-Keep a command's analytics cancellable until its completion is recorded.
+Track a command so deletion can cancel its late personal-data writes.
 
 ### `async def deleting_analytics(user_id: int) -> AsyncIterator[None]`
 
 **Scope:** `src/services/analytics.py` · `module`
 
-[Source](../src/services/analytics.py#L36)
+[Source](../src/services/analytics.py#L42)
 
-Serialize deletion with analytics writes and cancel earlier completions.
+Serialize deletion with personal-data writes and cancel active commands.
+
+### `async def personal_data_write(user_id: int) -> AsyncIterator[bool]`
+
+**Scope:** `src/services/analytics.py` · `module`
+
+[Source](../src/services/analytics.py#L51)
+
+Hold deletion off during a write, rejecting a command cancelled by deletion.
 
 ### `async def record_command_invocation(*, command: str, user_id: int, guild_id: int | None, channel_id: int | None, cancelled: asyncio.Event | None = None) -> None`
 
 **Scope:** `src/services/analytics.py` · `module`
 
-[Source](../src/services/analytics.py#L44)
+[Source](../src/services/analytics.py#L58)
 
 Persist a successful command invocation with its optional Discord scope.
 
@@ -2023,7 +2039,7 @@ Persist a successful command invocation with its optional Discord scope.
 
 **Scope:** `src/services/analytics.py` · `module`
 
-[Source](../src/services/analytics.py#L64)
+[Source](../src/services/analytics.py#L78)
 
 Return a scoped command-use count and the most-used command.
 
@@ -3069,19 +3085,19 @@ Return a price only when the source entry explicitly uses VALORANT Points.
 
 Persistence and orchestration for suggestions.
 
-### `async def create_suggestion(author_id: int, content: str, log_channel_id: int | None) -> Suggestion`
+### `async def create_suggestion(author_id: int, content: str, log_channel_id: int | None) -> Suggestion | None`
 
 **Scope:** `src/services/suggestions.py` · `module`
 
-[Source](../src/services/suggestions.py#L19)
+[Source](../src/services/suggestions.py#L20)
 
-Create a pending suggestion and its author follow in one transaction.
+Create a suggestion and author follow, or reject a command cancelled by deletion.
 
 ### `async def record_suggestion_delivery(suggestion: Suggestion, message_id: int) -> Suggestion | None`
 
 **Scope:** `src/services/suggestions.py` · `module`
 
-[Source](../src/services/suggestions.py#L31)
+[Source](../src/services/suggestions.py#L34)
 
 Record the posted message and return its current review, or None if deleted.
 
@@ -3089,7 +3105,7 @@ Record the posted message and return its current review, or None if deleted.
 
 **Scope:** `src/services/suggestions.py` · `module`
 
-[Source](../src/services/suggestions.py#L40)
+[Source](../src/services/suggestions.py#L43)
 
 Delete a suggestion record by its database ID.
 
@@ -3097,7 +3113,7 @@ Delete a suggestion record by its database ID.
 
 **Scope:** `src/services/suggestions.py` · `module`
 
-[Source](../src/services/suggestions.py#L45)
+[Source](../src/services/suggestions.py#L48)
 
 Follow a pending suggestion or return its completed review; missing returns None.
 
@@ -3108,7 +3124,7 @@ this follower, or returns its final result without creating a late follow.
 
 **Scope:** `src/services/suggestions.py` · `module`
 
-[Source](../src/services/suggestions.py#L70)
+[Source](../src/services/suggestions.py#L75)
 
 Remove a follow and report missing, own, removed, or absent-follow status.
 
@@ -3116,7 +3132,7 @@ Remove a follow and report missing, own, removed, or absent-follow status.
 
 **Scope:** `src/services/suggestions.py` · `module`
 
-[Source](../src/services/suggestions.py#L83)
+[Source](../src/services/suggestions.py#L88)
 
 Atomically review a pending suggestion and return its followers once.
 
@@ -3127,7 +3143,7 @@ review returns the updated record and the distinct follower IDs to notify.
 
 **Scope:** `src/services/suggestions.py` · `module`
 
-[Source](../src/services/suggestions.py#L108)
+[Source](../src/services/suggestions.py#L113)
 
 Count suggestions submitted by a Discord user.
 

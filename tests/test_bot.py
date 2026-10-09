@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 from types import SimpleNamespace
 from urllib.parse import parse_qs, urlparse
 
@@ -33,6 +34,40 @@ from tests.helpers import (
     _localized_bot,
     _localized_interaction,
 )
+
+
+@pytest.mark.parametrize(
+    "extension", ["accounts", "alerts", "login", "penalties", "settings", "shop"]
+)
+async def test_command_extensions_unload_and_reload_without_stale_handlers(
+    extension, monkeypatch
+):
+    name = f"src.cogs.valorant.{extension}"
+    # Restore collection-time imports after exercising Discord's module replacement.
+    monkeypatch.setitem(sys.modules, name, sys.modules[name])
+    monkeypatch.setattr(
+        sys.modules["src.cogs.valorant"],
+        extension,
+        getattr(sys.modules["src.cogs.valorant"], extension),
+    )
+    config = SimpleNamespace(
+        shard_count=None, token_encryption_key=Fernet.generate_key().decode()
+    )
+    async with BotFraggBot(config) as bot:
+        await bot.load_extension(name)
+        original = dict(bot.component_handlers)
+        assert original
+        await bot.unload_extension(name)
+        assert not bot.component_handlers
+        await bot.load_extension(name)
+        await bot.reload_extension(name)
+        assert bot.component_handlers.keys() == original.keys()
+        assert all(
+            bot.component_handlers[action] != handler
+            for action, handler in original.items()
+        )
+        with pytest.raises(RuntimeError, match="already registered"):
+            bot.register_component(next(iter(original)), next(iter(original.values())))
 
 
 async def test_unhandled_app_command_error_returns_ephemeral_response() -> None:

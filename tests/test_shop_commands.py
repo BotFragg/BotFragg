@@ -855,6 +855,7 @@ async def test_nightmarket_command_includes_skin_and_account_menus(
     assert switched_controls.children[1].item.custom_id.endswith(":nightmarket")
 
 
+@pytest.mark.usefixtures("database")
 async def test_daily_shop_dm_includes_skin_video_menu() -> None:
     """Verify daily-shop notification DMs include the shared skin selector."""
     skin = Skin("skin", "offer", "Prime Vandal", None, None)
@@ -885,6 +886,10 @@ async def test_daily_shop_dm_includes_skin_video_menu() -> None:
             return ""
 
     target = Target()
+    owner = await User.create(
+        id=123, daily_shop_enabled=True, current_account_id="daily"
+    )
+    account = await Account.create(puuid="daily", user=owner, username="Player#NA")
     bot = _localized_bot(
         get_user=lambda _user_id: target,
         emoji_service=EmojiService(),
@@ -894,8 +899,8 @@ async def test_daily_shop_dm_includes_skin_video_menu() -> None:
 
     await TasksCog._send_daily_shop(
         SimpleNamespace(bot=bot),
-        SimpleNamespace(id=123),
-        SimpleNamespace(username="Player#NA"),
+        owner,
+        account,
         ShopData([Offer(skin, 1775, 1)], [], [], 4_000_000_000, None),
     )
 

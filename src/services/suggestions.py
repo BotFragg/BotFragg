@@ -10,6 +10,7 @@ from ..models import (
     Suggestion,
     SuggestionFollower,
 )
+from .analytics import personal_data_write
 
 UnfollowResult = Literal["missing", "own", "removed", "not_following"]
 
@@ -18,9 +19,11 @@ ReviewStatus = Literal["approved", "denied"]
 
 async def create_suggestion(
     author_id: int, content: str, log_channel_id: int | None
-) -> Suggestion:
-    """Create a pending suggestion and its author follow in one transaction."""
-    async with in_transaction():
+) -> Suggestion | None:
+    """Create a suggestion and author follow, or reject a command cancelled by deletion."""
+    async with personal_data_write(author_id) as allowed, in_transaction():
+        if not allowed:
+            return None
         suggestion = await Suggestion.create(
             author_id=author_id, content=content, log_channel_id=log_channel_id
         )
@@ -50,7 +53,9 @@ async def follow_suggestion(
     Lock the suggestion until the follow commits so a concurrent review includes
     this follower, or returns its final result without creating a late follow.
     """
-    async with in_transaction() as connection:
+    async with personal_data_write(user_id) as allowed, in_transaction() as connection:
+        if not allowed:
+            return None
         suggestion = (
             await Suggestion.filter(id=suggestion_id)
             .using_db(connection)

@@ -8,7 +8,8 @@ from datetime import UTC, datetime, timedelta
 from datetime import time as utc_time
 from types import SimpleNamespace
 from types import SimpleNamespace as NS
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
+from uuid import UUID
 
 import asyncpg
 import discord
@@ -18,11 +19,180 @@ from tortoise.exceptions import DBConnectionError
 from src.cogs import extra as extra_module
 from src.cogs.extra import ExtraCog
 from src.cogs.tasks import TasksCog
+from src.models import Account, Alert, User
 from src.services import alerts as alert_service
+from src.services.accounts import delete_user_data
+from src.services.catalog import Skin
 from src.services.http import HTTPFailure
+from src.services.shop import Offer, ShopData
 from tests.helpers import (
     _localized_bot,
 )
+
+
+@pytest.mark.usefixtures("database")
+@pytest.mark.parametrize("phase", ["matches", "initial"])
+async def test_clock_daily_job_does_not_replay_after_exhausted_worker_retries(
+    monkeypatch,
+    phase,
+):
+    owner = await User.create(id=101)
+    accounts = [
+        await Account.create(puuid=f"retry-{i}", user=owner, username="Synthetic#TEST")
+        for i in range(2)
+    ]
+    skin = Skin(str(UUID(int=1)), "offer", "Skin", None, None)
+    for account in accounts:
+        await Alert.create(account=account, skin_uuid=skin.uuid)
+    config = NS(
+        user_agent_interval_minutes=15,
+        game_version_interval_minutes=15,
+        alert_time_utc=utc_time(0, 0),
+        log_flush_interval_seconds=10,
+        alert_concurrency=1,
+        delay_between_alerts_seconds=0,
+    )
+    cog = TasksCog(
+        NS(
+            config=config,
+            wait_until_ready=AsyncMock(),
+            shop=NS(
+                storefront=AsyncMock(
+                    return_value=ShopData(
+                        [Offer(skin, 100, 4_000_000_000)], [], [], 4_000_000_000, None
+                    )
+                )
+            ),
+        )
+    )
+    delivery = AsyncMock(return_value=0)
+    monkeypatch.setattr(cog, "_deliver_daily_alert_result", delivery)
+    original = alert_service.matching_alerts_for_skins
+    failed = 0
+
+    async def matches(account, skins):
+        nonlocal failed
+        if account.puuid == accounts[1].puuid and failed < 3:
+            failed += 1
+            raise DBConnectionError("Synthetic outage")
+        return await original(account, skins)
+
+    if phase == "matches":
+        monkeypatch.setattr(alert_service, "matching_alerts_for_skins", matches)
+    else:
+        monkeypatch.setattr(
+            alert_service,
+            "user_ids_with_alerts",
+            AsyncMock(
+                side_effect=[
+                    DBConnectionError("Synthetic outage"),
+                    DBConnectionError("Synthetic outage"),
+                    DBConnectionError("Synthetic outage"),
+                    {owner.id},
+                ]
+            ),
+        )
+    monkeypatch.setattr(alert_service.asyncio, "sleep", AsyncMock())
+    today = datetime(2026, 10, 9, tzinfo=UTC)
+    tomorrow = today + timedelta(days=1)
+    slots = []
+
+    async def wait_until(slot):
+        slots.append(slot)
+
+    loop = cog.daily_alerts
+    loop.count = 2
+    monkeypatch.setattr(loop, "_try_sleep_until", wait_until)
+    monkeypatch.setattr(
+        loop,
+        "_get_next_sleep_time",
+        Mock(side_effect=[today, tomorrow, tomorrow + timedelta(days=1)]),
+    )
+    await loop._loop(cog)
+    assert slots == [today, tomorrow]
+    assert [call.args[2].puuid for call in delivery.await_args_list] == (
+        [accounts[0].puuid, accounts[0].puuid, accounts[1].puuid]
+        if phase == "matches"
+        else [accounts[0].puuid, accounts[1].puuid]
+    )
+    assert cog.job_health["daily_alerts"].failures == 1
+    assert cog.job_health["daily_alerts"].last_success is not None
+
+
+@pytest.mark.parametrize(
+    "mode,stage,change",
+    [
+        ("daily", "fetch", "delete"),
+        ("daily", "currency", "relink"),
+        ("daily", "currency", "disable"),
+        ("daily", "currency", "switch"),
+        ("alert", "fetch", "delete"),
+        ("alert", "fetch", "relink"),
+        ("alert", "fetch", "remove"),
+    ],
+)
+@pytest.mark.usefixtures("backend_database")
+async def test_notifications_recheck_identity_and_preferences(mode, stage, change):
+    owner = await User.create(
+        id=101, daily_shop_enabled=True, current_account_id="synthetic"
+    )
+    account = await Account.create(
+        puuid="synthetic", user=owner, username="FormerName#TEST"
+    )
+    skin = Skin(str(UUID(int=1)), "offer", "Skin", None, None)
+    alert = await Alert.create(account=account, skin_uuid=skin.uuid)
+    offer = Offer(skin, 100, 4_000_000_000)
+    target = NS(send=AsyncMock())
+
+    async def mutate(wait):
+        if wait != stage:
+            return
+        if change == "delete":
+            await delete_user_data(owner.id)
+        elif change == "relink":
+            await account.delete()
+            other = await User.create(id=202)
+            await Account.create(
+                puuid=account.puuid, user=other, username="NewName#TEST"
+            )
+        elif change == "remove":
+            await alert.delete()
+        else:
+            await User.filter(id=owner.id).update(
+                **(
+                    {"daily_shop_enabled": False}
+                    if change == "disable"
+                    else {"current_account_id": "other"}
+                )
+            )
+
+    async def fetch_user(_):
+        await mutate("fetch")
+        return target
+
+    async def currency(_):
+        await mutate("currency")
+        return "VP"
+
+    bot = _localized_bot(
+        get_user=lambda _: None,
+        fetch_user=fetch_user,
+        emoji_service=NS(
+            currency=currency,
+            skin_name=lambda name, tier: name,
+            skin_emoji=lambda tier: "",
+        ),
+        config=NS(link_item_image=False),
+    )
+    cog = NS(bot=bot)
+    if mode == "daily":
+        result = await TasksCog._send_daily_shop(
+            cog, owner, account, ShopData([offer], [], [], 4_000_000_000, None)
+        )
+    else:
+        result = await TasksCog._send_alert(cog, owner.id, alert, offer)
+    assert result is True
+    target.send.assert_not_awaited()
 
 
 async def test_shard_status_retries_saved_message_id_without_posting_twice(monkeypatch):

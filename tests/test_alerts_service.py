@@ -163,6 +163,46 @@ async def test_daily_database_retry_does_not_repeat_delivered_accounts(monkeypat
     ]
 
 
+async def test_exhausted_database_retries_do_not_abort_other_users(
+    backend_database, monkeypatch
+):
+    accounts = []
+    skin = str(UUID(int=1))
+    for user_id in (109, 110):
+        owner = await User.create(id=user_id)
+        account = await Account.create(
+            puuid=str(user_id), user=owner, username="Synthetic#TEST"
+        )
+        await Alert.create(account=account, skin_uuid=skin)
+        accounts.append(account)
+    original_selected = alert_service.selected_account
+    attempts = 0
+
+    async def selected(user_id, **kwargs):
+        nonlocal attempts
+        if user_id == 109:
+            attempts += 1
+            raise DBConnectionError("Synthetic outage")
+        return await original_selected(user_id, **kwargs)
+
+    delivery = AsyncMock(return_value=0)
+    monkeypatch.setattr(alert_service, "selected_account", selected)
+    monkeypatch.setattr(alert_service.asyncio, "sleep", AsyncMock())
+    summary = await run_daily_alerts(
+        NS(storefront=AsyncMock(return_value=shop_data(skin))),
+        alert_concurrency=1,
+        delay_between_alerts_seconds=0,
+        dry_run=False,
+        on_shop=delivery,
+        on_credentials_expired=AsyncMock(return_value=0),
+    )
+    assert attempts == 3
+    assert summary["shop_failures"] == summary["failures"] == 1
+    assert summary["shops"] == 1
+    delivery.assert_awaited_once()
+    assert delivery.await_args.args[2].puuid == accounts[1].puuid
+
+
 @pytest.mark.usefixtures("database")
 async def test_unreadable_credentials_do_not_abort_other_daily_accounts():
     from tests.helpers import _fake_access_token

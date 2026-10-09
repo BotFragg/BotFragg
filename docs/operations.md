@@ -33,8 +33,8 @@ job that has never run is allowed until its first scheduled UTC run plus
 After a successful daily run, its next completion must arrive within 24 hours
 plus that allowance. Set the daily allowance above measured full-run duration,
 including per-account delays and upstream waits. Failures make a job unhealthy
-until a subsequent successful attempt; temporary HTTP/database failures retain
-the existing retry behavior.
+until a subsequent successful attempt. Temporary HTTP/database failures use the
+bounded retries described below.
 
 Daily runs report `expired_logins`, `shop_failures`, and `delivery_failures`
 separately; `failures` is their sum. A failed shop lookup or notification delivery
@@ -47,7 +47,9 @@ run. Check Discord DM permissions as well as upstream availability when investig
 Daily lookups get at most three attempts: rate limits wait for the HTTP client's
 bounded host cooldown, and transient database errors wait five seconds between
 attempts. Only the failed lookup is retried; delivered notifications are not
-replayed. Exhausted database retries leave recovery to the next scheduled run.
+replayed. Exhausted database retries skip the affected user's remaining accounts
+while other users continue. An exhausted initial database lookup ends the run.
+Both cases mark the job unhealthy and leave recovery to the next scheduled run.
 Unreadable encrypted credentials count as a shop failure for that account and
 remain stored for recovery with the matching key. Incomplete skin catalogs also
 count as shop failures and are not cached as complete daily shops.
@@ -59,9 +61,10 @@ Restarting during either save failure loses that pending state and can require a
 new login or leave a duplicate status message. Incomplete Night Market catalogs
 leave the daily shop usable, report Night Market as unavailable, and are not cached.
 
-Command analytics writes and personal-data deletion coordinate within one bot
-process. Commands active during a successful deletion cannot recreate their
-analytics records. Multiple bot processes require shared deletion coordination.
+Command analytics, suggestion writes, and personal-data deletion coordinate
+within one bot process. Commands active during a successful deletion cannot
+recreate their analytics, suggestions, or follows. Multiple bot processes require
+shared deletion coordination.
 
 Structured logs include background-job durations, daily run counts, failures,
 and health-state transitions. The existing privacy filter applies to these

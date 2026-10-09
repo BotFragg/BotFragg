@@ -271,7 +271,11 @@ async def run_daily_alerts(
     async def worker() -> None:
         """Process users from the shared iterator until it is exhausted."""
         for user_id in user_iterator:
-            await process(user_id)
+            try:
+                await process(user_id)
+            except TRANSIENT_DATABASE_ERRORS:
+                # Replaying the whole run would resend notifications already delivered.
+                summary["shop_failures"] += 1
 
     async with asyncio.TaskGroup() as task_group:
         for _ in range(min(alert_concurrency, len(user_ids))):
