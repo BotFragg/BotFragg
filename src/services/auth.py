@@ -22,10 +22,11 @@ from tortoise.transactions import in_transaction
 from ..config import Settings
 from ..models import Account, User
 from .crypto import AuthVault
-from .http import HTTPClient, HTTPFailure
+from .http import HTTPClient, HTTPFailure, RateLimited
 
 CLIENT_ID = "riot-client"
 REDIRECT_URI = "http://localhost/redirect"
+AUTH_RETRY_SECONDS = 30
 
 
 class TokenData(TypedDict):
@@ -78,6 +79,7 @@ class AuthService:
         self._version: dict[str, Any] = {}
         # shortcut: pending saves survive only this process; restart recovery needs durable storage.
         self._pending_refresh: dict[tuple[str, int, datetime], tuple[int, str]] = {}
+        self._retry_at: dict[tuple[str, int, datetime], tuple[int, float]] = {}
         self._pending_nonces: dict[int, tuple[str, float]] = {}
         self._login_cancellations: WeakValueDictionary[int, asyncio.Event] = (
             WeakValueDictionary()
@@ -104,6 +106,9 @@ class AuthService:
                 for key in list(self._pending_refresh):
                     if key[1] == discord_id:
                         self._pending_refresh.pop(key, None)
+                for key in list(self._retry_at):
+                    if key[1] == discord_id:
+                        self._retry_at.pop(key, None)
             finally:
                 self._pending_nonces.pop(discord_id, None)
                 if cancelled.is_set():
@@ -376,28 +381,31 @@ class AuthService:
             await self._clear_credentials_locked(account)
             return AuthResult(False, account=account)
         expected_version = account.auth_version
-        response = await self.http.request(
-            "POST",
-            "https://auth.riotgames.com/token",
-            headers={
-                "Content-Type": "application/x-www-form-urlencoded",
-                "User-Agent": self._user_agent(),
-            },
-            data=urlencode(
-                {
-                    "grant_type": "refresh_token",
-                    "refresh_token": refresh_token,
-                    "client_id": CLIENT_ID,
-                }
-            ),
-        )
+        async with self._auth_attempt(account, cancelled):
+            response = await self.http.request(
+                "POST",
+                "https://auth.riotgames.com/token",
+                headers={
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "User-Agent": self._user_agent(),
+                },
+                data=urlencode(
+                    {
+                        "grant_type": "refresh_token",
+                        "refresh_token": refresh_token,
+                        "client_id": CLIENT_ID,
+                    }
+                ),
+            )
+            if not cancelled.is_set() and (
+                response.status in {408, 425} or response.status >= 500
+            ):
+                raise HTTPFailure(
+                    f"Riot token refresh failed with status {response.status}"
+                )
         if cancelled.is_set():
             return AuthResult(False)
         data = response.data if isinstance(response.data, dict) else {}
-        if response.status in {408, 425} or response.status >= 500:
-            raise HTTPFailure(
-                f"Riot token refresh failed with status {response.status}"
-            )
         if (
             response.status in {400, 401}
             and isinstance(data.get("error"), str)
@@ -462,6 +470,29 @@ class AuthService:
         self._pending_refresh.pop(key, None)
         return current
 
+    @asynccontextmanager
+    async def _auth_attempt(
+        self, account: Account, cancelled: asyncio.Event
+    ) -> AsyncIterator[None]:
+        """Share transient failure cooldowns under the caller's account lock."""
+        key = (account.puuid, account.user_id, account.created_at)
+        retry = self._retry_at.get(key)
+        if retry and retry[0] == account.auth_version and retry[1] > time.monotonic():
+            raise HTTPFailure("Riot authentication is temporarily unavailable")
+        try:
+            yield
+        except RateLimited:
+            raise
+        except HTTPFailure:
+            if not cancelled.is_set():
+                self._retry_at[key] = (
+                    account.auth_version,
+                    time.monotonic() + AUTH_RETRY_SECONDS,
+                )
+            raise
+        else:
+            self._retry_at.pop(key, None)
+
     async def clear_credentials(self, account: Account) -> None:
         """Remove the selected account's Riot tokens while coordinating with refreshes."""
         async with self._locks.setdefault(account.puuid, asyncio.Lock()):
@@ -469,6 +500,9 @@ class AuthService:
             if current:
                 await self._clear_credentials_locked(current)
             self._pending_refresh.pop(
+                (account.puuid, account.user_id, account.created_at), None
+            )
+            self._retry_at.pop(
                 (account.puuid, account.user_id, account.created_at), None
             )
 
@@ -517,7 +551,8 @@ class AuthService:
         refresh_on_missing: bool = False,
     ) -> AuthResult:
         """Fetch and persist an entitlement token, optionally refreshing on absence."""
-        entitlement = await self._entitlement(auth)
+        async with self._auth_attempt(account, cancelled):
+            entitlement = await self._entitlement(auth)
         if cancelled.is_set():
             return AuthResult(False)
         if not entitlement:

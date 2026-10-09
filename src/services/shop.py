@@ -12,11 +12,12 @@ from ..config import Settings
 from ..models import Account
 from .auth import AuthenticationRequired, AuthService, riot_region
 from .catalog import Accessory, CatalogService, Skin
-from .http import HTTPClient, HTTPFailure, HTTPResult
+from .http import HTTPClient, HTTPFailure, HTTPResult, RateLimited
 
 VP_UUID = "85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741"
 RP_UUID = "e59aa87c-4cbf-517a-5983-6e81511be9b7"
 KC_UUID = "85ca954a-41f2-ce94-9b45-8ca3dd39a00d"
+STOREFRONT_RETRY_SECONDS = 30
 
 
 @dataclass(slots=True)
@@ -93,6 +94,7 @@ class ShopService:
         self.auth = auth
         self.catalog = catalog
         self._cache: dict[str, ShopData] = {}
+        self._retry_at: dict[str, tuple[int, float]] = {}
         self._locks: WeakValueDictionary[str, asyncio.Lock] = WeakValueDictionary()
 
     def _account_lock(self, account_id: str) -> asyncio.Lock:
@@ -103,6 +105,7 @@ class ShopService:
         """Remove an account's cached storefront after coordinating with active fetches."""
         async with self._account_lock(account_id):
             self._cache.pop(account_id, None)
+            self._retry_at.pop(account_id, None)
 
     def prune_expired(self) -> None:
         """Release expired storefronts, including accounts no longer queried."""
@@ -112,6 +115,11 @@ class ShopService:
             for key, data in self._cache.items()
             if (data.cache_expires if data.cache_expires is not None else data.expires)
             > now
+        }
+        self._retry_at = {
+            key: retry
+            for key, retry in self._retry_at.items()
+            if retry[1] > time.monotonic()
         }
 
     async def storefront(self, account: Account, *, use_cache: bool = True) -> ShopData:
@@ -182,8 +190,9 @@ class ShopService:
         )
         night_expires = now + night_duration if night_duration is not None else None
         night_market: list[Offer] = []
-        night_market_incomplete = False
-        for entry in _rows(bonus.get("BonusStoreOffers")):
+        night_offers = _rows(bonus.get("BonusStoreOffers"))
+        night_market_incomplete = bool(night_offers) and night_expires is None
+        for entry in night_offers:
             offer = _mapping(entry.get("Offer"))
             skin = self.catalog.get_skin(str(offer.get("OfferID") or ""))
             if offer.get("OfferID") and skin is None:
@@ -304,13 +313,33 @@ class ShopService:
     async def _storefront_request(
         self, account: Account, headers: dict[str, str]
     ) -> HTTPResult:
-        """Request one account's regional storefront."""
-        return await self.http.request(
-            "POST",
-            f"https://pd.{riot_region(account.region)}.a.pvp.net/store/v3/storefront/{account.puuid}",
-            headers=headers,
-            json={},
-        )
+        """Request one regional storefront with a shared transient failure cooldown."""
+        # Keep a fingerprint so retry state does not retain authorization headers.
+        signature = hash(frozenset(headers.items()))
+        retry = self._retry_at.get(account.puuid)
+        if retry and retry[0] == signature and retry[1] > time.monotonic():
+            raise HTTPFailure("Riot storefront is temporarily unavailable")
+        try:
+            response = await self.http.request(
+                "POST",
+                f"https://pd.{riot_region(account.region)}.a.pvp.net/store/v3/storefront/{account.puuid}",
+                headers=headers,
+                json={},
+            )
+            if response.status in {408, 425} or response.status >= 500:
+                raise HTTPFailure(
+                    f"Riot storefront failed with status {response.status}"
+                )
+        except RateLimited:
+            raise
+        except HTTPFailure:
+            self._retry_at[account.puuid] = (
+                signature,
+                time.monotonic() + STOREFRONT_RETRY_SECONDS,
+            )
+            raise
+        self._retry_at.pop(account.puuid, None)
+        return response
 
     async def wallet(self, account: Account) -> dict[str, int]:
         """Return VP, Radianite, and Kingdom Credit balances for an account."""

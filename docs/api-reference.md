@@ -2110,7 +2110,7 @@ Riot OAuth callbacks, encrypted credentials, and refreshable auth headers.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L31)
+[Source](../src/services/auth.py#L32)
 
 Riot token fields after trust-boundary validation.
 
@@ -2118,7 +2118,7 @@ Riot token fields after trust-boundary validation.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L39)
+[Source](../src/services/auth.py#L40)
 
 Validated Riot identity fields used to display the linked account name.
 
@@ -2126,7 +2126,7 @@ Validated Riot identity fields used to display the linked account name.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L46)
+[Source](../src/services/auth.py#L47)
 
 Credential payload constructed from a validated login response.
 
@@ -2134,7 +2134,7 @@ Credential payload constructed from a validated login response.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L57)
+[Source](../src/services/auth.py#L58)
 
 Represent an authentication outcome and localized failure details.
 
@@ -2142,7 +2142,7 @@ Represent an authentication outcome and localized failure details.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L66)
+[Source](../src/services/auth.py#L67)
 
 Manage Riot login, token refresh, entitlement repair, and account linking.
 
@@ -2150,7 +2150,7 @@ Manage Riot login, token refresh, entitlement repair, and account linking.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L69)
+[Source](../src/services/auth.py#L70)
 
 Bind validated settings, the shared HTTP client, and token vault.
 
@@ -2158,7 +2158,7 @@ Bind validated settings, the shared HTTP client, and token vault.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L86)
+[Source](../src/services/auth.py#L88)
 
 Normalize unreadable credentials without overwriting the stored blob.
 
@@ -2166,7 +2166,7 @@ Normalize unreadable credentials without overwriting the stored blob.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L94)
+[Source](../src/services/auth.py#L96)
 
 Serialize deletion with login commits and discard late tokens after success.
 
@@ -2174,7 +2174,7 @@ Serialize deletion with login commits and discard late tokens after success.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L112)
+[Source](../src/services/auth.py#L117)
 
 Fetch Riot's current client version for authenticated request headers.
 
@@ -2182,7 +2182,7 @@ Fetch Riot's current client version for authenticated request headers.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L131)
+[Source](../src/services/auth.py#L136)
 
 Return the platform and current client-version headers expected by Riot.
 
@@ -2190,7 +2190,7 @@ Return the platform and current client-version headers expected by Riot.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L141)
+[Source](../src/services/auth.py#L146)
 
 Create a Riot authorization URL and retain a short-lived per-user nonce.
 
@@ -2198,7 +2198,7 @@ Create a Riot authorization URL and retain a short-lived per-user nonce.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L156)
+[Source](../src/services/auth.py#L161)
 
 Exchange a callback code, verify its nonce, and securely link the account.
 
@@ -2210,7 +2210,7 @@ rejected without replacing the existing owner.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L298)
+[Source](../src/services/auth.py#L303)
 
 Serialize credential checks for an account and return its usable auth state.
 
@@ -2218,7 +2218,7 @@ Serialize credential checks for an account and return its usable auth state.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L312)
+[Source](../src/services/auth.py#L317)
 
 Check token lifetime and repair or refresh credentials while holding its lock.
 
@@ -2226,7 +2226,7 @@ Check token lifetime and repair or refresh credentials while holding its lock.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L341)
+[Source](../src/services/auth.py#L346)
 
 Refresh one account's Riot tokens under its per-account lock.
 
@@ -2234,7 +2234,7 @@ Refresh one account's Riot tokens under its per-account lock.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L355)
+[Source](../src/services/auth.py#L360)
 
 Refresh tokens with version-checked persistence to protect concurrent updates.
 
@@ -2242,15 +2242,23 @@ Refresh tokens with version-checked persistence to protect concurrent updates.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L446)
+[Source](../src/services/auth.py#L454)
 
 Persist a returned token without repeating its exchange after a DB outage.
+
+### `async def _auth_attempt(self, account: Account, cancelled: asyncio.Event) -> AsyncIterator[None]`
+
+**Scope:** `src/services/auth.py` · `AuthService`
+
+[Source](../src/services/auth.py#L474)
+
+Share transient failure cooldowns under the caller's account lock.
 
 ### `async def clear_credentials(self, account: Account) -> None`
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L465)
+[Source](../src/services/auth.py#L496)
 
 Remove the selected account's Riot tokens while coordinating with refreshes.
 
@@ -2258,7 +2266,7 @@ Remove the selected account's Riot tokens while coordinating with refreshes.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L475)
+[Source](../src/services/auth.py#L509)
 
 Clear credentials only if the stored auth version still matches the caller.
 
@@ -2266,7 +2274,7 @@ Clear credentials only if the stored auth version still matches the caller.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L483)
+[Source](../src/services/auth.py#L517)
 
 Return fresh Riot authorization headers or raise when login is required.
 
@@ -2274,7 +2282,7 @@ Return fresh Riot authorization headers or raise when login is required.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L511)
+[Source](../src/services/auth.py#L545)
 
 Fetch and persist an entitlement token, optionally refreshing on absence.
 
@@ -2282,7 +2290,7 @@ Fetch and persist an entitlement token, optionally refreshing on absence.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L555)
+[Source](../src/services/auth.py#L590)
 
 Release abandoned login attempts after their ten-minute lifetime.
 
@@ -2290,7 +2298,7 @@ Release abandoned login attempts after their ten-minute lifetime.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L564)
+[Source](../src/services/auth.py#L599)
 
 Fetch the Riot game name and tag line associated with an access token.
 
@@ -2298,7 +2306,7 @@ Fetch the Riot game name and tag line associated with an access token.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L581)
+[Source](../src/services/auth.py#L616)
 
 Request an entitlement token and surface transient Riot failures.
 
@@ -2306,7 +2314,7 @@ Request an entitlement token and surface transient Riot failures.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L606)
+[Source](../src/services/auth.py#L641)
 
 Resolve the VALORANT shard affinity associated with an ID token.
 
@@ -2314,7 +2322,7 @@ Resolve the VALORANT shard affinity associated with an ID token.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L628)
+[Source](../src/services/auth.py#L663)
 
 Build the Riot authentication user agent from the latest client build.
 
@@ -2322,7 +2330,7 @@ Build the Riot authentication user agent from the latest client build.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L638)
+[Source](../src/services/auth.py#L673)
 
 Validate token response fields before using or persisting credentials.
 
@@ -2330,7 +2338,7 @@ Validate token response fields before using or persisting credentials.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L653)
+[Source](../src/services/auth.py#L688)
 
 Decode a JWT payload for claim lookup without performing signature validation.
 
@@ -2338,7 +2346,7 @@ Decode a JWT payload for claim lookup without performing signature validation.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L666)
+[Source](../src/services/auth.py#L701)
 
 Return the token's Unix expiry time, or zero when it cannot be decoded.
 
@@ -2346,7 +2354,7 @@ Return the token's Unix expiry time, or zero when it cannot be decoded.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L674)
+[Source](../src/services/auth.py#L709)
 
 Map missing and LATAM/Brazil affinities to Riot's North America API host.
 
@@ -2354,7 +2362,7 @@ Map missing and LATAM/Brazil affinities to Riot's North America API host.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L679)
+[Source](../src/services/auth.py#L714)
 
 Raised when a Riot request cannot proceed without a new user login.
 
@@ -2965,7 +2973,7 @@ Normalize authenticated VALORANT shop, featured bundle, and wallet data.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L23)
+[Source](../src/services/shop.py#L24)
 
 Represent a skin offer with its standard price and optional discount.
 
@@ -2973,7 +2981,7 @@ Represent a skin offer with its standard price and optional discount.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L34)
+[Source](../src/services/shop.py#L35)
 
 Represent one accessory and its Kingdom Credit price.
 
@@ -2981,7 +2989,7 @@ Represent one accessory and its Kingdom Credit price.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L42)
+[Source](../src/services/shop.py#L43)
 
 Represent one account-specific item and its exact bundle offer pricing.
 
@@ -2989,7 +2997,7 @@ Represent one account-specific item and its exact bundle offer pricing.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L53)
+[Source](../src/services/shop.py#L54)
 
 Represent one currently featured bundle from an account's storefront.
 
@@ -2997,7 +3005,7 @@ Represent one currently featured bundle from an account's storefront.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L66)
+[Source](../src/services/shop.py#L67)
 
 Hold account-specific shop offers and separate display/cache expiries.
 
@@ -3005,7 +3013,7 @@ Hold account-specific shop offers and separate display/cache expiries.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L80)
+[Source](../src/services/shop.py#L81)
 
 Retrieve and normalize Riot storefronts and wallet balances.
 
@@ -3013,7 +3021,7 @@ Retrieve and normalize Riot storefronts and wallet balances.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L83)
+[Source](../src/services/shop.py#L84)
 
 Bind dependencies and initialize storefront data and per-account locks.
 
@@ -3021,7 +3029,7 @@ Bind dependencies and initialize storefront data and per-account locks.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L98)
+[Source](../src/services/shop.py#L100)
 
 Return the shared in-process lock used for one account's shop requests.
 
@@ -3029,7 +3037,7 @@ Return the shared in-process lock used for one account's shop requests.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L102)
+[Source](../src/services/shop.py#L104)
 
 Remove an account's cached storefront after coordinating with active fetches.
 
@@ -3037,7 +3045,7 @@ Remove an account's cached storefront after coordinating with active fetches.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L107)
+[Source](../src/services/shop.py#L110)
 
 Release expired storefronts, including accounts no longer queried.
 
@@ -3045,7 +3053,7 @@ Release expired storefronts, including accounts no longer queried.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L117)
+[Source](../src/services/shop.py#L125)
 
 Return a fresh or unexpired cached storefront for the linked account.
 
@@ -3053,7 +3061,7 @@ Return a fresh or unexpired cached storefront for the linked account.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L137)
+[Source](../src/services/shop.py#L145)
 
 Fetch, repair claims, normalize all shop offers, and cache the result.
 
@@ -3061,15 +3069,15 @@ Fetch, repair claims, normalize all shop offers, and cache the result.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L304)
+[Source](../src/services/shop.py#L313)
 
-Request one account's regional storefront.
+Request one regional storefront with a shared transient failure cooldown.
 
 ### `async def wallet(self, account: Account) -> dict[str, int]`
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L315)
+[Source](../src/services/shop.py#L344)
 
 Return VP, Radianite, and Kingdom Credit balances for an account.
 
@@ -3077,7 +3085,7 @@ Return VP, Radianite, and Kingdom Credit balances for an account.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L339)
+[Source](../src/services/shop.py#L368)
 
 Resolve the storefront's accessory rewards and their Kingdom Credit prices.
 
@@ -3085,7 +3093,7 @@ Resolve the storefront's accessory rewards and their Kingdom Credit prices.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L366)
+[Source](../src/services/shop.py#L395)
 
 Extract the raw single-item store offers across Riot response shapes.
 
@@ -3093,7 +3101,7 @@ Extract the raw single-item store offers across Riot response shapes.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L373)
+[Source](../src/services/shop.py#L402)
 
 Build a skin-offer-to-VP-price lookup from the storefront payload.
 
@@ -3101,7 +3109,7 @@ Build a skin-offer-to-VP-price lookup from the storefront payload.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L390)
+[Source](../src/services/shop.py#L419)
 
 Raised when Riot does not return a usable storefront or wallet.
 
@@ -3109,7 +3117,7 @@ Raised when Riot does not return a usable storefront or wallet.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L394)
+[Source](../src/services/shop.py#L423)
 
 Parse an integer only when it meets the requested minimum.
 
@@ -3117,7 +3125,7 @@ Parse an integer only when it meets the requested minimum.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L405)
+[Source](../src/services/shop.py#L434)
 
 Treat malformed optional mappings as absent.
 
@@ -3125,7 +3133,7 @@ Treat malformed optional mappings as absent.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L410)
+[Source](../src/services/shop.py#L439)
 
 Keep only mapping entries from an optional Riot list.
 
@@ -3133,7 +3141,7 @@ Keep only mapping entries from an optional Riot list.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L419)
+[Source](../src/services/shop.py#L448)
 
 Return a price only when the source entry explicitly uses VALORANT Points.
 

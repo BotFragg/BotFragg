@@ -34,7 +34,7 @@ from src.services.auth import (
     token_expiry,
 )
 from src.services.crypto import AuthVault
-from src.services.http import HTTPFailure, HTTPResult
+from src.services.http import HTTPFailure, HTTPResult, RateLimited
 from src.services.shop import (
     ShopData,
     ShopService,
@@ -73,6 +73,198 @@ def auth_service(http=None):
 def refresh_jwt(**claims):
     payload = base64.urlsafe_b64encode(json.dumps(claims).encode()).decode().rstrip("=")
     return f"synthetic.{payload}.synthetic"
+
+
+@pytest.mark.parametrize("kind", ["refresh", "entitlement"])
+@pytest.mark.parametrize("failure", ["transport", "status"])
+async def test_auth_failure_cooldown_is_shared_across_entry_points(
+    backend_database, monkeypatch, kind, failure
+):
+    now = [2000.0]
+    monkeypatch.setattr("src.services.auth.time.monotonic", lambda: now[0])
+    recovered = False
+
+    async def request(method, url, **kwargs):
+        await asyncio.sleep(0)
+        if not recovered:
+            now[0] += 5
+            if failure == "transport":
+                raise HTTPFailure("Synthetic timeout")
+            return HTTPResult(503, {})
+        return (
+            HTTPResult(
+                200, {"access_token": _fake_access_token(), "refresh_token": "new"}
+            )
+            if url.endswith("/token")
+            else HTTPResult(200, {"entitlements_token": "ent"})
+        )
+
+    service = auth_service(NS(request=AsyncMock(side_effect=request)))
+    owner = await User.create(id=101)
+    account = await Account.create(
+        puuid="synthetic",
+        user=owner,
+        username="Synthetic",
+        auth_blob=service.vault.encrypt(
+            {
+                "rso": _fake_access_token(-1 if kind == "refresh" else 3600),
+                "refresh_token": "old",
+            }
+        ),
+    )
+    operations = [service.auth_headers, service.ensure, service.refresh]
+    results = await asyncio.gather(
+        *(operations[index % 3](account) for index in range(10)), return_exceptions=True
+    )
+    assert all(isinstance(result, HTTPFailure) for result in results)
+    assert service.http.request.await_count == 1
+    assert (await Account.get(puuid=account.puuid)).auth_blob == account.auth_blob
+    recovered = True
+    now[0] += 29
+    with pytest.raises(HTTPFailure):
+        await service.auth_headers(account)
+    assert service.http.request.await_count == 1
+    now[0] += 1
+    assert (await service.auth_headers(account))["X-Riot-Entitlements-JWT"] == "ent"
+    expected_requests = 3 if kind == "refresh" else 2
+    assert service.http.request.await_count == expected_requests
+    await service.auth_headers(account)
+    assert service.http.request.await_count == expected_requests
+
+
+async def test_auth_cooldown_preserves_rate_limit_delay(backend_database):
+    service = auth_service(
+        NS(request=AsyncMock(side_effect=[RateLimited(5), HTTPFailure("retry")]))
+    )
+    owner = await User.create(id=102)
+    account = await Account.create(
+        puuid="synthetic",
+        user=owner,
+        username="Synthetic",
+        auth_blob=service.vault.encrypt(
+            {"rso": _fake_access_token(-1), "refresh_token": "old"}
+        ),
+    )
+    with pytest.raises(RateLimited) as error:
+        await service.auth_headers(account)
+    assert error.value.retry_after == 5
+    with pytest.raises(HTTPFailure, match="retry"):
+        await service.auth_headers(account)
+    assert service.http.request.await_count == 2
+
+
+@pytest.mark.parametrize("change", ["relogin", "recreate", "other-account"])
+async def test_new_credentials_bypass_auth_failure_cooldown(backend_database, change):
+    service = auth_service(
+        NS(request=AsyncMock(side_effect=HTTPFailure("Synthetic timeout")))
+    )
+    owner = await User.create(id=103)
+    account = await Account.create(
+        puuid="synthetic",
+        user=owner,
+        username="Synthetic",
+        auth_blob=service.vault.encrypt(
+            {"rso": _fake_access_token(-1), "refresh_token": "old"}
+        ),
+    )
+    with pytest.raises(HTTPFailure):
+        await service.auth_headers(account)
+    fresh_blob = service.vault.encrypt(
+        {"rso": _fake_access_token(), "refresh_token": "new"}
+    )
+    if change == "relogin":
+        await account.persisted_row().update(auth_version=1, auth_blob=fresh_blob)
+    else:
+        if change == "recreate":
+            await account.delete()
+        account = await Account.create(
+            puuid="synthetic" if change == "recreate" else "other",
+            user=owner,
+            username="Synthetic",
+            auth_blob=fresh_blob,
+        )
+    service.http.request.side_effect = None
+    service.http.request.return_value = HTTPResult(200, {"entitlements_token": "ent"})
+    assert (await service.auth_headers(account))["X-Riot-Entitlements-JWT"] == "ent"
+    assert service.http.request.await_count == 2
+
+
+async def test_entitlement_cooldown_preserves_rotated_refresh_credentials(
+    backend_database, monkeypatch
+):
+    now = [2000.0]
+    monkeypatch.setattr("src.services.auth.time.monotonic", lambda: now[0])
+    service = auth_service(
+        NS(
+            request=AsyncMock(
+                side_effect=[
+                    HTTPResult(
+                        200,
+                        {
+                            "access_token": _fake_access_token(),
+                            "refresh_token": "rotated",
+                        },
+                    ),
+                    HTTPFailure("Synthetic entitlement outage"),
+                    HTTPResult(200, {"entitlements_token": "ent"}),
+                ]
+            )
+        )
+    )
+    owner = await User.create(id=104)
+    account = await Account.create(
+        puuid="synthetic",
+        user=owner,
+        username="Synthetic",
+        auth_blob=service.vault.encrypt(
+            {"rso": _fake_access_token(-1), "refresh_token": "old"}
+        ),
+    )
+    for _ in range(3):
+        with pytest.raises(HTTPFailure):
+            await service.auth_headers(account)
+    assert service.http.request.await_count == 2
+    saved = await Account.get(puuid=account.puuid)
+    assert service.vault.decrypt(saved.auth_blob)["refresh_token"] == "rotated"  # noqa: S105
+    now[0] += 30
+    assert (await service.auth_headers(account))["X-Riot-Entitlements-JWT"] == "ent"
+    assert service.http.request.await_count == 3
+
+
+@pytest.mark.parametrize("kind", ["refresh", "entitlement"])
+async def test_deleted_user_cannot_restore_late_auth_failure_state(
+    backend_database, kind
+):
+    started, release = asyncio.Event(), asyncio.Event()
+
+    async def request(*args, **kwargs):
+        started.set()
+        await release.wait()
+        raise HTTPFailure("Synthetic late outage")
+
+    service = auth_service(NS(request=request))
+    owner = await User.create(id=105)
+    account = await Account.create(
+        puuid="synthetic",
+        user=owner,
+        username="Synthetic",
+        auth_blob=service.vault.encrypt(
+            {
+                "rso": _fake_access_token(-1 if kind == "refresh" else 3600),
+                "refresh_token": "old",
+            }
+        ),
+    )
+    lookup = asyncio.create_task(service.auth_headers(account))
+    try:
+        await asyncio.wait_for(started.wait(), 1)
+        async with service.cancel_logins(owner.id):
+            assert await delete_user_data(owner.id)
+    finally:
+        release.set()
+        with pytest.raises(HTTPFailure):
+            await asyncio.wait_for(lookup, 1)
+    assert not service._retry_at
 
 
 @pytest.mark.usefixtures("database")
@@ -438,7 +630,9 @@ async def test_version_refresh_does_not_poison_auth_headers(payload):
     assert auth.riot_headers["X-Riot-ClientVersion"] == "last-good-version"
 
 
-async def test_bad_entitlement_never_becomes_a_persisted_header(database):
+async def test_bad_entitlement_never_becomes_a_persisted_header(database, monkeypatch):
+    now = [2000.0]
+    monkeypatch.setattr("src.services.auth.time.monotonic", lambda: now[0])
     vault = AuthVault(Fernet.generate_key().decode())
     auth = AuthService(
         NS(token_refresh_buffer_minutes=5, auto_refresh_tokens=True),
@@ -462,6 +656,7 @@ async def test_bad_entitlement_never_becomes_a_persisted_header(database):
     assert saved.auth_blob == account.auth_blob
     assert saved.auth_version == account.auth_version
     auth.http.request.return_value.data = {"entitlements_token": "recovered"}
+    now[0] += 30
     headers = await auth.auth_headers(account)
     assert headers["X-Riot-Entitlements-JWT"] == "recovered"
     assert all(isinstance(value, str) for value in headers.values())

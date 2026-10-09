@@ -17,7 +17,7 @@ from src.services.catalog import (
     CatalogService,
     Skin,
 )
-from src.services.http import HTTPFailure
+from src.services.http import HTTPFailure, RateLimited
 from src.services.shop import (
     KC_UUID,
     VP_UUID,
@@ -120,13 +120,14 @@ async def test_invalid_accessory_duration_preserves_daily_shop(monkeypatch, dura
     assert data.expires == data.cache_expires == 4600
 
 
-async def test_night_market_expiry_invalidates_whole_storefront(monkeypatch):
+@pytest.mark.parametrize("duration", [0, 1])
+async def test_night_market_expiry_invalidates_whole_storefront(monkeypatch, duration):
     clock = [1000]
     monkeypatch.setattr("src.services.shop.time.time", lambda: clock[0])
     raw = {
         "SkinsPanelLayout": {"SingleItemOffersRemainingDurationInSeconds": 3600},
         "BonusStore": {
-            "BonusStoreRemainingDurationInSeconds": 1,
+            "BonusStoreRemainingDurationInSeconds": duration,
             "BonusStoreOffers": [
                 {
                     "Offer": {"OfferID": "offer", "Cost": {VP_UUID: 100}},
@@ -141,7 +142,106 @@ async def test_night_market_expiry_invalidates_whole_storefront(monkeypatch):
     clock[0] = 1002
     await shop.storefront(account)
     assert shop.http.request.await_count == 2
-    assert first.night_market_expires == 1001
+    assert first.night_market_expires == 1000 + duration
+    assert not first.night_market_incomplete
+
+
+@pytest.mark.parametrize("duration", [None, True, -1, "bad", float("inf")])
+async def test_missing_night_timer_preserves_daily_and_recovers_without_cache(duration):
+    raw = {
+        "SkinsPanelLayout": {
+            "SingleItemOffersRemainingDurationInSeconds": 3600,
+            "SingleItemOffers": ["offer"],
+        },
+        "BonusStore": {
+            "BonusStoreRemainingDurationInSeconds": duration,
+            "BonusStoreOffers": [
+                {
+                    "Offer": {"OfferID": "offer", "Cost": {VP_UUID: 100}},
+                    "DiscountCosts": {VP_UUID: 50},
+                }
+            ],
+        },
+    }
+    shop = make_shop(raw)
+    account = NS(puuid="synthetic", region="na")
+    data = await shop.storefront(account)
+    assert len(data.offers) == 1 and data.night_market_incomplete
+    assert data.night_market_expires is None and account.puuid not in shop._cache
+    raw["BonusStore"]["BonusStoreRemainingDurationInSeconds"] = 60
+    recovered = await shop.storefront(account)
+    assert len(recovered.night_market) == 1 and not recovered.night_market_incomplete
+    assert shop.http.request.await_count == 2
+    assert shop._cache[account.puuid] is recovered
+
+
+@pytest.mark.parametrize("failure", ["transport", "status"])
+async def test_storefront_failures_share_cooldown_and_recover(monkeypatch, failure):
+    now = [2000.0]
+    monkeypatch.setattr("src.services.shop.time.monotonic", lambda: now[0])
+    shop = make_shop(
+        {"SkinsPanelLayout": {"SingleItemOffersRemainingDurationInSeconds": 3600}}
+    )
+    recovered = False
+    response = shop.http.request.return_value
+
+    async def request(*args, **kwargs):
+        await asyncio.sleep(0)
+        if recovered:
+            return response
+        now[0] += 5
+        if failure == "transport":
+            raise HTTPFailure("Synthetic timeout")
+        return NS(status=503, data={})
+
+    shop.http.request.side_effect = request
+    account = NS(puuid="synthetic", region="na")
+    results = await asyncio.gather(
+        *(shop.storefront(account) for _ in range(10)), return_exceptions=True
+    )
+    assert all(isinstance(result, ShopUnavailable) for result in results)
+    assert shop.http.request.await_count == 1
+    recovered = True
+    now[0] += 29
+    with pytest.raises(ShopUnavailable):
+        await shop.storefront(account)
+    assert shop.http.request.await_count == 1
+    now[0] += 1
+    data = await shop.storefront(account)
+    assert await shop.storefront(account) is data
+    assert shop.http.request.await_count == 2
+
+
+async def test_storefront_rate_limit_keeps_original_retry_delay():
+    shop = make_shop({})
+    limit = RateLimited(5)
+    shop.http.request.side_effect = [limit, NS(status=200, data={})]
+    account = NS(puuid="synthetic", region="na")
+    with pytest.raises(ShopUnavailable) as error:
+        await shop.storefront(account)
+    assert error.value.__cause__ is limit
+    with pytest.raises(ShopUnavailable):
+        await shop.storefront(account)
+    assert shop.http.request.await_count == 2
+
+
+async def test_storefront_new_login_and_other_accounts_bypass_failed_attempt():
+    shop = make_shop({})
+    shop.http.request.side_effect = HTTPFailure("Synthetic timeout")
+    account = NS(puuid="first", region="na")
+    with pytest.raises(ShopUnavailable):
+        await shop.storefront(account)
+    with pytest.raises(ShopUnavailable):
+        await shop.storefront(NS(puuid="second", region="na"))
+    assert shop.http.request.await_count == 2
+    shop.auth.auth_headers.return_value = {"Authorization": "Bearer synthetic-new"}
+    with pytest.raises(ShopUnavailable):
+        await shop.storefront(account)
+    assert shop.http.request.await_count == 3
+    await shop.clear_cached_storefront(account.puuid)
+    with pytest.raises(ShopUnavailable):
+        await shop.storefront(account)
+    assert shop.http.request.await_count == 4
 
 
 async def test_incomplete_night_market_preserves_daily_and_recovers_without_cache_expiry():
