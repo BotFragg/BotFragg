@@ -208,6 +208,104 @@ async def test_unreadable_credentials_are_recoverable_and_preserved(operation):
     assert saved.auth_blob == "invalid-ciphertext" and saved.auth_version == 0
 
 
+@pytest.mark.parametrize("operation", ["ensure", "refresh", "auth_headers"])
+@pytest.mark.parametrize("deletion", ["failed", "deleted", "relinked"])
+async def test_inflight_refresh_respects_successful_deletion(
+    backend_database, monkeypatch, operation, deletion
+):
+    service = auth_service()
+    owner = await User.create(id=112)
+    account = await Account.create(
+        puuid="inflight-refresh",
+        user=owner,
+        username="Synthetic#TEST",
+        auth_blob=service.vault.encrypt(
+            {"rso": _fake_access_token(-1), "refresh_token": "old"}
+        ),
+    )
+    entered, resume = asyncio.Event(), asyncio.Event()
+
+    async def exchange(*args, **kwargs):
+        entered.set()
+        await resume.wait()
+        return HTTPResult(
+            200,
+            {
+                "access_token": _fake_access_token(),
+                "refresh_token": "rotated",
+            },
+        )
+
+    service.http = NS(request=AsyncMock(side_effect=exchange))
+    service._entitlement = AsyncMock(return_value="new-ent")
+    task = asyncio.create_task(getattr(service, operation)(account))
+    try:
+        await asyncio.wait_for(entered.wait(), timeout=5)
+        if deletion != "failed":
+            async with service.cancel_logins(owner.id):
+                assert await delete_user_data(owner.id)
+            if deletion == "relinked":
+                owner = await User.create(id=owner.id)
+                replacement = await Account.create(
+                    puuid=account.puuid,
+                    user=owner,
+                    username="Replacement#TEST",
+                    auth_blob=service.vault.encrypt(
+                        {
+                            "rso": _fake_access_token(),
+                            "refresh_token": "replacement",
+                            "ent": "replacement-ent",
+                        }
+                    ),
+                )
+        else:
+            with pytest.raises(DBConnectionError):
+                async with service.cancel_logins(owner.id):
+                    raise DBConnectionError("Synthetic deletion rollback")
+
+        original = UpdateQuery._execute
+
+        async def unavailable_save(query):
+            if query.model is Account:
+                raise DBConnectionError("Synthetic outage after token exchange")
+            return await original(query)
+
+        monkeypatch.setattr(UpdateQuery, "_execute", unavailable_save)
+        resume.set()
+        if deletion != "failed":
+            if operation == "auth_headers":
+                with pytest.raises(AuthenticationRequired):
+                    await task
+            else:
+                assert not (await task).success
+            assert not service._pending_refresh
+            service._entitlement.assert_not_awaited()
+            if deletion == "relinked":
+                saved = await Account.get(puuid=account.puuid)
+                assert saved.auth_blob == replacement.auth_blob
+                monkeypatch.setattr(UpdateQuery, "_execute", original)
+                assert (await service.refresh(replacement, force=True)).success
+            else:
+                assert not await Account.exists(puuid=account.puuid)
+                assert not await User.exists(id=owner.id)
+        else:
+            with pytest.raises(DBConnectionError):
+                await task
+            assert service._pending_refresh
+            monkeypatch.setattr(UpdateQuery, "_execute", original)
+            headers = await service.auth_headers(account)
+            assert headers["X-Riot-Entitlements-JWT"] == "new-ent"
+            saved = await Account.get(puuid=account.puuid)
+            assert service.vault.decrypt(saved.auth_blob)["refresh_token"] == "rotated"  # noqa: S105
+            assert not service._pending_refresh
+        assert service.http.request.await_count == (2 if deletion == "relinked" else 1)
+    finally:
+        resume.set()
+        if not task.done():
+            task.cancel()
+        await asyncio.gather(task, return_exceptions=True)
+
+
 @pytest.mark.usefixtures("database")
 async def test_login_can_reauthenticate_an_account_at_capacity():
     user = await User.create(id=103)

@@ -57,6 +57,45 @@ def changing_catalog(tmp_path):
     return service, state
 
 
+@pytest.mark.parametrize("cached", [False, True])
+@pytest.mark.parametrize("failure", ["transport", "status", "malformed"])
+async def test_failed_mission_metadata_refresh_has_shared_cooldown(
+    monkeypatch, cached, failure
+):
+    now = [2000.0]
+    monkeypatch.setattr(catalog_module.time, "monotonic", lambda: now[0])
+    recovered = False
+
+    async def request(*args, **kwargs):
+        await asyncio.sleep(0)
+        if recovered:
+            return NS(status=200, data={"data": [{"uuid": "fresh", "title": "Fresh"}]})
+        if failure == "transport":
+            raise HTTPFailure("Synthetic metadata outage")
+        return NS(status=503 if failure == "status" else 200, data={"data": None})
+
+    http = NS(request=AsyncMock(side_effect=request))
+    service = CatalogService(http)
+    previous = {"old": {"title": "Cached"}} if cached else {}
+    service._mission_definitions = previous
+    if cached:
+        service._mission_metadata_loaded_at = 0.0
+    results = await asyncio.gather(*(service.mission_metadata() for _ in range(10)))
+    assert all(result is previous for result in results)
+    assert http.request.await_count == 1
+    recovered = True
+    now[0] += 29
+    assert await service.mission_metadata() is previous
+    assert http.request.await_count == 1
+    now[0] += 1
+    result = await service.mission_metadata()
+    assert result["fresh"]["title"] == "Fresh"
+    assert http.request.await_count == 2
+    now[0] += catalog_module.MISSION_METADATA_TTL - 1
+    assert await service.mission_metadata() is result
+    assert http.request.await_count == 2
+
+
 @pytest.mark.parametrize("buddy", [False, True])
 @pytest.mark.parametrize("missing", [False, True])
 async def test_catalog_version_change_refreshes_accessory_metadata(

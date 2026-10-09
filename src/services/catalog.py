@@ -18,6 +18,7 @@ from .http import HTTPClient, HTTPFailure
 
 ENGLISH_LOCALE = "en-US"
 MISSION_METADATA_TTL = 1800
+MISSION_METADATA_RETRY_SECONDS = 30
 CATALOG_FORMAT_VERSION = 4
 BUDDY_ITEM_TYPE_ID = "dd3bf334-87f3-40bd-b043-682a57a8dc3a"
 DISCORD_TO_VALORANT_LOCALE = {
@@ -193,6 +194,7 @@ class CatalogService:
         self._buddy_catalog_lock = asyncio.Lock()
         self._mission_definitions: dict[str, dict[str, Any]] = {}
         self._mission_metadata_loaded_at: float | None = None
+        self._mission_metadata_retry_at = 0.0
         self._mission_metadata_lock = asyncio.Lock()
         self.version = ""
         self._cache_format = 0
@@ -309,15 +311,15 @@ class CatalogService:
     async def mission_metadata(
         self,
     ) -> dict[str, dict[str, Any]]:
-        """Return cached mission definitions, refreshing them at most every 30 minutes."""
-        if (
+        """Cache mission definitions for 30 minutes and failed refreshes for 30 seconds."""
+        if time.monotonic() < self._mission_metadata_retry_at or (
             self._mission_metadata_loaded_at is not None
             and time.monotonic() - self._mission_metadata_loaded_at
             < MISSION_METADATA_TTL
         ):
             return self._mission_definitions
         async with self._mission_metadata_lock:
-            if (
+            if time.monotonic() < self._mission_metadata_retry_at or (
                 self._mission_metadata_loaded_at is not None
                 and time.monotonic() - self._mission_metadata_loaded_at
                 < MISSION_METADATA_TTL
@@ -329,6 +331,9 @@ class CatalogService:
                     "https://valorant-api.com/v1/missions?language=all",
                 )
             except HTTPFailure:
+                self._mission_metadata_retry_at = (
+                    time.monotonic() + MISSION_METADATA_RETRY_SECONDS
+                )
                 log.warning("Could not refresh mission metadata", exc_info=True)
                 return self._mission_definitions
             if (
@@ -336,6 +341,9 @@ class CatalogService:
                 or not isinstance(missions.data, dict)
                 or not isinstance(missions.data.get("data"), list)
             ):
+                self._mission_metadata_retry_at = (
+                    time.monotonic() + MISSION_METADATA_RETRY_SECONDS
+                )
                 return self._mission_definitions
             self._mission_definitions = {
                 str(item["uuid"]): {
@@ -350,6 +358,7 @@ class CatalogService:
                 if isinstance(item, dict) and item.get("uuid")
             }
             self._mission_metadata_loaded_at = time.monotonic()
+            self._mission_metadata_retry_at = 0.0
             return self._mission_definitions
 
     def _build(

@@ -92,15 +92,15 @@ class AuthService:
 
     @asynccontextmanager
     async def cancel_logins(self, discord_id: int) -> AsyncIterator[None]:
-        """Invalidate login attempts and serialize deletion with their database commits."""
+        """Serialize deletion with login commits and discard late tokens after success."""
         async with self._login_locks.setdefault(discord_id, asyncio.Lock()):
             cancelled = self._login_cancellations.setdefault(
                 discord_id, asyncio.Event()
             )
-            cancelled.set()
             self._pending_nonces.pop(discord_id, None)
             try:
                 yield
+                cancelled.set()
                 for key in list(self._pending_refresh):
                     if key[1] == discord_id:
                         self._pending_refresh.pop(key, None)
@@ -347,6 +347,9 @@ class AuthService:
         self, account: Account, *, force: bool = False
     ) -> AuthResult:
         """Refresh tokens with version-checked persistence to protect concurrent updates."""
+        cancelled = self._login_cancellations.setdefault(
+            account.user_id, asyncio.Event()
+        )
         current = await self._save_pending_refresh(account)
         if current is None:
             return AuthResult(False)
@@ -380,6 +383,8 @@ class AuthService:
                 }
             ),
         )
+        if cancelled.is_set():
+            return AuthResult(False)
         data = response.data if isinstance(response.data, dict) else {}
         if response.status in {408, 425} or response.status >= 500:
             raise HTTPFailure(

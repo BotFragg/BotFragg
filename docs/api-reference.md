@@ -2120,7 +2120,7 @@ Normalize unreadable credentials without overwriting the stored blob.
 
 [Source](../src/services/auth.py#L94)
 
-Invalidate login attempts and serialize deletion with their database commits.
+Serialize deletion with login commits and discard late tokens after success.
 
 ### `async def refresh_version(self) -> None`
 
@@ -2194,7 +2194,7 @@ Refresh tokens with version-checked persistence to protect concurrent updates.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L429)
+[Source](../src/services/auth.py#L434)
 
 Persist a returned token without repeating its exchange after a DB outage.
 
@@ -2202,7 +2202,7 @@ Persist a returned token without repeating its exchange after a DB outage.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L448)
+[Source](../src/services/auth.py#L453)
 
 Remove the selected account's Riot tokens while coordinating with refreshes.
 
@@ -2210,7 +2210,7 @@ Remove the selected account's Riot tokens while coordinating with refreshes.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L458)
+[Source](../src/services/auth.py#L463)
 
 Clear credentials only if the stored auth version still matches the caller.
 
@@ -2218,7 +2218,7 @@ Clear credentials only if the stored auth version still matches the caller.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L466)
+[Source](../src/services/auth.py#L471)
 
 Return fresh Riot authorization headers or raise when login is required.
 
@@ -2226,7 +2226,7 @@ Return fresh Riot authorization headers or raise when login is required.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L491)
+[Source](../src/services/auth.py#L496)
 
 Fetch and persist an entitlement token, optionally refreshing on absence.
 
@@ -2234,7 +2234,7 @@ Fetch and persist an entitlement token, optionally refreshing on absence.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L530)
+[Source](../src/services/auth.py#L535)
 
 Release abandoned login attempts after their ten-minute lifetime.
 
@@ -2242,7 +2242,7 @@ Release abandoned login attempts after their ten-minute lifetime.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L539)
+[Source](../src/services/auth.py#L544)
 
 Fetch the Riot game name and tag line associated with an access token.
 
@@ -2250,7 +2250,7 @@ Fetch the Riot game name and tag line associated with an access token.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L556)
+[Source](../src/services/auth.py#L561)
 
 Request an entitlement token and surface transient Riot failures.
 
@@ -2258,7 +2258,7 @@ Request an entitlement token and surface transient Riot failures.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L581)
+[Source](../src/services/auth.py#L586)
 
 Resolve the VALORANT shard affinity associated with an ID token.
 
@@ -2266,7 +2266,7 @@ Resolve the VALORANT shard affinity associated with an ID token.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L603)
+[Source](../src/services/auth.py#L608)
 
 Build the Riot authentication user agent from the latest client build.
 
@@ -2274,7 +2274,7 @@ Build the Riot authentication user agent from the latest client build.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L613)
+[Source](../src/services/auth.py#L618)
 
 Validate token response fields before using or persisting credentials.
 
@@ -2282,7 +2282,7 @@ Validate token response fields before using or persisting credentials.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L628)
+[Source](../src/services/auth.py#L633)
 
 Decode a JWT payload for claim lookup without performing signature validation.
 
@@ -2290,7 +2290,7 @@ Decode a JWT payload for claim lookup without performing signature validation.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L641)
+[Source](../src/services/auth.py#L646)
 
 Return the token's Unix expiry time, or zero when it cannot be decoded.
 
@@ -2298,7 +2298,7 @@ Return the token's Unix expiry time, or zero when it cannot be decoded.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L649)
+[Source](../src/services/auth.py#L654)
 
 Map missing and LATAM/Brazil affinities to Riot's North America API host.
 
@@ -2306,7 +2306,7 @@ Map missing and LATAM/Brazil affinities to Riot's North America API host.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L654)
+[Source](../src/services/auth.py#L659)
 
 Raised when a Riot request cannot proceed without a new user login.
 
@@ -2318,7 +2318,7 @@ VALORANT skin, bundle, accessory, and mission metadata with a local cache.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L45)
+[Source](../src/services/catalog.py#L46)
 
 Resolve VALORANT-API text for a Discord locale with English fallback.
 
@@ -2326,7 +2326,7 @@ Resolve VALORANT-API text for a Discord locale with English fallback.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L64)
+[Source](../src/services/catalog.py#L65)
 
 Normalize a localized string or locale map into nonempty values.
 
@@ -2334,7 +2334,7 @@ Normalize a localized string or locale map into nonempty values.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L77)
+[Source](../src/services/catalog.py#L78)
 
 Validate upstream rows and the identifiers/media consumed by catalog views.
 
@@ -2342,7 +2342,7 @@ Validate upstream rows and the identifiers/media consumed by catalog views.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L103)
+[Source](../src/services/catalog.py#L104)
 
 Hold normalized skin identity, display data, pricing, levels, and chromas.
 
@@ -2350,7 +2350,7 @@ Hold normalized skin identity, display data, pricing, levels, and chromas.
 
 **Scope:** `src/services/catalog.py` · `Skin`
 
-[Source](../src/services/catalog.py#L116)
+[Source](../src/services/catalog.py#L117)
 
 Return this skin's localized or English name, or empty when missing.
 
@@ -2358,7 +2358,7 @@ Return this skin's localized or English name, or empty when missing.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L124)
+[Source](../src/services/catalog.py#L125)
 
 Hold static display metadata for a VALORANT bundle.
 
@@ -2366,7 +2366,7 @@ Hold static display metadata for a VALORANT bundle.
 
 **Scope:** `src/services/catalog.py` · `Bundle`
 
-[Source](../src/services/catalog.py#L136)
+[Source](../src/services/catalog.py#L137)
 
 Return this bundle's localized or English name, or empty when missing.
 
@@ -2374,7 +2374,7 @@ Return this bundle's localized or English name, or empty when missing.
 
 **Scope:** `src/services/catalog.py` · `Bundle`
 
-[Source](../src/services/catalog.py#L142)
+[Source](../src/services/catalog.py#L143)
 
 Return this bundle's localized subtitle, if available.
 
@@ -2382,7 +2382,7 @@ Return this bundle's localized subtitle, if available.
 
 **Scope:** `src/services/catalog.py` · `Bundle`
 
-[Source](../src/services/catalog.py#L146)
+[Source](../src/services/catalog.py#L147)
 
 Return this bundle's localized description, if available.
 
@@ -2390,7 +2390,7 @@ Return this bundle's localized description, if available.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L155)
+[Source](../src/services/catalog.py#L156)
 
 Hold normalized display data for a non-skin cosmetic reward.
 
@@ -2398,7 +2398,7 @@ Hold normalized display data for a non-skin cosmetic reward.
 
 **Scope:** `src/services/catalog.py` · `Accessory`
 
-[Source](../src/services/catalog.py#L164)
+[Source](../src/services/catalog.py#L165)
 
 Return this accessory's localized name, or empty when metadata is missing.
 
@@ -2406,7 +2406,7 @@ Return this accessory's localized name, or empty when metadata is missing.
 
 **Scope:** `src/services/catalog.py` · `Accessory`
 
-[Source](../src/services/catalog.py#L168)
+[Source](../src/services/catalog.py#L169)
 
 Return localized accessory title text, if available.
 
@@ -2414,7 +2414,7 @@ Return localized accessory title text, if available.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L176)
+[Source](../src/services/catalog.py#L177)
 
 Load, refresh, search, and cache VALORANT catalog data.
 
@@ -2422,7 +2422,7 @@ Load, refresh, search, and cache VALORANT catalog data.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L179)
+[Source](../src/services/catalog.py#L180)
 
 Prepare in-memory indexes and the working-directory catalog snapshot.
 
@@ -2430,7 +2430,7 @@ Prepare in-memory indexes and the working-directory catalog snapshot.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L201)
+[Source](../src/services/catalog.py#L203)
 
 Load the saved catalog off the event loop or fetch a fresh snapshot.
 
@@ -2438,7 +2438,7 @@ Load the saved catalog off the event loop or fetch a fresh snapshot.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L213)
+[Source](../src/services/catalog.py#L215)
 
 Fetch the current weapon and bundle catalogs and save their snapshot.
 
@@ -2451,7 +2451,7 @@ A failed save restores the previous catalog even during cancellation.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L297)
+[Source](../src/services/catalog.py#L299)
 
 Fetch one catalog endpoint and return its validated data rows.
 
@@ -2459,15 +2459,15 @@ Fetch one catalog endpoint and return its validated data rows.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L309)
+[Source](../src/services/catalog.py#L311)
 
-Return cached mission definitions, refreshing them at most every 30 minutes.
+Cache mission definitions for 30 minutes and failed refreshes for 30 seconds.
 
 ### `def _build(self, weapons: list[dict[str, Any]], bundles: list[dict[str, Any]]) -> None`
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L355)
+[Source](../src/services/catalog.py#L364)
 
 Normalize weapon and bundle responses and rebuild lookup indexes.
 
@@ -2475,7 +2475,7 @@ Normalize weapon and bundle responses and rebuild lookup indexes.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L410)
+[Source](../src/services/catalog.py#L419)
 
 Index skins by their UUID, offer UUID, and level UUID aliases.
 
@@ -2483,7 +2483,7 @@ Index skins by their UUID, offer UUID, and level UUID aliases.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L421)
+[Source](../src/services/catalog.py#L430)
 
 Resolve a skin from any indexed base, offer, or level identifier.
 
@@ -2491,7 +2491,7 @@ Resolve a skin from any indexed base, offer, or level identifier.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L425)
+[Source](../src/services/catalog.py#L434)
 
 Resolve bundle metadata by its Riot UUID.
 
@@ -2499,7 +2499,7 @@ Resolve bundle metadata by its Riot UUID.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L430)
+[Source](../src/services/catalog.py#L439)
 
 Fetch and cache a supported accessory using its Riot item type ID.
 
@@ -2507,7 +2507,7 @@ Fetch and cache a supported accessory using its Riot item type ID.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L468)
+[Source](../src/services/catalog.py#L477)
 
 Resolve a Riot bundle buddy by its buddy or level UUID.
 
@@ -2515,7 +2515,7 @@ Resolve a Riot bundle buddy by its buddy or level UUID.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L512)
+[Source](../src/services/catalog.py#L521)
 
 Convert endpoint-specific Riot accessory data into a common display shape.
 
@@ -2523,7 +2523,7 @@ Convert endpoint-specific Riot accessory data into a common display shape.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L538)
+[Source](../src/services/catalog.py#L547)
 
 Search localized names first, retaining English-name fallback matches.
 
@@ -2531,7 +2531,7 @@ Search localized names first, retaining English-name fallback matches.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L560)
+[Source](../src/services/catalog.py#L569)
 
 Apply current store prices to catalog skins matched by offer identifier.
 
@@ -2539,7 +2539,7 @@ Apply current store prices to catalog skins matched by offer identifier.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L567)
+[Source](../src/services/catalog.py#L576)
 
 Encode the current version, skins, and bundles as compact JSON.
 
@@ -2547,7 +2547,7 @@ Encode the current version, skins, and bundles as compact JSON.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L602)
+[Source](../src/services/catalog.py#L611)
 
 Write a complete catalog snapshot through a temporary file replacement.
 
@@ -2555,7 +2555,7 @@ Write a complete catalog snapshot through a temporary file replacement.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L609)
+[Source](../src/services/catalog.py#L618)
 
 Restore catalog records from a snapshot and rebuild lookup indexes.
 
