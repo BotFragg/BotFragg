@@ -48,6 +48,16 @@ class Account(Model):
 class Alert(Model):
     """Store a skin alert belonging to one linked Riot account."""
 
+    def persisted_row(self) -> QuerySet[Alert]:
+        """Scope access to this alert and its account's original identity."""
+        return Alert.filter(
+            id=self.id,
+            created_at=self.created_at,
+            account_id=self.account.puuid,
+            account__user_id=self.account.user_id,
+            account__created_at=self.account.created_at,
+        )
+
     id = fields.IntField(primary_key=True)
     account: fields.ForeignKeyRelation[Account] = fields.ForeignKeyField(
         "models.Account", related_name="alerts", on_delete=fields.CASCADE

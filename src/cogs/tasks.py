@@ -163,13 +163,8 @@ class TasksCog(commands.Cog):
         try:
             user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
             current = (
-                await Alert.filter(
-                    id=alert.id,
-                    created_at=alert.created_at,
-                    account_id=alert.account.puuid,
-                    account__user_id=user_id,
-                    account__created_at=alert.account.created_at,
-                )
+                await alert.persisted_row()
+                .filter(account__user_id=user_id)
                 .select_related("account")
                 .get_or_none()
             )

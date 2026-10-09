@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
+from asyncpg.exceptions import DeadlockDetectedError
 from tortoise import timezone
 from tortoise.transactions import in_transaction
 
@@ -182,9 +183,22 @@ async def select_account(discord_id: int, account: Account) -> None:
 
 async def delete_user_data(discord_id: int) -> bool:
     """Delete the user's stored BotFragg records and all linked Riot accounts."""
-    async with deleting_analytics(discord_id), in_transaction():
-        removed = await CommandInvocation.filter(user_id=discord_id).delete()
-        removed += await SuggestionFollower.filter(user_id=discord_id).delete()
-        removed += await Suggestion.filter(author_id=discord_id).delete()
-        removed += await User.filter(id=discord_id).delete()
-    return bool(removed)
+    async with deleting_analytics(discord_id):
+        attempts = 0
+        while True:
+            try:
+                async with in_transaction():
+                    removed = await CommandInvocation.filter(
+                        user_id=discord_id
+                    ).delete()
+                    removed += await SuggestionFollower.filter(
+                        user_id=discord_id
+                    ).delete()
+                    removed += await Suggestion.filter(author_id=discord_id).delete()
+                    removed += await User.filter(id=discord_id).delete()
+                return bool(removed)
+            except DeadlockDetectedError:
+                # PostgreSQL rolls back a deadlock victim; retry the entire deletion.
+                attempts += 1
+                if attempts == 3:
+                    raise

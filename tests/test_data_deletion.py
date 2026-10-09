@@ -13,11 +13,17 @@ from uuid import UUID
 
 import discord
 import pytest
+from asyncpg.exceptions import DeadlockDetectedError
 from cryptography.fernet import Fernet
+from tortoise import Tortoise
+from tortoise.queryset import DeleteQuery
 
 from src.bot import BotFraggCommandTree
 from src.cogs.events import EventsCog
+from src.cogs.valorant.alerts import AlertsCog
+from src.cogs.valorant.battlepass import BattlepassCog
 from src.cogs.valorant.logout import LogoutCog
+from src.cogs.valorant.penalties import PenaltiesCog
 from src.localization import BotFraggTranslator
 from src.models import (
     Account,
@@ -28,8 +34,11 @@ from src.models import (
     User,
 )
 from src.services.accounts import delete_user_data
+from src.services.analytics import command_analytics
 from src.services.auth import AuthService
+from src.services.catalog import Skin
 from src.services.crypto import AuthVault
+from src.services.suggestions import create_suggestion, follow_suggestion
 from tests.helpers import (
     _localized_bot,
     _localized_interaction,
@@ -51,6 +60,219 @@ def auth_service(http=None):
         http or NS(),
         AuthVault(Fernet.generate_key().decode()),
     )
+
+
+@pytest.mark.usefixtures("backend_database")
+@pytest.mark.parametrize(
+    "mode", ["missions", "mission_bars", "penalties", "penalties_page", "testalerts"]
+)
+@pytest.mark.parametrize("change", ["delete", "relink"])
+async def test_pending_account_responses_reject_deleted_or_recreated_accounts(
+    mode, change
+):
+    owner = await User.create(id=101, current_account_id="synthetic")
+    account = await Account.create(
+        puuid="synthetic", user=owner, username="PrivateName#TEST"
+    )
+    skin = Skin(str(UUID(int=1)), "offer", "Synthetic", None, None)
+    await Alert.create(account=account, skin_uuid=skin.uuid)
+
+    async def mutate():
+        await delete_user_data(owner.id)
+        if change == "relink":
+            replacement = await User.create(id=owner.id)
+            await Account.create(
+                puuid=account.puuid, user=replacement, username="Replacement#TEST"
+            )
+
+    async def gameplay(_account, **_):
+        if mode != "mission_bars":
+            await mutate()
+        if mode in {"missions", "mission_bars"}:
+            return [
+                {
+                    "type": "Daily Missions",
+                    "title": "PRIVATE MISSION",
+                    "xp": 100,
+                    "complete": False,
+                    "expires": None,
+                    "tasks": [],
+                }
+            ]
+        return [
+            {
+                "infraction": "PRIVATE PENALTY",
+                "expires": None,
+                "games_remaining": 3,
+                "platform_scope": "All platforms",
+                "effects": [],
+            }
+        ]
+
+    async def bars():
+        if mode == "mission_bars":
+            await mutate()
+        return "#", "."
+
+    async def storefront(_account):
+        await mutate()
+        return NS(expires=4_000_000_000)
+
+    bot = _localized_bot(
+        register_component=lambda *_: None,
+        gameplay=NS(missions=gameplay, penalties=gameplay),
+        emoji_service=NS(battlepass_bars=bars, skin_name=lambda name, _: name),
+        auth=NS(ensure=AsyncMock(return_value=NS(success=True))),
+        shop=NS(storefront=storefront),
+        catalog=NS(get_skin=lambda _: skin),
+    )
+    interaction = _localized_interaction(
+        user=NS(id=owner.id, send=AsyncMock()),
+        response=NS(defer=AsyncMock(), is_done=lambda: True),
+        followup=NS(send=AsyncMock()),
+        edit_original_response=AsyncMock(),
+    )
+    if mode in {"missions", "mission_bars"}:
+        await BattlepassCog.missions.callback(BattlepassCog(bot), interaction)
+    elif mode == "penalties":
+        await PenaltiesCog.penalties.callback(PenaltiesCog(bot), interaction)
+    elif mode == "penalties_page":
+        await PenaltiesCog(bot).penalties_page(interaction, "synthetic,0")
+    else:
+        await AlertsCog.testalerts.callback(AlertsCog(bot), interaction)
+    interaction.user.send.assert_not_awaited()
+    interaction.edit_original_response.assert_not_awaited()
+    interaction.followup.send.assert_awaited_once()
+    result = interaction.followup.send.await_args.kwargs
+    assert result["ephemeral"]
+    assert result["embed"].description == bot.translator.text(
+        interaction.locale, "error-account-unavailable"
+    )
+
+
+@pytest.mark.usefixtures("backend_database")
+@pytest.mark.parametrize("change", ["remove", "replace", "rename"])
+async def test_manual_alert_rechecks_original_alert_and_current_account_name(change):
+    owner = await User.create(id=101, current_account_id="synthetic")
+    account = await Account.create(
+        puuid="synthetic", user=owner, username="FormerName#TEST"
+    )
+    skin = Skin(str(UUID(int=1)), "offer", "Synthetic", None, None)
+    alert = await Alert.create(account=account, skin_uuid=skin.uuid)
+
+    async def storefront(_account):
+        if change == "rename":
+            await Account.filter(puuid=account.puuid).update(
+                username="CurrentName#TEST"
+            )
+        else:
+            await alert.delete()
+            if change == "replace":
+                await Alert.create(id=alert.id, account=account, skin_uuid=skin.uuid)
+        return NS(expires=4_000_000_000)
+
+    bot = _localized_bot(
+        register_component=lambda *_: None,
+        auth=NS(ensure=AsyncMock(return_value=NS(success=True))),
+        shop=NS(storefront=storefront),
+        catalog=NS(get_skin=lambda _: skin),
+        emoji_service=NS(skin_name=lambda name, _: name),
+    )
+    interaction = _localized_interaction(
+        user=NS(id=owner.id, send=AsyncMock()),
+        response=NS(defer=AsyncMock(), is_done=lambda: True),
+        followup=NS(send=AsyncMock()),
+    )
+    await AlertsCog.testalerts.callback(AlertsCog(bot), interaction)
+    if change == "rename":
+        interaction.user.send.assert_awaited_once()
+        card = interaction.user.send.await_args.kwargs["embed"]
+        assert "CurrentName#TEST" in card.description
+        assert "FormerName#TEST" not in card.description
+    else:
+        interaction.user.send.assert_not_awaited()
+        assert interaction.followup.send.await_args.kwargs["ephemeral"]
+
+
+async def test_crossed_suggestion_deletions_recover_from_real_deadlock(
+    postgres_url, monkeypatch
+):
+    await Tortoise.init(
+        db_url=postgres_url, modules={"models": ["src.models.entities"]}
+    )
+    await Tortoise.generate_schemas()
+    for user_id in (101, 202):
+        await User.create(id=user_id)
+        await CommandInvocation.create(command="suggest", user_id=user_id)
+    first = await create_suggestion(101, "First synthetic suggestion", None)
+    second = await create_suggestion(202, "Second synthetic suggestion", None)
+    await follow_suggestion(first.id, 202)
+    await follow_suggestion(second.id, 101)
+    both = asyncio.Event()
+    arrived = deadlocks = 0
+    original = DeleteQuery._execute
+
+    async def synchronized_delete(query):
+        nonlocal arrived, deadlocks
+        try:
+            result = await original(query)
+        except DeadlockDetectedError:
+            deadlocks += 1
+            raise
+        if query.model is SuggestionFollower and arrived < 2:
+            arrived += 1
+            if arrived == 2:
+                both.set()
+            await asyncio.wait_for(both.wait(), 5)
+        return result
+
+    monkeypatch.setattr(DeleteQuery, "_execute", synchronized_delete)
+    async with (
+        command_analytics(101) as cancelled_first,
+        command_analytics(202) as cancelled_second,
+    ):
+        results = await asyncio.wait_for(
+            asyncio.gather(
+                delete_user_data(101), delete_user_data(202), return_exceptions=True
+            ),
+            10,
+        )
+        assert results == [True, True]
+        assert cancelled_first.is_set() and cancelled_second.is_set()
+    assert deadlocks == 1
+    for model in (User, CommandInvocation, Suggestion, SuggestionFollower):
+        assert not await model.exists()
+
+
+@pytest.mark.usefixtures("backend_database")
+@pytest.mark.parametrize("failure", [DeadlockDetectedError, ValueError])
+async def test_failed_deletion_retries_only_deadlocks_and_preserves_all_data(
+    monkeypatch, failure
+):
+    owner = await User.create(id=101)
+    await CommandInvocation.create(command="suggest", user_id=owner.id)
+    await create_suggestion(owner.id, "Synthetic suggestion", None)
+    original = DeleteQuery._execute
+    attempts = 0
+
+    async def failed_delete(query):
+        nonlocal attempts
+        if query.model is User:
+            attempts += 1
+            raise failure("Synthetic deletion failure")
+        return await original(query)
+
+    monkeypatch.setattr(DeleteQuery, "_execute", failed_delete)
+    async with command_analytics(owner.id) as cancelled:
+        with pytest.raises(failure):
+            await delete_user_data(owner.id)
+        assert not cancelled.is_set()
+        for model in (User, CommandInvocation, Suggestion, SuggestionFollower):
+            assert await model.exists()
+        assert attempts == (3 if failure is DeadlockDetectedError else 1)
+        monkeypatch.setattr(DeleteQuery, "_execute", original)
+        assert await delete_user_data(owner.id)
+        assert cancelled.is_set()
 
 
 @pytest.mark.usefixtures("database")

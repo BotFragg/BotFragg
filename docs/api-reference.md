@@ -594,7 +594,7 @@ DM an owner-scoped skin alert and report whether delivery succeeded.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L211)
+[Source](../src/cogs/tasks.py#L206)
 
 DM the selected account's daily shop and report delivery success.
 
@@ -602,7 +602,7 @@ DM the selected account's daily shop and report delivery success.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L262)
+[Source](../src/cogs/tasks.py#L257)
 
 Notify a user that credentials expired and return the delivery failure count.
 
@@ -610,7 +610,7 @@ Notify a user that credentials expired and return the delivery failure count.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L278)
+[Source](../src/cogs/tasks.py#L273)
 
 Refresh the Riot client version used in authenticated API requests.
 
@@ -618,7 +618,7 @@ Refresh the Riot client version used in authenticated API requests.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L287)
+[Source](../src/cogs/tasks.py#L282)
 
 Refresh the VALORANT catalog when its upstream version changes.
 
@@ -626,7 +626,7 @@ Refresh the VALORANT catalog when its upstream version changes.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L297)
+[Source](../src/cogs/tasks.py#L292)
 
 Measure log delivery, preserving the queue after Discord failures.
 
@@ -634,7 +634,7 @@ Measure log delivery, preserving the queue after Discord failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L302)
+[Source](../src/cogs/tasks.py#L297)
 
 Send buffered log lines to Discord and requeue them after HTTP failures.
 
@@ -642,7 +642,7 @@ Send buffered log lines to Discord and requeue them after HTTP failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L338)
+[Source](../src/cogs/tasks.py#L333)
 
 Publish Discord, database, and scheduled-job health for Docker and operators.
 
@@ -650,7 +650,7 @@ Publish Discord, database, and scheduled-job health for Docker and operators.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L389)
+[Source](../src/cogs/tasks.py#L384)
 
 Wait for Discord readiness before starting any background job.
 
@@ -658,7 +658,7 @@ Wait for Discord readiness before starting any background job.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L394)
+[Source](../src/cogs/tasks.py#L389)
 
 Register the background-task cog with the bot.
 
@@ -846,7 +846,7 @@ Check login and shop availability, then send the caller a test alert DM.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `module`
 
-[Source](../src/cogs/valorant/alerts.py#L345)
+[Source](../src/cogs/valorant/alerts.py#L354)
 
 Register the skin-alert commands and their persistent handlers.
 
@@ -890,7 +890,7 @@ Show the selected account's daily and weekly mission progress privately.
 
 **Scope:** `src/cogs/valorant/battlepass.py` · `BattlepassCog`
 
-[Source](../src/cogs/valorant/battlepass.py#L123)
+[Source](../src/cogs/valorant/battlepass.py#L126)
 
 Group mission entries by type and expiry and render progress bars.
 
@@ -898,7 +898,7 @@ Group mission entries by type and expiry and render progress bars.
 
 **Scope:** `src/cogs/valorant/battlepass.py` · `BattlepassCog`
 
-[Source](../src/cogs/valorant/battlepass.py#L215)
+[Source](../src/cogs/valorant/battlepass.py#L218)
 
 Render the active act, current tier, next reward, and XP progress bar.
 
@@ -906,7 +906,7 @@ Render the active act, current tier, next reward, and XP progress bar.
 
 **Scope:** `src/cogs/valorant/battlepass.py` · `module`
 
-[Source](../src/cogs/valorant/battlepass.py#L289)
+[Source](../src/cogs/valorant/battlepass.py#L292)
 
 Register the battlepass and mission commands.
 
@@ -1062,7 +1062,7 @@ Show Riot penalties privately for the caller's selected account.
 
 **Scope:** `src/cogs/valorant/penalties.py` · `PenaltiesCog`
 
-[Source](../src/cogs/valorant/penalties.py#L73)
+[Source](../src/cogs/valorant/penalties.py#L76)
 
 Validate pagination data, reload its owned account, and edit the page.
 
@@ -1070,7 +1070,7 @@ Validate pagination data, reload its owned account, and edit the page.
 
 **Scope:** `src/cogs/valorant/penalties.py` · `module`
 
-[Source](../src/cogs/valorant/penalties.py#L121)
+[Source](../src/cogs/valorant/penalties.py#L127)
 
 Build one five-penalty embed page and owner-bound navigation controls.
 
@@ -1078,7 +1078,7 @@ Build one five-penalty embed page and owner-bound navigation controls.
 
 **Scope:** `src/cogs/valorant/penalties.py` · `module`
 
-[Source](../src/cogs/valorant/penalties.py#L238)
+[Source](../src/cogs/valorant/penalties.py#L244)
 
 Register the private matchmaking-penalties command.
 
@@ -1678,11 +1678,19 @@ Scope access to this account's original owner and creation time.
 
 Store a skin alert belonging to one linked Riot account.
 
+### `def persisted_row(self) -> QuerySet[Alert]`
+
+**Scope:** `src/models/entities.py` · `Alert`
+
+[Source](../src/models/entities.py#L51)
+
+Scope access to this alert and its account's original identity.
+
 ### `class Meta`
 
 **Scope:** `src/models/entities.py` · `Alert`
 
-[Source](../src/models/entities.py#L58)
+[Source](../src/models/entities.py#L68)
 
 Prevent duplicate alerts for the same account and skin.
 
@@ -1690,7 +1698,7 @@ Prevent duplicate alerts for the same account and skin.
 
 **Scope:** `src/models/entities.py` · `module`
 
-[Source](../src/models/entities.py#L64)
+[Source](../src/models/entities.py#L74)
 
 Store a completed command and its optional guild and channel context.
 
@@ -1698,7 +1706,7 @@ Store a completed command and its optional guild and channel context.
 
 **Scope:** `src/models/entities.py` · `module`
 
-[Source](../src/models/entities.py#L75)
+[Source](../src/models/entities.py#L85)
 
 Store a user's submitted idea and its review and delivery state.
 
@@ -1706,7 +1714,7 @@ Store a user's submitted idea and its review and delivery state.
 
 **Scope:** `src/models/entities.py` · `module`
 
-[Source](../src/models/entities.py#L90)
+[Source](../src/models/entities.py#L100)
 
 Link a Discord user to a suggestion whose review they want to follow.
 
@@ -1714,7 +1722,7 @@ Link a Discord user to a suggestion whose review they want to follow.
 
 **Scope:** `src/models/entities.py` · `SuggestionFollower`
 
-[Source](../src/models/entities.py#L99)
+[Source](../src/models/entities.py#L109)
 
 Allow each user to follow a suggestion at most once.
 
@@ -1722,7 +1730,7 @@ Allow each user to follow a suggestion at most once.
 
 **Scope:** `src/models/entities.py` · `module`
 
-[Source](../src/models/entities.py#L105)
+[Source](../src/models/entities.py#L115)
 
 Map each configured Discord channel to its persistent status message.
 
@@ -1830,7 +1838,7 @@ Persistence operations for user preferences, Riot accounts, and personal-data de
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L24)
+[Source](../src/services/accounts.py#L25)
 
 Return the stored BotFragg user for a Discord ID, if one exists.
 
@@ -1838,7 +1846,7 @@ Return the stored BotFragg user for a Discord ID, if one exists.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L29)
+[Source](../src/services/accounts.py#L30)
 
 Count users with a stored BotFragg profile.
 
@@ -1846,7 +1854,7 @@ Count users with a stored BotFragg profile.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L34)
+[Source](../src/services/accounts.py#L35)
 
 Return Discord IDs whose saved preference enables daily shop DMs.
 
@@ -1854,7 +1862,7 @@ Return Discord IDs whose saved preference enables daily shop DMs.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L40)
+[Source](../src/services/accounts.py#L41)
 
 Return a Riot account only when it belongs to the requested Discord user.
 
@@ -1862,7 +1870,7 @@ Return a Riot account only when it belongs to the requested Discord user.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L45)
+[Source](../src/services/accounts.py#L46)
 
 Update one allowlisted Boolean preference and refresh the user's timestamp.
 
@@ -1870,7 +1878,7 @@ Update one allowlisted Boolean preference and refresh the user's timestamp.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L55)
+[Source](../src/services/accounts.py#L56)
 
 Return the active account, choosing the oldest account when none is selected.
 
@@ -1882,7 +1890,7 @@ conditional so a concurrent selection is not overwritten.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L125)
+[Source](../src/services/accounts.py#L126)
 
 Return a user's Riot accounts in creation order.
 
@@ -1890,7 +1898,7 @@ Return a user's Riot accounts in creation order.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L130)
+[Source](../src/services/accounts.py#L131)
 
 Resolve an account by PUUID, case-insensitive name, or one-based position.
 
@@ -1898,7 +1906,7 @@ Resolve an account by PUUID, case-insensitive name, or one-based position.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L157)
+[Source](../src/services/accounts.py#L158)
 
 Set a user's active account after verifying that the account is theirs.
 
@@ -1906,7 +1914,7 @@ Set a user's active account after verifying that the account is theirs.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L183)
+[Source](../src/services/accounts.py#L184)
 
 Delete the user's stored BotFragg records and all linked Riot accounts.
 

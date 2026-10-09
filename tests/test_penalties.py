@@ -3,9 +3,11 @@
 from types import SimpleNamespace
 
 import discord
+import pytest
 
 from src.cogs.valorant.penalties import PenaltiesCog
 from src.localization import BotFraggTranslator
+from src.models import Account, User
 
 TEST_TRANSLATOR = BotFraggTranslator()
 
@@ -80,23 +82,20 @@ def _penalties(count: int = 6) -> list[dict[str, object]]:
     ]
 
 
+@pytest.mark.usefixtures("database")
 async def test_penalties_command_shows_five_private_rows_and_hides_ign(
     monkeypatch,
 ) -> None:
     """Verify the command shows one private five-row page and respects hide_ign."""
-    account = SimpleNamespace(puuid="player", username="SecretName#NA")
+    owner = await User.create(id=123, hide_ign=True)
+    account = await Account.create(puuid="player", user=owner, username="SecretName#NA")
     selected: list[int] = []
     fetched: list[object] = []
 
-    async def selected_account(user_id: int) -> SimpleNamespace:
+    async def selected_account(user_id: int) -> Account:
         """Return the configured active Riot account."""
         selected.append(user_id)
         return account
-
-    async def get_user(user_id: int) -> SimpleNamespace:
-        """Return the user's privacy preference."""
-        assert user_id == 123
-        return SimpleNamespace(hide_ign=True)
 
     class Gameplay:
         """Return six normalized matchmaking penalties."""
@@ -109,7 +108,6 @@ async def test_penalties_command_shows_five_private_rows_and_hides_ign(
     monkeypatch.setattr(
         "src.cogs.valorant.penalties.selected_account", selected_account
     )
-    monkeypatch.setattr("src.cogs.valorant.penalties.get_user", get_user)
     interaction, messages = _interaction()
     cog = PenaltiesCog(
         SimpleNamespace(
@@ -175,19 +173,17 @@ async def test_penalties_command_prompts_unregistered_user_to_log_in(
     assert "/login" in messages[0]["embed"].description
 
 
+@pytest.mark.usefixtures("database")
 async def test_penalties_command_reports_empty_results_without_pagination(
     monkeypatch,
 ) -> None:
     """Verify empty Riot results receive one private embed without controls."""
-    account = SimpleNamespace(puuid="player", username="Player#NA")
+    owner = await User.create(id=123)
+    account = await Account.create(puuid="player", user=owner, username="Player#NA")
 
-    async def selected_account(_user_id: int) -> SimpleNamespace:
+    async def selected_account(_user_id: int) -> Account:
         """Return the configured active account."""
         return account
-
-    async def get_user(_user_id: int) -> SimpleNamespace:
-        """Use the normal visible account-name preference."""
-        return SimpleNamespace(hide_ign=False)
 
     class Gameplay:
         """Return an empty Riot penalty list."""
@@ -199,7 +195,6 @@ async def test_penalties_command_reports_empty_results_without_pagination(
     monkeypatch.setattr(
         "src.cogs.valorant.penalties.selected_account", selected_account
     )
-    monkeypatch.setattr("src.cogs.valorant.penalties.get_user", get_user)
     interaction, messages = _interaction()
 
     await PenaltiesCog.penalties.callback(
@@ -220,17 +215,15 @@ async def test_penalties_command_reports_empty_results_without_pagination(
     assert "view" not in messages[0]
 
 
+@pytest.mark.usefixtures("database")
 async def test_penalties_command_omits_view_for_a_single_page(monkeypatch) -> None:
     """Verify single-page results omit Discord's optional view argument."""
-    account = SimpleNamespace(puuid="player", username="Player#NA")
+    owner = await User.create(id=123)
+    account = await Account.create(puuid="player", user=owner, username="Player#NA")
 
-    async def selected_account(_user_id: int) -> SimpleNamespace:
+    async def selected_account(_user_id: int) -> Account:
         """Return the configured active account."""
         return account
-
-    async def get_user(_user_id: int) -> SimpleNamespace:
-        """Use the normal visible account-name preference."""
-        return SimpleNamespace(hide_ign=False)
 
     class Gameplay:
         """Return one matchmaking penalty."""
@@ -242,7 +235,6 @@ async def test_penalties_command_omits_view_for_a_single_page(monkeypatch) -> No
     monkeypatch.setattr(
         "src.cogs.valorant.penalties.selected_account", selected_account
     )
-    monkeypatch.setattr("src.cogs.valorant.penalties.get_user", get_user)
     interaction, messages = _interaction()
 
     await PenaltiesCog.penalties.callback(
@@ -261,22 +253,20 @@ async def test_penalties_command_omits_view_for_a_single_page(monkeypatch) -> No
     assert "view" not in messages[0]
 
 
+@pytest.mark.usefixtures("database")
 async def test_penalties_page_refetches_original_owned_account_and_edits_message(
     monkeypatch,
 ) -> None:
     """Verify page navigation is owner-bound and updates the original embed."""
-    account = SimpleNamespace(puuid="player", username="Player#NA")
+    owner = await User.create(id=123)
+    account = await Account.create(puuid="player", user=owner, username="Player#NA")
     resolved: list[tuple[int, str]] = []
     fetched: list[object] = []
 
-    async def account_for_user(user_id: int, puuid: str) -> SimpleNamespace:
+    async def account_for_user(user_id: int, puuid: str) -> Account:
         """Return the account only after checking its owner."""
         resolved.append((user_id, puuid))
         return account
-
-    async def get_user(_user_id: int) -> SimpleNamespace:
-        """Use the normal visible account-name preference."""
-        return SimpleNamespace(hide_ign=False)
 
     class Gameplay:
         """Return current penalty rows for the requested account."""
@@ -289,7 +279,6 @@ async def test_penalties_page_refetches_original_owned_account_and_edits_message
     monkeypatch.setattr(
         "src.cogs.valorant.penalties.account_for_user", account_for_user
     )
-    monkeypatch.setattr("src.cogs.valorant.penalties.get_user", get_user)
     interaction, messages = _interaction()
     cog = PenaltiesCog(
         SimpleNamespace(

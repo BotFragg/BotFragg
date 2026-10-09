@@ -294,6 +294,15 @@ class AlertsCog(commands.Cog):
             return
         try:
             shop = await self.bot.shop.storefront(alert.account)
+            alert = (
+                await alert.persisted_row()
+                .filter(account__user_id=interaction.user.id)
+                .select_related("account")
+                .get_or_none()
+            )
+            if alert is None:
+                await error(interaction, "error-account-unavailable")
+                return
             skin = self.bot.catalog.get_skin(str(alert.skin_uuid))
             if not skin:
                 await error(interaction, "alert-skin-no-longer-in-catalog")

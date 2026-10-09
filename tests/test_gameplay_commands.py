@@ -10,6 +10,7 @@ import discord
 import pytest
 
 from src.cogs.valorant.battlepass import BattlepassCog
+from src.models import Account, User
 from tests.helpers import (
     TEST_LOCALE,
     TEST_TRANSLATOR,
@@ -91,14 +92,16 @@ async def test_battlepass_hides_name_when_preference_enabled(
     assert "SecretName" not in sent[0].title
 
 
+@pytest.mark.usefixtures("database")
 async def test_missions_command_shows_weekly_progress_privately(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Verify that missions command shows weekly progress privately."""
-    account = SimpleNamespace(username="Player#NA")
+    owner = await User.create(id=123)
+    account = await Account.create(puuid="player", user=owner, username="Player#NA")
     sent: list[tuple[discord.Embed, bool]] = []
 
-    async def selected_account(_user_id: int) -> SimpleNamespace:
+    async def selected_account(_user_id: int) -> Account:
         """Return the configured active account for the command under test."""
         return account
 

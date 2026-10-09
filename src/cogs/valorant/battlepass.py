@@ -108,6 +108,9 @@ class BattlepassCog(commands.Cog):
             await error(interaction, exc)
             return
         filled_bar, empty_bar = await self.bot.emoji_service.battlepass_bars()
+        if not await account.persisted_row().exists():
+            await error(interaction, "error-account-unavailable")
+            return
         await interaction.followup.send(
             embed=self._missions_card(
                 data,

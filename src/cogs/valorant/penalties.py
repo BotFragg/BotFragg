@@ -11,7 +11,7 @@ from discord.ext import commands
 from ...bot import BotFraggBot
 from ...localization import BotFraggTranslator
 from ...models import Account
-from ...services.accounts import account_for_user, get_user, selected_account
+from ...services.accounts import account_for_user, selected_account
 from ...services.auth import AuthenticationRequired
 from ...services.gameplay import GameplayUnavailable, Penalty
 from ...views import OwnedActionButton, timestamp
@@ -48,10 +48,13 @@ class PenaltiesCog(commands.Cog):
             await error(interaction, exc)
             return
 
-        user = await get_user(interaction.user.id)
+        account = await account.persisted_row().select_related("user").get_or_none()
+        if not account:
+            await error(interaction, "error-account-unavailable")
+            return
         player = _account_display_name(
             account.username,
-            hide_ign=bool(user and user.hide_ign),
+            hide_ign=account.user.hide_ign,
             translator=self.bot.translator,
             locale=interaction.locale,
         )
@@ -95,10 +98,13 @@ class PenaltiesCog(commands.Cog):
             await error(interaction, exc)
             return
 
-        user = await get_user(interaction.user.id)
+        account = await account.persisted_row().select_related("user").get_or_none()
+        if not account:
+            await error(interaction, "error-account-unavailable")
+            return
         player = _account_display_name(
             account.username,
-            hide_ign=bool(user and user.hide_ign),
+            hide_ign=account.user.hide_ign,
             translator=self.bot.translator,
             locale=interaction.locale,
         )
