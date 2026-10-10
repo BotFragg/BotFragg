@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.2.0] - Unreleased
+## [1.2.0] - 2026-10-10
 
 ### Added
 
@@ -36,7 +36,10 @@
 - Validate nested login, token, shop, wallet, battlepass, and buddy data; keep temporary upstream failures retryable.
 - Respect Night Market expiry, select the active battlepass act, and safely display empty shops or incomplete bundle data.
 - Honor bounded `Retry-After` delays, including HTTP dates and malformed response bodies, and preserve the longest concurrent rate-limit cooldown.
+- Back off repeated Riot accessory lookup, application emoji creation, and Discord delivery failures; resume failed suggestion deliveries without duplicate notices.
+- Use the accessory store's expiry for its countdown and reject Night Market timers that are missing or incomplete.
 - Recover daily alerts, catalog refreshes, and shard-status jobs after temporary HTTP, socket, timeout, or database failures.
+- Report component and login-form failures privately, and send at most one expired-login notice per user per run.
 - Notify suggestion authors when reviews overlap submission, show completed reviews privately when tracking, and bound review reasons before saving.
 - Translate setting prompts and placeholders, correct account-limit instructions, and avoid suggestion command-name collisions in Greek, Hungarian, and Vietnamese.
 - Split oversized Discord log records and expire abandoned login, shop, and idle lock state.
@@ -45,6 +48,7 @@
 
 - Bind credential access, alert creation and delivery, and public account responses to the original account owner and creation time across deletion and relinking.
 - Redact webhook tokens, interaction tokens, and OAuth values in logged URLs.
+- Discard raw telemetry logging parameters and redact Discord delivery identifiers from logged URLs.
 - Upgrade multidict to 6.9.1 to address CVE-2026-104874.
 
 ### Documentation
