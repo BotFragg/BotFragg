@@ -21,7 +21,7 @@ COPY --chown=botfragg:botfragg locales ./locales
 RUN uv sync --frozen --no-dev \
     && mkdir -p /app/data /tmp/uv-cache \
     && chown botfragg:botfragg /app/data \
-    && chown -R botfragg:botfragg /tmp/uv-cache
+    && chown -R botfragg:botfragg /app/.venv /tmp/uv-cache
 
 USER botfragg
 
