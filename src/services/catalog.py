@@ -209,7 +209,14 @@ class CatalogService:
             contents = await asyncio.to_thread(self.path.read_text, "utf-8")
             raw = json.loads(contents)
             self._deserialize(raw)
+        except FileNotFoundError:
+            await self.refresh()
+            return
         except OSError, UnicodeError, ValueError:
+            log.warning(
+                "Cached VALORANT catalog is unreadable; fetching a fresh snapshot",
+                exc_info=True,
+            )
             await self.refresh()
             return
         if self._cache_format != CATALOG_FORMAT_VERSION:
@@ -348,6 +355,10 @@ class CatalogService:
             ):
                 self._mission_metadata_retry_at = (
                     time.monotonic() + MISSION_METADATA_RETRY_SECONDS
+                )
+                log.warning(
+                    "Mission metadata was not 200 with a data list (status=%s)",
+                    missions.status,
                 )
                 return self._mission_definitions
             self._mission_definitions = {

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import sys
 from collections import deque
 from datetime import time as daytime
 from types import SimpleNamespace
@@ -19,7 +20,7 @@ from sentry_sdk.transport import Transport
 from src import main as entrypoint
 from src import monitoring
 from src.cogs.tasks import DiscordLogHandler, TasksCog
-from src.monitoring import StructuredFormatter, _scrub
+from src.monitoring import PlainFormatter, StructuredFormatter, _scrub
 
 
 @pytest.mark.parametrize(
@@ -371,6 +372,61 @@ def test_structured_logs_include_safe_extra_fields() -> None:
     assert payload["logger"] == "src.services.shop"
     assert payload["message"] == "Loaded account [Filtered]"
     assert payload["user_id"] == "[Filtered]"
+
+
+def test_plain_logs_include_structured_fields_and_a_scrubbed_traceback() -> None:
+    """Verify that plain console logs name the job, shards, and failure reason."""
+    try:
+        raise RuntimeError("delivery failed token=Bearer eyJhbGciOi.SECRET.SIG")
+    except RuntimeError:
+        record = logging.LogRecord(
+            "src.health",
+            logging.INFO,
+            "shop.py",
+            12,
+            "Background job completed",
+            (),
+            sys.exc_info(),
+        )
+    record.job = "version_refresh"
+    record.duration_seconds = 0.04
+    record.problems = ["database"]
+
+    formatted = PlainFormatter("%(asctime)s %(levelname)s %(message)s").format(record)
+
+    assert "Background job completed" in formatted
+    assert "job=version_refresh" in formatted
+    assert "duration_seconds=0.04" in formatted
+    assert "problems=['database']" in formatted
+    assert "SECRET" not in formatted
+    assert "Traceback (most recent call last):" in formatted
+    assert "delivery failed" in formatted
+
+
+def test_plain_formatter_restores_the_record_for_structured_handlers() -> None:
+    """Verify that plain formatting does not consume a shared record's traceback."""
+    try:
+        raise RuntimeError("private database detail")
+    except RuntimeError:
+        record = logging.LogRecord(
+            "src.cogs.tasks",
+            logging.WARNING,
+            "tasks.py",
+            9,
+            "Could not deliver daily shop notification",
+            (),
+            sys.exc_info(),
+        )
+    record.job = "daily_alerts"
+
+    plain = PlainFormatter("%(message)s").format(record)
+    payload = json.loads(StructuredFormatter().format(record))
+
+    assert "job=daily_alerts" in plain
+    assert payload["message"] == "Could not deliver daily shop notification"
+    assert payload["job"] == "daily_alerts"
+    assert "private database detail" in payload["exception"]
+    assert "Traceback (most recent call last):" not in payload["message"]
 
 
 def test_discord_log_handler_uses_the_scrubbed_structured_formatter() -> None:

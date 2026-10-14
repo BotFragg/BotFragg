@@ -118,4 +118,4 @@ async def unexpected_error(
     try:
         await error(interaction, "error-command-failed")
     except discord.HTTPException, aiohttp.ClientError, OSError:
-        log.warning("Could not deliver interaction error response")
+        log.warning("Could not deliver interaction error response", exc_info=True)

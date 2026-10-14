@@ -69,7 +69,7 @@ docstring. Regenerate it after application documentation changes with
 | [src/health.py](../src/health.py) | Tracks job completion/failures and provides the local container health probe. |
 | [src/localization.py](../src/localization.py) | Loads Fluent catalogs and translates command metadata and response text with English fallback. |
 | [src/main.py](../src/main.py) | Configures process logging and monitoring before starting the Discord client. |
-| [src/monitoring.py](../src/monitoring.py) | Formats structured logs and strips sensitive data from log and GlitchTip events. |
+| [src/monitoring.py](../src/monitoring.py) | Formats plain-text and structured logs, and strips sensitive data from log and GlitchTip events. |
 | [src/cogs/__init__.py](../src/cogs/__init__.py) | Defines the Discord cog package. |
 | [src/cogs/events.py](../src/cogs/events.py) | Records command analytics and reports guild and shard lifecycle events. |
 | [src/cogs/extra.py](../src/cogs/extra.py) | Implements utility commands and persistent shard status. |

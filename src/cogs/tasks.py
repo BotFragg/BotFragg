@@ -165,7 +165,7 @@ class TasksCog(commands.Cog):
         try:
             user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
         except DISCORD_DELIVERY_ERRORS:
-            log.warning("Could not deliver alert notification")
+            log.warning("Could not deliver alert notification", exc_info=True)
             return False
         current = (
             await alert.persisted_row()
@@ -205,7 +205,7 @@ class TasksCog(commands.Cog):
             )
             await user.send(embed=card, view=controls)
         except DISCORD_DELIVERY_ERRORS:
-            log.warning("Could not deliver alert notification")
+            log.warning("Could not deliver alert notification", exc_info=True)
             return False
         return True
 
@@ -218,7 +218,7 @@ class TasksCog(commands.Cog):
             locale = discord.Locale.american_english
             vp = await self.bot.emoji_service.currency("vp") or "VP"
         except DISCORD_DELIVERY_ERRORS:
-            log.warning("Could not deliver daily shop notification")
+            log.warning("Could not deliver daily shop notification", exc_info=True)
             return False
         current = await account.persisted_row().select_related("user").get_or_none()
         if (
@@ -260,7 +260,7 @@ class TasksCog(commands.Cog):
                 view=controls if controls.children else None,  # type: ignore[arg-type]
             )
         except DISCORD_DELIVERY_ERRORS:
-            log.warning("Could not deliver daily shop notification")
+            log.warning("Could not deliver daily shop notification", exc_info=True)
             return False
         return True
 
@@ -275,7 +275,9 @@ class TasksCog(commands.Cog):
                 )
             )
         except DISCORD_DELIVERY_ERRORS:
-            log.warning("Could not notify user about expired Riot credentials")
+            log.warning(
+                "Could not notify user about expired Riot credentials", exc_info=True
+            )
             return 1
         return 0
 
@@ -336,6 +338,9 @@ class TasksCog(commands.Cog):
             )
         except DISCORD_DELIVERY_ERRORS:
             self.job_health["log_flush"].failure("log_flush")
+            log.warning(
+                "Could not deliver buffered logs to the log channel", exc_info=True
+            )
             for line in reversed(lines):
                 self.discord_log_handler.messages.appendleft(line)
 
@@ -369,6 +374,7 @@ class TasksCog(commands.Cog):
         try:
             await asyncio.wait_for(ping_database(), timeout=5)
         except Exception:
+            log.warning("Database health probe failed", exc_info=True)
             problems.append("database")
         if problems != self._health_problems:
             log.log(

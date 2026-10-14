@@ -246,7 +246,7 @@ General BotFragg commands for status, links, help, and shard health.
 
 **Scope:** `src/cogs/extra.py` · `module`
 
-[Source](../src/cogs/extra.py#L38)
+[Source](../src/cogs/extra.py#L41)
 
 Provide public utility commands and the persistent shard-status message.
 
@@ -254,7 +254,7 @@ Provide public utility commands and the persistent shard-status message.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L41)
+[Source](../src/cogs/extra.py#L44)
 
 Store the bot and record when this cog started for the info command.
 
@@ -262,7 +262,7 @@ Store the bot and record when this cog started for the info command.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L61)
+[Source](../src/cogs/extra.py#L64)
 
 Start shard-status updates when their destination is configured.
 
@@ -270,7 +270,7 @@ Start shard-status updates when their destination is configured.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L66)
+[Source](../src/cogs/extra.py#L69)
 
 Cancel and await the shard-status task during extension shutdown.
 
@@ -278,7 +278,7 @@ Cancel and await the shard-status task during extension shutdown.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L80)
+[Source](../src/cogs/extra.py#L83)
 
 Report Discord gateway latency and a live database probe duration.
 
@@ -286,7 +286,7 @@ Report Discord gateway latency and a live database probe duration.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L110)
+[Source](../src/cogs/extra.py#L113)
 
 Show recent public updates and BotFragg runtime information.
 
@@ -294,7 +294,7 @@ Show recent public updates and BotFragg runtime information.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L218)
+[Source](../src/cogs/extra.py#L221)
 
 Fetch and cache five public commits, formatting them per request locale.
 
@@ -302,7 +302,7 @@ Fetch and cache five public commits, formatting them per request locale.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L296)
+[Source](../src/cogs/extra.py#L302)
 
 Build link buttons for the configured public URLs.
 
@@ -310,7 +310,7 @@ Build link buttons for the configured public URLs.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L327)
+[Source](../src/cogs/extra.py#L333)
 
 Use each command's cog module to place it in a help category.
 
@@ -318,7 +318,7 @@ Use each command's cog module to place it in a help category.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L348)
+[Source](../src/cogs/extra.py#L354)
 
 Return Discord-formatted mentions for all synced commands and subcommands.
 
@@ -326,7 +326,7 @@ Return Discord-formatted mentions for all synced commands and subcommands.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L375)
+[Source](../src/cogs/extra.py#L381)
 
 List registered slash commands by category in the embed description.
 
@@ -334,7 +334,7 @@ List registered slash commands by category in the embed description.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L436)
+[Source](../src/cogs/extra.py#L445)
 
 Show an invite link and any configured support, vote, and website links.
 
@@ -342,7 +342,7 @@ Show an invite link and any configured support, vote, and website links.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L452)
+[Source](../src/cogs/extra.py#L461)
 
 Measure the shard-status job and preserve its existing retry behavior.
 
@@ -350,7 +350,7 @@ Measure the shard-status job and preserve its existing retry behavior.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L457)
+[Source](../src/cogs/extra.py#L466)
 
 Update or recreate the persistent embed containing per-shard health.
 
@@ -358,7 +358,7 @@ Update or recreate the persistent embed containing per-shard health.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L501)
+[Source](../src/cogs/extra.py#L511)
 
 Wait for Discord readiness before the first shard-status update.
 
@@ -366,7 +366,7 @@ Wait for Discord readiness before the first shard-status update.
 
 **Scope:** `src/cogs/extra.py` · `module`
 
-[Source](../src/cogs/extra.py#L506)
+[Source](../src/cogs/extra.py#L516)
 
 Register the general utility cog with the bot.
 
@@ -518,7 +518,7 @@ Authorize a review, update its record, and notify its followers.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L301)
+[Source](../src/cogs/suggestions.py#L304)
 
 Render the localized review shared by follower DMs and completed tracking.
 
@@ -526,7 +526,7 @@ Render the localized review shared by follower DMs and completed tracking.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L319)
+[Source](../src/cogs/suggestions.py#L322)
 
 Edit the original suggestion post with the final status and review reason.
 
@@ -534,7 +534,7 @@ Edit the original suggestion post with the final status and review reason.
 
 **Scope:** `src/cogs/suggestions.py` · `module`
 
-[Source](../src/cogs/suggestions.py#L341)
+[Source](../src/cogs/suggestions.py#L349)
 
 Register suggestion commands and review handlers.
 
@@ -650,7 +650,7 @@ Notify a user that credentials expired and return the delivery failure count.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L283)
+[Source](../src/cogs/tasks.py#L285)
 
 Refresh the Riot client version used in authenticated API requests.
 
@@ -658,7 +658,7 @@ Refresh the Riot client version used in authenticated API requests.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L292)
+[Source](../src/cogs/tasks.py#L294)
 
 Refresh the VALORANT catalog when its upstream version changes.
 
@@ -666,7 +666,7 @@ Refresh the VALORANT catalog when its upstream version changes.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L302)
+[Source](../src/cogs/tasks.py#L304)
 
 Measure log delivery, preserving the queue after Discord failures.
 
@@ -674,7 +674,7 @@ Measure log delivery, preserving the queue after Discord failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L307)
+[Source](../src/cogs/tasks.py#L309)
 
 Send buffered log lines to Discord and requeue them after delivery failures.
 
@@ -682,7 +682,7 @@ Send buffered log lines to Discord and requeue them after delivery failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L343)
+[Source](../src/cogs/tasks.py#L348)
 
 Publish Discord, database, and scheduled-job health for Docker and operators.
 
@@ -690,7 +690,7 @@ Publish Discord, database, and scheduled-job health for Docker and operators.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L394)
+[Source](../src/cogs/tasks.py#L400)
 
 Wait for Discord readiness before starting any background job.
 
@@ -698,7 +698,7 @@ Wait for Discord readiness before starting any background job.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L399)
+[Source](../src/cogs/tasks.py#L405)
 
 Register the background-task cog with the bot.
 
@@ -1790,7 +1790,7 @@ Structured logging and privacy filters for logs and GlitchTip events.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L68)
+[Source](../src/monitoring.py#L69)
 
 Format log records as JSON after filtering sensitive values.
 
@@ -1798,15 +1798,31 @@ Format log records as JSON after filtering sensitive values.
 
 **Scope:** `src/monitoring.py` · `StructuredFormatter`
 
-[Source](../src/monitoring.py#L71)
+[Source](../src/monitoring.py#L72)
 
 Serialize a scrubbed log record and its safe structured fields.
+
+### `class PlainFormatter(logging.Formatter)`
+
+**Scope:** `src/monitoring.py` · `module`
+
+[Source](../src/monitoring.py#L91)
+
+Render a scrubbed log record as plain text for console output.
+
+### `def format(self, record: logging.LogRecord) -> str`
+
+**Scope:** `src/monitoring.py` · `PlainFormatter`
+
+[Source](../src/monitoring.py#L94)
+
+Scrub the message, structured fields, and traceback, then render a line.
 
 ### `def _scrub(value: Any) -> Any`
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L90)
+[Source](../src/monitoring.py#L115)
 
 Filter credentials and personal identifiers from nested event data.
 
@@ -1814,7 +1830,7 @@ Filter credentials and personal identifiers from nested event data.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L120)
+[Source](../src/monitoring.py#L145)
 
 Drop network and unrelated log breadcrumbs, then scrub retained data.
 
@@ -1822,7 +1838,7 @@ Drop network and unrelated log breadcrumbs, then scrub retained data.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L134)
+[Source](../src/monitoring.py#L159)
 
 Remove request data and sensitive values from an error event.
 
@@ -1830,7 +1846,7 @@ Remove request data and sensitive values from an error event.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L144)
+[Source](../src/monitoring.py#L169)
 
 Remove request payloads and HTTP span details from a transaction.
 
@@ -1838,7 +1854,7 @@ Remove request payloads and HTTP span details from a transaction.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L155)
+[Source](../src/monitoring.py#L180)
 
 Keep BotFragg logs and serious Discord errors after removing URL data.
 
@@ -1846,7 +1862,7 @@ Keep BotFragg logs and serious Discord errors after removing URL data.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L174)
+[Source](../src/monitoring.py#L199)
 
 Return the installed BotFragg release label or an unknown fallback.
 
@@ -1854,7 +1870,7 @@ Return the installed BotFragg release label or an unknown fallback.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L182)
+[Source](../src/monitoring.py#L207)
 
 Enable privacy-filtered GlitchTip telemetry when a DSN is configured.
 
@@ -1862,7 +1878,7 @@ Enable privacy-filtered GlitchTip telemetry when a DSN is configured.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L212)
+[Source](../src/monitoring.py#L237)
 
 Start a GlitchTip transaction with the supplied name and operation.
 
@@ -1870,7 +1886,7 @@ Start a GlitchTip transaction with the supplied name and operation.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L217)
+[Source](../src/monitoring.py#L242)
 
 End the current monitoring session and flush queued telemetry.
 
@@ -2494,7 +2510,7 @@ Load the saved catalog off the event loop or fetch a fresh snapshot.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L218)
+[Source](../src/services/catalog.py#L225)
 
 Fetch the current weapon and bundle catalogs and save their snapshot.
 
@@ -2507,7 +2523,7 @@ A failed save restores the previous catalog even during cancellation.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L304)
+[Source](../src/services/catalog.py#L311)
 
 Fetch one catalog endpoint and return its validated data rows.
 
@@ -2515,7 +2531,7 @@ Fetch one catalog endpoint and return its validated data rows.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L316)
+[Source](../src/services/catalog.py#L323)
 
 Cache mission definitions for 30 minutes and failed refreshes for 30 seconds.
 
@@ -2523,7 +2539,7 @@ Cache mission definitions for 30 minutes and failed refreshes for 30 seconds.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L369)
+[Source](../src/services/catalog.py#L380)
 
 Normalize weapon and bundle responses and rebuild lookup indexes.
 
@@ -2531,7 +2547,7 @@ Normalize weapon and bundle responses and rebuild lookup indexes.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L424)
+[Source](../src/services/catalog.py#L435)
 
 Index skins by their UUID, offer UUID, and level UUID aliases.
 
@@ -2539,7 +2555,7 @@ Index skins by their UUID, offer UUID, and level UUID aliases.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L435)
+[Source](../src/services/catalog.py#L446)
 
 Resolve a skin from any indexed base, offer, or level identifier.
 
@@ -2547,7 +2563,7 @@ Resolve a skin from any indexed base, offer, or level identifier.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L439)
+[Source](../src/services/catalog.py#L450)
 
 Resolve bundle metadata by its Riot UUID.
 
@@ -2555,7 +2571,7 @@ Resolve bundle metadata by its Riot UUID.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L444)
+[Source](../src/services/catalog.py#L455)
 
 Fetch and cache a supported accessory using its Riot item type ID.
 
@@ -2563,7 +2579,7 @@ Fetch and cache a supported accessory using its Riot item type ID.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L491)
+[Source](../src/services/catalog.py#L502)
 
 Resolve a Riot bundle buddy by its buddy or level UUID.
 
@@ -2571,7 +2587,7 @@ Resolve a Riot bundle buddy by its buddy or level UUID.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L548)
+[Source](../src/services/catalog.py#L559)
 
 Convert endpoint-specific Riot accessory data into a common display shape.
 
@@ -2579,7 +2595,7 @@ Convert endpoint-specific Riot accessory data into a common display shape.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L574)
+[Source](../src/services/catalog.py#L585)
 
 Search localized names first, retaining English-name fallback matches.
 
@@ -2587,7 +2603,7 @@ Search localized names first, retaining English-name fallback matches.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L596)
+[Source](../src/services/catalog.py#L607)
 
 Apply current store prices to catalog skins matched by offer identifier.
 
@@ -2595,7 +2611,7 @@ Apply current store prices to catalog skins matched by offer identifier.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L603)
+[Source](../src/services/catalog.py#L614)
 
 Encode the current version, skins, and bundles as compact JSON.
 
@@ -2603,7 +2619,7 @@ Encode the current version, skins, and bundles as compact JSON.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L638)
+[Source](../src/services/catalog.py#L649)
 
 Write a complete catalog snapshot through a temporary file replacement.
 
@@ -2611,7 +2627,7 @@ Write a complete catalog snapshot through a temporary file replacement.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L645)
+[Source](../src/services/catalog.py#L656)
 
 Restore catalog records from a snapshot and rebuild lookup indexes.
 

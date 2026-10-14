@@ -6,14 +6,16 @@ import logging
 
 from .bot import BotFraggBot
 from .config import Settings
-from .monitoring import StructuredFormatter, configure_monitoring
+from .monitoring import PlainFormatter, configure_monitoring
 
 
 def main() -> None:
     """Load settings, configure observability, and run the Discord client."""
     config = Settings.from_env()
     handler = logging.StreamHandler()
-    handler.setFormatter(StructuredFormatter())
+    handler.setFormatter(
+        PlainFormatter("%(asctime)s %(levelname)-8s %(name)s %(message)s")
+    )
     logging.basicConfig(
         level=logging.INFO,
         handlers=[handler],

@@ -71,11 +71,15 @@ within one bot process. Commands active during a successful deletion cannot
 recreate their analytics, suggestions, or follows. Multiple bot processes require
 shared deletion coordination.
 
-Structured logs include background-job durations, daily run counts, failures,
-and health-state transitions. The existing privacy filter applies to these
-logs and optional GlitchTip telemetry. Frequent log/shard completion messages
-are omitted to avoid feeding log delivery its own logs; their evidence remains
-in the heartbeat. Job history is process-local and resets on restart.
+The console renders plain, scrubbed log lines. Structured fields render inline
+as `key=value`, so a line names its background job, shard and guild counts,
+daily-run totals, and the reasons a delivery, database probe, or catalog lookup
+failed. Unexpected failures include the full traceback. Application log
+channels receive the same records as filtered JSON. The privacy filter applies
+to both outputs and to optional GlitchTip telemetry. Frequent log/shard
+completion messages are omitted to avoid feeding log delivery its own logs;
+their evidence remains in the heartbeat. Job history is process-local and
+resets on restart.
 
 GlitchTip receives filtered log messages without the SDK's raw logging parameters.
 Failed application emoji creation uses text fallbacks and waits 30 seconds before

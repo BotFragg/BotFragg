@@ -292,6 +292,9 @@ class SuggestionsCog(commands.Cog):
                 user_locale = getattr(user, "locale", discord.Locale.american_english)
                 await user.send(embed=self._review_card(suggestion, user_locale))
             except DISCORD_DELIVERY_ERRORS:
+                log.warning(
+                    "Could not notify suggestion follower %s of the review", user_id
+                )
                 continue
         await interaction.followup.send(
             embed=embed(f"Suggestion **#{id}** has been **{status}**."),
@@ -335,6 +338,11 @@ class SuggestionsCog(commands.Cog):
                     )
                 )
         except DISCORD_DELIVERY_ERRORS:
+            log.warning(
+                "Could not update suggestion %s in its log channel",
+                suggestion.id,
+                exc_info=True,
+            )
             return
 
 

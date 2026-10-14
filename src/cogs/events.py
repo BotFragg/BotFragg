@@ -62,7 +62,7 @@ class EventsCog(commands.Cog):
             try:
                 channel = await self.bot.fetch_channel(channel_id)
             except discord.HTTPException:
-                log.warning("Could not resolve guild event log channel")
+                log.warning("Could not resolve guild event log channel", exc_info=True)
                 return
         if not isinstance(channel, discord.abc.Messageable):
             log.warning("Guild event log channel is not messageable")
@@ -89,7 +89,7 @@ class EventsCog(commands.Cog):
         try:
             await channel.send(embed=card)
         except discord.HTTPException:
-            log.warning("Could not deliver guild event log")
+            log.warning("Could not deliver guild event log", exc_info=True)
 
     @commands.Cog.listener()
     async def on_shard_ready(self, shard_id: int) -> None:
@@ -119,7 +119,7 @@ class EventsCog(commands.Cog):
                 username="BotFragg Shard Manager",
             )
         except discord.HTTPException:
-            log.warning("Could not deliver shard %s event", shard_id)
+            log.warning("Could not deliver shard %s event", shard_id, exc_info=True)
 
 
 async def setup(bot: BotFraggBot) -> None:

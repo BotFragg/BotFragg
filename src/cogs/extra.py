@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import platform
 import re
 from datetime import UTC, datetime
@@ -27,6 +28,8 @@ from ..services.accounts import count_registered_users
 from ..services.http import HTTPFailure
 from ..views import timestamp
 from ..views.ui import embed, error, translated, view
+
+log = logging.getLogger(__name__)
 
 GITHUB_COMMITS_URL = "https://api.github.com/repos/BotFragg/BotFragg/commits?per_page=5"
 GITHUB_REPOSITORY_URL = "https://github.com/BotFragg/BotFragg"
@@ -233,6 +236,9 @@ class ExtraCog(commands.Cog):
                         )
                     except HTTPFailure:
                         response = None
+                        log.warning(
+                            "Could not fetch the recent GitHub commits", exc_info=True
+                        )
                     if (
                         response
                         and response.status == 200
@@ -383,6 +389,9 @@ class ExtraCog(commands.Cog):
         try:
             mentions = self._command_mentions(await self.bot.tree.fetch_commands())
         except discord.HTTPException:
+            log.warning(
+                "Could not fetch command mentions for the help command", exc_info=True
+            )
             mentions = {}
 
         categories: dict[str, list[str]] = {}
@@ -495,6 +504,7 @@ class ExtraCog(commands.Cog):
             self._pending_status_message = None
         except discord.HTTPException:
             self.job_health.failure("shard_status")
+            log.warning("Could not update the shard status message", exc_info=True)
             return
 
     @shard_status.before_loop

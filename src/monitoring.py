@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import json
 import logging
 import re
@@ -85,6 +86,30 @@ class StructuredFormatter(logging.Formatter):
         if record.exc_info:
             payload["exception"] = _scrub(self.formatException(record.exc_info))
         return json.dumps(payload, ensure_ascii=False, default=str)
+
+
+class PlainFormatter(logging.Formatter):
+    """Render a scrubbed log record as plain text for console output."""
+
+    def format(self, record: logging.LogRecord) -> str:
+        """Scrub the message, structured fields, and traceback, then render a line."""
+        extras = {
+            key: value
+            for key, value in record.__dict__.items()
+            if key not in _STANDARD_LOG_FIELDS
+        }
+        rendered = _scrub(record.getMessage())
+        if extras:
+            rendered += "  " + " ".join(
+                f"{key}={value}" for key, value in _scrub(extras).items()
+            )
+        if record.exc_info:
+            rendered += "\n" + _scrub(self.formatException(record.exc_info))
+        # Handlers share one record, so render a copy: stdlib formatting leaves
+        # `message` and `asctime` behind, which would corrupt structured output.
+        clone = copy.copy(record)
+        clone.msg, clone.args, clone.exc_info = rendered, None, None
+        return super().format(clone)
 
 
 def _scrub(value: Any) -> Any:
