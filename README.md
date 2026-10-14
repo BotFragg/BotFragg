@@ -122,7 +122,7 @@ The Compose service runs database migrations before starting the bot. The includ
 
 ### Prebuilt container image
 
-GitHub Actions publishes the [BotFragg container package](https://github.com/orgs/BotFragg/packages/container/botfragg) after CI passes on pushes to `main` and tags matching `v*`. The `latest` tag tracks `main`, and version and commit SHA tags are also available.
+GitHub Actions publishes the [BotFragg container package](https://github.com/orgs/BotFragg/packages/container/botfragg) after CI passes on tags matching `v*`. The `latest` tag tracks the newest version tag, and version and commit SHA tags are also available.
 
 ```sh
 docker pull ghcr.io/botfragg/botfragg:latest
