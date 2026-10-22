@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.3] - 2026-10-22
+
+### Changed
+
+- Upgrade tzdata to 2026.5, python-dotenv to 1.2.4, and sentry-sdk to 2.72.0.
+- Update the CI workflows to `actions/checkout` v7, `astral-sh/setup-uv` v7, `docker/build-push-action` v7, and `docker/login-action` v4.
+- Upgrade ruff to 0.17.1 for development.
+
 ## [1.2.2] - 2026-10-22
 
 ### Security
