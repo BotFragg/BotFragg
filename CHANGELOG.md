@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.2] - 2026-10-22
+
+### Security
+
+- Upgrade aiohttp to 3.14.5, resolving eight security advisories that affect 3.14.3 and earlier, three of them high severity.
+
 ## [1.2.1] - 2026-10-22
 
 ### Security
