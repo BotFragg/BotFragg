@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.2.1] - 2026-10-22
+
+### Security
+
+- Upgrade certifi to 2026.10.19 so Sentry error reporting stops trusting the compromised eMudhra/emSign intermediate CA certificates.
+- Build container images with uv 0.13.5 instead of 0.11.21 so dependency resolution rejects the compromised eMudhra/emSign intermediates.
+
+### Changed
+
+- Publish container images only for version tags matching `v*`. The `latest` tag now tracks the newest version tag instead of every push to `main`.
+
 ## [1.2.0] - 2026-10-10
 
 ### Added
