@@ -23,6 +23,8 @@ from .http import RateLimited
 from .shop import Offer, ShopData, ShopService, ShopUnavailable
 
 MAX_ALERTS_PER_PAGE = 20
+# A long Riot cooldown is reported as a failure instead of stalling the daily run.
+MAX_RATE_LIMIT_WAIT_SECONDS = 120
 
 
 @dataclass(slots=True)
@@ -133,7 +135,11 @@ CredentialsExpiredHandler = Callable[[int], Awaitable[int]]
 
 
 async def _retry_lookup[T](operation: Callable[[], Awaitable[T]]) -> T:
-    """Retry transient lookups up to three times without replaying deliveries."""
+    """Retry transient lookups up to three times without replaying deliveries.
+
+    Short host cooldowns are waited out; longer ones raise so the run can finish
+    and report the affected accounts as failures.
+    """
     for _ in range(2):
         try:
             return await operation()
@@ -141,6 +147,8 @@ async def _retry_lookup[T](operation: Callable[[], Awaitable[T]]) -> T:
             delay = 5.0
         except ShopUnavailable as exc:
             if not isinstance(exc.__cause__, RateLimited):
+                raise
+            if exc.__cause__.retry_after > MAX_RATE_LIMIT_WAIT_SECONDS:
                 raise
             delay = exc.__cause__.retry_after
         await asyncio.sleep(delay)

@@ -74,6 +74,18 @@ async def test_lookup_retry_preserves_cancellation(monkeypatch):
     operation.assert_awaited_once()
 
 
+async def test_long_host_cooldown_fails_fast(monkeypatch):
+    error = ShopUnavailable("Synthetic outage")
+    error.__cause__ = RateLimited(3600)
+    operation = AsyncMock(side_effect=error)
+    delay = AsyncMock()
+    monkeypatch.setattr(alert_service.asyncio, "sleep", delay)
+    with pytest.raises(ShopUnavailable):
+        await alert_service._retry_lookup(operation)
+    operation.assert_awaited_once()
+    assert delay.await_count == 0
+
+
 @pytest.mark.usefixtures("database")
 async def test_daily_rate_limit_retries_the_account_before_advancing(monkeypatch):
     owner = await User.create(id=108)

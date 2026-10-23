@@ -8,12 +8,12 @@ import logging
 import os
 import time
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Any
 from weakref import WeakValueDictionary
 
 from rapidfuzz import fuzz, process
 
+from ..config import ROOT
 from .http import HTTPClient, HTTPFailure
 
 ENGLISH_LOCALE = "en-US"
@@ -179,9 +179,9 @@ class CatalogService:
     """Load, refresh, search, and cache VALORANT catalog data."""
 
     def __init__(self, http: HTTPClient) -> None:
-        """Prepare in-memory indexes and the working-directory catalog snapshot."""
+        """Prepare in-memory indexes and the repository catalog snapshot."""
         self.http = http
-        self.path = Path.cwd() / "data" / "skins.json"
+        self.path = ROOT / "data" / "skins.json"
         self.skins: dict[str, Skin] = {}
         self._skin_choices: dict[str, str] = {}
         self.bundles: dict[str, Bundle] = {}

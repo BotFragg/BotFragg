@@ -94,6 +94,7 @@ class AccountsCog(commands.Cog):
         pages = (account_count + ACCOUNTS_PER_PAGE - 1) // ACCOUNTS_PER_PAGE
         if pages < 2:
             return None
+        page %= pages
         return view(
             OwnedActionButton("accounts_page", user_id, str(page - 1), emoji="◀"),
             OwnedActionButton("accounts_page", user_id, str(page + 1), emoji="▶"),

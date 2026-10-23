@@ -87,7 +87,9 @@ class EventsCog(commands.Cog):
             card.set_thumbnail(url=guild.icon.url)
         card.set_footer(text=f"I'm in {len(self.bot.guilds)} guilds now")
         try:
-            await channel.send(embed=card)
+            await channel.send(
+                embed=card, allowed_mentions=discord.AllowedMentions.none()
+            )
         except discord.HTTPException:
             log.warning("Could not deliver guild event log", exc_info=True)
 

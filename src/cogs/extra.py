@@ -405,9 +405,10 @@ class ExtraCog(commands.Cog):
             description_key = (
                 "command-" + command.qualified_name.replace(" ", "-") + "-description"
             )
-            description = discord.utils.escape_markdown(
-                self.bot.translator.text(interaction.locale, description_key)
-            )
+            description = self.bot.translator.text(interaction.locale, description_key)
+            if description == description_key:
+                description = command.description
+            description = discord.utils.escape_markdown(description)
             category = self._help_category(
                 command, self.bot.translator, interaction.locale
             )

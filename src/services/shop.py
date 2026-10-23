@@ -408,9 +408,7 @@ class ShopService:
             identifier = str(offer.get("OfferID") or "")
             cost = _mapping(offer.get("Cost"))
             if identifier and cost:
-                price = _int_at_least(
-                    cost.get(VP_UUID, next(iter(cost.values()), 0)), 0
-                )
+                price = _int_at_least(cost.get(VP_UUID), 0)
                 if price is not None:
                     prices[identifier] = price
         return prices

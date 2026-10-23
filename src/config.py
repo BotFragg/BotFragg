@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, time
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -123,9 +123,9 @@ class Settings:
     """Immutable runtime configuration populated from environment variables."""
 
     app_env: str
-    discord_token: str
+    discord_token: str = field(repr=False)
     database_url: str
-    token_encryption_key: str
+    token_encryption_key: str = field(repr=False)
     auto_sync_commands: bool
     shard_count: int | None
     log_channel_id: int | None
