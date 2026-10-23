@@ -200,6 +200,7 @@ login-instructions-step-2 = **2.** După autentificare, poate apărea o pagină 
 login-instructions-step-3 = **3.** Copiază adresa URL completă din bara de adrese a browserului.
 login-instructions-step-4 = **4.** Selectează **Lipește URL-ul** și lipește URL-ul copiat pentru a finaliza conectarea.
 login-security-notice = Lipește doar URL-ul. Nu partaja niciodată parola sau codurile de verificare.
+login-source-notice = BotFragg este open source: [BotFragg/BotFragg](https://github.com/BotFragg/BotFragg) - vezi [PRIVACY.md](https://github.com/BotFragg/BotFragg/blob/main/PRIVACY.md) pentru modul în care sunt tratate datele tale. Dacă BotFragg îți este util, ia în calcul să dai o stea repository-ului.
 login-button = Conectare la Riot
 login-paste-button = Lipește URL-ul
 login-account-limit = Poți conecta maximum { $max_accounts } conturi.

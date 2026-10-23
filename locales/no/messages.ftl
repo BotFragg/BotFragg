@@ -200,6 +200,7 @@ login-instructions-step-2 = **2.** Etter innlogging kan en tom side eller en fei
 login-instructions-step-3 = **3.** Kopier hele URL-en fra adressefeltet i nettleseren.
 login-instructions-step-4 = **4.** Velg **Lim inn URL**, og lim inn den kopierte URL-en for å fullføre tilkoblingen.
 login-security-notice = Lim bare inn URL-en. Del aldri passordet eller bekreftelseskodene dine.
+login-source-notice = BotFragg er åpen kildekode: [BotFragg/BotFragg](https://github.com/BotFragg/BotFragg) - se [PRIVACY.md](https://github.com/BotFragg/BotFragg/blob/main/PRIVACY.md) for hvordan dataene dine håndteres. Hvis BotFragg er nyttig for deg, vurder å gi repoet en stjerne.
 login-button = Logg inn på Riot
 login-paste-button = Lim inn URL
 login-account-limit = Du kan koble til maksimalt { $max_accounts } kontoer.

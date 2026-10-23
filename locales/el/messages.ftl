@@ -200,6 +200,7 @@ login-instructions-step-2 = **2.** Μετά τη σύνδεση μπορεί ν�
 login-instructions-step-3 = **3.** Αντιγράψτε ολόκληρο το URL από τη γραμμή διεύθυνσης του προγράμματος περιήγησής σας.
 login-instructions-step-4 = **4.** Επιλέξτε **Επικόλληση URL** και επικολλήστε το URL που αντιγράψατε για να ολοκληρώσετε τη σύνδεση.
 login-security-notice = Επικολλήστε μόνο το URL. Μη μοιραστείτε ποτέ τον κωδικό πρόσβασης ή τους κωδικούς επαλήθευσής σας.
+login-source-notice = Το BotFragg είναι ανοιχτού κώδικα: [BotFragg/BotFragg](https://github.com/BotFragg/BotFragg) - δείτε το [PRIVACY.md](https://github.com/BotFragg/BotFragg/blob/main/PRIVACY.md) για το πώς χειρίζονται τα δεδομένα σας. Αν το BotFragg σας φαίνεται χρήσιμο, σκεφτείτε να βάλετε αστέρι στο αποθετήριο.
 login-button = Σύνδεση στη Riot
 login-paste-button = Επικόλληση URL
 login-account-limit = Επιτρέπονται έως { $max_accounts } λογαριασμοί.

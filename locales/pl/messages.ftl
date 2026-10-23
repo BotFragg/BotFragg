@@ -200,6 +200,7 @@ login-instructions-step-2 = **2.** Po zalogowaniu może pojawić się pusta stro
 login-instructions-step-3 = **3.** Skopiuj cały adres URL z paska adresu przeglądarki.
 login-instructions-step-4 = **4.** Wybierz **Wklej URL** i wklej skopiowany adres, aby dokończyć łączenie konta.
 login-security-notice = Wklej tylko adres URL. Nigdy nie udostępniaj hasła ani kodów weryfikacyjnych.
+login-source-notice = BotFragg jest otwartoźródłowy: [BotFragg/BotFragg](https://github.com/BotFragg/BotFragg) - zobacz [PRIVACY.md](https://github.com/BotFragg/BotFragg/blob/main/PRIVACY.md), jak przetwarzane są Twoje dane. Jeśli BotFragg jest dla Ciebie przydatny, rozważ dodanie gwiazdki repozytorium.
 login-button = Zaloguj się do Riot
 login-paste-button = Wklej URL
 login-account-limit = Możesz połączyć maksymalnie { $max_accounts } kont.

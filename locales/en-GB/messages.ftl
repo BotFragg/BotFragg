@@ -200,6 +200,7 @@ login-instructions-step-2 = **2.** After signing in, a blank page or error may a
 login-instructions-step-3 = **3.** Copy the full URL from your browser's address bar.
 login-instructions-step-4 = **4.** Select **Paste URL** and paste the copied URL to complete the connection.
 login-security-notice = Only paste the URL. Never share your password or verification codes.
+login-source-notice = BotFragg is open source: [BotFragg/BotFragg](https://github.com/BotFragg/BotFragg) - see [PRIVACY.md](https://github.com/BotFragg/BotFragg/blob/main/PRIVACY.md) for how your data is handled. If BotFragg is useful to you, consider starring the repo.
 login-button = Log in to Riot
 login-paste-button = Paste URL
 login-account-limit = A maximum of { $max_accounts } accounts is allowed.

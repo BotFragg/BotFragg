@@ -104,7 +104,8 @@ class LoginCog(commands.Cog):
                 ("login-instructions-step-2", "\n"),
                 ("login-instructions-step-3", "\n"),
                 ("login-instructions-step-4", "\n\n"),
-                ("login-security-notice", ""),
+                ("login-security-notice", "\n\n"),
+                ("login-source-notice", ""),
             )
         )
         await interaction.followup.send(

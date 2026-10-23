@@ -200,6 +200,7 @@ login-instructions-step-2 = **2.** Giriş yaptıktan sonra boş bir sayfa veya h
 login-instructions-step-3 = **3.** Tarayıcınızın adres çubuğundaki URL'nin tamamını kopyalayın.
 login-instructions-step-4 = **4.** **URL'yi yapıştır** düğmesini seçin ve bağlantıyı tamamlamak için kopyaladığınız URL'yi yapıştırın.
 login-security-notice = Yalnızca URL'yi yapıştırın. Şifrenizi veya doğrulama kodlarınızı asla paylaşmayın.
+login-source-notice = BotFragg açık kaynak: [BotFragg/BotFragg](https://github.com/BotFragg/BotFragg) - [PRIVACY.md](https://github.com/BotFragg/BotFragg/blob/main/PRIVACY.md) dosyasına bakın: verileriniz nasıl işleniyor? BotFragg işinize yarıyorsa depoya yıldız vermeyi düşünün.
 login-button = Riot'ta oturum aç
 login-paste-button = URL'yi yapıştır
 login-account-limit = En fazla { $max_accounts } hesap bağlanabilir.

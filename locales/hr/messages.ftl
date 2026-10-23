@@ -200,6 +200,7 @@ login-instructions-step-2 = **2.** Nakon prijave može se prikazati prazna stran
 login-instructions-step-3 = **3.** Kopiraj cijeli URL iz adresne trake preglednika.
 login-instructions-step-4 = **4.** Odaberi **Zalijepi URL** i zalijepi kopirani URL da dovršiš povezivanje.
 login-security-notice = Zalijepi samo URL. Nikada ne dijeli lozinku ni verifikacijske kodove.
+login-source-notice = BotFragg je otvorenog koda: [BotFragg/BotFragg](https://github.com/BotFragg/BotFragg) - pogledajte [PRIVACY.md](https://github.com/BotFragg/BotFragg/blob/main/PRIVACY.md) kako se obrađuju vaši podaci. Ako vam je BotFragg koristan, razmislite o zvjezdici na repozitoriju.
 login-button = Prijava na Riot
 login-paste-button = Zalijepi URL
 login-account-limit = Možeš povezati najviše { $max_accounts } računa.

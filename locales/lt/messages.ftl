@@ -200,6 +200,7 @@ login-instructions-step-2 = **2.** Prisijungus gali pasirodyti tuščias puslapi
 login-instructions-step-3 = **3.** Nukopijuok visą URL iš naršyklės adreso juostos.
 login-instructions-step-4 = **4.** Pasirink **Įklijuoti URL** ir įklijuok nukopijuotą URL, kad užbaigtum susiejimą.
 login-security-notice = Įklijuok tik URL. Niekada nesidalyk slaptažodžiu ar patvirtinimo kodais.
+login-source-notice = BotFragg yra atvirojo kodo: [BotFragg/BotFragg](https://github.com/BotFragg/BotFragg) - žr. [PRIVACY.md](https://github.com/BotFragg/BotFragg/blob/main/PRIVACY.md), kaip tvarkomi jūsų duomenys. Jei BotFragg jums naudingas, apsvarstykite galimybę pažymėti saugyklą žvaigždute.
 login-button = Prisijungti prie „Riot“
 login-paste-button = Įklijuoti URL
 login-account-limit = Gali susieti daugiausia { $max_accounts } paskyras.

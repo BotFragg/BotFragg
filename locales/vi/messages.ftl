@@ -200,6 +200,7 @@ login-instructions-step-2 = **2.** Sau khi đăng nhập, có thể xuất hiệ
 login-instructions-step-3 = **3.** Sao chép toàn bộ URL trên thanh địa chỉ của trình duyệt.
 login-instructions-step-4 = **4.** Chọn **Dán URL** rồi dán URL đã sao chép để hoàn tất liên kết.
 login-security-notice = Chỉ dán URL. Tuyệt đối không chia sẻ mật khẩu hoặc mã xác minh.
+login-source-notice = BotFragg là mã nguồn mở: [BotFragg/BotFragg](https://github.com/BotFragg/BotFragg) - xem [PRIVACY.md](https://github.com/BotFragg/BotFragg/blob/main/PRIVACY.md) để biết dữ liệu của bạn được xử lý thế nào. Nếu BotFragg hữu ích với bạn, hãy cân nhắc gắn sao cho kho lưu trữ.
 login-button = Đăng nhập vào Riot
 login-paste-button = Dán URL
 login-account-limit = Bạn chỉ được liên kết tối đa { $max_accounts } tài khoản.

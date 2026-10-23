@@ -200,6 +200,7 @@ login-instructions-step-2 = **2.** Bejelentkezés után üres oldal vagy hibaüz
 login-instructions-step-3 = **3.** Másold ki a teljes URL-t a böngésződ címsorából.
 login-instructions-step-4 = **4.** Válaszd az **URL beillesztése** lehetőséget, majd illeszd be a kimásolt URL-t a fiók összekapcsolásához.
 login-security-notice = Csak az URL-t illeszd be. Soha ne oszd meg a jelszavadat vagy az ellenőrző kódjaidat.
+login-source-notice = A BotFragg nyílt forráskódú: [BotFragg/BotFragg](https://github.com/BotFragg/BotFragg) - lásd a [PRIVACY.md](https://github.com/BotFragg/BotFragg/blob/main/PRIVACY.md) fájlt az adatkezelésről. Ha hasznosnak találod a BotFraggot, adj egy csillagot a tárolónak.
 login-button = Bejelentkezés a Riotba
 login-paste-button = URL beillesztése
 login-account-limit = Legfeljebb { $max_accounts } fiókot kapcsolhatsz össze.

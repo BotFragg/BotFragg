@@ -1014,7 +1014,7 @@ Start a nonce-bound login; account creation limits belong to auth.
 
 **Scope:** `src/cogs/valorant/login.py` · `LoginCog`
 
-[Source](../src/cogs/valorant/login.py#L119)
+[Source](../src/cogs/valorant/login.py#L120)
 
 Open the modal where the caller pastes Riot's redirect URL.
 
@@ -1022,7 +1022,7 @@ Open the modal where the caller pastes Riot's redirect URL.
 
 **Scope:** `src/cogs/valorant/login.py` · `module`
 
-[Source](../src/cogs/valorant/login.py#L124)
+[Source](../src/cogs/valorant/login.py#L125)
 
 Register the Riot login command and modal handler.
 

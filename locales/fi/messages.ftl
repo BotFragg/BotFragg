@@ -200,6 +200,7 @@ login-instructions-step-2 = **2.** Kirjautumisen jälkeen näkyviin voi tulla ty
 login-instructions-step-3 = **3.** Kopioi koko URL selaimen osoiteriviltä.
 login-instructions-step-4 = **4.** Valitse **Liitä URL** ja liitä kopioimasi URL viimeistelläksesi kirjautumisen.
 login-security-notice = Liitä vain URL. Älä koskaan jaa salasanaasi tai vahvistuskoodejasi.
+login-source-notice = BotFragg on avointa lähdekoodia: [BotFragg/BotFragg](https://github.com/BotFragg/BotFragg) - katso [PRIVACY.md](https://github.com/BotFragg/BotFragg/blob/main/PRIVACY.md), miten tietojasi käsitellään. Jos BotFragg on sinulle hyödyllinen, harkitse tähden antamista repositoriolle.
 login-button = Kirjaudu Riot-tilille
 login-paste-button = Liitä URL
 login-account-limit = Enintään { $max_accounts } tiliä sallitaan.

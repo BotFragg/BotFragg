@@ -200,6 +200,7 @@ login-instructions-step-2 = **2.** След влизането може да с�
 login-instructions-step-3 = **3.** Копирайте целия URL адрес от адресната лента на браузъра си.
 login-instructions-step-4 = **4.** Изберете **Постави URL** и поставете копирания адрес, за да завършите свързването.
 login-security-notice = Поставете само URL адреса. Никога не споделяйте паролата или кодовете си за потвърждение.
+login-source-notice = BotFragg е с отворен код: [BotFragg/BotFragg](https://github.com/BotFragg/BotFragg) - вижте [PRIVACY.md](https://github.com/BotFragg/BotFragg/blob/main/PRIVACY.md) за това как се обработват данните ви. Ако BotFragg ви е полезен, обмислете да дадете звезда на хранилището.
 login-button = Вход в Riot
 login-paste-button = Постави URL
 login-account-limit = Разрешени са най-много { $max_accounts } акаунта.

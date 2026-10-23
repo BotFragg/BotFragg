@@ -200,6 +200,7 @@ login-instructions-step-2 = **2.** Po přihlášení se může zobrazit prázdn�
 login-instructions-step-3 = **3.** Zkopírujte celou URL z adresního řádku prohlížeče.
 login-instructions-step-4 = **4.** Vyberte **Vložit URL** a vložte zkopírovanou URL pro dokončení propojení.
 login-security-notice = Vložte pouze URL. Nikdy nesdělujte své heslo ani ověřovací kódy.
+login-source-notice = BotFragg je open source: [BotFragg/BotFragg](https://github.com/BotFragg/BotFragg) - viz [PRIVACY.md](https://github.com/BotFragg/BotFragg/blob/main/PRIVACY.md) pro informace o zpracování vašich dat. Pokud je vám BotFragg užitečný, zvažte hvězdičku u repozitáře.
 login-button = Přihlásit se k Riot účtu
 login-paste-button = Vložit URL
 login-account-limit = Můžete propojit nejvýše { $max_accounts } účtů.

@@ -200,6 +200,7 @@ login-instructions-step-2 = **2.** Setelah masuk, halaman kosong atau pesan kesa
 login-instructions-step-3 = **3.** Salin URL lengkap dari bilah alamat browser.
 login-instructions-step-4 = **4.** Pilih **Tempel URL**, lalu tempel URL yang disalin untuk menyelesaikan koneksi.
 login-security-notice = Tempel URL saja. Jangan pernah membagikan kata sandi atau kode verifikasi Anda.
+login-source-notice = BotFragg adalah sumber terbuka: [BotFragg/BotFragg](https://github.com/BotFragg/BotFragg) - lihat [PRIVACY.md](https://github.com/BotFragg/BotFragg/blob/main/PRIVACY.md) untuk cara data Anda ditangani. Jika BotFragg bermanfaat, pertimbangkan memberi bintang pada repositori.
 login-button = Masuk ke Riot
 login-paste-button = Tempel URL
 login-account-limit = Anda hanya dapat menautkan maksimal { $max_accounts } akun.
