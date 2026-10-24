@@ -20,6 +20,7 @@ from src.services.catalog import (
 from src.services.http import HTTPFailure, RateLimited
 from src.services.shop import (
     KC_UUID,
+    RP_UUID,
     VP_UUID,
     AccessoryOffer,
     ShopData,
@@ -643,6 +644,57 @@ async def test_shop_wallet_normalizes_transient_http_failures() -> None:
 
     with pytest.raises(ShopUnavailable):
         await service.wallet(SimpleNamespace(puuid="wallet-http", region="na"))
+
+
+async def test_shop_wallet_repairs_rejected_claims_once() -> None:
+    """Verify that wallet refreshes credentials once when Riot rejects the claims."""
+
+    class Auth:
+        """Stub authentication that records the forced refresh."""
+
+        def __init__(self) -> None:
+            self.ensure = AsyncMock(
+                return_value=SimpleNamespace(
+                    success=True,
+                    account=SimpleNamespace(puuid="wallet-claims", region="na"),
+                )
+            )
+            self.auth_headers = AsyncMock(
+                side_effect=[
+                    {"Authorization": "Bearer old"},
+                    {"Authorization": "Bearer new"},
+                ]
+            )
+
+    class HTTP:
+        """Return BAD_CLAIMS once, then a valid wallet."""
+
+        def __init__(self) -> None:
+            self.headers: list[dict[str, str]] = []
+
+        async def request(self, _method, _url, *, headers, **_kwargs):
+            """Record the headers and return the configured wallet response."""
+            self.headers.append(headers)
+            if len(self.headers) == 1:
+                return SimpleNamespace(status=400, data={"errorCode": "BAD_CLAIMS"})
+            return SimpleNamespace(
+                status=200,
+                data={"Balances": {VP_UUID: 10, RP_UUID: 20, KC_UUID: 30}},
+            )
+
+    auth, http = Auth(), HTTP()
+    service = ShopService(SimpleNamespace(), http, auth, None)
+
+    result = await service.wallet(SimpleNamespace(puuid="wallet-claims", region="na"))
+
+    assert result == {"vp": 10, "rp": 20, "kc": 30}
+    assert http.headers == [
+        {"Authorization": "Bearer old"},
+        {"Authorization": "Bearer new"},
+    ]
+    auth.ensure.assert_awaited_once_with(
+        SimpleNamespace(puuid="wallet-claims", region="na"), force=True
+    )
 
 
 async def test_concurrent_storefront_requests_share_one_fetch() -> None:

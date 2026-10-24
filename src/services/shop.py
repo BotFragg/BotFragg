@@ -10,7 +10,7 @@ from weakref import WeakValueDictionary
 
 from ..config import Settings
 from ..models import Account
-from .auth import AuthenticationRequired, AuthService, riot_region
+from .auth import AuthService, request_with_claims_repair, riot_region
 from .catalog import Accessory, CatalogService, Skin
 from .http import HTTPClient, HTTPFailure, HTTPResult, RateLimited
 
@@ -146,18 +146,13 @@ class ShopService:
         self, account: Account, headers: dict[str, str]
     ) -> ShopData:
         """Fetch, repair claims, normalize all shop offers, and cache the result."""
-        response = await self._storefront_request(account, headers)
+        response = await request_with_claims_repair(
+            self.auth,
+            account,
+            headers,
+            lambda request_headers: self._storefront_request(account, request_headers),
+        )
         raw = response.data if isinstance(response.data, dict) else {}
-        if response.status in {400, 401} and raw.get("errorCode") == "BAD_CLAIMS":
-            repaired = await self.auth.ensure(account, force=True)
-            if not repaired.success or not repaired.account:
-                raise AuthenticationRequired("Riot rejected the stored credentials")
-            account = repaired.account
-            headers = await self.auth.auth_headers(account)
-            response = await self._storefront_request(account, headers)
-            raw = response.data if isinstance(response.data, dict) else {}
-            if response.status in {400, 401} and raw.get("errorCode") == "BAD_CLAIMS":
-                raise AuthenticationRequired("Riot rejected the stored credentials")
 
         panel = _mapping(raw.get("SkinsPanelLayout"))
         if response.status != 200 or not panel:
@@ -345,10 +340,15 @@ class ShopService:
         """Return VP, Radianite, and Kingdom Credit balances for an account."""
         try:
             headers = await self.auth.auth_headers(account)
-            response = await self.http.request(
-                "GET",
-                f"https://pd.{riot_region(account.region)}.a.pvp.net/store/v1/wallet/{account.puuid}",
-                headers=headers,
+            response = await request_with_claims_repair(
+                self.auth,
+                account,
+                headers,
+                lambda request_headers: self.http.request(
+                    "GET",
+                    f"https://pd.{riot_region(account.region)}.a.pvp.net/store/v1/wallet/{account.puuid}",
+                    headers=request_headers,
+                ),
             )
         except HTTPFailure as exc:
             raise ShopUnavailable(str(exc)) from exc

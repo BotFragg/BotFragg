@@ -2385,6 +2385,22 @@ Map missing and LATAM/Brazil affinities to Riot's North America API host.
 
 Raised when a Riot request cannot proceed without a new user login.
 
+### `def _bad_claims(response: HTTPResult) -> bool`
+
+**Scope:** `src/services/auth.py` · `module`
+
+[Source](../src/services/auth.py#L718)
+
+Return whether Riot rejected the stored entitlement token.
+
+### `async def request_with_claims_repair(auth: AuthService, account: Account, headers: dict[str, str], request: Callable[[dict[str, str]], Awaitable[HTTPResult]]) -> HTTPResult`
+
+**Scope:** `src/services/auth.py` · `module`
+
+[Source](../src/services/auth.py#L727)
+
+Send an authenticated request, refreshing once when Riot rejects its claims.
+
 ## `src/services/catalog.py`
 
 VALORANT skin, bundle, accessory, and mission metadata with a local cache.
@@ -2810,7 +2826,7 @@ Return the active battlepass level, XP, expiry, and next reward.
 
 **Scope:** `src/services/gameplay.py` · `GameplayService`
 
-[Source](../src/services/gameplay.py#L176)
+[Source](../src/services/gameplay.py#L181)
 
 Join the account's live mission progress with cached catalog definitions.
 
@@ -2818,7 +2834,7 @@ Join the account's live mission progress with cached catalog definitions.
 
 **Scope:** `src/services/gameplay.py` · `GameplayService`
 
-[Source](../src/services/gameplay.py#L203)
+[Source](../src/services/gameplay.py#L213)
 
 Fetch and normalize an account's current Riot matchmaking penalties.
 
@@ -2826,7 +2842,7 @@ Fetch and normalize an account's current Riot matchmaking penalties.
 
 **Scope:** `src/services/gameplay.py` · `GameplayService`
 
-[Source](../src/services/gameplay.py#L306)
+[Source](../src/services/gameplay.py#L321)
 
 Normalize one Riot mission row and its objective progress for display.
 
@@ -2834,7 +2850,7 @@ Normalize one Riot mission row and its objective progress for display.
 
 **Scope:** `src/services/gameplay.py` · `GameplayService`
 
-[Source](../src/services/gameplay.py#L387)
+[Source](../src/services/gameplay.py#L402)
 
 Resolve the next battlepass reward to display data, including its icon.
 
@@ -2842,7 +2858,7 @@ Resolve the next battlepass reward to display data, including its icon.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L444)
+[Source](../src/services/gameplay.py#L459)
 
 Return validated API metadata rows.
 
@@ -2850,7 +2866,7 @@ Return validated API metadata rows.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L449)
+[Source](../src/services/gameplay.py#L464)
 
 Reject malformed battlepass containers and rows at the API boundary.
 
@@ -2858,7 +2874,7 @@ Reject malformed battlepass containers and rows at the API boundary.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L456)
+[Source](../src/services/gameplay.py#L471)
 
 Riot did not return usable gameplay data.
 
@@ -2866,7 +2882,7 @@ Riot did not return usable gameplay data.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L460)
+[Source](../src/services/gameplay.py#L475)
 
 Convert a non-Boolean value to a nonnegative integer when possible.
 
@@ -2874,7 +2890,7 @@ Convert a non-Boolean value to a nonnegative integer when possible.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L471)
+[Source](../src/services/gameplay.py#L486)
 
 Convert a value to a positive integer or return ``None``.
 
@@ -2882,7 +2898,7 @@ Convert a value to a positive integer or return ``None``.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L476)
+[Source](../src/services/gameplay.py#L491)
 
 Parse an ISO timestamp and attach UTC when the input has no timezone.
 
@@ -3088,7 +3104,7 @@ Fetch, repair claims, normalize all shop offers, and cache the result.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L313)
+[Source](../src/services/shop.py#L308)
 
 Request one regional storefront with a shared transient failure cooldown.
 
@@ -3096,7 +3112,7 @@ Request one regional storefront with a shared transient failure cooldown.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L344)
+[Source](../src/services/shop.py#L339)
 
 Return VP, Radianite, and Kingdom Credit balances for an account.
 

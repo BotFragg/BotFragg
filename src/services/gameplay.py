@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 from typing import Any, NotRequired, TypedDict
 
 from ..models import Account
-from .auth import AuthService, riot_region
+from .auth import AuthService, request_with_claims_repair, riot_region
 from .catalog import CatalogService, localized_text
 from .http import HTTPClient, HTTPFailure
 
@@ -83,10 +83,15 @@ class GameplayService:
         try:
             headers = await self.auth.auth_headers(account)
             contracts, seasons, definitions = await asyncio.gather(
-                self.http.request(
-                    "GET",
-                    f"https://pd.{riot_region(account.region)}.a.pvp.net/contracts/v1/contracts/{account.puuid}",
-                    headers=headers,
+                request_with_claims_repair(
+                    self.auth,
+                    account,
+                    headers,
+                    lambda request_headers: self.http.request(
+                        "GET",
+                        f"https://pd.{riot_region(account.region)}.a.pvp.net/contracts/v1/contracts/{account.puuid}",
+                        headers=request_headers,
+                    ),
                 ),
                 self.http.request(
                     "GET", "https://valorant-api.com/v1/seasons?language=all"
@@ -180,10 +185,15 @@ class GameplayService:
         try:
             headers = await self.auth.auth_headers(account)
             contracts, definitions = await asyncio.gather(
-                self.http.request(
-                    "GET",
-                    f"https://pd.{riot_region(account.region)}.a.pvp.net/contracts/v1/contracts/{account.puuid}",
-                    headers=headers,
+                request_with_claims_repair(
+                    self.auth,
+                    account,
+                    headers,
+                    lambda request_headers: self.http.request(
+                        "GET",
+                        f"https://pd.{riot_region(account.region)}.a.pvp.net/contracts/v1/contracts/{account.puuid}",
+                        headers=request_headers,
+                    ),
                 ),
                 self.catalog.mission_metadata(),
             )
@@ -204,10 +214,15 @@ class GameplayService:
         """Fetch and normalize an account's current Riot matchmaking penalties."""
         try:
             headers = await self.auth.auth_headers(account)
-            response = await self.http.request(
-                "GET",
-                f"https://pd.{riot_region(account.region)}.a.pvp.net/restrictions/v3/penalties",
-                headers=headers,
+            response = await request_with_claims_repair(
+                self.auth,
+                account,
+                headers,
+                lambda request_headers: self.http.request(
+                    "GET",
+                    f"https://pd.{riot_region(account.region)}.a.pvp.net/restrictions/v3/penalties",
+                    headers=request_headers,
+                ),
             )
         except HTTPFailure as exc:
             raise GameplayUnavailable("Could not fetch penalty data") from exc
