@@ -336,13 +336,20 @@ class TasksCog(commands.Cog):
                     colour=0x202225,
                 )
             )
-        except DISCORD_DELIVERY_ERRORS:
+        except (*DISCORD_DELIVERY_ERRORS, TypeError):
             self.job_health["log_flush"].failure("log_flush")
             log.warning(
                 "Could not deliver buffered logs to the log channel", exc_info=True
             )
-            for line in reversed(lines):
-                self.discord_log_handler.messages.appendleft(line)
+            messages = self.discord_log_handler.messages
+            room = (
+                len(lines)
+                if messages.maxlen is None
+                else max(0, messages.maxlen - len(messages))
+            )
+            # Keep the newest lines when the buffer filled during the failed send.
+            for line in reversed(lines[len(lines) - room :]):
+                messages.appendleft(line)
 
     @tasks.loop(seconds=30)
     async def health_watch(self) -> None:

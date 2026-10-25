@@ -682,7 +682,7 @@ Send buffered log lines to Discord and requeue them after delivery failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L348)
+[Source](../src/cogs/tasks.py#L355)
 
 Publish Discord, database, and scheduled-job health for Docker and operators.
 
@@ -690,7 +690,7 @@ Publish Discord, database, and scheduled-job health for Docker and operators.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L400)
+[Source](../src/cogs/tasks.py#L407)
 
 Wait for Discord readiness before starting any background job.
 
@@ -698,7 +698,7 @@ Wait for Discord readiness before starting any background job.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L405)
+[Source](../src/cogs/tasks.py#L412)
 
 Register the background-task cog with the bot.
 

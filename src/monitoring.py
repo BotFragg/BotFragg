@@ -40,7 +40,7 @@ _COMPACT_AUTH_KEYS = {"auth_blob", "rso", "idt", "ent"}
 _BEARER_TOKEN = re.compile(r"(?i)\b(Bearer\s+)[A-Za-z0-9._~+/-]+=*")
 _DISCORD_ID = re.compile(
     r"(?i)\b(?:discord[ _-]?)?(?:user|guild|channel|member|owner|author|"
-    r"interaction|message)(?:[ _-]?id)?(?:\s*[:=]\s*|\s+)\d{15,22}\b"
+    r"follower|interaction|message)(?:[ _-]?id)?(?:\s*[:=]\s*|\s+)\d{15,22}\b"
     r"|<[@#][!&]?\d{15,22}>"
 )
 _DISCORD_URL_ID = re.compile(

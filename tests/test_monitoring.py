@@ -188,6 +188,19 @@ def test_formatter_removes_webhook_and_interaction_tokens():
     assert synthetic_token not in StructuredFormatter().format(record)
 
 
+def test_formatter_scrubs_suggestion_follower_ids():
+    record = logging.LogRecord(
+        "src.cogs.suggestions",
+        logging.WARNING,
+        "suggestions.py",
+        1,
+        "Could not notify suggestion follower %s of the review",
+        (123456789012345678,),
+        None,
+    )
+    assert "123456789012345678" not in StructuredFormatter().format(record)
+
+
 def test_formatter_removes_oauth_code_from_gateway_payload():
     record = logging.LogRecord(
         "discord.gateway",
@@ -235,6 +248,44 @@ async def test_log_flush_bounds_single_oversized_record():
     assert max(attempts) <= 4096 and not cog.discord_log_handler.messages, (
         f"Long record requeued indefinitely: {attempts}"
     )
+
+
+@pytest.mark.asyncio
+async def test_log_flush_failure_keeps_newest_logs_when_buffer_is_full():
+    cog = None
+
+    async def send(*, embed):
+        cog.discord_log_handler.messages.extend(f"new {i}" for i in range(1000))
+        raise discord.HTTPException(NS(status=503, reason="Unavailable"), "retry")
+
+    config = NS(
+        user_agent_interval_minutes=15,
+        game_version_interval_minutes=15,
+        alert_time_utc=daytime(0, 0),
+        log_flush_interval_seconds=10,
+        log_channel_id=123,
+    )
+    cog = TasksCog(NS(config=config, get_channel=lambda _: NS(send=send)))
+    cog.discord_log_handler.messages.append("stale")
+    await TasksCog.log_flush.coro(cog)
+    assert "stale" not in cog.discord_log_handler.messages
+    assert "new 999" in cog.discord_log_handler.messages
+
+
+@pytest.mark.asyncio
+async def test_log_flush_requeues_when_log_channel_is_not_messageable():
+    config = NS(
+        user_agent_interval_minutes=15,
+        game_version_interval_minutes=15,
+        alert_time_utc=daytime(0, 0),
+        log_flush_interval_seconds=10,
+        log_channel_id=123,
+    )
+    cog = TasksCog(NS(config=config, get_channel=lambda _: NS()))
+    cog.discord_log_handler.messages.append("kept")
+    await TasksCog.log_flush.coro(cog)
+    assert "kept" in cog.discord_log_handler.messages
+    assert cog.job_health["log_flush"].failures == 1
 
 
 @pytest.mark.parametrize(
