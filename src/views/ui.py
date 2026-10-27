@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from datetime import datetime
 from typing import Any, NotRequired, TypedDict
 
 import aiohttp
@@ -119,3 +120,9 @@ async def unexpected_error(
         await error(interaction, "error-command-failed")
     except discord.HTTPException, aiohttp.ClientError, OSError:
         log.warning("Could not deliver interaction error response", exc_info=True)
+
+
+def timestamp(value: int | float | datetime, style: str = "R") -> str:
+    """Format a timestamp as a Discord inline timestamp using the requested style."""
+    seconds = int(value.timestamp()) if isinstance(value, datetime) else int(value)
+    return f"<t:{seconds}:{style}>"

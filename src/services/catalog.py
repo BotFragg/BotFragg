@@ -7,7 +7,7 @@ import json
 import logging
 import os
 import time
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from typing import Any
 from weakref import WeakValueDictionary
 
@@ -173,6 +173,81 @@ class Accessory:
             localized_text(self.title_texts or self.title_text, locale)
             or self.title_text
         )
+
+
+def _invalid_snapshot_rows(rows: list[Any], identifiers: tuple[str, ...]) -> bool:
+    """Return whether any cached catalog row is structurally unusable."""
+    for item in rows:
+        if not isinstance(item, dict):
+            return True
+        if any(
+            not isinstance(item.get(key), str) or not item[key] for key in identifiers
+        ):
+            return True
+        price = item.get("price")
+        if price is not None and (type(price) is not int or price < 0):
+            return True
+        if any(
+            item.get(key) is not None and not isinstance(item[key], str)
+            for key in ("name", "icon", "tier_uuid", "subtitle", "description")
+        ):
+            return True
+        if any(
+            not isinstance(item.get(key, []), list)
+            or not all(isinstance(child, dict) for child in item.get(key, []))
+            for key in ("levels", "chromas")
+        ):
+            return True
+        if any(
+            not isinstance(item.get(key, {}), dict)
+            or not all(isinstance(text, str) for text in item.get(key, {}).values())
+            for key in ("names", "subtitles", "descriptions")
+        ):
+            return True
+    return False
+
+
+def _skin_from_snapshot(item: dict[str, Any]) -> Skin:
+    """Build a skin from a cached row, tolerating legacy single-name rows."""
+    names = _localized_values(item.get("names") or item.get("name"))
+    return Skin(
+        uuid=item["uuid"],
+        offer_uuid=item["offer_uuid"],
+        name=str(
+            item.get("name") or localized_text(names, ENGLISH_LOCALE) or item["uuid"]
+        ),
+        icon=item.get("icon"),
+        tier_uuid=item.get("tier_uuid"),
+        price=item.get("price"),
+        levels=item.get("levels", []),
+        chromas=item.get("chromas", []),
+        names=names,
+    )
+
+
+def _bundle_from_snapshot(item: dict[str, Any]) -> Bundle:
+    """Build a bundle from a cached row, tolerating legacy single-name rows."""
+    names = _localized_values(item.get("names") or item.get("name"))
+    subtitles = _localized_values(item.get("subtitles") or item.get("subtitle"))
+    descriptions = _localized_values(
+        item.get("descriptions") or item.get("description")
+    )
+    return Bundle(
+        uuid=item["uuid"],
+        name=str(
+            item.get("name") or localized_text(names, ENGLISH_LOCALE) or item["uuid"]
+        ),
+        subtitle=item.get("subtitle")
+        or localized_text(subtitles, ENGLISH_LOCALE)
+        or None,
+        description=item.get("description")
+        or localized_text(descriptions, ENGLISH_LOCALE)
+        or None,
+        icon=item.get("icon"),
+        names=names,
+        subtitles=subtitles,
+        descriptions=descriptions,
+    )
 
 
 class CatalogService:
@@ -616,33 +691,8 @@ class CatalogService:
         payload = {
             "format_version": CATALOG_FORMAT_VERSION,
             "version": self.version,
-            "skins": [
-                {
-                    "uuid": skin.uuid,
-                    "offer_uuid": skin.offer_uuid,
-                    "name": skin.name,
-                    "names": skin.names,
-                    "icon": skin.icon,
-                    "tier_uuid": skin.tier_uuid,
-                    "price": skin.price,
-                    "levels": skin.levels,
-                    "chromas": skin.chromas,
-                }
-                for skin in self.skins.values()
-            ],
-            "bundles": [
-                {
-                    "uuid": bundle.uuid,
-                    "name": bundle.name,
-                    "names": bundle.names,
-                    "subtitle": bundle.subtitle,
-                    "subtitles": bundle.subtitles,
-                    "description": bundle.description,
-                    "descriptions": bundle.descriptions,
-                    "icon": bundle.icon,
-                }
-                for bundle in self.bundles.values()
-            ],
+            "skins": [asdict(skin) for skin in self.skins.values()],
+            "bundles": [asdict(bundle) for bundle in self.bundles.values()],
         }
         return json.dumps(payload, separators=(",", ":"))
 
@@ -661,93 +711,20 @@ class CatalogService:
         cache_format = raw.get("format_version", 0)
         if not isinstance(version, str) or type(cache_format) is not int:
             raise ValueError("Invalid catalog version")
-        for kind in ("skins", "bundles"):
+        for kind, identifiers in (
+            ("skins", ("uuid", "offer_uuid")),
+            ("bundles", ("uuid",)),
+        ):
             rows = raw.get(kind, [])
-            if not isinstance(rows, list):
+            if not isinstance(rows, list) or _invalid_snapshot_rows(rows, identifiers):
                 raise ValueError(f"Invalid catalog {kind}")
             if not rows and (kind == "skins" or cache_format == CATALOG_FORMAT_VERSION):
                 raise ValueError(f"Empty catalog {kind}")
-            for item in rows:
-                if not isinstance(item, dict):
-                    raise ValueError(f"Invalid catalog {kind} entry")
-                identifiers = ("uuid", "offer_uuid") if kind == "skins" else ("uuid",)
-                if any(
-                    not isinstance(item.get(key), str) or not item[key]
-                    for key in identifiers
-                ):
-                    raise ValueError("Invalid catalog identifier")
-                for key in ("levels", "chromas"):
-                    children = item.get(key, [])
-                    if not isinstance(children, list) or any(
-                        not isinstance(child, dict) for child in children
-                    ):
-                        raise ValueError(f"Invalid catalog {key}")
-                for key in ("name", "icon", "tier_uuid", "subtitle", "description"):
-                    if item.get(key) is not None and not isinstance(item[key], str):
-                        raise ValueError(f"Invalid catalog {key}")
-                price = item.get("price")
-                if price is not None and (type(price) is not int or price < 0):
-                    raise ValueError("Invalid catalog price")
-                for key in ("names", "subtitles", "descriptions"):
-                    names = item.get(key, {})
-                    if not isinstance(names, dict) or any(
-                        not isinstance(text, str) for text in names.values()
-                    ):
-                        raise ValueError(f"Invalid catalog {key}")
-        skins = {
-            item["uuid"]: Skin(
-                uuid=item["uuid"],
-                offer_uuid=item["offer_uuid"],
-                name=str(
-                    item.get("name")
-                    or localized_text(
-                        item.get("names") or item.get("name"), ENGLISH_LOCALE
-                    )
-                    or item["uuid"]
-                ),
-                icon=item.get("icon"),
-                tier_uuid=item.get("tier_uuid"),
-                price=item.get("price"),
-                levels=item.get("levels", []),
-                chromas=item.get("chromas", []),
-                names=_localized_values(item.get("names") or item.get("name")),
-            )
-            for item in raw.get("skins", [])
-            if item.get("uuid") and item.get("offer_uuid")
+        self.skins = {
+            row["uuid"]: _skin_from_snapshot(row) for row in raw.get("skins", [])
         }
-        bundles = {
-            item["uuid"]: Bundle(
-                uuid=item["uuid"],
-                name=str(
-                    item.get("name")
-                    or localized_text(
-                        item.get("names") or item.get("name"), ENGLISH_LOCALE
-                    )
-                    or item["uuid"]
-                ),
-                subtitle=item.get("subtitle")
-                or localized_text(
-                    item.get("subtitles") or item.get("subtitle"), ENGLISH_LOCALE
-                )
-                or None,
-                description=item.get("description")
-                or localized_text(
-                    item.get("descriptions") or item.get("description"),
-                    ENGLISH_LOCALE,
-                )
-                or None,
-                icon=item.get("icon"),
-                names=_localized_values(item.get("names") or item.get("name")),
-                subtitles=_localized_values(
-                    item.get("subtitles") or item.get("subtitle")
-                ),
-                descriptions=_localized_values(
-                    item.get("descriptions") or item.get("description")
-                ),
-            )
-            for item in raw.get("bundles", [])
-            if item.get("uuid")
+        self.bundles = {
+            row["uuid"]: _bundle_from_snapshot(row) for row in raw.get("bundles", [])
         }
-        self.skins, self.bundles = skins, bundles
         self.version, self._cache_format = version, cache_format
         self._reindex()

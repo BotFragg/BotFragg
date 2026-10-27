@@ -170,16 +170,10 @@ class AuthService:
         except ValueError:
             return AuthResult(False, error_key="login-code-missing")
         if not code:
-            return AuthResult(
-                False,
-                error_key="login-code-missing",
-            )
+            return AuthResult(False, error_key="login-code-missing")
         pending = self._pending_nonces.pop(discord_id, None)
         if not pending or pending[1] < time.monotonic():
-            return AuthResult(
-                False,
-                error_key="login-attempt-expired",
-            )
+            return AuthResult(False, error_key="login-attempt-expired")
         cancelled = self._login_cancellations.setdefault(discord_id, asyncio.Event())
         try:
             response = await self.http.request(
@@ -200,14 +194,10 @@ class AuthService:
             )
         except HTTPFailure:
             return AuthResult(
-                False,
-                error_key="error-riot-auth-temporarily-unavailable",
+                False, error_key="error-riot-auth-temporarily-unavailable"
             )
         if response.status != 200 or not isinstance(response.data, dict):
-            return AuthResult(
-                False,
-                error_key="login-code-rejected",
-            )
+            return AuthResult(False, error_key="login-code-rejected")
         try:
             token_data = _token_data(response.data)
         except HTTPFailure:
@@ -216,10 +206,7 @@ class AuthService:
             )
         claims = decode_jwt(token_data.get("id_token"))
         if claims.get("nonce") != pending[0]:
-            return AuthResult(
-                False,
-                error_key="login-nonce-mismatch",
-            )
+            return AuthResult(False, error_key="login-nonce-mismatch")
         auth: LoginCredentials = {
             "rso": token_data["access_token"],
             "idt": token_data.get("id_token"),
@@ -228,24 +215,15 @@ class AuthService:
         }
         puuid = decode_jwt(auth["rso"]).get("sub")
         if not isinstance(puuid, str) or not puuid:
-            return AuthResult(
-                False,
-                error_key="login-token-no-account",
-            )
+            return AuthResult(False, error_key="login-token-no-account")
         try:
             user_info, entitlement, region = await asyncio.gather(
                 self._user_info(auth), self._entitlement(auth), self._region(auth)
             )
         except HTTPFailure:
-            return AuthResult(
-                False,
-                error_key="login-account-details-unavailable",
-            )
+            return AuthResult(False, error_key="login-account-details-unavailable")
         if not user_info or not entitlement or not region:
-            return AuthResult(
-                False,
-                error_key="login-account-details-missing",
-            )
+            return AuthResult(False, error_key="login-account-details-missing")
         auth["ent"] = entitlement
         username = f"{user_info['game_name']}#{user_info['tag_line']}"
         try:
@@ -261,10 +239,7 @@ class AuthService:
                     await Account.filter(puuid=puuid).select_for_update().get_or_none()
                 )
                 if account and account.user_id != discord_id:
-                    return AuthResult(
-                        False,
-                        error_key="login-account-already-linked",
-                    )
+                    return AuthResult(False, error_key="login-account-already-linked")
                 if not account:
                     count = await Account.filter(user_id=discord_id).count()
                     if count >= self.config.max_accounts_per_user:
@@ -293,10 +268,7 @@ class AuthService:
         except IntegrityError:
             account = await Account.get_or_none(puuid=puuid)
             if account and account.user_id != discord_id:
-                return AuthResult(
-                    False,
-                    error_key="login-account-already-linked",
-                )
+                return AuthResult(False, error_key="login-account-already-linked")
             raise
         return AuthResult(True, account=account)
 
@@ -709,6 +681,11 @@ def token_expiry(token: str | None) -> float:
 def riot_region(region: str | None) -> str:
     """Map missing and LATAM/Brazil affinities to Riot's North America API host."""
     return "na" if not region or region in {"latam", "br"} else region
+
+
+def pd_url(region: str | None, path: str) -> str:
+    """Build a regional VALORANT player-data URL for one API path."""
+    return f"https://pd.{riot_region(region)}.a.pvp.net{path}"
 
 
 class AuthenticationRequired(RuntimeError):

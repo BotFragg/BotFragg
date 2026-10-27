@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Awaitable, Callable, Mapping, Sequence
+from contextlib import AsyncExitStack
 
 import discord
 from discord import app_commands
@@ -118,20 +119,11 @@ class BotFraggCommandTree(app_commands.CommandTree["BotFraggBot"]):
             },
         )
         try:
+            card = _command_error_embed(self.client.translator, interaction.locale)
             if interaction.response.is_done():
-                await interaction.followup.send(
-                    embed=_command_error_embed(
-                        self.client.translator, interaction.locale
-                    ),
-                    ephemeral=True,
-                )
+                await interaction.followup.send(embed=card, ephemeral=True)
             else:
-                await interaction.response.send_message(
-                    embed=_command_error_embed(
-                        self.client.translator, interaction.locale
-                    ),
-                    ephemeral=True,
-                )
+                await interaction.response.send_message(embed=card, ephemeral=True)
         except discord.HTTPException:
             log.warning("Could not deliver application-command error response")
 
@@ -253,7 +245,8 @@ class BotFraggBot(commands.AutoShardedBot):
             log.exception("Could not initialize the VALORANT catalog")
         await self.emoji_service.warm()
         self.add_dynamic_items(OwnedActionButton, OwnedSelect)
-        await self.load_extension("jishaku")
+        if self.config.app_env != "production":
+            await self.load_extension("jishaku")
         for extension in (
             "src.cogs.valorant.login",
             "src.cogs.valorant.logout",
@@ -289,13 +282,8 @@ class BotFraggBot(commands.AutoShardedBot):
 
     async def close(self) -> None:
         """Close Discord, Riot HTTP, database, and monitoring resources in order."""
-        try:
+        async with AsyncExitStack() as stack:
+            stack.callback(flush_monitoring)
+            stack.push_async_callback(close_database)
+            stack.push_async_callback(self.riot_http.close)
             await super().close()
-        finally:
-            try:
-                await self.riot_http.close()
-            finally:
-                try:
-                    await close_database()
-                finally:
-                    flush_monitoring()

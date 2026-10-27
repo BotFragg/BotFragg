@@ -10,7 +10,7 @@ from weakref import WeakValueDictionary
 
 from ..config import Settings
 from ..models import Account
-from .auth import AuthService, request_with_claims_repair, riot_region
+from .auth import AuthService, pd_url, request_with_claims_repair
 from .catalog import Accessory, CatalogService, Skin
 from .http import HTTPClient, HTTPFailure, HTTPResult, RateLimited
 
@@ -317,7 +317,7 @@ class ShopService:
         try:
             response = await self.http.request(
                 "POST",
-                f"https://pd.{riot_region(account.region)}.a.pvp.net/store/v3/storefront/{account.puuid}",
+                pd_url(account.region, f"/store/v3/storefront/{account.puuid}"),
                 headers=headers,
                 json={},
             )
@@ -346,7 +346,7 @@ class ShopService:
                 headers,
                 lambda request_headers: self.http.request(
                     "GET",
-                    f"https://pd.{riot_region(account.region)}.a.pvp.net/store/v1/wallet/{account.puuid}",
+                    pd_url(account.region, f"/store/v1/wallet/{account.puuid}"),
                     headers=request_headers,
                 ),
             )

@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 from typing import Any, NotRequired, TypedDict
 
 from ..models import Account
-from .auth import AuthService, request_with_claims_repair, riot_region
+from .auth import AuthService, pd_url, request_with_claims_repair
 from .catalog import CatalogService, localized_text
 from .http import HTTPClient, HTTPFailure
 
@@ -89,7 +89,9 @@ class GameplayService:
                     headers,
                     lambda request_headers: self.http.request(
                         "GET",
-                        f"https://pd.{riot_region(account.region)}.a.pvp.net/contracts/v1/contracts/{account.puuid}",
+                        pd_url(
+                            account.region, f"/contracts/v1/contracts/{account.puuid}"
+                        ),
                         headers=request_headers,
                     ),
                 ),
@@ -191,7 +193,9 @@ class GameplayService:
                     headers,
                     lambda request_headers: self.http.request(
                         "GET",
-                        f"https://pd.{riot_region(account.region)}.a.pvp.net/contracts/v1/contracts/{account.puuid}",
+                        pd_url(
+                            account.region, f"/contracts/v1/contracts/{account.puuid}"
+                        ),
                         headers=request_headers,
                     ),
                 ),
@@ -220,7 +224,7 @@ class GameplayService:
                 headers,
                 lambda request_headers: self.http.request(
                     "GET",
-                    f"https://pd.{riot_region(account.region)}.a.pvp.net/restrictions/v3/penalties",
+                    pd_url(account.region, "/restrictions/v3/penalties"),
                     headers=request_headers,
                 ),
             )
