@@ -18,6 +18,39 @@ SELECT_RE = re.compile(
 )
 
 
+async def _reject_other_owner(
+    interaction: discord.Interaction[Any], owner_id: int, key: str
+) -> bool:
+    """Allow the recorded owner and refuse the control to everybody else."""
+    if interaction.user.id == owner_id:
+        return True
+    await interaction.response.send_message(
+        embed=_error_embed(interaction.client.translator.text(interaction.locale, key)),
+        ephemeral=True,
+    )
+    return False
+
+
+async def _dispatch(
+    interaction: discord.Interaction[Any], action: str, payload: str, key: str
+) -> None:
+    """Run the handler registered for an owned control inside a trace."""
+    handler = getattr(interaction.client, "component_handlers", {}).get(action)
+    if handler is None:
+        await interaction.response.send_message(
+            embed=_error_embed(
+                interaction.client.translator.text(interaction.locale, key)
+            ),
+            ephemeral=True,
+        )
+        return
+    try:
+        with transaction(f"discord.component.{action}", "discord.component"):
+            await handler(interaction, payload)
+    except Exception as exc:
+        await unexpected_error(interaction, exc)
+
+
 class OwnedActionButton(discord.ui.DynamicItem[discord.ui.Button], template=ACTION_RE):
     """Create a persistent button whose action can only be used by its owner."""
 
@@ -68,36 +101,15 @@ class OwnedActionButton(discord.ui.DynamicItem[discord.ui.Button], template=ACTI
 
     async def interaction_check(self, interaction: discord.Interaction[Any]) -> bool:
         """Reject interactions from users other than the button's recorded owner."""
-        if interaction.user.id == self.owner_id:
-            return True
-        await interaction.response.send_message(
-            embed=_error_embed(
-                interaction.client.translator.text(
-                    interaction.locale, "component-button-other-owner"
-                )
-            ),
-            ephemeral=True,
+        return await _reject_other_owner(
+            interaction, self.owner_id, "component-button-other-owner"
         )
-        return False
 
     async def callback(self, interaction: discord.Interaction[Any]) -> None:
         """Dispatch the button action to its registered handler inside a trace."""
-        handler = getattr(interaction.client, "component_handlers", {}).get(self.action)
-        if handler is None:
-            await interaction.response.send_message(
-                embed=_error_embed(
-                    interaction.client.translator.text(
-                        interaction.locale, "component-button-unavailable"
-                    )
-                ),
-                ephemeral=True,
-            )
-            return
-        try:
-            with transaction(f"discord.component.{self.action}", "discord.component"):
-                await handler(interaction, self.payload)
-        except Exception as exc:
-            await unexpected_error(interaction, exc)
+        await _dispatch(
+            interaction, self.action, self.payload, "component-button-unavailable"
+        )
 
 
 class OwnedSelect(discord.ui.DynamicItem[discord.ui.Select], template=SELECT_RE):
@@ -156,37 +168,19 @@ class OwnedSelect(discord.ui.DynamicItem[discord.ui.Select], template=SELECT_RE)
 
     async def interaction_check(self, interaction: discord.Interaction[Any]) -> bool:
         """Reject interactions from users other than the menu's recorded owner."""
-        if interaction.user.id == self.owner_id:
-            return True
-        await interaction.response.send_message(
-            embed=_error_embed(
-                interaction.client.translator.text(
-                    interaction.locale, "component-select-other-owner"
-                )
-            ),
-            ephemeral=True,
+        return await _reject_other_owner(
+            interaction, self.owner_id, "component-select-other-owner"
         )
-        return False
 
     async def callback(self, interaction: discord.Interaction[Any]) -> None:
         """Dispatch the selected value with the menu payload to its registered handler."""
-        handler = getattr(interaction.client, "component_handlers", {}).get(self.action)
-        if handler is None:
-            await interaction.response.send_message(
-                embed=_error_embed(
-                    interaction.client.translator.text(
-                        interaction.locale, "component-select-unavailable"
-                    )
-                ),
-                ephemeral=True,
-            )
-            return
         selected = self.item.values[0] if self.item.values else ""
-        try:
-            with transaction(f"discord.component.{self.action}", "discord.component"):
-                await handler(interaction, f"{self.payload}|{selected}")
-        except Exception as exc:
-            await unexpected_error(interaction, exc)
+        await _dispatch(
+            interaction,
+            self.action,
+            f"{self.payload}|{selected}",
+            "component-select-unavailable",
+        )
 
 
 def _error_embed(message: str) -> discord.Embed:
