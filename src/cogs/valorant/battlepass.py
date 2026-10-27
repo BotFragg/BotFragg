@@ -35,6 +35,10 @@ REWARD_TYPE_KEYS = {
     "Currency": "battlepass-reward-type-currency",
     "Finished": "battlepass-reward-type-finished",
 }
+UNNAMED_REWARD_KEYS = {
+    "Finished": "battlepass-completed",
+    "Currency": "battlepass-radianite",
+}
 
 
 class BattlepassCog(commands.Cog):
@@ -249,11 +253,7 @@ class BattlepassCog(commands.Cog):
         if not reward_name:
             reward_name = translator.text(
                 locale,
-                "battlepass-completed"
-                if reward_type == "Finished"
-                else "battlepass-radianite"
-                if reward_type == "Currency"
-                else "battlepass-unknown-reward",
+                UNNAMED_REWARD_KEYS.get(reward_type, "battlepass-unknown-reward"),
             )
         if (tier_uuid := reward.get("tier_uuid")) and emoji_service:
             reward_name = emoji_service.skin_name(reward_name, tier_uuid)

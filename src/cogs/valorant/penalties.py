@@ -48,25 +48,44 @@ class PenaltiesCog(commands.Cog):
             await error(interaction, exc)
             return
 
-        account = await account.persisted_row().select_related("user").get_or_none()
-        if not account:
+        await self._render(interaction, account, penalties, 0, edit=False)
+
+    async def _render(
+        self,
+        interaction: discord.Interaction,
+        account: Account,
+        penalties: list[Penalty],
+        page: int,
+        *,
+        edit: bool,
+    ) -> None:
+        """Reload the owned account and render or edit one penalties page."""
+        fresh = await account.persisted_row().select_related("user").get_or_none()
+        if fresh is None:
             await error(interaction, "error-account-unavailable")
             return
         player = _account_display_name(
-            account.username,
-            hide_ign=account.user.hide_ign,
+            fresh.username,
+            hide_ign=fresh.user.hide_ign,
             translator=self.bot.translator,
             locale=interaction.locale,
         )
         card, controls = _penalties_page(
             interaction.user.id,
-            account,
+            fresh,
             player,
             penalties,
-            0,
+            page,
             self.bot.translator,
             interaction.locale,
         )
+        if edit:
+            await interaction.edit_original_response(
+                embed=card,
+                view=controls,
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
+            return
         kwargs: EmbedMessage = {"embed": card, "ephemeral": True}
         if controls is not None:
             kwargs["view"] = controls
@@ -98,30 +117,7 @@ class PenaltiesCog(commands.Cog):
             await error(interaction, exc)
             return
 
-        account = await account.persisted_row().select_related("user").get_or_none()
-        if not account:
-            await error(interaction, "error-account-unavailable")
-            return
-        player = _account_display_name(
-            account.username,
-            hide_ign=account.user.hide_ign,
-            translator=self.bot.translator,
-            locale=interaction.locale,
-        )
-        card, controls = _penalties_page(
-            interaction.user.id,
-            account,
-            player,
-            penalties,
-            page,
-            self.bot.translator,
-            interaction.locale,
-        )
-        await interaction.edit_original_response(
-            embed=card,
-            view=controls,
-            allowed_mentions=discord.AllowedMentions.none(),
-        )
+        await self._render(interaction, account, penalties, page, edit=True)
 
 
 def _penalties_page(
