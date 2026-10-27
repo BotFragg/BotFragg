@@ -15,7 +15,7 @@ from ...services.accounts import account_for_user, selected_account
 from ...services.auth import AuthenticationRequired
 from ...services.gameplay import GameplayUnavailable, Penalty
 from ...views import OwnedActionButton, timestamp
-from ...views.ui import EmbedMessage, _account_display_name, embed, error, view
+from ...views.ui import EmbedMessage, account_viewer, embed, error, view
 
 PENALTIES_PER_PAGE = 5
 
@@ -60,19 +60,13 @@ class PenaltiesCog(commands.Cog):
         edit: bool,
     ) -> None:
         """Reload the owned account and render or edit one penalties page."""
-        fresh = await account.persisted_row().select_related("user").get_or_none()
-        if fresh is None:
-            await error(interaction, "error-account-unavailable")
+        viewer = await account_viewer(interaction, account, self.bot.translator)
+        if viewer is None:
             return
-        player = _account_display_name(
-            fresh.username,
-            hide_ign=fresh.user.hide_ign,
-            translator=self.bot.translator,
-            locale=interaction.locale,
-        )
+        account, _, player = viewer
         card, controls = _penalties_page(
             interaction.user.id,
-            fresh,
+            account,
             player,
             penalties,
             page,

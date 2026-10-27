@@ -42,6 +42,29 @@ def _account_display_name(
     return translator.text(locale, "account-hidden")
 
 
+async def account_viewer(
+    interaction: discord.Interaction[Any],
+    account: Account,
+    translator: BotFraggTranslator,
+) -> tuple[Account, bool, str] | None:
+    """Reload an owned account and return it with its hide flag and display label."""
+    fresh = await account.persisted_row().select_related("user").get_or_none()
+    if fresh is None:
+        await error(interaction, "error-account-unavailable")
+        return None
+    hide_ign = fresh.user.hide_ign
+    return (
+        fresh,
+        hide_ign,
+        _account_display_name(
+            fresh.username,
+            hide_ign=hide_ign,
+            translator=translator,
+            locale=interaction.locale,
+        ),
+    )
+
+
 def account_autocomplete_choices(
     accounts: list[Account], current: str
 ) -> list[app_commands.Choice[str]]:

@@ -898,7 +898,7 @@ Commands and embed builders for VALORANT battlepass and mission progress.
 
 **Scope:** `src/cogs/valorant/battlepass.py` · `module`
 
-[Source](../src/cogs/valorant/battlepass.py#L40)
+[Source](../src/cogs/valorant/battlepass.py#L44)
 
 Display the caller's current battlepass level and mission progress.
 
@@ -906,7 +906,7 @@ Display the caller's current battlepass level and mission progress.
 
 **Scope:** `src/cogs/valorant/battlepass.py` · `BattlepassCog`
 
-[Source](../src/cogs/valorant/battlepass.py#L43)
+[Source](../src/cogs/valorant/battlepass.py#L47)
 
 Bind the bot's gameplay, account, and emoji services.
 
@@ -914,7 +914,7 @@ Bind the bot's gameplay, account, and emoji services.
 
 **Scope:** `src/cogs/valorant/battlepass.py` · `BattlepassCog`
 
-[Source](../src/cogs/valorant/battlepass.py#L53)
+[Source](../src/cogs/valorant/battlepass.py#L57)
 
 Fetch and display the active battlepass for the caller's selected account.
 
@@ -922,7 +922,7 @@ Fetch and display the active battlepass for the caller's selected account.
 
 **Scope:** `src/cogs/valorant/battlepass.py` · `BattlepassCog`
 
-[Source](../src/cogs/valorant/battlepass.py#L96)
+[Source](../src/cogs/valorant/battlepass.py#L94)
 
 Show the selected account's daily and weekly mission progress privately.
 
@@ -930,7 +930,7 @@ Show the selected account's daily and weekly mission progress privately.
 
 **Scope:** `src/cogs/valorant/battlepass.py` · `BattlepassCog`
 
-[Source](../src/cogs/valorant/battlepass.py#L126)
+[Source](../src/cogs/valorant/battlepass.py#L124)
 
 Group mission entries by type and expiry and render progress bars.
 
@@ -938,7 +938,7 @@ Group mission entries by type and expiry and render progress bars.
 
 **Scope:** `src/cogs/valorant/battlepass.py` · `BattlepassCog`
 
-[Source](../src/cogs/valorant/battlepass.py#L218)
+[Source](../src/cogs/valorant/battlepass.py#L216)
 
 Render the active act, current tier, next reward, and XP progress bar.
 
@@ -946,7 +946,7 @@ Render the active act, current tier, next reward, and XP progress bar.
 
 **Scope:** `src/cogs/valorant/battlepass.py` · `module`
 
-[Source](../src/cogs/valorant/battlepass.py#L292)
+[Source](../src/cogs/valorant/battlepass.py#L286)
 
 Register the battlepass and mission commands.
 
@@ -1106,11 +1106,19 @@ Bind the gameplay service and register pagination handling.
 
 Show Riot penalties privately for the caller's selected account.
 
+### `async def _render(self, interaction: discord.Interaction, account: Account, penalties: list[Penalty], page: int, *, edit: bool) -> None`
+
+**Scope:** `src/cogs/valorant/penalties.py` · `PenaltiesCog`
+
+[Source](../src/cogs/valorant/penalties.py#L53)
+
+Reload the owned account and render or edit one penalties page.
+
 ### `async def penalties_page(self, interaction: discord.Interaction, payload: str) -> None`
 
 **Scope:** `src/cogs/valorant/penalties.py` · `PenaltiesCog`
 
-[Source](../src/cogs/valorant/penalties.py#L76)
+[Source](../src/cogs/valorant/penalties.py#L89)
 
 Validate pagination data, reload its owned account, and edit the page.
 
@@ -1118,7 +1126,7 @@ Validate pagination data, reload its owned account, and edit the page.
 
 **Scope:** `src/cogs/valorant/penalties.py` · `module`
 
-[Source](../src/cogs/valorant/penalties.py#L127)
+[Source](../src/cogs/valorant/penalties.py#L117)
 
 Build one five-penalty embed page and owner-bound navigation controls.
 
@@ -1126,7 +1134,7 @@ Build one five-penalty embed page and owner-bound navigation controls.
 
 **Scope:** `src/cogs/valorant/penalties.py` · `module`
 
-[Source](../src/cogs/valorant/penalties.py#L244)
+[Source](../src/cogs/valorant/penalties.py#L234)
 
 Register the private matchmaking-penalties command.
 
@@ -1214,7 +1222,7 @@ Show a shop after rechecking its original account and current privacy.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L156)
+[Source](../src/cogs/valorant/shop.py#L148)
 
 Render daily shop cards and controls without further preparation waits.
 
@@ -1222,7 +1230,7 @@ Render daily shop cards and controls without further preparation waits.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L242)
+[Source](../src/cogs/valorant/shop.py#L234)
 
 Show the selected account's current featured bundle offers and controls.
 
@@ -1230,7 +1238,7 @@ Show the selected account's current featured bundle offers and controls.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L262)
+[Source](../src/cogs/valorant/shop.py#L254)
 
 Build current featured bundles with shop-style cards and controls.
 
@@ -1238,7 +1246,7 @@ Build current featured bundles with shop-style cards and controls.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L361)
+[Source](../src/cogs/valorant/shop.py#L353)
 
 Resolve static bundle metadata or provide a safe live-offer fallback.
 
@@ -1246,7 +1254,7 @@ Resolve static bundle metadata or provide a safe live-offer fallback.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L375)
+[Source](../src/cogs/valorant/shop.py#L367)
 
 Format only Riot-supplied VP totals, retaining exact discount values.
 
@@ -1254,7 +1262,7 @@ Format only Riot-supplied VP totals, retaining exact discount values.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L389)
+[Source](../src/cogs/valorant/shop.py#L381)
 
 Render one live bundle item in the shop's card, tier, and price style.
 
@@ -1262,7 +1270,7 @@ Render one live bundle item in the shop's card, tier, and price style.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L449)
+[Source](../src/cogs/valorant/shop.py#L441)
 
 Render a bundle summary and up to nine shop-style item cards.
 
@@ -1270,7 +1278,7 @@ Render a bundle summary and up to nine shop-style item cards.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L515)
+[Source](../src/cogs/valorant/shop.py#L507)
 
 Render the selected daily, Night Market, accessory, or bundle mode.
 
@@ -1278,7 +1286,7 @@ Render the selected daily, Night Market, accessory, or bundle mode.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L656)
+[Source](../src/cogs/valorant/shop.py#L641)
 
 Read the values actually offered by this message's matching select menu.
 
@@ -1286,7 +1294,7 @@ Read the values actually offered by this message's matching select menu.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L670)
+[Source](../src/cogs/valorant/shop.py#L655)
 
 Revalidate a selected featured bundle against the caller's account and view.
 
@@ -1294,7 +1302,7 @@ Revalidate a selected featured bundle against the caller's account and view.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L724)
+[Source](../src/cogs/valorant/shop.py#L709)
 
 List playable levels and chromas within Discord's select-menu limit.
 
@@ -1302,7 +1310,7 @@ List playable levels and chromas within Discord's select-menu limit.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L757)
+[Source](../src/cogs/valorant/shop.py#L742)
 
 Open a private level/chroma menu for a skin offered in this message.
 
@@ -1310,7 +1318,7 @@ Open a private level/chroma menu for a skin offered in this message.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L811)
+[Source](../src/cogs/valorant/shop.py#L796)
 
 Privately return a selected video only when it belongs to that skin.
 
@@ -1318,7 +1326,7 @@ Privately return a selected video only when it belongs to that skin.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L872)
+[Source](../src/cogs/valorant/shop.py#L857)
 
 Validate the selected account and reopen the corresponding shop mode.
 
@@ -1326,7 +1334,7 @@ Validate the selected account and reopen the corresponding shop mode.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L888)
+[Source](../src/cogs/valorant/shop.py#L873)
 
 Display discounted Night Market offers for the selected Riot account.
 
@@ -1334,7 +1342,7 @@ Display discounted Night Market offers for the selected Riot account.
 
 **Scope:** `src/cogs/valorant/shop.py` · `NightMarketCog`
 
-[Source](../src/cogs/valorant/shop.py#L891)
+[Source](../src/cogs/valorant/shop.py#L876)
 
 Bind the shared shop, account, and emoji services.
 
@@ -1342,7 +1350,7 @@ Bind the shared shop, account, and emoji services.
 
 **Scope:** `src/cogs/valorant/shop.py` · `NightMarketCog`
 
-[Source](../src/cogs/valorant/shop.py#L902)
+[Source](../src/cogs/valorant/shop.py#L887)
 
 Fetch and render Night Market offers or report that none are active.
 
@@ -1350,7 +1358,7 @@ Fetch and render Night Market offers or report that none are active.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L949)
+[Source](../src/cogs/valorant/shop.py#L927)
 
 Display the selected account's three VALORANT wallet balances.
 
@@ -1358,7 +1366,7 @@ Display the selected account's three VALORANT wallet balances.
 
 **Scope:** `src/cogs/valorant/shop.py` · `BalanceCog`
 
-[Source](../src/cogs/valorant/shop.py#L952)
+[Source](../src/cogs/valorant/shop.py#L930)
 
 Bind the shared shop and user-preference services.
 
@@ -1366,7 +1374,7 @@ Bind the shared shop and user-preference services.
 
 **Scope:** `src/cogs/valorant/shop.py` · `BalanceCog`
 
-[Source](../src/cogs/valorant/shop.py#L963)
+[Source](../src/cogs/valorant/shop.py#L941)
 
 Fetch and display VP, Radianite, and Kingdom Credit balances.
 
@@ -1374,7 +1382,7 @@ Fetch and display VP, Radianite, and Kingdom Credit balances.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L1018)
+[Source](../src/cogs/valorant/shop.py#L990)
 
 Register the shop, Night Market, and wallet-balance cogs.
 
@@ -3438,11 +3446,19 @@ Keyword arguments for an embed response with optional controls.
 
 Return a generic account label when the user has chosen to hide their name.
 
-### `def account_autocomplete_choices(accounts: list[Account], current: str) -> list[app_commands.Choice[str]]`
+### `async def account_viewer(interaction: discord.Interaction[Any], account: Account, translator: BotFraggTranslator) -> tuple[Account, bool, str] | None`
 
 **Scope:** `src/views/ui.py` · `module`
 
 [Source](../src/views/ui.py#L45)
+
+Reload an owned account and return it with its hide flag and display label.
+
+### `def account_autocomplete_choices(accounts: list[Account], current: str) -> list[app_commands.Choice[str]]`
+
+**Scope:** `src/views/ui.py` · `module`
+
+[Source](../src/views/ui.py#L68)
 
 Format account-name matches for Discord's bounded autocomplete menu.
 
@@ -3450,7 +3466,7 @@ Format account-name matches for Discord's bounded autocomplete menu.
 
 **Scope:** `src/views/ui.py` · `module`
 
-[Source](../src/views/ui.py#L56)
+[Source](../src/views/ui.py#L79)
 
 Create a persistent view containing the supplied Discord components.
 
@@ -3458,7 +3474,7 @@ Create a persistent view containing the supplied Discord components.
 
 **Scope:** `src/views/ui.py` · `module`
 
-[Source](../src/views/ui.py#L64)
+[Source](../src/views/ui.py#L87)
 
 Build a standard BotFragg embed with optional description, title, and colour.
 
@@ -3466,7 +3482,7 @@ Build a standard BotFragg embed with optional description, title, and colour.
 
 **Scope:** `src/views/ui.py` · `module`
 
-[Source](../src/views/ui.py#L71)
+[Source](../src/views/ui.py#L94)
 
 Format one message using the caller's Discord locale.
 
@@ -3474,7 +3490,7 @@ Format one message using the caller's Discord locale.
 
 **Scope:** `src/views/ui.py` · `module`
 
-[Source](../src/views/ui.py#L78)
+[Source](../src/views/ui.py#L101)
 
 Build an embed from catalog message IDs and the caller's locale.
 
@@ -3482,7 +3498,7 @@ Build an embed from catalog message IDs and the caller's locale.
 
 **Scope:** `src/views/ui.py` · `module`
 
-[Source](../src/views/ui.py#L99)
+[Source](../src/views/ui.py#L122)
 
 Send a private error embed using the interaction's available response path.
 
@@ -3490,7 +3506,7 @@ Send a private error embed using the interaction's available response path.
 
 **Scope:** `src/views/ui.py` · `module`
 
-[Source](../src/views/ui.py#L114)
+[Source](../src/views/ui.py#L137)
 
 Log an unexpected interaction failure and send a private generic response.
 
@@ -3498,6 +3514,6 @@ Log an unexpected interaction failure and send a private generic response.
 
 **Scope:** `src/views/ui.py` · `module`
 
-[Source](../src/views/ui.py#L125)
+[Source](../src/views/ui.py#L148)
 
 Format a timestamp as a Discord inline timestamp using the requested style.

@@ -19,7 +19,7 @@ from ...services.gameplay import (
     MissionProgress,
 )
 from ...views import timestamp
-from ...views.ui import _account_display_name, embed, error
+from ...views.ui import account_viewer, embed, error
 
 MISSION_TYPE_KEYS = {
     "Daily Missions": "mission-group-daily",
@@ -69,16 +69,10 @@ class BattlepassCog(commands.Cog):
             await error(interaction, exc)
             return
         filled_bar, empty_bar = await self.bot.emoji_service.battlepass_bars()
-        account = await account.persisted_row().select_related("user").get_or_none()
-        if not account:
-            await error(interaction, "error-account-unavailable")
+        viewer = await account_viewer(interaction, account, self.bot.translator)
+        if viewer is None:
             return
-        username = _account_display_name(
-            account.username,
-            hide_ign=account.user.hide_ign,
-            translator=self.bot.translator,
-            locale=interaction.locale,
-        )
+        account, _, username = viewer
         card = self._battlepass_card(
             username,
             data,

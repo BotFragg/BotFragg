@@ -38,7 +38,7 @@ from ...views.shop import (
     night_market_view,
     offer_cards,
 )
-from ...views.ui import _account_display_name, embed, error, translated, view
+from ...views.ui import account_viewer, embed, error, translated, view
 
 log = logging.getLogger(__name__)
 
@@ -95,21 +95,13 @@ class ShopCog(commands.Cog):
         accounts = (
             await list_accounts(target.id) if target.id == interaction.user.id else []
         )
-        account = await account.persisted_row().select_related("user").get_or_none()
-        if not account:
-            await error(interaction, "error-account-unavailable")
+        viewer = await account_viewer(interaction, account, self.bot.translator)
+        if viewer is None:
             return
-        settings = account.user
-        if target.id != interaction.user.id and not settings.others_can_view_shop:
+        account, hide_ign, username = viewer
+        if target.id != interaction.user.id and not account.user.others_can_view_shop:
             await error(interaction, "shop-user-not-sharing")
             return
-        hide_ign = bool(settings and settings.hide_ign)
-        username = _account_display_name(
-            account.username,
-            hide_ign=hide_ign,
-            translator=self.bot.translator,
-            locale=interaction.locale,
-        )
         if target.id != interaction.user.id:
             controls = view()
             add_skin_selector(
@@ -556,17 +548,10 @@ class ShopCog(commands.Cog):
                 except HTTPFailure as exc:
                     await error(interaction, exc)
                     return
-        account = await account.persisted_row().select_related("user").get_or_none()
-        if not account:
-            await error(interaction, "error-account-unavailable")
+        viewer = await account_viewer(interaction, account, self.bot.translator)
+        if viewer is None:
             return
-        hide_ign = account.user.hide_ign
-        username = _account_display_name(
-            account.username,
-            hide_ign=hide_ign,
-            translator=self.bot.translator,
-            locale=interaction.locale,
-        )
+        account, hide_ign, username = viewer
         if mode == "daily":
             embeds, controls = self.shop_view(
                 data,
@@ -921,17 +906,10 @@ class NightMarketCog(commands.Cog):
             return
         vp = await self.bot.emoji_service.currency("vp") or "VP"
         accounts = await list_accounts(interaction.user.id)
-        account = await account.persisted_row().select_related("user").get_or_none()
-        if not account:
-            await error(interaction, "error-account-unavailable")
+        viewer = await account_viewer(interaction, account, self.bot.translator)
+        if viewer is None:
             return
-        hide_ign = account.user.hide_ign
-        username = _account_display_name(
-            account.username,
-            hide_ign=hide_ign,
-            translator=self.bot.translator,
-            locale=interaction.locale,
-        )
+        account, hide_ign, username = viewer
         cards, controls = night_market_view(
             self.bot,
             interaction,
@@ -976,16 +954,10 @@ class BalanceCog(commands.Cog):
             key: await self.bot.emoji_service.currency(key) or key.upper()
             for key in ("vp", "rp", "kc")
         }
-        account = await account.persisted_row().select_related("user").get_or_none()
-        if not account:
-            await error(interaction, "error-account-unavailable")
+        viewer = await account_viewer(interaction, account, self.bot.translator)
+        if viewer is None:
             return
-        username = _account_display_name(
-            account.username,
-            hide_ign=account.user.hide_ign,
-            translator=self.bot.translator,
-            locale=interaction.locale,
-        )
+        account, _, username = viewer
         card = embed(
             translated(interaction, "balance-summary"),
             title=username,
