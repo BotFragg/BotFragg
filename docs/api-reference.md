@@ -3294,11 +3294,27 @@ Public timestamp and owner-scoped Discord component exports.
 
 Persistent interactive controls scoped to the Discord user who created them.
 
-### `class OwnedActionButton(discord.ui.DynamicItem[discord.ui.Button])`
+### `async def _reject_other_owner(interaction: discord.Interaction[Any], owner_id: int, key: str) -> bool`
 
 **Scope:** `src/views/components.py` · `module`
 
 [Source](../src/views/components.py#L21)
+
+Allow the recorded owner and refuse the control to everybody else.
+
+### `async def _dispatch(interaction: discord.Interaction[Any], action: str, payload: str, key: str) -> None`
+
+**Scope:** `src/views/components.py` · `module`
+
+[Source](../src/views/components.py#L34)
+
+Run the handler registered for an owned control inside a trace.
+
+### `class OwnedActionButton(discord.ui.DynamicItem[discord.ui.Button])`
+
+**Scope:** `src/views/components.py` · `module`
+
+[Source](../src/views/components.py#L54)
 
 Create a persistent button whose action can only be used by its owner.
 
@@ -3306,7 +3322,7 @@ Create a persistent button whose action can only be used by its owner.
 
 **Scope:** `src/views/components.py` · `OwnedActionButton`
 
-[Source](../src/views/components.py#L24)
+[Source](../src/views/components.py#L57)
 
 Build a stable custom ID containing the action, owner, and payload.
 
@@ -3314,7 +3330,7 @@ Build a stable custom ID containing the action, owner, and payload.
 
 **Scope:** `src/views/components.py` · `OwnedActionButton`
 
-[Source](../src/views/components.py#L50)
+[Source](../src/views/components.py#L83)
 
 Reconstruct a persistent button from its custom ID and visible style.
 
@@ -3322,7 +3338,7 @@ Reconstruct a persistent button from its custom ID and visible style.
 
 **Scope:** `src/views/components.py` · `OwnedActionButton`
 
-[Source](../src/views/components.py#L69)
+[Source](../src/views/components.py#L102)
 
 Reject interactions from users other than the button's recorded owner.
 
@@ -3330,7 +3346,7 @@ Reject interactions from users other than the button's recorded owner.
 
 **Scope:** `src/views/components.py` · `OwnedActionButton`
 
-[Source](../src/views/components.py#L83)
+[Source](../src/views/components.py#L108)
 
 Dispatch the button action to its registered handler inside a trace.
 
@@ -3338,7 +3354,7 @@ Dispatch the button action to its registered handler inside a trace.
 
 **Scope:** `src/views/components.py` · `module`
 
-[Source](../src/views/components.py#L103)
+[Source](../src/views/components.py#L115)
 
 Create a persistent select menu whose action is restricted to its owner.
 
@@ -3346,7 +3362,7 @@ Create a persistent select menu whose action is restricted to its owner.
 
 **Scope:** `src/views/components.py` · `OwnedSelect`
 
-[Source](../src/views/components.py#L106)
+[Source](../src/views/components.py#L118)
 
 Build a stable custom ID and a translated placeholder when options are empty.
 
@@ -3354,7 +3370,7 @@ Build a stable custom ID and a translated placeholder when options are empty.
 
 **Scope:** `src/views/components.py` · `OwnedSelect`
 
-[Source](../src/views/components.py#L138)
+[Source](../src/views/components.py#L150)
 
 Reconstruct a persistent select menu from its ID and current options.
 
@@ -3362,7 +3378,7 @@ Reconstruct a persistent select menu from its ID and current options.
 
 **Scope:** `src/views/components.py` · `OwnedSelect`
 
-[Source](../src/views/components.py#L157)
+[Source](../src/views/components.py#L169)
 
 Reject interactions from users other than the menu's recorded owner.
 
@@ -3370,7 +3386,7 @@ Reject interactions from users other than the menu's recorded owner.
 
 **Scope:** `src/views/components.py` · `OwnedSelect`
 
-[Source](../src/views/components.py#L171)
+[Source](../src/views/components.py#L175)
 
 Dispatch the selected value with the menu payload to its registered handler.
 
@@ -3378,7 +3394,7 @@ Dispatch the selected value with the menu payload to its registered handler.
 
 **Scope:** `src/views/components.py` · `module`
 
-[Source](../src/views/components.py#L192)
+[Source](../src/views/components.py#L186)
 
 Build a compact red embed for an invalid or unavailable component action.
 
