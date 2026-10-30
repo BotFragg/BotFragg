@@ -62,7 +62,7 @@ class EventsCog(commands.Cog):
         if channel is None:
             try:
                 channel = await self.bot.fetch_channel(channel_id)
-            except discord.HTTPException:
+            except DISCORD_HTTP_ERRORS:
                 log.warning("Could not resolve guild event log channel", exc_info=True)
                 return
         if not isinstance(channel, discord.abc.Messageable):
@@ -91,7 +91,7 @@ class EventsCog(commands.Cog):
             await channel.send(
                 embed=card, allowed_mentions=discord.AllowedMentions.none()
             )
-        except discord.HTTPException:
+        except DISCORD_HTTP_ERRORS:
             log.warning("Could not deliver guild event log", exc_info=True)
 
     @commands.Cog.listener()

@@ -397,3 +397,21 @@ async def test_shard_webhook_transport_failure_does_not_escape(monkeypatch):
     )
 
     await EventsCog(bot)._log_shard_event(0, "connected")
+
+
+async def test_guild_log_transport_failure_does_not_escape(monkeypatch):
+    """A dropped connection while resolving the log channel must not raise."""
+
+    async def fail(*_args, **_kwargs):
+        raise aiohttp.ServerDisconnectedError("synthetic")
+
+    bot = SimpleNamespace(
+        config=SimpleNamespace(guild_join_log_channel_id=123),
+        get_channel=lambda _: None,
+        fetch_channel=fail,
+        guilds=[],
+    )
+
+    await EventsCog(bot)._log_guild_event(
+        SimpleNamespace(id=1, name="Guild"), 123, "I've joined a guild!"
+    )
