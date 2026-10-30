@@ -19,7 +19,8 @@ from ...views import OwnedActionButton, timestamp
 from ...views.ui import EmbedMessage, embed, error, translated, view
 
 # Marks a remove payload that refreshes from an alert ID instead of a page number.
-ANCHOR_PREFIX = "anchor:"
+# It must not contain ':' because persistent custom IDs cannot carry one.
+ANCHOR_PREFIX = "anchor_"
 
 
 class AlertsCog(commands.Cog):
@@ -207,7 +208,7 @@ class AlertsCog(commands.Cog):
                     user_id,
                     # Anchor the refresh to this window's first alert, not a page
                     # number: a removed alert shifts every offset below it.
-                    f"{alert.id},anchor:{visible[0].id}",
+                    f"{alert.id},{ANCHOR_PREFIX}{visible[0].id}",
                     label=(
                         skin_name
                         or self.bot.translator.text(locale, "alert-unknown-skin")

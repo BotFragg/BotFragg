@@ -13,6 +13,7 @@ from src.cogs.valorant.alerts import AlertsCog
 from src.localization import BotFraggTranslator
 from src.models import Account, Alert, User
 from src.services.catalog import Skin
+from src.views.components import ACTION_RE
 from tests.helpers import TEST_LOCALE, TEST_TRANSLATOR, _localized_interaction
 
 
@@ -245,7 +246,7 @@ async def test_alert_remove_refresh_keeps_the_anchored_window():
     remove = next(
         button
         for button in controls.children
-        if button.action == "remove_alert" and button.payload.startswith("15,anchor:")
+        if button.action == "remove_alert" and button.payload.startswith("15,anchor_")
     )
     edit = AsyncMock()
     interaction = _localized_interaction(
@@ -261,3 +262,17 @@ async def test_alert_remove_refresh_keeps_the_anchored_window():
     assert "**10.** **Skin 11**" in rendered
     assert "**11.** **Skin 12**" in rendered
     assert "Skin 15" not in rendered
+
+
+@pytest.mark.usefixtures("database")
+async def test_manager_buttons_are_dispatchable_custom_ids():
+    """Every persistent button must match the full custom-ID pattern Discord uses."""
+    cog, user, _ = await _alert_cog_with_alerts(21)
+
+    _, controls = await cog.manager_view(user.id, 0, discord.Locale.american_english)
+
+    assert controls is not None
+    for button in controls.children:
+        assert ACTION_RE.fullmatch(button.item.custom_id) is not None, (
+            f"Discord would not dispatch {button.item.custom_id}"
+        )
