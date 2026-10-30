@@ -8,7 +8,6 @@ from collections import deque
 from datetime import UTC, datetime, time, timedelta
 from time import time as unix_time
 
-import aiohttp
 import discord
 from discord.ext import commands, tasks
 
@@ -18,7 +17,7 @@ from ..health import HEALTH_PATH, JobHealth, write_health
 from ..models import Account, Alert, User
 from ..monitoring import StructuredFormatter, transaction
 from ..services.alerts import run_daily_alerts
-from ..services.http import HTTPFailure
+from ..services.http import DISCORD_HTTP_ERRORS, HTTPFailure
 from ..services.shop import Offer, ShopData
 from ..views import OwnedActionButton, timestamp
 from ..views.shop import add_skin_selector, offer_cards
@@ -26,7 +25,6 @@ from ..views.ui import embed, view
 from .extra import ExtraCog
 
 log = logging.getLogger(__name__)
-DISCORD_DELIVERY_ERRORS = (discord.HTTPException, aiohttp.ClientError, OSError)
 
 
 class DiscordLogHandler(logging.Handler):
@@ -164,7 +162,7 @@ class TasksCog(commands.Cog):
         """DM an owner-scoped skin alert and report whether delivery succeeded."""
         try:
             user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
-        except DISCORD_DELIVERY_ERRORS:
+        except DISCORD_HTTP_ERRORS:
             log.warning("Could not deliver alert notification", exc_info=True)
             return False
         current = (
@@ -204,7 +202,7 @@ class TasksCog(commands.Cog):
                 )
             )
             await user.send(embed=card, view=controls)
-        except DISCORD_DELIVERY_ERRORS:
+        except DISCORD_HTTP_ERRORS:
             log.warning("Could not deliver alert notification", exc_info=True)
             return False
         return True
@@ -217,7 +215,7 @@ class TasksCog(commands.Cog):
             target = self.bot.get_user(user.id) or await self.bot.fetch_user(user.id)
             locale = discord.Locale.american_english
             vp = await self.bot.emoji_service.currency("vp") or "VP"
-        except DISCORD_DELIVERY_ERRORS:
+        except DISCORD_HTTP_ERRORS:
             log.warning("Could not deliver daily shop notification", exc_info=True)
             return False
         current = await account.persisted_row().select_related("user").get_or_none()
@@ -259,7 +257,7 @@ class TasksCog(commands.Cog):
                 embeds=cards,
                 view=controls if controls.children else None,  # type: ignore[arg-type]
             )
-        except DISCORD_DELIVERY_ERRORS:
+        except DISCORD_HTTP_ERRORS:
             log.warning("Could not deliver daily shop notification", exc_info=True)
             return False
         return True
@@ -274,7 +272,7 @@ class TasksCog(commands.Cog):
                     self.bot.translator.text(locale, "alerts-credentials-expired")
                 )
             )
-        except DISCORD_DELIVERY_ERRORS:
+        except DISCORD_HTTP_ERRORS:
             log.warning(
                 "Could not notify user about expired Riot credentials", exc_info=True
             )
@@ -336,7 +334,7 @@ class TasksCog(commands.Cog):
                     colour=0x202225,
                 )
             )
-        except (*DISCORD_DELIVERY_ERRORS, TypeError):
+        except (*DISCORD_HTTP_ERRORS, TypeError):
             self.job_health["log_flush"].failure("log_flush")
             log.warning(
                 "Could not deliver buffered logs to the log channel", exc_info=True

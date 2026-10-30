@@ -123,7 +123,9 @@ async def test_empty_shared_shop_sends_a_view(monkeypatch):
 async def test_shop_rechecks_privacy_and_original_account(
     database, change, viewer, stage
 ):
-    owner = await User.create(id=2, current_account_id="synthetic")
+    owner = await User.create(
+        id=2, current_account_id="synthetic", others_can_view_shop=True
+    )
     account = await Account.create(
         puuid="synthetic", user=owner, username="SecretName#NA"
     )
@@ -735,8 +737,8 @@ async def test_shop_video_selector_rejects_forged_and_mismatched_values() -> Non
 async def test_nightmarket_command_includes_skin_and_account_menus(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Verify Night Market slash-command offers receive both selectors."""
-    skin = Skin("skin", "offer", "Prime Vandal", None, None)
+    """Verify Night Market slash-command offers receive both selectors and image links."""
+    skin = Skin("skin", "offer", "Prime Vandal", "https://example.com/prime.png", None)
     data = ShopData([], [], [Offer(skin, 1775, 1, 1000, 44)], 4_000_000_000, None)
     account = SimpleNamespace(puuid="account", username="Player#NA")
     other_account = SimpleNamespace(puuid="other", username="Other#NA")
@@ -804,7 +806,7 @@ async def test_nightmarket_command_includes_skin_and_account_menus(
     bot = _localized_bot(
         shop=Shop(),
         emoji_service=EmojiService(),
-        config=SimpleNamespace(link_item_image=False),
+        config=SimpleNamespace(link_item_image=True),
         register_component=lambda *_args: None,
     )
     interaction = _localized_interaction(
@@ -815,6 +817,8 @@ async def test_nightmarket_command_includes_skin_and_account_menus(
 
     await NightMarketCog.nightmarket.callback(NightMarketCog(bot), interaction)
 
+    embeds = interaction.followup.message["embeds"]
+    assert embeds[1].url == "https://example.com/prime.png"
     controls = interaction.followup.message["view"]
     assert [child.item.custom_id.split(":")[1] for child in controls.children] == [
         "shop_skin",

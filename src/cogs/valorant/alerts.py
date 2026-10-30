@@ -71,7 +71,7 @@ class AlertsCog(commands.Cog):
         item = self.bot.catalog.get_skin(skin)
         if not item:
             matches = self.bot.catalog.search_skins(
-                skin, locale=interaction.locale, limit=1
+                skin, locale=interaction.locale, limit=1, min_score=100
             )
             item = matches[0] if matches else None
         if not item:

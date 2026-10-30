@@ -6,7 +6,6 @@ import asyncio
 import logging
 from typing import Literal
 
-import aiohttp
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
@@ -14,6 +13,7 @@ from discord.ext import commands, tasks
 from ..bot import BotFraggBot
 from ..database import TRANSIENT_DATABASE_ERRORS
 from ..models import Suggestion
+from ..services.http import DISCORD_HTTP_ERRORS
 from ..services.suggestions import (
     create_suggestion,
     delete_suggestion,
@@ -25,7 +25,6 @@ from ..services.suggestions import (
 from ..views.ui import embed, error, translated
 
 log = logging.getLogger(__name__)
-DISCORD_DELIVERY_ERRORS = (discord.HTTPException, aiohttp.ClientError, OSError)
 
 
 class SuggestionsCog(commands.Cog):
@@ -107,7 +106,7 @@ class SuggestionsCog(commands.Cog):
         if channel is None:
             try:
                 channel = await self.bot.fetch_channel(channel_id)
-            except DISCORD_DELIVERY_ERRORS:
+            except DISCORD_HTTP_ERRORS:
                 await error(interaction, "suggestion-channel-unavailable")
                 return
         if not isinstance(channel, discord.abc.Messageable):
@@ -134,7 +133,7 @@ class SuggestionsCog(commands.Cog):
         )
         try:
             message = await channel.send(embed=card)
-        except DISCORD_DELIVERY_ERRORS:
+        except DISCORD_HTTP_ERRORS:
             await delete_suggestion(record.id)
             await error(interaction, "suggestion-delivery-failed")
             return
@@ -166,7 +165,11 @@ class SuggestionsCog(commands.Cog):
         )
     )
     @app_commands.guild_only()
-    async def track(self, interaction: discord.Interaction, id: int) -> None:
+    async def track(
+        self,
+        interaction: discord.Interaction,
+        id: app_commands.Range[int, 1, 2_147_483_647],
+    ) -> None:
         """Follow a pending suggestion or privately show its existing review."""
         await interaction.response.defer(thinking=True, ephemeral=True)
         created = await follow_suggestion(id, interaction.user.id)
@@ -206,7 +209,11 @@ class SuggestionsCog(commands.Cog):
         )
     )
     @app_commands.guild_only()
-    async def untrack(self, interaction: discord.Interaction, id: int) -> None:
+    async def untrack(
+        self,
+        interaction: discord.Interaction,
+        id: app_commands.Range[int, 1, 2_147_483_647],
+    ) -> None:
         """Remove the caller's follow from another user's suggestion."""
         await interaction.response.defer(thinking=True, ephemeral=True)
         result = await unfollow_suggestion(id, interaction.user.id)
@@ -238,7 +245,7 @@ class SuggestionsCog(commands.Cog):
     async def approve(
         self,
         interaction: discord.Interaction,
-        id: int,
+        id: app_commands.Range[int, 1, 2_147_483_647],
         reason: app_commands.Range[str, 1, 1000],
     ) -> None:
         """Submit an owner-only approval review for the selected suggestion."""
@@ -253,7 +260,7 @@ class SuggestionsCog(commands.Cog):
     async def deny(
         self,
         interaction: discord.Interaction,
-        id: int,
+        id: app_commands.Range[int, 1, 2_147_483_647],
         reason: app_commands.Range[str, 1, 1000],
     ) -> None:
         """Submit an owner-only denial review for the selected suggestion."""
@@ -291,7 +298,7 @@ class SuggestionsCog(commands.Cog):
                 user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
                 user_locale = getattr(user, "locale", discord.Locale.american_english)
                 await user.send(embed=self._review_card(suggestion, user_locale))
-            except DISCORD_DELIVERY_ERRORS:
+            except DISCORD_HTTP_ERRORS:
                 log.warning(
                     "Could not notify suggestion follower %s of the review", user_id
                 )
@@ -337,7 +344,7 @@ class SuggestionsCog(commands.Cog):
                         title=f"Suggestion #{suggestion.id} — {status}",
                     )
                 )
-        except DISCORD_DELIVERY_ERRORS:
+        except DISCORD_HTTP_ERRORS:
             log.warning(
                 "Could not update suggestion %s in its log channel",
                 suggestion.id,

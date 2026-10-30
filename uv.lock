@@ -304,7 +304,6 @@ dependencies = [
     { name = "cryptography" },
     { name = "discord-py" },
     { name = "fluent-runtime" },
-    { name = "jishaku" },
     { name = "psutil" },
     { name = "python-dotenv" },
     { name = "rapidfuzz" },
@@ -328,7 +327,6 @@ requires-dist = [
     { name = "cryptography", specifier = ">=50.0.1" },
     { name = "discord-py", specifier = ">=2.7.1" },
     { name = "fluent-runtime", specifier = ">=0.4.0" },
-    { name = "jishaku", specifier = ">=2.7.5" },
     { name = "psutil", specifier = ">=7.0" },
     { name = "python-dotenv", specifier = ">=1.2.3" },
     { name = "rapidfuzz", specifier = ">=3.14.6" },
@@ -344,15 +342,6 @@ dev = [
     { name = "pytest", specifier = ">=8.4.0" },
     { name = "pytest-asyncio", specifier = ">=1.1.0" },
     { name = "ruff", specifier = ">=0.14.0" },
-]
-
-[[package]]
-name = "braceexpand"
-version = "0.1.7"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/54/93/badd4f5ccf25209f3fef2573073da9fe4a45a3da99fca2f800f942130c0f/braceexpand-0.1.7.tar.gz", hash = "sha256:e6e539bd20eaea53547472ff94f4fb5c3d3bf9d0a89388c4b56663aba765f705", size = 7777, upload-time = "2021-05-07T13:49:07.323Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/fa/93/e8c04e80e82391a6e51f218ca49720f64236bc824e92152a2633b74cf7ab/braceexpand-0.1.7-py2.py3-none-any.whl", hash = "sha256:91332d53de7828103dcae5773fb43bc34950b0c8160e35e0f44c4427a3b85014", size = 5923, upload-time = "2021-05-07T13:49:05.146Z" },
 ]
 
 [[package]]
@@ -421,15 +410,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/6d/cd/a361394c94b2129d604bb846f624a8e88255a3ee33129c434a00d715e64f/cffi-2.1.1-cp315-cp315t-win32.whl", hash = "sha256:06c72bb76605a4b0cd0aad6930b69d4baf7dd5d806cfc409b824191099700e66", size = 182707, upload-time = "2026-08-03T21:21:11.226Z" },
     { url = "https://files.pythonhosted.org/packages/9b/b5/ba2b299993c26577d529b6ae29841f9e15b9fcf004d65f423f4fcf94ade9/cffi-2.1.1-cp315-cp315t-win_amd64.whl", hash = "sha256:d9c275eaacd24aa73f94ffd6de08fc3f932424d8b6c376f4bed7cde376fe7bc3", size = 193772, upload-time = "2026-08-03T21:21:12.39Z" },
     { url = "https://files.pythonhosted.org/packages/aa/29/35e016098c814cd93de9cd320c66b5bfba14dc6ecedd3cb518fa7c408c69/cffi-2.1.1-cp315-cp315t-win_arm64.whl", hash = "sha256:d18e5ac0f2f03f4f518d3e23db0f0cad7faa1da8620e9c09461d443bbf6e6692", size = 186360, upload-time = "2026-08-03T21:21:13.636Z" },
-]
-
-[[package]]
-name = "click"
-version = "8.5.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/c7/0e/7fa0ef50764b67090eca4114772a2abf8b6148198475e54c660b97caeee6/click-8.5.0.tar.gz", hash = "sha256:ba0d2089de75ea0310e2dde03160e6ca10009947fb95a182f9b54021bb272e34", size = 382235, upload-time = "2026-08-26T13:33:14.56Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/58/50/6c0d534c5f134586a8e1ba4e330569e32f057e33372ae556463212fb4cd3/click-8.5.0-py3-none-any.whl", hash = "sha256:255bc9599cf7748b4b1a446ccc735421bd08a2ae529a8b88597d3de5664ee360", size = 125251, upload-time = "2026-08-26T13:33:12.928Z" },
 ]
 
 [[package]]
@@ -583,15 +563,6 @@ wheels = [
 ]
 
 [[package]]
-name = "import-expression"
-version = "2.2.1.post1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/95/dd/4c561ce20064985b2a7d3eadb4002c981c8906a4efd309a0b595acb2727a/import_expression-2.2.1.post1.tar.gz", hash = "sha256:1c831bf26bef7edf36a97b34c687b962e7abe06116c66f00e14f9a3218623d4f", size = 16044, upload-time = "2024-10-23T06:06:37.221Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/38/92/437a1dbc58241770198dc4d966a2e6363bd684f961070623aec975cfe03f/import_expression-2.2.1.post1-py3-none-any.whl", hash = "sha256:7b3677e889816e0dbdcc7f42f4534071c54c667f32c71097522ea602f6497902", size = 23919, upload-time = "2024-10-23T06:06:35.892Z" },
-]
-
-[[package]]
 name = "iniconfig"
 version = "2.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -607,23 +578,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/b9/f3/ef59cee614d5e0accf6fd0cbba025b93b272e626ca89fb70a3e9187c5d15/iso8601-2.1.0.tar.gz", hash = "sha256:6b1d3829ee8921c4301998c909f7829fa9ed3cbdac0d3b16af2d743aed1ba8df", size = 6522, upload-time = "2023-10-03T00:25:39.317Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/6c/0c/f37b6a241f0759b7653ffa7213889d89ad49a2b76eb2ddf3b57b2738c347/iso8601-2.1.0-py3-none-any.whl", hash = "sha256:aac4145c4dcb66ad8b648a02830f5e2ff6c24af20f4f482689be402db2429242", size = 7545, upload-time = "2023-10-03T00:25:32.304Z" },
-]
-
-[[package]]
-name = "jishaku"
-version = "2.7.5"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "braceexpand" },
-    { name = "click" },
-    { name = "discord-py" },
-    { name = "import-expression" },
-    { name = "tabulate" },
-    { name = "typing-extensions" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/4d/aa/2ecc7362e2012c102921af3876801c31b73000be70a6bf442c4f141b4b14/jishaku-2.7.5.tar.gz", hash = "sha256:f61f33d4254553a8126bdeca622f995112848fca5ff145dd9a89882d9b852367", size = 76849, upload-time = "2026-04-24T11:18:01.134Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/2e/1b/1e5a758333c858c70d3f94e7e9cceee7e406ec6227ebea875b7008947165/jishaku-2.7.5-py3-none-any.whl", hash = "sha256:b7276f8c1e36c1acfae29a8bffc460e93d99723b90d75329b5698b65bed9bc3e", size = 82682, upload-time = "2026-04-24T11:17:59.476Z" },
 ]
 
 [[package]]
@@ -1137,15 +1091,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/26/c1/d2bbb2b03bdc2ef14b35e02b647b8489156c50b6e0b8bacc5fa303902e23/sentry_sdk-2.72.0.tar.gz", hash = "sha256:0d2ffbc28ee2e63cbaf3d015e93b448cffcc3ef3be03a44704ad36ade72faa95", size = 1069699, upload-time = "2026-10-12T13:08:11.195Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d0/0b/0dd9686842d9dc49c3ee84cced31c54bceb0fb52a826be7d3d4fe30d882a/sentry_sdk-2.72.0-py3-none-any.whl", hash = "sha256:3e13ace4ffd0b3cc78288236edfc4e4bd90eb12a396cc5845fa10a58ff289f50", size = 544754, upload-time = "2026-10-12T13:08:01.619Z" },
-]
-
-[[package]]
-name = "tabulate"
-version = "0.10.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/46/58/8c37dea7bbf769b20d58e7ace7e5edfe65b849442b00ffcdd56be88697c6/tabulate-0.10.0.tar.gz", hash = "sha256:e2cfde8f79420f6deeffdeda9aaec3b6bc5abce947655d17ac662b126e48a60d", size = 91754, upload-time = "2026-03-04T18:55:34.402Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/99/55/db07de81b5c630da5cbf5c7df646580ca26dfaefa593667fc6f2fe016d2e/tabulate-0.10.0-py3-none-any.whl", hash = "sha256:f0b0622e567335c8fabaaa659f1b33bcb6ddfe2e496071b743aa113f8774f2d3", size = 39814, upload-time = "2026-03-04T18:55:31.284Z" },
 ]
 
 [[package]]

@@ -13,7 +13,7 @@ from cryptography.fernet import Fernet
 from src.cogs.valorant.alerts import AlertsCog
 from src.models import Account, Alert, User
 from src.services.auth import AuthService
-from src.services.catalog import Skin
+from src.services.catalog import CatalogService, Skin
 from src.services.crypto import AuthVault
 from src.services.http import HTTPResult
 from src.services.shop import ShopService
@@ -102,3 +102,49 @@ async def test_testalerts_uses_alert_account_login(backend_database, alert_login
         key = "error-riot-login-expired"
     sent = interaction.followup.send.await_args.kwargs
     assert sent["embed"].description == cog.bot.translator.text(interaction.locale, key)
+
+
+@pytest.mark.usefixtures("backend_database")
+async def test_alert_command_rejects_junk_and_accepts_uuid_or_exact_name() -> None:
+    """Verify that junk creates no alert while a UUID or exact name does."""
+    owner = await User.create(id=101)
+    account = await Account.create(
+        puuid="synthetic", user=owner, username="Player#TEST"
+    )
+    first = Skin(str(UUID(int=1)), "offer-1", "Synthetic Skin One", None, None)
+    second = Skin(str(UUID(int=2)), "offer-2", "Synthetic Skin Two", None, None)
+    catalog = CatalogService(NS())
+    catalog.skins = {first.uuid: first, second.uuid: second}
+    catalog._reindex()
+    bot = _localized_bot(
+        register_component=lambda *args: None,
+        catalog=catalog,
+        emoji_service=NS(
+            skin_name=lambda name, _tier: name,
+            skin_emoji=lambda _tier: "",
+        ),
+    )
+    cog = AlertsCog(bot)
+
+    def interaction() -> NS:
+        """Build a deferred interaction whose follow-up response is available."""
+        return _localized_interaction(
+            user=NS(id=owner.id),
+            response=NS(defer=AsyncMock(), is_done=lambda: True),
+            followup=NS(send=AsyncMock()),
+        )
+
+    junk = interaction()
+    await AlertsCog.alert.callback(cog, junk, "asdf")
+    assert not await Alert.exists(account_id=account.puuid)
+    assert junk.followup.send.await_args.kwargs["embed"].description == (
+        bot.translator.text(junk.locale, "alert-skin-not-found")
+    )
+
+    by_uuid = interaction()
+    await AlertsCog.alert.callback(cog, by_uuid, first.uuid)
+    assert await Alert.exists(account_id=account.puuid, skin_uuid=first.uuid)
+
+    by_name = interaction()
+    await AlertsCog.alert.callback(cog, by_name, second.name.lower())
+    assert await Alert.exists(account_id=account.puuid, skin_uuid=second.uuid)

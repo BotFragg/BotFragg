@@ -62,7 +62,7 @@ uv run --frozen python -m compileall -q src tests
 
 - `src/bot.py::BotFraggBot.setup_hook` explicitly lists every extension and
   calls `add_dynamic_items(...)`; new cogs and dynamic items are not discovered
-  automatically. `jishaku` loads only when `APP_ENV != production`.
+  automatically.
 - Persistent controls dispatch through `BotFraggBot.component_handlers`.
   Register each action with `bot.register_component(action, handler)` in the
   cog constructor. Action names must match `[a-z_]+`, and payloads cannot

@@ -12,10 +12,14 @@ from urllib.parse import urlsplit
 from uuid import UUID
 
 import aiohttp
+import discord
 
 from ..config import Settings
 
 log = logging.getLogger(__name__)
+
+# Discord/network failures raised while sending or creating Discord resources.
+DISCORD_HTTP_ERRORS = (discord.HTTPException, aiohttp.ClientError, OSError)
 
 
 def _safe_log_url(url: str) -> str:

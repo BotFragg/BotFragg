@@ -140,30 +140,6 @@ async def test_unhandled_app_command_error_returns_ephemeral_response() -> None:
     assert sent[0][1] is True
 
 
-async def test_unhandled_prefix_command_error_returns_generic_response() -> None:
-    """Verify that unhandled prefix command error returns generic response."""
-    sent: list[discord.Embed] = []
-
-    async def send(*, embed: discord.Embed) -> None:
-        """Record the follow-up message sent through the fake interaction."""
-        sent.append(embed)
-
-    context = SimpleNamespace(
-        command=SimpleNamespace(qualified_name="debug"), send=send
-    )
-    error = commands.CommandInvokeError(RuntimeError("private detail"))
-
-    assert "on_command_error" in BotFraggBot.__dict__
-    await BotFraggBot.on_command_error(
-        SimpleNamespace(translator=TEST_TRANSLATOR), context, error
-    )
-
-    assert sent[0].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "error-command-failed"
-    )
-    assert "private detail" not in sent[0].description
-
-
 async def test_links_invite_preserves_zero_permissions() -> None:
     """Verify that links invite preserves zero permissions."""
     sent: dict[str, object] = {}
@@ -219,8 +195,9 @@ def test_bot_preserves_discord_http_client(monkeypatch: pytest.MonkeyPatch) -> N
     monkeypatch.setenv("TOKEN_ENCRYPTION_KEY", Fernet.generate_key().decode())
     bot = BotFraggBot(Settings.from_env())
     assert hasattr(bot.http, "static_login")
-    assert bot.intents.dm_messages and bot.intents.guild_messages
+    assert not bot.intents.guild_messages and not bot.intents.dm_messages
     assert not bot.intents.message_content
+    assert bot.command_prefix == []
 
 
 async def test_bot_stops_extensions_before_closing_shared_resources(

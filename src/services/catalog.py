@@ -11,7 +11,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any
 from weakref import WeakValueDictionary
 
-from rapidfuzz import fuzz, process
+from rapidfuzz import fuzz, process, utils
 
 from ..config import ROOT
 from .http import HTTPClient, HTTPFailure
@@ -658,9 +658,18 @@ class CatalogService:
         )
 
     def search_skins(
-        self, query: str, *, locale: object | None = None, limit: int = 25
+        self,
+        query: str,
+        *,
+        locale: object | None = None,
+        limit: int = 25,
+        min_score: int = 35,
     ) -> list[Skin]:
-        """Search localized names first, retaining English-name fallback matches."""
+        """Search localized names first, retaining English-name fallback matches.
+
+        Names are compared case-insensitively; ``min_score`` is the lowest
+        fuzzy-match score accepted, and an exactly matching name scores 100.
+        """
         locale_code = getattr(locale, "value", locale)
         locale_code = str(locale_code) if locale_code else ENGLISH_LOCALE
         valorant_locale = DISCORD_TO_VALORANT_LOCALE.get(locale_code, ENGLISH_LOCALE)
@@ -672,9 +681,13 @@ class CatalogService:
         scores: dict[str, float] = {}
         for search_choices in choice_sets:
             for _, score, uuid in process.extract(
-                query, search_choices, scorer=fuzz.WRatio, limit=limit
+                query,
+                search_choices,
+                scorer=fuzz.WRatio,
+                processor=utils.default_process,
+                limit=limit,
             ):
-                if score >= 35:
+                if score >= min_score:
                     scores[uuid] = max(score, scores.get(uuid, 0))
         matches = sorted(scores.items(), key=lambda match: match[1], reverse=True)
         return [self.skins[uuid] for uuid, _ in matches[:limit]]

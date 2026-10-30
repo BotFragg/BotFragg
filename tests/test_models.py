@@ -13,6 +13,7 @@ from src.models import (
     ShardStatusMessage,
     Suggestion,
     SuggestionFollower,
+    User,
 )
 from src.services.auth import AuthService
 from src.services.gameplay import GameplayService, GameplayUnavailable
@@ -44,6 +45,13 @@ async def test_missing_next_reward_metadata_is_recoverable():
     except GameplayUnavailable:
         return
     assert result["name"] is None
+
+
+@pytest.mark.usefixtures("database")
+async def test_new_users_do_not_share_their_shop_by_default() -> None:
+    """Verify that a new user must opt in before others can view their shop."""
+    user = await User.create(id=789)
+    assert user.others_can_view_shop is False
 
 
 @pytest.mark.usefixtures("database")

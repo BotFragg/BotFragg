@@ -149,7 +149,7 @@ Keep your `.env` file private and never commit it to version control.
 
 ## Privacy and Security
 
-BotFragg encrypts Riot credentials and does not store ordinary conversation messages. It processes slash commands and configured operator prefix commands addressed to the bot, including in DMs. You can remove all of your stored data at any time with `/deletedata confirm:True`.
+BotFragg encrypts Riot credentials and does not store ordinary conversation messages. It processes slash commands and the values you submit to them, including in DMs. You can remove all of your stored data at any time with `/deletedata confirm:True`.
 
 Before using the bot, please review the [Privacy Policy](PRIVACY.md) and [Terms of Service](tos.md). To report a vulnerability, see the [Security Policy](SECURITY.md).
 

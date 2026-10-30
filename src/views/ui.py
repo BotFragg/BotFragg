@@ -6,13 +6,13 @@ import logging
 from datetime import datetime
 from typing import Any, NotRequired, TypedDict
 
-import aiohttp
 import discord
 from discord import app_commands
 
 from ..localization import BotFraggTranslator
 from ..models import Account
 from ..services.auth import AuthenticationRequired
+from ..services.http import DISCORD_HTTP_ERRORS
 
 
 class EmbedMessage(TypedDict):
@@ -141,7 +141,7 @@ async def unexpected_error(
     log.error("Interaction failed", exc_info=exception)
     try:
         await error(interaction, "error-command-failed")
-    except discord.HTTPException, aiohttp.ClientError, OSError:
+    except DISCORD_HTTP_ERRORS:
         log.warning("Could not deliver interaction error response", exc_info=True)
 
 

@@ -178,7 +178,7 @@ class ShopCog(commands.Cog):
             translator=self.bot.translator,
             locale=locale,
         )
-        if data.night_market or getattr(data, "night_market_incomplete", False):
+        if data.night_market or data.night_market_incomplete:
             controls.add_item(
                 OwnedActionButton(
                     "shop_mode",
@@ -533,9 +533,7 @@ class ShopCog(commands.Cog):
                 show_shop_button=True,
             )
         else:
-            if mode in {"night", "nightmarket"} and getattr(
-                data, "night_market_incomplete", False
-            ):
+            if mode in {"night", "nightmarket"} and data.night_market_incomplete:
                 await error(interaction, "error-riot-services-unavailable")
                 return
             currency = await self.bot.emoji_service.currency(
@@ -896,7 +894,7 @@ class NightMarketCog(commands.Cog):
         except (AuthenticationRequired, ShopUnavailable) as exc:
             await error(interaction, exc)
             return
-        if getattr(data, "night_market_incomplete", False):
+        if data.night_market_incomplete:
             await error(interaction, "error-riot-services-unavailable")
             return
         if not data.night_market:

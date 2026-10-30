@@ -10,7 +10,6 @@ dependencies = [
     "cryptography>=50.0.1",
     "discord-py>=2.7.1",
     "fluent-runtime>=0.4.0",
-    "jishaku>=2.7.5",
     "psutil>=7.0",
     "python-dotenv>=1.2.3",
     "rapidfuzz>=3.14.6",

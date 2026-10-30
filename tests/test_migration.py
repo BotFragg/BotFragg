@@ -73,6 +73,33 @@ async def test_migrations_apply_write_delete_and_rollback(migration_url):
         await Tortoise.close_connections()
 
 
+async def test_shop_sharing_migration_backfills_existing_users(migration_url):
+    """Verify that the opt-in migration resets users stored under the old default."""
+    apps = TORTOISE_CONFIG["apps"]
+    await Tortoise.init(
+        config={
+            "connections": {"default": migration_url},
+            "apps": apps,
+            "use_tz": True,
+            "timezone": "UTC",
+        }
+    )
+    try:
+        executor = MigrationExecutor(connections.get("default"), apps)
+        await executor.migrate(
+            [MigrationTarget("models", "0004_add_shard_status_message")]
+        )
+        await User.create(id=101, others_can_view_shop=True)
+        await executor.migrate([MigrationTarget("models", "0005_shop_sharing_opt_in")])
+        assert (await User.get(id=101)).others_can_view_shop is False
+        await executor.migrate(
+            [MigrationTarget("models", "0004_add_shard_status_message")]
+        )
+        assert (await User.get(id=101)).others_can_view_shop is True
+    finally:
+        await Tortoise.close_connections()
+
+
 def test_sqlite_in_memory_url_is_preserved() -> None:
     """Verify that the SQLite in-memory URL is preserved."""
     assert database._database_url("sqlite://:memory:") == "sqlite://:memory:"
@@ -116,6 +143,14 @@ def test_native_initial_migration_matches_current_models() -> None:
     assert [operation.name for operation in status_module.Migration.operations] == [
         "ShardStatusMessage"
     ]
+
+    sharing_module = importlib.import_module("src.migrations.0005_shop_sharing_opt_in")
+    assert sharing_module.Migration.dependencies == [
+        ("models", "0004_add_shard_status_message")
+    ]
+    assert [
+        type(operation).__name__ for operation in sharing_module.Migration.operations
+    ] == ["AlterField", "RunPython"]
 
 
 async def test_connect_database_uses_passed_settings(

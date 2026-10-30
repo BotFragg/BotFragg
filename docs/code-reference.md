@@ -44,6 +44,7 @@ docstring. Regenerate it after application documentation changes with
 | [main.py](../main.py) | Invokes the application entry point for `python main.py` startup. |
 | [pyproject.toml](../pyproject.toml) | Defines package metadata, dependencies, entry point, Mypy, Ruff, and test settings. |
 | [tools/benchmark_database.py](../tools/benchmark_database.py) | Measures synthetic alert and analytics queries in a disposable PostgreSQL schema. |
+| [tools/check_locales.py](../tools/check_locales.py) | Validates Fluent catalogs, message IDs, placeholders, and localized command names. |
 | [tools/verify_restore.py](../tools/verify_restore.py) | Checks restored model counts, migration history, and encrypted credentials using a read-only transaction. |
 | [tools/generate_api_reference.py](../tools/generate_api_reference.py) | Generates the application API reference from source docstrings and signatures. |
 | [uv.lock](../uv.lock) | Pins the resolved dependency graph for reproducible installs. |
@@ -90,6 +91,7 @@ docstring. Regenerate it after application documentation changes with
 | [src/migrations/0002_add_command_analytics.py](../src/migrations/0002_add_command_analytics.py) | Adds command invocation analytics. |
 | [src/migrations/0003_add_suggestions.py](../src/migrations/0003_add_suggestions.py) | Adds suggestions and unique follower records. |
 | [src/migrations/0004_add_shard_status_message.py](../src/migrations/0004_add_shard_status_message.py) | Adds persistent shard-status message references. |
+| [src/migrations/0005_shop_sharing_opt_in.py](../src/migrations/0005_shop_sharing_opt_in.py) | Makes cross-user shop viewing opt-in and resets existing users to private. |
 | [src/models/__init__.py](../src/models/__init__.py) | Re-exports model classes for application code. |
 | [src/models/entities.py](../src/models/entities.py) | Defines ORM records and uniqueness constraints. |
 | [src/services/__init__.py](../src/services/__init__.py) | Defines the service package. |
@@ -105,7 +107,6 @@ docstring. Regenerate it after application documentation changes with
 | [src/services/http.py](../src/services/http.py) | Provides shared Riot HTTP requests, URL redaction, and rate-limit handling. |
 | [src/services/shop.py](../src/services/shop.py) | Retrieves and normalizes account-scoped skin, bundle, accessory, Night Market, and wallet data. |
 | [src/views/__init__.py](../src/views/__init__.py) | Re-exports common timestamps and persistent interactive controls. |
-| [src/views/common.py](../src/views/common.py) | Formats values as Discord timestamps. |
 | [src/views/components.py](../src/views/components.py) | Implements restart-safe, owner-restricted buttons and select menus. |
 | [src/views/shop.py](../src/views/shop.py) | Shares shop cards, account/skin selectors, and Night Market presentation between commands and background notifications. |
 | [src/views/ui.py](../src/views/ui.py) | Shares embed, view, error, translation, and privacy-aware account-name helpers. |

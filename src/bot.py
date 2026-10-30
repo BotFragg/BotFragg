@@ -132,13 +132,13 @@ class BotFraggBot(commands.AutoShardedBot):
     """Own Discord lifecycle and the shared Riot, database, and presentation services."""
 
     def __init__(self, config: Settings) -> None:
-        """Configure the bot's prefix, minimal intents, and application services."""
+        """Configure the bot's intents and application services."""
         intents = discord.Intents.none()
         intents.guilds = True
-        intents.guild_messages = True
-        intents.dm_messages = True
         super().__init__(
-            command_prefix=commands.when_mentioned_or("b!"),
+            # Prefix commands are not supported: the bot does not request the
+            # Message Content intent, so message text is never available.
+            command_prefix=[],
             intents=intents,
             shard_count=config.shard_count,
             allowed_mentions=discord.AllowedMentions(
@@ -156,30 +156,6 @@ class BotFraggBot(commands.AutoShardedBot):
         self.catalog = CatalogService(self.riot_http)
         self.shop = ShopService(config, self.riot_http, self.auth, self.catalog)
         self.gameplay = GameplayService(self.riot_http, self.auth, self.catalog)
-
-    async def on_command_error(
-        self,
-        context: commands.Context,
-        exception: commands.CommandError,
-        /,
-    ) -> None:
-        """Log failed prefix commands and reply with a generic error message."""
-        if isinstance(exception, commands.CommandNotFound):
-            return
-        command = context.command
-        command_name = command.qualified_name if command else "unknown"
-        log.error(
-            "Prefix command failed",
-            exc_info=exception,
-            extra={"command": command_name},
-        )
-        try:
-            await context.send(embed=_command_error_embed(self.translator))
-        except discord.HTTPException:
-            log.warning(
-                "Could not deliver prefix-command error response",
-                extra={"command": command_name},
-            )
 
     def register_component(self, action: str, handler: ComponentHandler) -> None:
         """Register a persistent component action, rejecting duplicate action names."""
@@ -245,8 +221,6 @@ class BotFraggBot(commands.AutoShardedBot):
             log.exception("Could not initialize the VALORANT catalog")
         await self.emoji_service.warm()
         self.add_dynamic_items(OwnedActionButton, OwnedSelect)
-        if self.config.app_env != "production":
-            await self.load_extension("jishaku")
         for extension in (
             "src.cogs.valorant.login",
             "src.cogs.valorant.logout",

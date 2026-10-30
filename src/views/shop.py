@@ -182,7 +182,7 @@ def night_market_view(
         ),
         data.night_market,
         vp,
-        link_item_image=bot.config.link_item_image if mode == "night" else False,
+        link_item_image=bot.config.link_item_image,
         unknown_skin_name=bot.translator.text(locale, "common-unknown"),
         emoji_service=bot.emoji_service,
         header_colour=0xFD4553 if mode == "night" else 0xEAEEB2,

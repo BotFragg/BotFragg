@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last updated:** October 8, 2026
+**Last updated:** October 30, 2026
 
 This policy describes data handled by BotFragg when you use its Discord bot
 features. BotFragg is an independent project and is not affiliated with Riot
@@ -29,10 +29,10 @@ BotFragg processes the following information to provide its features:
   guild or shard information described below.
 
 BotFragg processes slash-command interactions and the values you submit to
-those commands, plus any configured operator prefix commands addressed to the
-bot. It does not request Discord's privileged Message Content intent or store
-ordinary conversation messages. A suggestion is an exception by design: its
-text is stored and posted to the configured suggestion channel.
+those commands, including in DMs. It does not request Discord's privileged
+Message Content intent or process ordinary message text. A suggestion is an
+exception by design: its text is stored and posted to the configured
+suggestion channel.
 
 ## Riot sign-in and VALORANT data
 

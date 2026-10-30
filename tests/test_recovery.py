@@ -42,7 +42,7 @@ async def test_restore_verifier_checks_key_and_migration_history(
 
     monkeypatch.setattr(recovery.asyncpg, "connect", connect)
     result = await recovery.verify_restore(postgres_url, key)
-    assert result["migrations"] == 4 and result["encrypted_accounts_verified"] == 1
+    assert result["migrations"] == 5 and result["encrypted_accounts_verified"] == 1
     assert result["tables"]["user"] == result["tables"]["account"] == 1
     with pytest.raises(ValueError, match="cannot be decrypted"):
         await recovery.verify_restore(postgres_url, Fernet.generate_key().decode())

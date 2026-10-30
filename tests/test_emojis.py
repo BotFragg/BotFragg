@@ -43,7 +43,7 @@ async def test_emoji_transport_failure_does_not_stop_startup(
 
     await BotFraggBot.setup_hook(bot)
 
-    assert bot.load_extension.await_count == 14
+    assert bot.load_extension.await_count == 13
     assert await service.currency("vp") == ""
     assert await service.battlepass_bars() == ("", "")
     assert service.skin_name("Synthetic skin", None) == "Synthetic skin"

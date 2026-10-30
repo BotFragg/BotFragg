@@ -76,21 +76,13 @@ Own Discord lifecycle and the shared Riot, database, and presentation services.
 
 [Source](../src/bot.py#L134)
 
-Configure the bot's prefix, minimal intents, and application services.
-
-### `async def on_command_error(self, context: commands.Context, exception: commands.CommandError, /) -> None`
-
-**Scope:** `src/bot.py` · `BotFraggBot`
-
-[Source](../src/bot.py#L160)
-
-Log failed prefix commands and reply with a generic error message.
+Configure the bot's intents and application services.
 
 ### `def register_component(self, action: str, handler: ComponentHandler) -> None`
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L184)
+[Source](../src/bot.py#L160)
 
 Register a persistent component action, rejecting duplicate action names.
 
@@ -98,7 +90,7 @@ Register a persistent component action, rejecting duplicate action names.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L190)
+[Source](../src/bot.py#L166)
 
 Discard only the handlers bound to the given cog instance.
 
@@ -106,7 +98,7 @@ Discard only the handlers bound to the given cog instance.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L198)
+[Source](../src/bot.py#L174)
 
 Discard a failed cog's component handlers so loading it can be retried.
 
@@ -114,7 +106,7 @@ Discard a failed cog's component handlers so loading it can be retried.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L218)
+[Source](../src/bot.py#L194)
 
 Remove a cog's component handlers along with its commands and listeners.
 
@@ -122,7 +114,7 @@ Remove a cog's component handlers along with its commands and listeners.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L232)
+[Source](../src/bot.py#L208)
 
 Initialize shared resources, load extensions, and optionally sync commands.
 
@@ -130,7 +122,7 @@ Initialize shared resources, load extensions, and optionally sync commands.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L270)
+[Source](../src/bot.py#L244)
 
 Set the online activity and log the connected shard and guild counts.
 
@@ -138,7 +130,7 @@ Set the online activity and log the connected shard and guild counts.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L283)
+[Source](../src/bot.py#L257)
 
 Close Discord, Riot HTTP, database, and monitoring resources in order.
 
@@ -430,7 +422,7 @@ Discord suggestion submission, following, and owner-only review commands.
 
 **Scope:** `src/cogs/suggestions.py` · `module`
 
-[Source](../src/cogs/suggestions.py#L31)
+[Source](../src/cogs/suggestions.py#L30)
 
 Own the public suggestion workflow and its review notifications.
 
@@ -438,7 +430,7 @@ Own the public suggestion workflow and its review notifications.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L42)
+[Source](../src/cogs/suggestions.py#L41)
 
 Bind suggestion commands to the running bot.
 
@@ -446,7 +438,7 @@ Bind suggestion commands to the running bot.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L48)
+[Source](../src/cogs/suggestions.py#L47)
 
 Cancel and await pending delivery retries during extension shutdown.
 
@@ -454,7 +446,7 @@ Cancel and await pending delivery retries during extension shutdown.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L55)
+[Source](../src/cogs/suggestions.py#L54)
 
 Save a posted message ID, retaining it for retry during database outages.
 
@@ -462,7 +454,7 @@ Save a posted message ID, retaining it for retry during database outages.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L70)
+[Source](../src/cogs/suggestions.py#L69)
 
 Retry posted message links without reposting or recreating deleted records.
 
@@ -470,39 +462,39 @@ Retry posted message links without reposting or recreating deleted records.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L95)
+[Source](../src/cogs/suggestions.py#L94)
 
 Persist a feature suggestion and publish it to the configured log channel.
 
-### `async def track(self, interaction: discord.Interaction, id: int) -> None`
+### `async def track(self, interaction: discord.Interaction, id: app_commands.Range[int, 1, 2147483647]) -> None`
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L169)
+[Source](../src/cogs/suggestions.py#L168)
 
 Follow a pending suggestion or privately show its existing review.
 
-### `async def untrack(self, interaction: discord.Interaction, id: int) -> None`
+### `async def untrack(self, interaction: discord.Interaction, id: app_commands.Range[int, 1, 2147483647]) -> None`
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L209)
+[Source](../src/cogs/suggestions.py#L212)
 
 Remove the caller's follow from another user's suggestion.
 
-### `async def approve(self, interaction: discord.Interaction, id: int, reason: app_commands.Range[str, 1, 1000]) -> None`
+### `async def approve(self, interaction: discord.Interaction, id: app_commands.Range[int, 1, 2147483647], reason: app_commands.Range[str, 1, 1000]) -> None`
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L238)
+[Source](../src/cogs/suggestions.py#L245)
 
 Submit an owner-only approval review for the selected suggestion.
 
-### `async def deny(self, interaction: discord.Interaction, id: int, reason: app_commands.Range[str, 1, 1000]) -> None`
+### `async def deny(self, interaction: discord.Interaction, id: app_commands.Range[int, 1, 2147483647], reason: app_commands.Range[str, 1, 1000]) -> None`
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L253)
+[Source](../src/cogs/suggestions.py#L260)
 
 Submit an owner-only denial review for the selected suggestion.
 
@@ -510,7 +502,7 @@ Submit an owner-only denial review for the selected suggestion.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L262)
+[Source](../src/cogs/suggestions.py#L269)
 
 Authorize a review, update its record, and notify its followers.
 
@@ -518,7 +510,7 @@ Authorize a review, update its record, and notify its followers.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L304)
+[Source](../src/cogs/suggestions.py#L311)
 
 Render the localized review shared by follower DMs and completed tracking.
 
@@ -526,7 +518,7 @@ Render the localized review shared by follower DMs and completed tracking.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L322)
+[Source](../src/cogs/suggestions.py#L329)
 
 Edit the original suggestion post with the final status and review reason.
 
@@ -534,7 +526,7 @@ Edit the original suggestion post with the final status and review reason.
 
 **Scope:** `src/cogs/suggestions.py` · `module`
 
-[Source](../src/cogs/suggestions.py#L349)
+[Source](../src/cogs/suggestions.py#L356)
 
 Register suggestion commands and review handlers.
 
@@ -546,7 +538,7 @@ Background loops for daily alerts, catalog refresh, and Discord log delivery.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L32)
+[Source](../src/cogs/tasks.py#L30)
 
 Buffer privacy-filtered structured log lines for periodic Discord delivery.
 
@@ -554,7 +546,7 @@ Buffer privacy-filtered structured log lines for periodic Discord delivery.
 
 **Scope:** `src/cogs/tasks.py` · `DiscordLogHandler`
 
-[Source](../src/cogs/tasks.py#L35)
+[Source](../src/cogs/tasks.py#L33)
 
 Create a bounded log buffer using BotFragg's privacy-aware formatter.
 
@@ -562,7 +554,7 @@ Create a bounded log buffer using BotFragg's privacy-aware formatter.
 
 **Scope:** `src/cogs/tasks.py` · `DiscordLogHandler`
 
-[Source](../src/cogs/tasks.py#L41)
+[Source](../src/cogs/tasks.py#L39)
 
 Format a log record into the buffer or delegate failures to logging.
 
@@ -570,7 +562,7 @@ Format a log record into the buffer or delegate failures to logging.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L49)
+[Source](../src/cogs/tasks.py#L47)
 
 Own periodic application jobs and stop them cleanly when unloaded.
 
@@ -578,7 +570,7 @@ Own periodic application jobs and stop them cleanly when unloaded.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L52)
+[Source](../src/cogs/tasks.py#L50)
 
 Set job intervals from settings and prepare the optional log handler.
 
@@ -586,7 +578,7 @@ Set job intervals from settings and prepare the optional log handler.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L85)
+[Source](../src/cogs/tasks.py#L83)
 
 Start background loops and attach the log handler when configured.
 
@@ -594,7 +586,7 @@ Start background loops and attach the log handler when configured.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L96)
+[Source](../src/cogs/tasks.py#L94)
 
 Cancel and await all active loops, then detach the root log handler.
 
@@ -602,7 +594,7 @@ Cancel and await all active loops, then detach the root log handler.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L119)
+[Source](../src/cogs/tasks.py#L117)
 
 Run the daily shop and skin-alert job inside a monitoring transaction.
 
@@ -610,7 +602,7 @@ Run the daily shop and skin-alert job inside a monitoring transaction.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L133)
+[Source](../src/cogs/tasks.py#L131)
 
 Process eligible users' shops and return counts for the completed run.
 
@@ -618,7 +610,7 @@ Process eligible users' shops and return counts for the completed run.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L146)
+[Source](../src/cogs/tasks.py#L144)
 
 Deliver matching alerts and the optional daily shop; count failed DMs.
 
@@ -626,7 +618,7 @@ Deliver matching alerts and the optional daily shop; count failed DMs.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L163)
+[Source](../src/cogs/tasks.py#L161)
 
 DM an owner-scoped skin alert and report whether delivery succeeded.
 
@@ -634,7 +626,7 @@ DM an owner-scoped skin alert and report whether delivery succeeded.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L212)
+[Source](../src/cogs/tasks.py#L210)
 
 DM the selected account's daily shop and report delivery success.
 
@@ -642,7 +634,7 @@ DM the selected account's daily shop and report delivery success.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L267)
+[Source](../src/cogs/tasks.py#L265)
 
 Notify a user that credentials expired and return the delivery failure count.
 
@@ -650,7 +642,7 @@ Notify a user that credentials expired and return the delivery failure count.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L285)
+[Source](../src/cogs/tasks.py#L283)
 
 Refresh the Riot client version used in authenticated API requests.
 
@@ -658,7 +650,7 @@ Refresh the Riot client version used in authenticated API requests.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L294)
+[Source](../src/cogs/tasks.py#L292)
 
 Refresh the VALORANT catalog when its upstream version changes.
 
@@ -666,7 +658,7 @@ Refresh the VALORANT catalog when its upstream version changes.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L304)
+[Source](../src/cogs/tasks.py#L302)
 
 Measure log delivery, preserving the queue after Discord failures.
 
@@ -674,7 +666,7 @@ Measure log delivery, preserving the queue after Discord failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L309)
+[Source](../src/cogs/tasks.py#L307)
 
 Send buffered log lines to Discord and requeue them after delivery failures.
 
@@ -682,7 +674,7 @@ Send buffered log lines to Discord and requeue them after delivery failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L355)
+[Source](../src/cogs/tasks.py#L353)
 
 Publish Discord, database, and scheduled-job health for Docker and operators.
 
@@ -690,7 +682,7 @@ Publish Discord, database, and scheduled-job health for Docker and operators.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L407)
+[Source](../src/cogs/tasks.py#L405)
 
 Wait for Discord readiness before starting any background job.
 
@@ -698,7 +690,7 @@ Wait for Discord readiness before starting any background job.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L412)
+[Source](../src/cogs/tasks.py#L410)
 
 Register the background-task cog with the bot.
 
@@ -1286,7 +1278,7 @@ Render the selected daily, Night Market, accessory, or bundle mode.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L641)
+[Source](../src/cogs/valorant/shop.py#L639)
 
 Read the values actually offered by this message's matching select menu.
 
@@ -1294,7 +1286,7 @@ Read the values actually offered by this message's matching select menu.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L655)
+[Source](../src/cogs/valorant/shop.py#L653)
 
 Revalidate a selected featured bundle against the caller's account and view.
 
@@ -1302,7 +1294,7 @@ Revalidate a selected featured bundle against the caller's account and view.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L709)
+[Source](../src/cogs/valorant/shop.py#L707)
 
 List playable levels and chromas within Discord's select-menu limit.
 
@@ -1310,7 +1302,7 @@ List playable levels and chromas within Discord's select-menu limit.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L742)
+[Source](../src/cogs/valorant/shop.py#L740)
 
 Open a private level/chroma menu for a skin offered in this message.
 
@@ -1318,7 +1310,7 @@ Open a private level/chroma menu for a skin offered in this message.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L796)
+[Source](../src/cogs/valorant/shop.py#L794)
 
 Privately return a selected video only when it belongs to that skin.
 
@@ -1326,7 +1318,7 @@ Privately return a selected video only when it belongs to that skin.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L857)
+[Source](../src/cogs/valorant/shop.py#L855)
 
 Validate the selected account and reopen the corresponding shop mode.
 
@@ -1334,7 +1326,7 @@ Validate the selected account and reopen the corresponding shop mode.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L873)
+[Source](../src/cogs/valorant/shop.py#L871)
 
 Display discounted Night Market offers for the selected Riot account.
 
@@ -1342,7 +1334,7 @@ Display discounted Night Market offers for the selected Riot account.
 
 **Scope:** `src/cogs/valorant/shop.py` · `NightMarketCog`
 
-[Source](../src/cogs/valorant/shop.py#L876)
+[Source](../src/cogs/valorant/shop.py#L874)
 
 Bind the shared shop, account, and emoji services.
 
@@ -1350,7 +1342,7 @@ Bind the shared shop, account, and emoji services.
 
 **Scope:** `src/cogs/valorant/shop.py` · `NightMarketCog`
 
-[Source](../src/cogs/valorant/shop.py#L887)
+[Source](../src/cogs/valorant/shop.py#L885)
 
 Fetch and render Night Market offers or report that none are active.
 
@@ -1358,7 +1350,7 @@ Fetch and render Night Market offers or report that none are active.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L927)
+[Source](../src/cogs/valorant/shop.py#L925)
 
 Display the selected account's three VALORANT wallet balances.
 
@@ -1366,7 +1358,7 @@ Display the selected account's three VALORANT wallet balances.
 
 **Scope:** `src/cogs/valorant/shop.py` · `BalanceCog`
 
-[Source](../src/cogs/valorant/shop.py#L930)
+[Source](../src/cogs/valorant/shop.py#L928)
 
 Bind the shared shop and user-preference services.
 
@@ -1374,7 +1366,7 @@ Bind the shared shop and user-preference services.
 
 **Scope:** `src/cogs/valorant/shop.py` · `BalanceCog`
 
-[Source](../src/cogs/valorant/shop.py#L941)
+[Source](../src/cogs/valorant/shop.py#L939)
 
 Fetch and display VP, Radianite, and Kingdom Credit balances.
 
@@ -1382,7 +1374,7 @@ Fetch and display VP, Radianite, and Kingdom Credit balances.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L990)
+[Source](../src/cogs/valorant/shop.py#L988)
 
 Register the shop, Night Market, and wallet-balance cogs.
 
@@ -1689,6 +1681,34 @@ Add storage for reusing the shard-status message in each channel.
 [Source](../src/migrations/0004_add_shard_status_message.py#L7)
 
 Create the channel-to-status-message mapping table.
+
+## `src/migrations/0005_shop_sharing_opt_in.py`
+
+Make cross-user shop viewing opt-in and reset existing users to private.
+
+### `async def _reset_shop_sharing(apps, schema_editor) -> None`
+
+**Scope:** `src/migrations/0005_shop_sharing_opt_in.py` · `module`
+
+[Source](../src/migrations/0005_shop_sharing_opt_in.py#L7)
+
+Reset stored rows, which kept the old shared-by-default value.
+
+### `async def _restore_shop_sharing(apps, schema_editor) -> None`
+
+**Scope:** `src/migrations/0005_shop_sharing_opt_in.py` · `module`
+
+[Source](../src/migrations/0005_shop_sharing_opt_in.py#L13)
+
+Restore the previous shared-by-default value when rolling back.
+
+### `class Migration(migrations.Migration)`
+
+**Scope:** `src/migrations/0005_shop_sharing_opt_in.py` · `module`
+
+[Source](../src/migrations/0005_shop_sharing_opt_in.py#L19)
+
+Require users to opt in before others can view their shop.
 
 ## `src/migrations/__init__.py`
 
@@ -2650,7 +2670,7 @@ Resolve a Riot bundle buddy by its buddy or level UUID.
 
 Convert endpoint-specific Riot accessory data into a common display shape.
 
-### `def search_skins(self, query: str, *, locale: object | None = None, limit: int = 25) -> list[Skin]`
+### `def search_skins(self, query: str, *, locale: object | None = None, limit: int = 25, min_score: int = 35) -> list[Skin]`
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
@@ -2658,11 +2678,14 @@ Convert endpoint-specific Riot accessory data into a common display shape.
 
 Search localized names first, retaining English-name fallback matches.
 
+Names are compared case-insensitively; ``min_score`` is the lowest
+fuzzy-match score accepted, and an exactly matching name scores 100.
+
 ### `def update_prices(self, prices: dict[str, int]) -> None`
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L682)
+[Source](../src/services/catalog.py#L695)
 
 Apply current store prices to catalog skins matched by offer identifier.
 
@@ -2670,7 +2693,7 @@ Apply current store prices to catalog skins matched by offer identifier.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L689)
+[Source](../src/services/catalog.py#L702)
 
 Encode the current version, skins, and bundles as compact JSON.
 
@@ -2678,7 +2701,7 @@ Encode the current version, skins, and bundles as compact JSON.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L699)
+[Source](../src/services/catalog.py#L712)
 
 Write a complete catalog snapshot through a temporary file replacement.
 
@@ -2686,7 +2709,7 @@ Write a complete catalog snapshot through a temporary file replacement.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L706)
+[Source](../src/services/catalog.py#L719)
 
 Restore catalog records from a snapshot and rebuild lookup indexes.
 
@@ -2950,7 +2973,7 @@ Shared Riot HTTP transport with URL redaction and per-host rate-limit backoff.
 
 **Scope:** `src/services/http.py` · `module`
 
-[Source](../src/services/http.py#L21)
+[Source](../src/services/http.py#L25)
 
 Remove credentials, query data, and UUID path segments from a URL.
 
@@ -2958,7 +2981,7 @@ Remove credentials, query data, and UUID path segments from a URL.
 
 **Scope:** `src/services/http.py` · `module`
 
-[Source](../src/services/http.py#L41)
+[Source](../src/services/http.py#L45)
 
 Hold an HTTP response status and decoded body.
 
@@ -2966,7 +2989,7 @@ Hold an HTTP response status and decoded body.
 
 **Scope:** `src/services/http.py` · `module`
 
-[Source](../src/services/http.py#L48)
+[Source](../src/services/http.py#L52)
 
 Own a reusable aiohttp session and normalize transport failures.
 
@@ -2974,7 +2997,7 @@ Own a reusable aiohttp session and normalize transport failures.
 
 **Scope:** `src/services/http.py` · `HTTPClient`
 
-[Source](../src/services/http.py#L51)
+[Source](../src/services/http.py#L55)
 
 Store request settings and initialize session and rate-limit state.
 
@@ -2982,7 +3005,7 @@ Store request settings and initialize session and rate-limit state.
 
 **Scope:** `src/services/http.py` · `HTTPClient`
 
-[Source](../src/services/http.py#L57)
+[Source](../src/services/http.py#L61)
 
 Create the shared aiohttp session with configured timeout and pool limits.
 
@@ -2990,7 +3013,7 @@ Create the shared aiohttp session with configured timeout and pool limits.
 
 **Scope:** `src/services/http.py` · `HTTPClient`
 
-[Source](../src/services/http.py#L63)
+[Source](../src/services/http.py#L67)
 
 Close the shared session when it has been started and remains open.
 
@@ -2998,7 +3021,7 @@ Close the shared session when it has been started and remains open.
 
 **Scope:** `src/services/http.py` · `HTTPClient`
 
-[Source](../src/services/http.py#L68)
+[Source](../src/services/http.py#L72)
 
 Send a request, decode its body, and apply per-host rate-limit backoff.
 
@@ -3012,7 +3035,7 @@ Send a request, decode its body, and apply per-host rate-limit backoff.
 
 **Scope:** `src/services/http.py` · `HTTPClient`
 
-[Source](../src/services/http.py#L119)
+[Source](../src/services/http.py#L123)
 
 Parse Retry-After seconds or an HTTP date and clamp the backoff.
 
@@ -3020,7 +3043,7 @@ Parse Retry-After seconds or an HTTP date and clamp the backoff.
 
 **Scope:** `src/services/http.py` · `module`
 
-[Source](../src/services/http.py#L134)
+[Source](../src/services/http.py#L138)
 
 Raised for rate limits, transport/decoding failures, and request timeouts.
 
@@ -3028,7 +3051,7 @@ Raised for rate limits, transport/decoding failures, and request timeouts.
 
 **Scope:** `src/services/http.py` · `module`
 
-[Source](../src/services/http.py#L138)
+[Source](../src/services/http.py#L142)
 
 Expose the remaining host cooldown to callers that can defer a lookup.
 
@@ -3036,7 +3059,7 @@ Expose the remaining host cooldown to callers that can defer a lookup.
 
 **Scope:** `src/services/http.py` · `RateLimited`
 
-[Source](../src/services/http.py#L141)
+[Source](../src/services/http.py#L145)
 
 Retain the failure message and a nonnegative retry delay.
 
