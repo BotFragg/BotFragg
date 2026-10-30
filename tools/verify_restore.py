@@ -12,6 +12,7 @@ import asyncpg
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from src import models
 from src.services.crypto import AuthVault
 
 EXPECTED_MIGRATIONS = frozenset(
@@ -21,15 +22,8 @@ EXPECTED_MIGRATIONS = frozenset(
     )
 )
 
-TABLES = (
-    "user",
-    "account",
-    "alert",
-    "commandinvocation",
-    "suggestion",
-    "suggestionfollower",
-    "shardstatusmessage",
-)
+# Derived from the exported models so a new table cannot be left out of the report.
+TABLES = tuple(getattr(models, name).__name__.lower() for name in models.__all__)
 
 
 async def verify_restore(url: str, key: str) -> dict:
