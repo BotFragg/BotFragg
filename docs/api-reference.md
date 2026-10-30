@@ -614,11 +614,11 @@ Process eligible users' shops and return counts for the completed run.
 
 Deliver matching alerts and the optional daily shop; count failed DMs.
 
-### `async def _send_alert(self, target: discord.User | discord.Member, user_id: int, alert: Alert, offer: Offer) -> bool`
+### `async def _send_alert(self, target: discord.User | discord.Member, alert: Alert, offer: Offer) -> bool`
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L158)
+[Source](../src/cogs/tasks.py#L176)
 
 DM an owner-scoped skin alert and report whether delivery succeeded.
 
@@ -626,7 +626,7 @@ DM an owner-scoped skin alert and report whether delivery succeeded.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L208)
+[Source](../src/cogs/tasks.py#L216)
 
 DM the selected account's daily shop and report delivery success.
 
@@ -634,7 +634,7 @@ DM the selected account's daily shop and report delivery success.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L266)
+[Source](../src/cogs/tasks.py#L276)
 
 Notify a user that credentials expired and return the delivery failure count.
 
@@ -642,7 +642,7 @@ Notify a user that credentials expired and return the delivery failure count.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L284)
+[Source](../src/cogs/tasks.py#L294)
 
 Refresh the Riot client version and the catalog that depends on it.
 
@@ -650,7 +650,7 @@ Refresh the Riot client version and the catalog that depends on it.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L296)
+[Source](../src/cogs/tasks.py#L315)
 
 Measure log delivery, preserving the queue after Discord failures.
 
@@ -658,7 +658,7 @@ Measure log delivery, preserving the queue after Discord failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L301)
+[Source](../src/cogs/tasks.py#L320)
 
 Send buffered log lines to Discord and requeue them after delivery failures.
 
@@ -666,7 +666,7 @@ Send buffered log lines to Discord and requeue them after delivery failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L347)
+[Source](../src/cogs/tasks.py#L368)
 
 Publish Discord, database, and scheduled-job health for Docker and operators.
 
@@ -674,7 +674,7 @@ Publish Discord, database, and scheduled-job health for Docker and operators.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L398)
+[Source](../src/cogs/tasks.py#L419)
 
 Wait for Discord readiness before starting any background job.
 
@@ -682,7 +682,7 @@ Wait for Discord readiness before starting any background job.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L403)
+[Source](../src/cogs/tasks.py#L424)
 
 Register the background-task cog with the bot.
 
@@ -774,7 +774,7 @@ Commands for creating, viewing, removing, and testing skin alerts.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `module`
 
-[Source](../src/cogs/valorant/alerts.py#L25)
+[Source](../src/cogs/valorant/alerts.py#L26)
 
 Manage owner-scoped alert records and their persistent Discord controls.
 
@@ -782,7 +782,7 @@ Manage owner-scoped alert records and their persistent Discord controls.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L28)
+[Source](../src/cogs/valorant/alerts.py#L29)
 
 Bind the bot and register persistent alert-management actions.
 
@@ -790,7 +790,7 @@ Bind the bot and register persistent alert-management actions.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L34)
+[Source](../src/cogs/valorant/alerts.py#L35)
 
 Return catalog skin matches suitable for Discord's autocomplete limit.
 
@@ -798,7 +798,7 @@ Return catalog skin matches suitable for Discord's autocomplete limit.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L67)
+[Source](../src/cogs/valorant/alerts.py#L68)
 
 Create a skin alert for the caller's active account and show a remove control.
 
@@ -806,7 +806,7 @@ Create a skin alert for the caller's active account and show a remove control.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L114)
+[Source](../src/cogs/valorant/alerts.py#L115)
 
 Show the caller's paginated alerts and owner-bound management controls.
 
@@ -814,7 +814,7 @@ Show the caller's paginated alerts and owner-bound management controls.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L128)
+[Source](../src/cogs/valorant/alerts.py#L129)
 
 Build the confirmation card for a newly created skin alert.
 
@@ -822,7 +822,7 @@ Build the confirmation card for a newly created skin alert.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L140)
+[Source](../src/cogs/valorant/alerts.py#L141)
 
 Return a skin name prefixed with its tier emoji, if one exists.
 
@@ -830,7 +830,7 @@ Return a skin name prefixed with its tier emoji, if one exists.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L150)
+[Source](../src/cogs/valorant/alerts.py#L151)
 
 Return a button emoji for a skin tier when one is available.
 
@@ -838,7 +838,7 @@ Return a button emoji for a skin tier when one is available.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L156)
+[Source](../src/cogs/valorant/alerts.py#L157)
 
 Render one alert page with per-alert removal and optional page controls.
 
@@ -846,7 +846,7 @@ Render one alert page with per-alert removal and optional page controls.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L232)
+[Source](../src/cogs/valorant/alerts.py#L233)
 
 Remove the selected owner-scoped alert and refresh or dismiss its controls.
 
@@ -854,7 +854,7 @@ Remove the selected owner-scoped alert and refresh or dismiss its controls.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L295)
+[Source](../src/cogs/valorant/alerts.py#L296)
 
 Validate a page payload and update the alert-management message.
 
@@ -862,7 +862,7 @@ Validate a page payload and update the alert-management message.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L332)
+[Source](../src/cogs/valorant/alerts.py#L333)
 
 Check login and shop availability, then send the caller a test alert DM.
 
@@ -870,7 +870,7 @@ Check login and shop availability, then send the caller a test alert DM.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `module`
 
-[Source](../src/cogs/valorant/alerts.py#L410)
+[Source](../src/cogs/valorant/alerts.py#L411)
 
 Register the skin-alert commands and their persistent handlers.
 
@@ -2084,7 +2084,7 @@ Return only the supplied account IDs that currently have alerts.
 
 Fetch alerts matching one account and a bounded set of shop skin IDs.
 
-### `async def _retry_lookup(operation: Callable[[], Awaitable[T]]) -> T`
+### `async def retry_lookup(operation: Callable[[], Awaitable[T]]) -> T`
 
 **Scope:** `src/services/alerts.py` · `module`
 
@@ -2263,7 +2263,7 @@ rejected without replacing the existing owner.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L277)
+[Source](../src/services/auth.py#L281)
 
 Serialize credential checks for an account and return its usable auth state.
 
@@ -2271,7 +2271,7 @@ Serialize credential checks for an account and return its usable auth state.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L291)
+[Source](../src/services/auth.py#L295)
 
 Check token lifetime and repair or refresh credentials while holding its lock.
 
@@ -2279,7 +2279,7 @@ Check token lifetime and repair or refresh credentials while holding its lock.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L320)
+[Source](../src/services/auth.py#L324)
 
 Refresh one account's Riot tokens under its per-account lock.
 
@@ -2287,7 +2287,7 @@ Refresh one account's Riot tokens under its per-account lock.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L334)
+[Source](../src/services/auth.py#L338)
 
 Refresh tokens with version-checked persistence to protect concurrent updates.
 
@@ -2295,7 +2295,7 @@ Refresh tokens with version-checked persistence to protect concurrent updates.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L428)
+[Source](../src/services/auth.py#L432)
 
 Persist a returned token without repeating its exchange after a DB outage.
 
@@ -2303,7 +2303,7 @@ Persist a returned token without repeating its exchange after a DB outage.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L448)
+[Source](../src/services/auth.py#L452)
 
 Share transient failure cooldowns under the caller's account lock.
 
@@ -2311,7 +2311,7 @@ Share transient failure cooldowns under the caller's account lock.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L470)
+[Source](../src/services/auth.py#L474)
 
 Remove the selected account's Riot tokens while coordinating with refreshes.
 
@@ -2319,7 +2319,7 @@ Remove the selected account's Riot tokens while coordinating with refreshes.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L483)
+[Source](../src/services/auth.py#L487)
 
 Clear credentials only if the stored auth version still matches the caller.
 
@@ -2327,7 +2327,7 @@ Clear credentials only if the stored auth version still matches the caller.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L491)
+[Source](../src/services/auth.py#L495)
 
 Return fresh Riot authorization headers or raise when login is required.
 
@@ -2335,7 +2335,7 @@ Return fresh Riot authorization headers or raise when login is required.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L519)
+[Source](../src/services/auth.py#L523)
 
 Fetch and persist an entitlement token, optionally refreshing on absence.
 
@@ -2343,7 +2343,7 @@ Fetch and persist an entitlement token, optionally refreshing on absence.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L564)
+[Source](../src/services/auth.py#L568)
 
 Release abandoned login attempts after their ten-minute lifetime.
 
@@ -2351,7 +2351,7 @@ Release abandoned login attempts after their ten-minute lifetime.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L573)
+[Source](../src/services/auth.py#L577)
 
 Fetch the Riot game name and tag line associated with an access token.
 
@@ -2359,7 +2359,7 @@ Fetch the Riot game name and tag line associated with an access token.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L590)
+[Source](../src/services/auth.py#L594)
 
 Request an entitlement token and surface transient Riot failures.
 
@@ -2367,7 +2367,7 @@ Request an entitlement token and surface transient Riot failures.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L615)
+[Source](../src/services/auth.py#L619)
 
 Resolve the VALORANT shard affinity associated with an ID token.
 
@@ -2375,7 +2375,7 @@ Resolve the VALORANT shard affinity associated with an ID token.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L637)
+[Source](../src/services/auth.py#L641)
 
 Build the Riot authentication user agent from the latest client build.
 
@@ -2383,7 +2383,7 @@ Build the Riot authentication user agent from the latest client build.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L647)
+[Source](../src/services/auth.py#L651)
 
 Validate token response fields before using or persisting credentials.
 
@@ -2391,7 +2391,7 @@ Validate token response fields before using or persisting credentials.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L662)
+[Source](../src/services/auth.py#L666)
 
 Decode a JWT payload for claim lookup without performing signature validation.
 
@@ -2399,7 +2399,7 @@ Decode a JWT payload for claim lookup without performing signature validation.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L675)
+[Source](../src/services/auth.py#L679)
 
 Return the token's Unix expiry time, or zero when it cannot be decoded.
 
@@ -2407,7 +2407,7 @@ Return the token's Unix expiry time, or zero when it cannot be decoded.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L683)
+[Source](../src/services/auth.py#L687)
 
 Map missing and LATAM/Brazil affinities to Riot's North America API host.
 
@@ -2415,7 +2415,7 @@ Map missing and LATAM/Brazil affinities to Riot's North America API host.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L688)
+[Source](../src/services/auth.py#L692)
 
 Build a regional VALORANT player-data URL for one API path.
 
@@ -2423,7 +2423,7 @@ Build a regional VALORANT player-data URL for one API path.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L693)
+[Source](../src/services/auth.py#L697)
 
 Raised when a Riot request cannot proceed without a new user login.
 
@@ -2431,7 +2431,7 @@ Raised when a Riot request cannot proceed without a new user login.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L697)
+[Source](../src/services/auth.py#L701)
 
 Return whether Riot rejected the stored entitlement token.
 
@@ -2439,7 +2439,7 @@ Return whether Riot rejected the stored entitlement token.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L706)
+[Source](../src/services/auth.py#L710)
 
 Send an authenticated request, refreshing once when Riot rejects its claims.
 

@@ -30,6 +30,7 @@ docstring. Regenerate it after application documentation changes with
 | [.gitignore](../.gitignore) | Excludes local configuration, data, build products, and test caches from Git. |
 | [Pre-commit configuration](../.pre-commit-config.yaml) | Runs the same Ruff and pytest checks before commits. |
 | [.python-version](../.python-version) | Selects the Python version used by uv and local tooling. |
+| [AGENTS.md](../AGENTS.md) | Records the repository's setup, verification, and wiring rules for coding agents. |
 | [CHANGELOG.md](../CHANGELOG.md) | Records user-visible release changes. |
 | [CONTRIBUTING.md](../CONTRIBUTING.md) | Documents the development environment and required checks. |
 | [docs/api-reference.md](api-reference.md) | Lists application modules, classes, and callables with their signatures, source links, and docstrings. |
@@ -40,6 +41,7 @@ docstring. Regenerate it after application documentation changes with
 | [PRIVACY.md](../PRIVACY.md) | Describes BotFragg's data processing, retention, and user controls. |
 | [README.md](../README.md) | Covers setup, commands, configuration, deployment, and privacy. |
 | [SECURITY.md](../SECURITY.md) | Explains how to report a vulnerability and respond to exposed credentials. |
+| [tos.md](../tos.md) | Contains the bot's terms of service. |
 | [docker-compose.yml](../docker-compose.yml) | Defines the local production-style BotFragg service and persistent data volume. |
 | [main.py](../main.py) | Invokes the application entry point for `python main.py` startup. |
 | [pyproject.toml](../pyproject.toml) | Defines package metadata, dependencies, entry point, Mypy, Ruff, and test settings. |
@@ -53,10 +55,17 @@ docstring. Regenerate it after application documentation changes with
 
 | File | Purpose |
 | --- | --- |
+| [assets/botfragg-banner.png](../assets/botfragg-banner.png) | README banner showing the featured bundle, daily shop, and Night Market. |
+| [assets/botfragg-logo.png](../assets/botfragg-logo.png) | README logo. |
+| [assets/deluxe.png](../assets/deluxe.png) | Deluxe-tier skin emoji source. |
 | [assets/ebar.png](../assets/ebar.png) | Empty progress-bar emoji used for battlepass and mission progress. |
+| [assets/exclusive.png](../assets/exclusive.png) | Exclusive-tier skin emoji source. |
 | [assets/fbar.png](../assets/fbar.png) | Filled progress-bar emoji used for battlepass and mission progress. |
 | [assets/kc.png](../assets/kc.png) | Kingdom Credits currency emoji source. |
+| [assets/premium.png](../assets/premium.png) | Premium-tier skin emoji source. |
 | [assets/rad.png](../assets/rad.png) | Radianite Points currency emoji source. |
+| [assets/select.png](../assets/select.png) | Select-tier skin emoji source. |
+| [assets/ultra.png](../assets/ultra.png) | Ultra-tier skin emoji source. |
 | [assets/vp.png](../assets/vp.png) | VALORANT Points currency emoji source. |
 
 ## Application modules
@@ -131,6 +140,7 @@ docstring. Regenerate it after application documentation changes with
 | [tests/test_config.py](../tests/test_config.py) | Configuration validation and safe errors for invalid values. |
 | [tests/test_crypto.py](../tests/test_crypto.py) | Authenticated encryption round trips and mismatched-key rejection. |
 | [tests/test_data_deletion.py](../tests/test_data_deletion.py) | Transactional deletion, pending-login cancellation, and analytics behavior after deletion. |
+| [tests/test_emojis.py](../tests/test_emojis.py) | Application emoji transport failures, per-emoji cooldown, and text fallbacks. |
 | [tests/test_gameplay.py](../tests/test_gameplay.py) | Validated battlepass, mission, reward, and penalty service results. |
 | [tests/test_gameplay_commands.py](../tests/test_gameplay_commands.py) | Gameplay response rendering and progress bars. |
 | [tests/test_health.py](../tests/test_health.py) | Freshness, failed/stopped/overdue jobs, cancellation, and dependency-health recovery. |
@@ -141,6 +151,7 @@ docstring. Regenerate it after application documentation changes with
 | [tests/test_models.py](../tests/test_models.py) | ORM cascade and uniqueness constraints. |
 | [tests/test_monitoring.py](../tests/test_monitoring.py) | Privacy filtering, safe telemetry, and bounded/retryable Discord log delivery. |
 | [tests/test_penalties.py](../tests/test_penalties.py) | Private matchmaking-penalties command output, privacy, pagination, and account ownership. |
+| [tests/test_public_account_responses.py](../tests/test_public_account_responses.py) | Public account replies use the current privacy state after every preparation wait. |
 | [tests/test_shard_status_service.py](../tests/test_shard_status_service.py) | Reuse and replacement of saved shard-status messages. |
 | [tests/test_shop_commands.py](../tests/test_shop_commands.py) | Daily/accessory/featured/Night Market rendering, selectors, and private errors. |
 | [tests/test_shop_service.py](../tests/test_shop_service.py) | Storefront and wallet validation, caching, expiry, and concurrent requests. |
