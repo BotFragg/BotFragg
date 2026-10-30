@@ -127,6 +127,7 @@ class ShopCog(commands.Cog):
                     unknown_skin_name=self.bot.translator.text(
                         interaction.locale, "common-unknown"
                     ),
+                    translator=self.bot.translator,
                     emoji_service=self.bot.emoji_service,
                     locale=interaction.locale,
                 ),
@@ -218,6 +219,7 @@ class ShopCog(commands.Cog):
                 vp,
                 link_item_image=self.bot.config.link_item_image,
                 unknown_skin_name=self.bot.translator.text(locale, "common-unknown"),
+                translator=self.bot.translator,
                 emoji_service=self.bot.emoji_service,
                 locale=locale,
             ),
@@ -372,11 +374,18 @@ class ShopCog(commands.Cog):
         discounted = offer.total_discounted_cost
         if discounted is None:
             return (
-                f"{vp} **{base:,}**"
+                self.bot.translator.text(locale, "shop-price", currency=vp, price=base)
                 if base is not None
                 else self.bot.translator.text(locale, "shop-price-unavailable")
             )
-        return _price_line(vp, discounted, base, offer.total_discount_percent)
+        return _price_line(
+            vp,
+            discounted,
+            base,
+            offer.total_discount_percent,
+            translator=self.bot.translator,
+            locale=locale,
+        )
 
     async def _featured_item_embed(
         self, item: FeaturedBundleItem, vp: str, locale: discord.Locale
@@ -420,14 +429,22 @@ class ShopCog(commands.Cog):
             extra = f"`{title_text}`\n\n" if title_text else ""
         name = name or self.bot.translator.text(locale, "common-unknown")
         if item.amount > 1:
-            name += f" x{item.amount}"
+            name = self.bot.translator.text(
+                locale, "shop-item-quantity", name=name, count=item.amount
+            )
         final_price = (
             item.discounted_price
             if item.discounted_price is not None
             else item.base_price
         )
         price = (
-            _price_line(vp, final_price, item.base_price)
+            _price_line(
+                vp,
+                final_price,
+                item.base_price,
+                translator=self.bot.translator,
+                locale=locale,
+            )
             if final_price is not None
             else self.bot.translator.text(locale, "shop-price-unavailable")
         )

@@ -31,15 +31,26 @@ def _price_line(
     final_price: int,
     original_price: int | None = None,
     discount_percent: int | None = None,
+    *,
+    translator: BotFraggTranslator,
+    locale: discord.Locale | str | None,
 ) -> str:
     """Format a current price and any original price discount on one line."""
-    price = f"{currency} **{final_price:,}**"
     if original_price is None or original_price <= final_price:
-        return price
+        return translator.text(
+            locale, "shop-price", currency=currency, price=final_price
+        )
     percent = discount_percent or max(
         1, round((original_price - final_price) * 100 / original_price)
     )
-    return f"{price} ~~{original_price:,}~~ (-{percent}%)"
+    return translator.text(
+        locale,
+        "shop-price-discount",
+        currency=currency,
+        price=final_price,
+        original=original_price,
+        percent=percent,
+    )
 
 
 def offer_cards(
@@ -49,9 +60,10 @@ def offer_cards(
     *,
     link_item_image: bool,
     unknown_skin_name: str,
+    translator: BotFraggTranslator,
     emoji_service: ApplicationEmojiService | None = None,
     header_colour: int = 0x202225,
-    locale: object | None = None,
+    locale: discord.Locale | str | None = None,
 ) -> list[discord.Embed]:
     """Render a heading and one tier-coloured embed for each skin offer."""
     result = [embed(header, colour=header_colour)]
@@ -62,6 +74,8 @@ def offer_cards(
             offer.discount_price if offer.discount_price is not None else offer.price,
             offer.price,
             offer.discount_percent,
+            translator=translator,
+            locale=locale,
         )
         item = embed(
             price,
@@ -184,6 +198,7 @@ def night_market_view(
         vp,
         link_item_image=bot.config.link_item_image,
         unknown_skin_name=bot.translator.text(locale, "common-unknown"),
+        translator=bot.translator,
         emoji_service=bot.emoji_service,
         header_colour=0xFD4553 if mode == "night" else 0xEAEEB2,
         locale=locale,

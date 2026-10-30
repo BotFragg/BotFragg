@@ -196,6 +196,7 @@ def test_shop_offer_layout_uses_tier_colour_and_discount_price() -> None:
         "VP",
         link_item_image=True,
         unknown_skin_name="Unknown",
+        translator=TEST_TRANSLATOR,
     )
     assert (len(cards), cards[1].colour.value, cards[1].thumbnail.url) == (
         2,
@@ -208,6 +209,7 @@ def test_shop_offer_layout_uses_tier_colour_and_discount_price() -> None:
         "VP",
         link_item_image=False,
         unknown_skin_name="Unknown",
+        translator=TEST_TRANSLATOR,
     )
     assert discounted[1].description == "VP **1,000** ~~1,775~~ (-44%)"
 
@@ -1270,3 +1272,20 @@ async def test_bundle_click_acknowledges_before_the_database_lookup(monkeypatch)
     await ShopCog(bot).shop_bundle(interaction, "synthetic|command|bundle-id")
 
     assert order[:2] == ["defer", "database"]
+
+
+async def test_offer_prices_use_the_interaction_locale():
+    """Prices must use the locale's number grouping, not Python's."""
+    skin = Skin("offer", "Prime Vandal", "Prime Vandal", None, None)
+
+    cards = offer_cards(
+        "Tagesangebot",
+        [Offer(skin, 1775, 1)],
+        "VP",
+        link_item_image=False,
+        unknown_skin_name="Unbekannt",
+        translator=TEST_TRANSLATOR,
+        locale=discord.Locale.german,
+    )
+
+    assert cards[1].description == "VP **1.775**"

@@ -250,6 +250,7 @@ class TasksCog(commands.Cog):
                 vp,
                 link_item_image=self.bot.config.link_item_image,
                 unknown_skin_name=self.bot.translator.text(locale, "common-unknown"),
+                translator=self.bot.translator,
                 emoji_service=self.bot.emoji_service,
                 locale=locale,
             )
