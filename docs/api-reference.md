@@ -146,7 +146,7 @@ Discord event listeners for analytics, guild notifications, and shard logs.
 
 **Scope:** `src/cogs/events.py` · `module`
 
-[Source](../src/cogs/events.py#L18)
+[Source](../src/cogs/events.py#L19)
 
 Record successful commands and report configured Discord lifecycle events.
 
@@ -154,7 +154,7 @@ Record successful commands and report configured Discord lifecycle events.
 
 **Scope:** `src/cogs/events.py` · `EventsCog`
 
-[Source](../src/cogs/events.py#L21)
+[Source](../src/cogs/events.py#L22)
 
 Bind event handlers to the running bot instance.
 
@@ -162,7 +162,7 @@ Bind event handlers to the running bot instance.
 
 **Scope:** `src/cogs/events.py` · `EventsCog`
 
-[Source](../src/cogs/events.py#L26)
+[Source](../src/cogs/events.py#L27)
 
 Log completed commands; the command tree coordinates analytics with deletion.
 
@@ -170,7 +170,7 @@ Log completed commands; the command tree coordinates analytics with deletion.
 
 **Scope:** `src/cogs/events.py` · `EventsCog`
 
-[Source](../src/cogs/events.py#L41)
+[Source](../src/cogs/events.py#L42)
 
 Send a summary to the channel configured for guild joins.
 
@@ -178,7 +178,7 @@ Send a summary to the channel configured for guild joins.
 
 **Scope:** `src/cogs/events.py` · `EventsCog`
 
-[Source](../src/cogs/events.py#L48)
+[Source](../src/cogs/events.py#L49)
 
 Send a summary to the channel configured for guild departures.
 
@@ -186,7 +186,7 @@ Send a summary to the channel configured for guild departures.
 
 **Scope:** `src/cogs/events.py` · `EventsCog`
 
-[Source](../src/cogs/events.py#L54)
+[Source](../src/cogs/events.py#L55)
 
 Resolve a configured messageable channel and send a guild summary.
 
@@ -194,7 +194,7 @@ Resolve a configured messageable channel and send a guild summary.
 
 **Scope:** `src/cogs/events.py` · `EventsCog`
 
-[Source](../src/cogs/events.py#L97)
+[Source](../src/cogs/events.py#L98)
 
 Report that a Discord shard connected and became ready.
 
@@ -202,7 +202,7 @@ Report that a Discord shard connected and became ready.
 
 **Scope:** `src/cogs/events.py` · `EventsCog`
 
-[Source](../src/cogs/events.py#L102)
+[Source](../src/cogs/events.py#L103)
 
 Report that a Discord shard disconnected.
 
@@ -210,7 +210,7 @@ Report that a Discord shard disconnected.
 
 **Scope:** `src/cogs/events.py` · `EventsCog`
 
-[Source](../src/cogs/events.py#L107)
+[Source](../src/cogs/events.py#L108)
 
 Report that a disconnected Discord shard resumed its session.
 
@@ -218,7 +218,7 @@ Report that a disconnected Discord shard resumed its session.
 
 **Scope:** `src/cogs/events.py` · `EventsCog`
 
-[Source](../src/cogs/events.py#L111)
+[Source](../src/cogs/events.py#L112)
 
 Post a shard state update to the optional logging webhook.
 
@@ -226,7 +226,7 @@ Post a shard state update to the optional logging webhook.
 
 **Scope:** `src/cogs/events.py` · `module`
 
-[Source](../src/cogs/events.py#L127)
+[Source](../src/cogs/events.py#L128)
 
 Register the Discord event-listener cog with the bot.
 
@@ -422,7 +422,7 @@ Discord suggestion submission, following, and owner-only review commands.
 
 **Scope:** `src/cogs/suggestions.py` · `module`
 
-[Source](../src/cogs/suggestions.py#L30)
+[Source](../src/cogs/suggestions.py#L31)
 
 Own the public suggestion workflow and its review notifications.
 
@@ -430,7 +430,7 @@ Own the public suggestion workflow and its review notifications.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L41)
+[Source](../src/cogs/suggestions.py#L42)
 
 Bind suggestion commands to the running bot.
 
@@ -438,7 +438,7 @@ Bind suggestion commands to the running bot.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L47)
+[Source](../src/cogs/suggestions.py#L48)
 
 Cancel and await pending delivery retries during extension shutdown.
 
@@ -446,7 +446,7 @@ Cancel and await pending delivery retries during extension shutdown.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L54)
+[Source](../src/cogs/suggestions.py#L55)
 
 Save a posted message ID, retaining it for retry during database outages.
 
@@ -454,7 +454,7 @@ Save a posted message ID, retaining it for retry during database outages.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L69)
+[Source](../src/cogs/suggestions.py#L70)
 
 Retry posted message links without reposting or recreating deleted records.
 
@@ -462,7 +462,7 @@ Retry posted message links without reposting or recreating deleted records.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L94)
+[Source](../src/cogs/suggestions.py#L95)
 
 Persist a feature suggestion and publish it to the configured log channel.
 
@@ -470,7 +470,7 @@ Persist a feature suggestion and publish it to the configured log channel.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L168)
+[Source](../src/cogs/suggestions.py#L169)
 
 Follow a pending suggestion or privately show its existing review.
 
@@ -478,7 +478,7 @@ Follow a pending suggestion or privately show its existing review.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L212)
+[Source](../src/cogs/suggestions.py#L213)
 
 Remove the caller's follow from another user's suggestion.
 
@@ -486,7 +486,7 @@ Remove the caller's follow from another user's suggestion.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L245)
+[Source](../src/cogs/suggestions.py#L246)
 
 Submit an owner-only approval review for the selected suggestion.
 
@@ -494,7 +494,7 @@ Submit an owner-only approval review for the selected suggestion.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L260)
+[Source](../src/cogs/suggestions.py#L261)
 
 Submit an owner-only denial review for the selected suggestion.
 
@@ -502,7 +502,7 @@ Submit an owner-only denial review for the selected suggestion.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L269)
+[Source](../src/cogs/suggestions.py#L270)
 
 Authorize a review, update its record, and notify its followers.
 
@@ -510,7 +510,7 @@ Authorize a review, update its record, and notify its followers.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L311)
+[Source](../src/cogs/suggestions.py#L319)
 
 Render the localized review shared by follower DMs and completed tracking.
 
@@ -518,7 +518,7 @@ Render the localized review shared by follower DMs and completed tracking.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L329)
+[Source](../src/cogs/suggestions.py#L337)
 
 Edit the original suggestion post with the final status and review reason.
 
@@ -526,13 +526,13 @@ Edit the original suggestion post with the final status and review reason.
 
 **Scope:** `src/cogs/suggestions.py` · `module`
 
-[Source](../src/cogs/suggestions.py#L356)
+[Source](../src/cogs/suggestions.py#L364)
 
 Register suggestion commands and review handlers.
 
 ## `src/cogs/tasks.py`
 
-Background loops for daily alerts, catalog refresh, and Discord log delivery.
+Background loops for daily alerts, upstream refresh, and Discord log delivery.
 
 ### `class DiscordLogHandler(logging.Handler)`
 
@@ -578,7 +578,7 @@ Set job intervals from settings and prepare the optional log handler.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L83)
+[Source](../src/cogs/tasks.py#L76)
 
 Start background loops and attach the log handler when configured.
 
@@ -586,7 +586,7 @@ Start background loops and attach the log handler when configured.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L94)
+[Source](../src/cogs/tasks.py#L86)
 
 Cancel and await all active loops, then detach the root log handler.
 
@@ -594,7 +594,7 @@ Cancel and await all active loops, then detach the root log handler.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L117)
+[Source](../src/cogs/tasks.py#L108)
 
 Run the daily shop and skin-alert job inside a monitoring transaction.
 
@@ -602,7 +602,7 @@ Run the daily shop and skin-alert job inside a monitoring transaction.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L131)
+[Source](../src/cogs/tasks.py#L122)
 
 Process eligible users' shops and return counts for the completed run.
 
@@ -610,23 +610,23 @@ Process eligible users' shops and return counts for the completed run.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L144)
+[Source](../src/cogs/tasks.py#L135)
 
 Deliver matching alerts and the optional daily shop; count failed DMs.
 
-### `async def _send_alert(self, user_id: int, alert: Alert, offer: Offer) -> bool`
+### `async def _send_alert(self, target: discord.User | discord.Member, user_id: int, alert: Alert, offer: Offer) -> bool`
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L161)
+[Source](../src/cogs/tasks.py#L158)
 
 DM an owner-scoped skin alert and report whether delivery succeeded.
 
-### `async def _send_daily_shop(self, user: User, account: Account, shop: ShopData) -> bool`
+### `async def _send_daily_shop(self, target: discord.User | discord.Member, user: User, account: Account, shop: ShopData) -> bool`
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L210)
+[Source](../src/cogs/tasks.py#L208)
 
 DM the selected account's daily shop and report delivery success.
 
@@ -634,7 +634,7 @@ DM the selected account's daily shop and report delivery success.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L265)
+[Source](../src/cogs/tasks.py#L266)
 
 Notify a user that credentials expired and return the delivery failure count.
 
@@ -642,23 +642,15 @@ Notify a user that credentials expired and return the delivery failure count.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L283)
+[Source](../src/cogs/tasks.py#L284)
 
-Refresh the Riot client version used in authenticated API requests.
-
-### `async def catalog_refresh(self) -> None`
-
-**Scope:** `src/cogs/tasks.py` · `TasksCog`
-
-[Source](../src/cogs/tasks.py#L292)
-
-Refresh the VALORANT catalog when its upstream version changes.
+Refresh the Riot client version and the catalog that depends on it.
 
 ### `async def log_flush(self) -> None`
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L302)
+[Source](../src/cogs/tasks.py#L296)
 
 Measure log delivery, preserving the queue after Discord failures.
 
@@ -666,7 +658,7 @@ Measure log delivery, preserving the queue after Discord failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L307)
+[Source](../src/cogs/tasks.py#L301)
 
 Send buffered log lines to Discord and requeue them after delivery failures.
 
@@ -674,7 +666,7 @@ Send buffered log lines to Discord and requeue them after delivery failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L353)
+[Source](../src/cogs/tasks.py#L347)
 
 Publish Discord, database, and scheduled-job health for Docker and operators.
 
@@ -682,7 +674,7 @@ Publish Discord, database, and scheduled-job health for Docker and operators.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L405)
+[Source](../src/cogs/tasks.py#L398)
 
 Wait for Discord readiness before starting any background job.
 
@@ -690,7 +682,7 @@ Wait for Discord readiness before starting any background job.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L410)
+[Source](../src/cogs/tasks.py#L403)
 
 Register the background-task cog with the bot.
 
@@ -770,7 +762,7 @@ Refresh an account page privately when an old public list now hides names.
 
 **Scope:** `src/cogs/valorant/accounts.py` · `module`
 
-[Source](../src/cogs/valorant/accounts.py#L249)
+[Source](../src/cogs/valorant/accounts.py#L251)
 
 Register the linked-account commands and component handlers.
 
@@ -782,7 +774,7 @@ Commands for creating, viewing, removing, and testing skin alerts.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `module`
 
-[Source](../src/cogs/valorant/alerts.py#L22)
+[Source](../src/cogs/valorant/alerts.py#L25)
 
 Manage owner-scoped alert records and their persistent Discord controls.
 
@@ -790,7 +782,7 @@ Manage owner-scoped alert records and their persistent Discord controls.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L25)
+[Source](../src/cogs/valorant/alerts.py#L28)
 
 Bind the bot and register persistent alert-management actions.
 
@@ -798,7 +790,7 @@ Bind the bot and register persistent alert-management actions.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L31)
+[Source](../src/cogs/valorant/alerts.py#L34)
 
 Return catalog skin matches suitable for Discord's autocomplete limit.
 
@@ -806,7 +798,7 @@ Return catalog skin matches suitable for Discord's autocomplete limit.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L64)
+[Source](../src/cogs/valorant/alerts.py#L67)
 
 Create a skin alert for the caller's active account and show a remove control.
 
@@ -814,7 +806,7 @@ Create a skin alert for the caller's active account and show a remove control.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L111)
+[Source](../src/cogs/valorant/alerts.py#L114)
 
 Show the caller's paginated alerts and owner-bound management controls.
 
@@ -822,7 +814,7 @@ Show the caller's paginated alerts and owner-bound management controls.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L125)
+[Source](../src/cogs/valorant/alerts.py#L128)
 
 Build the confirmation card for a newly created skin alert.
 
@@ -830,7 +822,7 @@ Build the confirmation card for a newly created skin alert.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L137)
+[Source](../src/cogs/valorant/alerts.py#L140)
 
 Return a skin name prefixed with its tier emoji, if one exists.
 
@@ -838,15 +830,15 @@ Return a skin name prefixed with its tier emoji, if one exists.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L147)
+[Source](../src/cogs/valorant/alerts.py#L150)
 
 Return a button emoji for a skin tier when one is available.
 
-### `async def manager_view(self, user_id: int, page: int, locale: discord.Locale) -> tuple[discord.Embed, discord.ui.View | None]`
+### `async def manager_view(self, user_id: int, page: int, locale: discord.Locale, *, anchor_id: int | None = None, forward: bool = True, inclusive: bool = False) -> tuple[discord.Embed, discord.ui.View | None]`
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L153)
+[Source](../src/cogs/valorant/alerts.py#L156)
 
 Render one alert page with per-alert removal and optional page controls.
 
@@ -854,7 +846,7 @@ Render one alert page with per-alert removal and optional page controls.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L217)
+[Source](../src/cogs/valorant/alerts.py#L232)
 
 Remove the selected owner-scoped alert and refresh or dismiss its controls.
 
@@ -862,7 +854,7 @@ Remove the selected owner-scoped alert and refresh or dismiss its controls.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L256)
+[Source](../src/cogs/valorant/alerts.py#L295)
 
 Validate a page payload and update the alert-management message.
 
@@ -870,7 +862,7 @@ Validate a page payload and update the alert-management message.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `AlertsCog`
 
-[Source](../src/cogs/valorant/alerts.py#L276)
+[Source](../src/cogs/valorant/alerts.py#L332)
 
 Check login and shop availability, then send the caller a test alert DM.
 
@@ -878,7 +870,7 @@ Check login and shop availability, then send the caller a test alert DM.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `module`
 
-[Source](../src/cogs/valorant/alerts.py#L354)
+[Source](../src/cogs/valorant/alerts.py#L410)
 
 Register the skin-alert commands and their persistent handlers.
 
@@ -1058,7 +1050,7 @@ Clear Riot credentials for one linked account while preserving its settings.
 
 **Scope:** `src/cogs/valorant/logout.py` · `LogoutCog`
 
-[Source](../src/cogs/valorant/logout.py#L81)
+[Source](../src/cogs/valorant/logout.py#L87)
 
 Permanently delete the caller's records and clear cached storefronts.
 
@@ -1066,7 +1058,7 @@ Permanently delete the caller's records and clear cached storefronts.
 
 **Scope:** `src/cogs/valorant/logout.py` · `module`
 
-[Source](../src/cogs/valorant/logout.py#L109)
+[Source](../src/cogs/valorant/logout.py#L115)
 
 Register the account logout and personal data deletion commands.
 
@@ -1278,7 +1270,7 @@ Render the selected daily, Night Market, accessory, or bundle mode.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L639)
+[Source](../src/cogs/valorant/shop.py#L642)
 
 Read the values actually offered by this message's matching select menu.
 
@@ -1286,7 +1278,7 @@ Read the values actually offered by this message's matching select menu.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L653)
+[Source](../src/cogs/valorant/shop.py#L656)
 
 Revalidate a selected featured bundle against the caller's account and view.
 
@@ -1294,7 +1286,7 @@ Revalidate a selected featured bundle against the caller's account and view.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L707)
+[Source](../src/cogs/valorant/shop.py#L709)
 
 List playable levels and chromas within Discord's select-menu limit.
 
@@ -1302,7 +1294,7 @@ List playable levels and chromas within Discord's select-menu limit.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L740)
+[Source](../src/cogs/valorant/shop.py#L742)
 
 Open a private level/chroma menu for a skin offered in this message.
 
@@ -1310,7 +1302,7 @@ Open a private level/chroma menu for a skin offered in this message.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L794)
+[Source](../src/cogs/valorant/shop.py#L796)
 
 Privately return a selected video only when it belongs to that skin.
 
@@ -1318,7 +1310,7 @@ Privately return a selected video only when it belongs to that skin.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L855)
+[Source](../src/cogs/valorant/shop.py#L857)
 
 Validate the selected account and reopen the corresponding shop mode.
 
@@ -1326,7 +1318,7 @@ Validate the selected account and reopen the corresponding shop mode.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L871)
+[Source](../src/cogs/valorant/shop.py#L873)
 
 Display discounted Night Market offers for the selected Riot account.
 
@@ -1334,7 +1326,7 @@ Display discounted Night Market offers for the selected Riot account.
 
 **Scope:** `src/cogs/valorant/shop.py` · `NightMarketCog`
 
-[Source](../src/cogs/valorant/shop.py#L874)
+[Source](../src/cogs/valorant/shop.py#L876)
 
 Bind the shared shop, account, and emoji services.
 
@@ -1342,7 +1334,7 @@ Bind the shared shop, account, and emoji services.
 
 **Scope:** `src/cogs/valorant/shop.py` · `NightMarketCog`
 
-[Source](../src/cogs/valorant/shop.py#L885)
+[Source](../src/cogs/valorant/shop.py#L887)
 
 Fetch and render Night Market offers or report that none are active.
 
@@ -1350,7 +1342,7 @@ Fetch and render Night Market offers or report that none are active.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L925)
+[Source](../src/cogs/valorant/shop.py#L927)
 
 Display the selected account's three VALORANT wallet balances.
 
@@ -1358,7 +1350,7 @@ Display the selected account's three VALORANT wallet balances.
 
 **Scope:** `src/cogs/valorant/shop.py` · `BalanceCog`
 
-[Source](../src/cogs/valorant/shop.py#L928)
+[Source](../src/cogs/valorant/shop.py#L930)
 
 Bind the shared shop and user-preference services.
 
@@ -1366,7 +1358,7 @@ Bind the shared shop and user-preference services.
 
 **Scope:** `src/cogs/valorant/shop.py` · `BalanceCog`
 
-[Source](../src/cogs/valorant/shop.py#L939)
+[Source](../src/cogs/valorant/shop.py#L941)
 
 Fetch and display VP, Radianite, and Kingdom Credit balances.
 
@@ -1374,7 +1366,7 @@ Fetch and display VP, Radianite, and Kingdom Credit balances.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L988)
+[Source](../src/cogs/valorant/shop.py#L990)
 
 Register the shop, Night Market, and wallet-balance cogs.
 
@@ -1450,7 +1442,7 @@ Immutable runtime configuration populated from environment variables.
 
 **Scope:** `src/config.py` · `Settings`
 
-[Source](../src/config.py#L164)
+[Source](../src/config.py#L163)
 
 Load settings, validate URLs and limits, and optionally require secrets.
 
@@ -1700,13 +1692,13 @@ Reset stored rows, which kept the old shared-by-default value.
 
 [Source](../src/migrations/0005_shop_sharing_opt_in.py#L13)
 
-Restore the previous shared-by-default value when rolling back.
+Leave stored choices alone; only the schema default reverts on rollback.
 
 ### `class Migration(migrations.Migration)`
 
 **Scope:** `src/migrations/0005_shop_sharing_opt_in.py` · `module`
 
-[Source](../src/migrations/0005_shop_sharing_opt_in.py#L19)
+[Source](../src/migrations/0005_shop_sharing_opt_in.py#L17)
 
 Require users to opt in before others can view their shop.
 
@@ -2026,23 +2018,37 @@ Hold one bounded page of alerts and its normalized pagination metadata.
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L41)
+[Source](../src/services/alerts.py#L42)
 
 Create an account-scoped skin alert or return the existing duplicate.
 
-### `async def list_alerts_page(user_id: int, page: int, page_size: int) -> AlertPage`
+### `async def _alert_boundary_page(user_id: int, anchor_id: int, page_size: int, *, forward: bool, inclusive: bool = False) -> list[Alert]`
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L61)
+[Source](../src/services/alerts.py#L62)
+
+Return the page that starts at, after, or before one alert ID.
+
+### `async def list_alerts_page(user_id: int, page: int, page_size: int, *, anchor_id: int | None = None, forward: bool = True, inclusive: bool = False) -> AlertPage`
+
+**Scope:** `src/services/alerts.py` · `module`
+
+[Source](../src/services/alerts.py#L86)
 
 Fetch an owner-scoped alert page, wrapping page indexes and bounding size.
+
+When ``anchor_id`` is given the page is anchored to that alert instead of a row
+offset, so an alert removed from another view cannot shift the page and skip a
+row. ``forward`` selects the page after or before the anchor; paging past either
+end wraps around. ``inclusive`` keeps the anchor itself, which re-renders the
+same window after one of its rows is removed.
 
 ### `async def remove_alert(user_id: int, alert_id: int) -> Alert | None`
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L83)
+[Source](../src/services/alerts.py#L142)
 
 Delete and return an alert only when it belongs to the requesting user.
 
@@ -2050,7 +2056,7 @@ Delete and return an alert only when it belongs to the requesting user.
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L91)
+[Source](../src/services/alerts.py#L150)
 
 Return a user's first alert with its linked account loaded.
 
@@ -2058,7 +2064,7 @@ Return a user's first alert with its linked account loaded.
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L98)
+[Source](../src/services/alerts.py#L157)
 
 Return distinct Discord IDs that own at least one alert.
 
@@ -2066,7 +2072,7 @@ Return distinct Discord IDs that own at least one alert.
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L104)
+[Source](../src/services/alerts.py#L163)
 
 Return only the supplied account IDs that currently have alerts.
 
@@ -2074,7 +2080,7 @@ Return only the supplied account IDs that currently have alerts.
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L115)
+[Source](../src/services/alerts.py#L174)
 
 Fetch alerts matching one account and a bounded set of shop skin IDs.
 
@@ -2082,7 +2088,7 @@ Fetch alerts matching one account and a bounded set of shop skin IDs.
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L137)
+[Source](../src/services/alerts.py#L196)
 
 Retry transient lookups up to three times without replaying deliveries.
 
@@ -2093,7 +2099,7 @@ and report the affected accounts as failures.
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L158)
+[Source](../src/services/alerts.py#L217)
 
 Check eligible accounts with bounded concurrency and report run totals.
 
@@ -2217,19 +2223,19 @@ Normalize unreadable credentials without overwriting the stored blob.
 
 Serialize deletion with login commits and discard late tokens after success.
 
-### `async def refresh_version(self) -> None`
+### `async def refresh_version(self) -> str`
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
 [Source](../src/services/auth.py#L117)
 
-Fetch Riot's current client version for authenticated request headers.
+Fetch Riot's current client version and return the catalog version key.
 
 ### `def riot_headers(self) -> dict[str, str]`
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L136)
+[Source](../src/services/auth.py#L138)
 
 Return the platform and current client-version headers expected by Riot.
 
@@ -2237,7 +2243,7 @@ Return the platform and current client-version headers expected by Riot.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L146)
+[Source](../src/services/auth.py#L148)
 
 Create a Riot authorization URL and retain a short-lived per-user nonce.
 
@@ -2245,7 +2251,7 @@ Create a Riot authorization URL and retain a short-lived per-user nonce.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L161)
+[Source](../src/services/auth.py#L163)
 
 Exchange a callback code, verify its nonce, and securely link the account.
 
@@ -2257,7 +2263,7 @@ rejected without replacing the existing owner.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L275)
+[Source](../src/services/auth.py#L277)
 
 Serialize credential checks for an account and return its usable auth state.
 
@@ -2265,7 +2271,7 @@ Serialize credential checks for an account and return its usable auth state.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L289)
+[Source](../src/services/auth.py#L291)
 
 Check token lifetime and repair or refresh credentials while holding its lock.
 
@@ -2273,7 +2279,7 @@ Check token lifetime and repair or refresh credentials while holding its lock.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L318)
+[Source](../src/services/auth.py#L320)
 
 Refresh one account's Riot tokens under its per-account lock.
 
@@ -2281,7 +2287,7 @@ Refresh one account's Riot tokens under its per-account lock.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L332)
+[Source](../src/services/auth.py#L334)
 
 Refresh tokens with version-checked persistence to protect concurrent updates.
 
@@ -2289,7 +2295,7 @@ Refresh tokens with version-checked persistence to protect concurrent updates.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L426)
+[Source](../src/services/auth.py#L428)
 
 Persist a returned token without repeating its exchange after a DB outage.
 
@@ -2297,7 +2303,7 @@ Persist a returned token without repeating its exchange after a DB outage.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L446)
+[Source](../src/services/auth.py#L448)
 
 Share transient failure cooldowns under the caller's account lock.
 
@@ -2305,7 +2311,7 @@ Share transient failure cooldowns under the caller's account lock.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L468)
+[Source](../src/services/auth.py#L470)
 
 Remove the selected account's Riot tokens while coordinating with refreshes.
 
@@ -2313,7 +2319,7 @@ Remove the selected account's Riot tokens while coordinating with refreshes.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L481)
+[Source](../src/services/auth.py#L483)
 
 Clear credentials only if the stored auth version still matches the caller.
 
@@ -2321,7 +2327,7 @@ Clear credentials only if the stored auth version still matches the caller.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L489)
+[Source](../src/services/auth.py#L491)
 
 Return fresh Riot authorization headers or raise when login is required.
 
@@ -2329,7 +2335,7 @@ Return fresh Riot authorization headers or raise when login is required.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L517)
+[Source](../src/services/auth.py#L519)
 
 Fetch and persist an entitlement token, optionally refreshing on absence.
 
@@ -2337,7 +2343,7 @@ Fetch and persist an entitlement token, optionally refreshing on absence.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L562)
+[Source](../src/services/auth.py#L564)
 
 Release abandoned login attempts after their ten-minute lifetime.
 
@@ -2345,7 +2351,7 @@ Release abandoned login attempts after their ten-minute lifetime.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L571)
+[Source](../src/services/auth.py#L573)
 
 Fetch the Riot game name and tag line associated with an access token.
 
@@ -2353,7 +2359,7 @@ Fetch the Riot game name and tag line associated with an access token.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L588)
+[Source](../src/services/auth.py#L590)
 
 Request an entitlement token and surface transient Riot failures.
 
@@ -2361,7 +2367,7 @@ Request an entitlement token and surface transient Riot failures.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L613)
+[Source](../src/services/auth.py#L615)
 
 Resolve the VALORANT shard affinity associated with an ID token.
 
@@ -2369,7 +2375,7 @@ Resolve the VALORANT shard affinity associated with an ID token.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L635)
+[Source](../src/services/auth.py#L637)
 
 Build the Riot authentication user agent from the latest client build.
 
@@ -2377,7 +2383,7 @@ Build the Riot authentication user agent from the latest client build.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L645)
+[Source](../src/services/auth.py#L647)
 
 Validate token response fields before using or persisting credentials.
 
@@ -2385,7 +2391,7 @@ Validate token response fields before using or persisting credentials.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L660)
+[Source](../src/services/auth.py#L662)
 
 Decode a JWT payload for claim lookup without performing signature validation.
 
@@ -2393,7 +2399,7 @@ Decode a JWT payload for claim lookup without performing signature validation.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L673)
+[Source](../src/services/auth.py#L675)
 
 Return the token's Unix expiry time, or zero when it cannot be decoded.
 
@@ -2401,7 +2407,7 @@ Return the token's Unix expiry time, or zero when it cannot be decoded.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L681)
+[Source](../src/services/auth.py#L683)
 
 Map missing and LATAM/Brazil affinities to Riot's North America API host.
 
@@ -2409,7 +2415,7 @@ Map missing and LATAM/Brazil affinities to Riot's North America API host.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L686)
+[Source](../src/services/auth.py#L688)
 
 Build a regional VALORANT player-data URL for one API path.
 
@@ -2417,7 +2423,7 @@ Build a regional VALORANT player-data URL for one API path.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L691)
+[Source](../src/services/auth.py#L693)
 
 Raised when a Riot request cannot proceed without a new user login.
 
@@ -2425,7 +2431,7 @@ Raised when a Riot request cannot proceed without a new user login.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L695)
+[Source](../src/services/auth.py#L697)
 
 Return whether Riot rejected the stored entitlement token.
 
@@ -2433,7 +2439,7 @@ Return whether Riot rejected the stored entitlement token.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L704)
+[Source](../src/services/auth.py#L706)
 
 Send an authenticated request, refreshing once when Riot rejects its claims.
 
@@ -2445,7 +2451,7 @@ VALORANT skin, bundle, accessory, and mission metadata with a local cache.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L47)
+[Source](../src/services/catalog.py#L51)
 
 Resolve VALORANT-API text for a Discord locale with English fallback.
 
@@ -2453,7 +2459,7 @@ Resolve VALORANT-API text for a Discord locale with English fallback.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L66)
+[Source](../src/services/catalog.py#L70)
 
 Normalize a localized string or locale map into nonempty values.
 
@@ -2461,7 +2467,7 @@ Normalize a localized string or locale map into nonempty values.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L79)
+[Source](../src/services/catalog.py#L83)
 
 Validate upstream rows and the identifiers/media consumed by catalog views.
 
@@ -2469,7 +2475,7 @@ Validate upstream rows and the identifiers/media consumed by catalog views.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L105)
+[Source](../src/services/catalog.py#L109)
 
 Hold normalized skin identity, display data, pricing, levels, and chromas.
 
@@ -2477,7 +2483,7 @@ Hold normalized skin identity, display data, pricing, levels, and chromas.
 
 **Scope:** `src/services/catalog.py` · `Skin`
 
-[Source](../src/services/catalog.py#L118)
+[Source](../src/services/catalog.py#L122)
 
 Return this skin's localized or English name, or empty when missing.
 
@@ -2485,7 +2491,7 @@ Return this skin's localized or English name, or empty when missing.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L126)
+[Source](../src/services/catalog.py#L130)
 
 Hold static display metadata for a VALORANT bundle.
 
@@ -2493,7 +2499,7 @@ Hold static display metadata for a VALORANT bundle.
 
 **Scope:** `src/services/catalog.py` · `Bundle`
 
-[Source](../src/services/catalog.py#L138)
+[Source](../src/services/catalog.py#L142)
 
 Return this bundle's localized or English name, or empty when missing.
 
@@ -2501,7 +2507,7 @@ Return this bundle's localized or English name, or empty when missing.
 
 **Scope:** `src/services/catalog.py` · `Bundle`
 
-[Source](../src/services/catalog.py#L144)
+[Source](../src/services/catalog.py#L148)
 
 Return this bundle's localized subtitle, if available.
 
@@ -2509,7 +2515,7 @@ Return this bundle's localized subtitle, if available.
 
 **Scope:** `src/services/catalog.py` · `Bundle`
 
-[Source](../src/services/catalog.py#L148)
+[Source](../src/services/catalog.py#L152)
 
 Return this bundle's localized description, if available.
 
@@ -2517,7 +2523,7 @@ Return this bundle's localized description, if available.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L157)
+[Source](../src/services/catalog.py#L161)
 
 Hold normalized display data for a non-skin cosmetic reward.
 
@@ -2525,7 +2531,7 @@ Hold normalized display data for a non-skin cosmetic reward.
 
 **Scope:** `src/services/catalog.py` · `Accessory`
 
-[Source](../src/services/catalog.py#L166)
+[Source](../src/services/catalog.py#L170)
 
 Return this accessory's localized name, or empty when metadata is missing.
 
@@ -2533,7 +2539,7 @@ Return this accessory's localized name, or empty when metadata is missing.
 
 **Scope:** `src/services/catalog.py` · `Accessory`
 
-[Source](../src/services/catalog.py#L170)
+[Source](../src/services/catalog.py#L174)
 
 Return localized accessory title text, if available.
 
@@ -2541,7 +2547,7 @@ Return localized accessory title text, if available.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L178)
+[Source](../src/services/catalog.py#L182)
 
 Return whether any cached catalog row is structurally unusable.
 
@@ -2549,7 +2555,7 @@ Return whether any cached catalog row is structurally unusable.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L210)
+[Source](../src/services/catalog.py#L214)
 
 Build a skin from a cached row, tolerating legacy single-name rows.
 
@@ -2557,7 +2563,7 @@ Build a skin from a cached row, tolerating legacy single-name rows.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L228)
+[Source](../src/services/catalog.py#L232)
 
 Build a bundle from a cached row, tolerating legacy single-name rows.
 
@@ -2565,7 +2571,7 @@ Build a bundle from a cached row, tolerating legacy single-name rows.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L253)
+[Source](../src/services/catalog.py#L257)
 
 Load, refresh, search, and cache VALORANT catalog data.
 
@@ -2573,7 +2579,7 @@ Load, refresh, search, and cache VALORANT catalog data.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L256)
+[Source](../src/services/catalog.py#L260)
 
 Prepare in-memory indexes and the repository catalog snapshot.
 
@@ -2581,15 +2587,23 @@ Prepare in-memory indexes and the repository catalog snapshot.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L281)
+[Source](../src/services/catalog.py#L285)
 
 Load the saved catalog off the event loop or fetch a fresh snapshot.
 
-### `async def refresh(self, *, check_version: bool = False) -> None`
+### `async def _fetch_version(self) -> str`
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L300)
+[Source](../src/services/catalog.py#L304)
+
+Return the upstream catalog version used to detect a game patch.
+
+### `async def refresh(self, *, check_version: bool = False, version: str | None = None) -> None`
+
+**Scope:** `src/services/catalog.py` · `CatalogService`
+
+[Source](../src/services/catalog.py#L323)
 
 Fetch the current weapon and bundle catalogs and save their snapshot.
 
@@ -2597,12 +2611,13 @@ When ``check_version`` is true, skip rebuilding only if the upstream version
 and local cache format are current. A saved version change invalidates
 accessory metadata, including requests that began before the refresh.
 A failed save restores the previous catalog even during cancellation.
+``version`` lets a caller reuse a version it already fetched.
 
 ### `async def _fetch_data(self, kind: str) -> list[dict[str, Any]]`
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L386)
+[Source](../src/services/catalog.py#L398)
 
 Fetch one catalog endpoint and return its validated data rows.
 
@@ -2610,7 +2625,7 @@ Fetch one catalog endpoint and return its validated data rows.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L398)
+[Source](../src/services/catalog.py#L410)
 
 Cache mission definitions for 30 minutes and failed refreshes for 30 seconds.
 
@@ -2618,7 +2633,7 @@ Cache mission definitions for 30 minutes and failed refreshes for 30 seconds.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L455)
+[Source](../src/services/catalog.py#L467)
 
 Normalize weapon and bundle responses and rebuild lookup indexes.
 
@@ -2626,7 +2641,7 @@ Normalize weapon and bundle responses and rebuild lookup indexes.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L510)
+[Source](../src/services/catalog.py#L522)
 
 Index skins by their UUID, offer UUID, and level UUID aliases.
 
@@ -2634,7 +2649,7 @@ Index skins by their UUID, offer UUID, and level UUID aliases.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L521)
+[Source](../src/services/catalog.py#L533)
 
 Resolve a skin from any indexed base, offer, or level identifier.
 
@@ -2642,7 +2657,7 @@ Resolve a skin from any indexed base, offer, or level identifier.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L525)
+[Source](../src/services/catalog.py#L537)
 
 Resolve bundle metadata by its Riot UUID.
 
@@ -2650,7 +2665,7 @@ Resolve bundle metadata by its Riot UUID.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L530)
+[Source](../src/services/catalog.py#L542)
 
 Fetch and cache a supported accessory using its Riot item type ID.
 
@@ -2658,7 +2673,7 @@ Fetch and cache a supported accessory using its Riot item type ID.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L577)
+[Source](../src/services/catalog.py#L589)
 
 Resolve a Riot bundle buddy by its buddy or level UUID.
 
@@ -2666,7 +2681,7 @@ Resolve a Riot bundle buddy by its buddy or level UUID.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L634)
+[Source](../src/services/catalog.py#L646)
 
 Convert endpoint-specific Riot accessory data into a common display shape.
 
@@ -2674,7 +2689,7 @@ Convert endpoint-specific Riot accessory data into a common display shape.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L660)
+[Source](../src/services/catalog.py#L672)
 
 Search localized names first, retaining English-name fallback matches.
 
@@ -2685,7 +2700,7 @@ fuzzy-match score accepted, and an exactly matching name scores 100.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L695)
+[Source](../src/services/catalog.py#L707)
 
 Apply current store prices to catalog skins matched by offer identifier.
 
@@ -2693,7 +2708,7 @@ Apply current store prices to catalog skins matched by offer identifier.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L702)
+[Source](../src/services/catalog.py#L714)
 
 Encode the current version, skins, and bundles as compact JSON.
 
@@ -2701,7 +2716,7 @@ Encode the current version, skins, and bundles as compact JSON.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L712)
+[Source](../src/services/catalog.py#L724)
 
 Write a complete catalog snapshot through a temporary file replacement.
 
@@ -2709,7 +2724,7 @@ Write a complete catalog snapshot through a temporary file replacement.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L719)
+[Source](../src/services/catalog.py#L731)
 
 Restore catalog records from a snapshot and rebuild lookup indexes.
 
@@ -2825,7 +2840,7 @@ Fetch VALORANT progression and matchmaking penalties for linked accounts.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L15)
+[Source](../src/services/gameplay.py#L22)
 
 Validated display data for the next battlepass reward.
 
@@ -2833,7 +2848,7 @@ Validated display data for the next battlepass reward.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L25)
+[Source](../src/services/gameplay.py#L32)
 
 The active battlepass and its account-specific progress.
 
@@ -2841,7 +2856,7 @@ The active battlepass and its account-specific progress.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L36)
+[Source](../src/services/gameplay.py#L43)
 
 One objective's known progress and target.
 
@@ -2849,7 +2864,7 @@ One objective's known progress and target.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L43)
+[Source](../src/services/gameplay.py#L50)
 
 Mission display data, including explicitly unavailable metadata.
 
@@ -2857,7 +2872,7 @@ Mission display data, including explicitly unavailable metadata.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L55)
+[Source](../src/services/gameplay.py#L62)
 
 Normalized penalty data after validating its account identity.
 
@@ -2865,7 +2880,7 @@ Normalized penalty data after validating its account identity.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L67)
+[Source](../src/services/gameplay.py#L74)
 
 Riot gameplay APIs used by battlepass, mission, and penalty commands.
 
@@ -2873,7 +2888,7 @@ Riot gameplay APIs used by battlepass, mission, and penalty commands.
 
 **Scope:** `src/services/gameplay.py` · `GameplayService`
 
-[Source](../src/services/gameplay.py#L70)
+[Source](../src/services/gameplay.py#L77)
 
 Bind the shared Riot client, authentication service, and catalog.
 
@@ -2881,7 +2896,7 @@ Bind the shared Riot client, authentication service, and catalog.
 
 **Scope:** `src/services/gameplay.py` · `GameplayService`
 
-[Source](../src/services/gameplay.py#L79)
+[Source](../src/services/gameplay.py#L86)
 
 Return the active battlepass level, XP, expiry, and next reward.
 
@@ -2889,7 +2904,7 @@ Return the active battlepass level, XP, expiry, and next reward.
 
 **Scope:** `src/services/gameplay.py` · `GameplayService`
 
-[Source](../src/services/gameplay.py#L183)
+[Source](../src/services/gameplay.py#L190)
 
 Join the account's live mission progress with cached catalog definitions.
 
@@ -2897,7 +2912,7 @@ Join the account's live mission progress with cached catalog definitions.
 
 **Scope:** `src/services/gameplay.py` · `GameplayService`
 
-[Source](../src/services/gameplay.py#L217)
+[Source](../src/services/gameplay.py#L224)
 
 Fetch and normalize an account's current Riot matchmaking penalties.
 
@@ -2905,7 +2920,7 @@ Fetch and normalize an account's current Riot matchmaking penalties.
 
 **Scope:** `src/services/gameplay.py` · `GameplayService`
 
-[Source](../src/services/gameplay.py#L325)
+[Source](../src/services/gameplay.py#L332)
 
 Normalize one Riot mission row and its objective progress for display.
 
@@ -2913,7 +2928,7 @@ Normalize one Riot mission row and its objective progress for display.
 
 **Scope:** `src/services/gameplay.py` · `GameplayService`
 
-[Source](../src/services/gameplay.py#L406)
+[Source](../src/services/gameplay.py#L413)
 
 Resolve the next battlepass reward to display data, including its icon.
 
@@ -2921,7 +2936,7 @@ Resolve the next battlepass reward to display data, including its icon.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L463)
+[Source](../src/services/gameplay.py#L470)
 
 Return validated API metadata rows.
 
@@ -2929,7 +2944,7 @@ Return validated API metadata rows.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L468)
+[Source](../src/services/gameplay.py#L475)
 
 Reject malformed battlepass containers and rows at the API boundary.
 
@@ -2937,7 +2952,7 @@ Reject malformed battlepass containers and rows at the API boundary.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L475)
+[Source](../src/services/gameplay.py#L482)
 
 Riot did not return usable gameplay data.
 
@@ -2945,7 +2960,7 @@ Riot did not return usable gameplay data.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L479)
+[Source](../src/services/gameplay.py#L486)
 
 Convert a non-Boolean value to a nonnegative integer when possible.
 
@@ -2953,7 +2968,7 @@ Convert a non-Boolean value to a nonnegative integer when possible.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L490)
+[Source](../src/services/gameplay.py#L497)
 
 Convert a value to a positive integer or return ``None``.
 
@@ -2961,7 +2976,7 @@ Convert a value to a positive integer or return ``None``.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L495)
+[Source](../src/services/gameplay.py#L502)
 
 Parse an ISO timestamp and attach UTC when the input has no timezone.
 
@@ -3159,7 +3174,7 @@ Return a fresh or unexpired cached storefront for the linked account.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L145)
+[Source](../src/services/shop.py#L147)
 
 Fetch, repair claims, normalize all shop offers, and cache the result.
 
@@ -3167,7 +3182,7 @@ Fetch, repair claims, normalize all shop offers, and cache the result.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L308)
+[Source](../src/services/shop.py#L310)
 
 Request one regional storefront with a shared transient failure cooldown.
 
@@ -3175,7 +3190,7 @@ Request one regional storefront with a shared transient failure cooldown.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L339)
+[Source](../src/services/shop.py#L341)
 
 Return VP, Radianite, and Kingdom Credit balances for an account.
 
@@ -3183,7 +3198,7 @@ Return VP, Radianite, and Kingdom Credit balances for an account.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L368)
+[Source](../src/services/shop.py#L370)
 
 Resolve the storefront's accessory rewards and their Kingdom Credit prices.
 
@@ -3191,7 +3206,7 @@ Resolve the storefront's accessory rewards and their Kingdom Credit prices.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L395)
+[Source](../src/services/shop.py#L397)
 
 Extract the raw single-item store offers across Riot response shapes.
 
@@ -3199,7 +3214,7 @@ Extract the raw single-item store offers across Riot response shapes.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L402)
+[Source](../src/services/shop.py#L404)
 
 Build a skin-offer-to-VP-price lookup from the storefront payload.
 
@@ -3207,7 +3222,7 @@ Build a skin-offer-to-VP-price lookup from the storefront payload.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L417)
+[Source](../src/services/shop.py#L419)
 
 Raised when Riot does not return a usable storefront or wallet.
 
@@ -3215,7 +3230,7 @@ Raised when Riot does not return a usable storefront or wallet.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L421)
+[Source](../src/services/shop.py#L423)
 
 Parse an integer only when it meets the requested minimum.
 
@@ -3223,7 +3238,7 @@ Parse an integer only when it meets the requested minimum.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L432)
+[Source](../src/services/shop.py#L434)
 
 Treat malformed optional mappings as absent.
 
@@ -3231,7 +3246,7 @@ Treat malformed optional mappings as absent.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L437)
+[Source](../src/services/shop.py#L439)
 
 Keep only mapping entries from an optional Riot list.
 
@@ -3239,7 +3254,7 @@ Keep only mapping entries from an optional Riot list.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L446)
+[Source](../src/services/shop.py#L448)
 
 Return a price only when the source entry explicitly uses VALORANT Points.
 
@@ -3301,11 +3316,19 @@ Atomically review a pending suggestion and return its followers once.
 A suggestion that is missing or already reviewed returns ``None``; a successful
 review returns the updated record and the distinct follower IDs to notify.
 
-### `async def count_suggestions_by_author(author_id: int) -> int`
+### `async def current_followers(suggestion_id: int, candidate_ids: set[int]) -> set[int]`
 
 **Scope:** `src/services/suggestions.py` · `module`
 
 [Source](../src/services/suggestions.py#L113)
+
+Return the candidate follower IDs that still follow the suggestion.
+
+### `async def count_suggestions_by_author(author_id: int) -> int`
+
+**Scope:** `src/services/suggestions.py` · `module`
+
+[Source](../src/services/suggestions.py#L124)
 
 Count suggestions submitted by a Discord user.
 
@@ -3317,11 +3340,19 @@ Public timestamp and owner-scoped Discord component exports.
 
 Persistent interactive controls scoped to the Discord user who created them.
 
-### `async def _reject_other_owner(interaction: discord.Interaction[Any], owner_id: int, key: str) -> bool`
+### `def select_custom_id(action: str, owner_id: int, payload: str) -> str`
 
 **Scope:** `src/views/components.py` · `module`
 
 [Source](../src/views/components.py#L21)
+
+Build the persistent select custom ID shared by menus and their handlers.
+
+### `async def _reject_other_owner(interaction: discord.Interaction[Any], owner_id: int, key: str) -> bool`
+
+**Scope:** `src/views/components.py` · `module`
+
+[Source](../src/views/components.py#L26)
 
 Allow the recorded owner and refuse the control to everybody else.
 
@@ -3329,7 +3360,7 @@ Allow the recorded owner and refuse the control to everybody else.
 
 **Scope:** `src/views/components.py` · `module`
 
-[Source](../src/views/components.py#L34)
+[Source](../src/views/components.py#L39)
 
 Run the handler registered for an owned control inside a trace.
 
@@ -3337,7 +3368,7 @@ Run the handler registered for an owned control inside a trace.
 
 **Scope:** `src/views/components.py` · `module`
 
-[Source](../src/views/components.py#L54)
+[Source](../src/views/components.py#L59)
 
 Create a persistent button whose action can only be used by its owner.
 
@@ -3345,7 +3376,7 @@ Create a persistent button whose action can only be used by its owner.
 
 **Scope:** `src/views/components.py` · `OwnedActionButton`
 
-[Source](../src/views/components.py#L57)
+[Source](../src/views/components.py#L62)
 
 Build a stable custom ID containing the action, owner, and payload.
 
@@ -3353,7 +3384,7 @@ Build a stable custom ID containing the action, owner, and payload.
 
 **Scope:** `src/views/components.py` · `OwnedActionButton`
 
-[Source](../src/views/components.py#L83)
+[Source](../src/views/components.py#L88)
 
 Reconstruct a persistent button from its custom ID and visible style.
 
@@ -3361,7 +3392,7 @@ Reconstruct a persistent button from its custom ID and visible style.
 
 **Scope:** `src/views/components.py` · `OwnedActionButton`
 
-[Source](../src/views/components.py#L102)
+[Source](../src/views/components.py#L107)
 
 Reject interactions from users other than the button's recorded owner.
 
@@ -3369,7 +3400,7 @@ Reject interactions from users other than the button's recorded owner.
 
 **Scope:** `src/views/components.py` · `OwnedActionButton`
 
-[Source](../src/views/components.py#L108)
+[Source](../src/views/components.py#L113)
 
 Dispatch the button action to its registered handler inside a trace.
 
@@ -3377,7 +3408,7 @@ Dispatch the button action to its registered handler inside a trace.
 
 **Scope:** `src/views/components.py` · `module`
 
-[Source](../src/views/components.py#L115)
+[Source](../src/views/components.py#L120)
 
 Create a persistent select menu whose action is restricted to its owner.
 
@@ -3385,7 +3416,7 @@ Create a persistent select menu whose action is restricted to its owner.
 
 **Scope:** `src/views/components.py` · `OwnedSelect`
 
-[Source](../src/views/components.py#L118)
+[Source](../src/views/components.py#L123)
 
 Build a stable custom ID and a translated placeholder when options are empty.
 
@@ -3393,7 +3424,7 @@ Build a stable custom ID and a translated placeholder when options are empty.
 
 **Scope:** `src/views/components.py` · `OwnedSelect`
 
-[Source](../src/views/components.py#L150)
+[Source](../src/views/components.py#L155)
 
 Reconstruct a persistent select menu from its ID and current options.
 
@@ -3401,7 +3432,7 @@ Reconstruct a persistent select menu from its ID and current options.
 
 **Scope:** `src/views/components.py` · `OwnedSelect`
 
-[Source](../src/views/components.py#L169)
+[Source](../src/views/components.py#L174)
 
 Reject interactions from users other than the menu's recorded owner.
 
@@ -3409,7 +3440,7 @@ Reject interactions from users other than the menu's recorded owner.
 
 **Scope:** `src/views/components.py` · `OwnedSelect`
 
-[Source](../src/views/components.py#L175)
+[Source](../src/views/components.py#L180)
 
 Dispatch the selected value with the menu payload to its registered handler.
 
@@ -3417,7 +3448,7 @@ Dispatch the selected value with the menu payload to its registered handler.
 
 **Scope:** `src/views/components.py` · `module`
 
-[Source](../src/views/components.py#L186)
+[Source](../src/views/components.py#L191)
 
 Build a compact red embed for an invalid or unavailable component action.
 

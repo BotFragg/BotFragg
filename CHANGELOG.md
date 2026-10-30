@@ -1,5 +1,28 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- `/logout` now cancels a Riot login that is already in flight, so credentials submitted
+  moments earlier cannot be stored after the command reports success.
+- The Riot client-version and catalog refresh jobs are merged into one loop; the same
+  upstream fetch now feeds both. `GAME_VERSION_INTERVAL_MINUTES` is removed — use
+  `USER_AGENT_INTERVAL_MINUTES` to set the cadence.
+
+### Fixed
+
+- A cached storefront is served while Riot authentication is unavailable instead of being
+  discarded, and `/logout` drops the cached entry.
+- Switching accounts on a Night Market view for an account without offers now reports that
+  no Night Market is available instead of rendering an empty header.
+- Alert pagination no longer skips an alert when another view removes one from an earlier
+  page.
+- Rolling migration 0005 back no longer republishes every user's shop.
+- Suggestion review no longer DMs a follower who untracked or deleted their data mid-review.
+- Concurrent daily-alert workers no longer lose delivery-failure counts.
+- Shard webhook transport failures are logged instead of escaping the listener.
+
 ## [1.2.3] - 2026-10-22
 
 ### Changed
