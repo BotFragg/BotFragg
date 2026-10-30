@@ -401,23 +401,23 @@ async def test_malformed_wallet_is_unavailable(balances):
         await shop.wallet(NS(puuid="synthetic", region="na"))
 
 
-async def test_cached_shop_requires_active_credentials() -> None:
-    """Verify that cached shop requires active credentials."""
+async def test_cached_shop_is_served_during_auth_outage() -> None:
+    """Verify that an unexpired storefront is served when Riot auth is unavailable."""
 
     class LoggedOutAuth:
-        """Simulate missing credentials to verify cached storefront data is not served after logout."""
+        """Simulate missing credentials so a cached storefront must be used."""
 
         async def auth_headers(self, account):
-            """Return the test authorization headers for the fake account."""
+            """Fail the way an expired or unrefreshable token does."""
             raise AuthenticationRequired("Riot login is required")
 
     service = ShopService(
         SimpleNamespace(use_shop_cache=True), None, LoggedOutAuth(), None
     )
-    service._cache["account"] = ShopData([], [], [], 2_000_000_000, None)
+    cached = ShopData([], [], [], 2_000_000_000, None)
+    service._cache["account"] = cached
 
-    with pytest.raises(AuthenticationRequired):
-        await service.storefront(SimpleNamespace(puuid="account"))
+    assert await service.storefront(SimpleNamespace(puuid="account")) is cached
 
 
 async def test_expired_shop_cache_entry_is_removed_when_refetch_fails() -> None:

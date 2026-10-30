@@ -548,3 +548,63 @@ async def test_deletedata_clears_cached_shops_after_database_delete(
         ("clear", "first"),
         ("clear", "second"),
     ]
+
+
+@pytest.mark.asyncio
+async def test_logout_cancels_inflight_login_and_clears_cached_shop(database):
+    """A login that started before /logout must not re-store the credentials."""
+    auth = auth_service()
+    owner = await User.create(id=101, current_account_id="synthetic")
+    await Account.create(
+        puuid="synthetic",
+        user=owner,
+        username="Example#NA",
+        auth_blob=auth.vault.encrypt(
+            {"rso": lifetime_jwt(sub="synthetic", exp=int(time.time()) + 3600)}
+        ),
+    )
+    auth.login_url(101)
+    nonce = auth._pending_nonces[101][0]
+    entered, resume = asyncio.Event(), asyncio.Event()
+
+    async def exchange(*_args, **_kwargs):
+        entered.set()
+        await resume.wait()
+        return NS(
+            status=200,
+            data={
+                "access_token": lifetime_jwt(
+                    sub="synthetic", exp=int(time.time()) + 3600
+                ),
+                "id_token": lifetime_jwt(nonce=nonce),
+                "refresh_token": "synthetic-refresh",
+            },
+        )
+
+    auth.http = NS(request=exchange)
+    auth._user_info = AsyncMock(return_value={"game_name": "Example", "tag_line": "NA"})
+    auth._entitlement = AsyncMock(return_value="synthetic-ent")
+    auth._region = AsyncMock(return_value="na")
+    login = asyncio.create_task(
+        auth.redeem_callback(101, "http://localhost/redirect?code=synthetic")
+    )
+    await entered.wait()
+    shop = NS(clear_cached_storefront=AsyncMock())
+    bot = NS(auth=auth, translator=BotFraggTranslator(), shop=shop)
+    interaction = NS(
+        user=NS(id=101),
+        client=bot,
+        locale=discord.Locale.american_english,
+        response=NS(defer=AsyncMock(), is_done=lambda: True),
+        followup=NS(send=AsyncMock()),
+    )
+
+    await LogoutCog.logout.callback(LogoutCog(bot), interaction, None)
+    resume.set()
+    result = await login
+
+    assert not result.success and result.error_key == "login-attempt-expired"
+    assert (await Account.get(puuid="synthetic")).auth_blob is None, (
+        "A login started before /logout re-stored the credentials"
+    )
+    shop.clear_cached_storefront.assert_awaited_once_with("synthetic")

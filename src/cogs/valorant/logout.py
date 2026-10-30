@@ -52,7 +52,13 @@ class LogoutCog(commands.Cog):
         if not target:
             await error(interaction, "logout-account-not-found")
             return
-        await self.bot.auth.clear_credentials(target)
+        # Cancel a login already in flight so it cannot store credentials after this.
+        # shortcut: this also cancels a concurrent login for the caller's other
+        # accounts; scope it per account if users report lost logins.
+        async with self.bot.auth.cancel_logins(interaction.user.id):
+            await self.bot.auth.clear_credentials(target)
+            # A cache hit is served without credentials, so drop the account's entry.
+            await self.bot.shop.clear_cached_storefront(target.puuid)
         await interaction.followup.send(
             embed=localized_embed(
                 interaction,

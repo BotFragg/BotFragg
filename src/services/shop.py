@@ -134,10 +134,12 @@ class ShopService:
             if cached and expired:
                 self._cache.pop(account.puuid, None)
                 cached = None
+            # Serve the cache before resolving credentials: a Riot auth outage must
+            # not discard a storefront that is still valid.
+            if use_cache and self.config.use_shop_cache and cached:
+                return cached
             try:
                 headers = await self.auth.auth_headers(account)
-                if use_cache and self.config.use_shop_cache and cached:
-                    return cached
                 return await self._fetch_storefront(account, headers)
             except HTTPFailure as exc:
                 raise ShopUnavailable(str(exc)) from exc
