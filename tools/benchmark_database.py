@@ -72,7 +72,8 @@ async def benchmark(users: int, invocations: int, repeats: int) -> dict:
             users,
             invocations,
         )
-        await admin.execute("ANALYZE")
+        # Only the benchmark tables: the database may hold other schemas.
+        await admin.execute('ANALYZE "user", "account", "alert", "commandinvocation"')
         shop_data = ShopData(
             [Offer(skin, 1000, 4000000000) for skin in skins], [], [], 4000000000, None
         )
