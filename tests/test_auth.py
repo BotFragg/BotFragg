@@ -1607,3 +1607,43 @@ async def test_disabled_auto_refresh_uses_valid_tokens_and_rejects_expired_ones(
     with pytest.raises(AuthenticationRequired):
         await service.auth_headers(expired)
     service.http.request.assert_not_awaited()
+
+
+@pytest.mark.usefixtures("database")
+async def test_transient_exchange_failure_keeps_the_login_attempt_retryable():
+    """A failed token exchange must not consume the pending nonce."""
+    service = auth_service()
+    service.login_url(101)
+    nonce = service._pending_nonces[101][0]
+    service.http = NS(request=AsyncMock(side_effect=HTTPFailure("synthetic")))
+
+    first = await service.redeem_callback(
+        101, "http://localhost/redirect?code=synthetic"
+    )
+
+    assert first.error_key == "error-riot-auth-temporarily-unavailable"
+    service.http = NS(
+        request=AsyncMock(
+            return_value=HTTPResult(
+                200,
+                {
+                    "access_token": lifetime_jwt(
+                        sub="synthetic", exp=int(time.time()) + 3600
+                    ),
+                    "id_token": lifetime_jwt(nonce=nonce),
+                    "refresh_token": "synthetic-refresh",
+                },
+            )
+        )
+    )
+    service._user_info = AsyncMock(
+        return_value={"game_name": "Example", "tag_line": "NA"}
+    )
+    service._entitlement = AsyncMock(return_value="synthetic-ent")
+    service._region = AsyncMock(return_value="na")
+
+    second = await service.redeem_callback(
+        101, "http://localhost/redirect?code=synthetic"
+    )
+
+    assert second.success

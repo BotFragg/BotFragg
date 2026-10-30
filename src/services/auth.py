@@ -173,7 +173,9 @@ class AuthService:
             return AuthResult(False, error_key="login-code-missing")
         if not code:
             return AuthResult(False, error_key="login-code-missing")
-        pending = self._pending_nonces.pop(discord_id, None)
+        # Keep the nonce until the exchange succeeds: a transient Riot failure
+        # must not cost the user a fresh browser sign-in.
+        pending = self._pending_nonces.get(discord_id)
         if not pending or pending[1] < time.monotonic():
             return AuthResult(False, error_key="login-attempt-expired")
         cancelled = self._login_cancellations.setdefault(discord_id, asyncio.Event())
@@ -207,6 +209,8 @@ class AuthService:
                 False, error_key="error-riot-auth-temporarily-unavailable"
             )
         claims = decode_jwt(token_data.get("id_token"))
+        # Riot accepted the code, so this login attempt is spent either way.
+        self._pending_nonces.pop(discord_id, None)
         if claims.get("nonce") != pending[0]:
             return AuthResult(False, error_key="login-nonce-mismatch")
         auth: LoginCredentials = {
