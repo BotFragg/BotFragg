@@ -35,6 +35,8 @@ GITHUB_COMMITS_URL = "https://api.github.com/repos/BotFragg/BotFragg/commits?per
 GITHUB_REPOSITORY_URL = "https://github.com/BotFragg/BotFragg"
 GITHUB_COMMIT_URL = f"{GITHUB_REPOSITORY_URL}/commit/{{}}"
 GITHUB_CACHE_SECONDS = 1800
+# A failed fetch is retried soon instead of being cached for the full window.
+GITHUB_RETRY_SECONDS = 60
 COMMIT_SHA = re.compile(r"[0-9a-f]{40,64}", re.IGNORECASE)
 
 
@@ -50,6 +52,7 @@ class ExtraCog(commands.Cog):
         self._latest_updates: list[tuple[str, str | None, str | None]] | None = None
         self._latest_updates_expires = 0.0
         self._latest_updates_lock = asyncio.Lock()
+        self._mentions: dict[str, str] | None = None
         self.source_line_count: int | None
         # shortcut: pending IDs survive only this cog; durable recovery needs an outbox.
         self._pending_status_message: int | None = None
@@ -273,7 +276,11 @@ class ExtraCog(commands.Cog):
                             updates.append((sha, subject, commit_date))
                         if updates or not response.data:
                             self._latest_updates = updates
-                    self._latest_updates_expires = monotonic() + GITHUB_CACHE_SECONDS
+                    self._latest_updates_expires = monotonic() + (
+                        GITHUB_CACHE_SECONDS
+                        if self._latest_updates is not None
+                        else GITHUB_RETRY_SECONDS
+                    )
 
         if self._latest_updates is None:
             return self.bot.translator.text(locale, "botinfo-commits-unavailable")
@@ -386,13 +393,19 @@ class ExtraCog(commands.Cog):
             await error(interaction, "error-bot-starting")
             return
 
-        try:
-            mentions = self._command_mentions(await self.bot.tree.fetch_commands())
-        except discord.HTTPException:
-            log.warning(
-                "Could not fetch command mentions for the help command", exc_info=True
-            )
-            mentions = {}
+        mentions = self._mentions
+        if mentions is None:
+            try:
+                mentions = self._command_mentions(await self.bot.tree.fetch_commands())
+            except discord.HTTPException:
+                log.warning(
+                    "Could not fetch command mentions for the help command",
+                    exc_info=True,
+                )
+                mentions = {}
+            else:
+                # Command lists change only on sync, which happens at startup.
+                self._mentions = mentions
 
         categories: dict[str, list[str]] = {}
         for command in self.bot.tree.walk_commands():

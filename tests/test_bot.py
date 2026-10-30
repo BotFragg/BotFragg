@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sys
 from types import SimpleNamespace
+from unittest.mock import AsyncMock
 from urllib.parse import parse_qs, urlparse
 
 import aiohttp
@@ -30,6 +31,8 @@ from src.cogs.valorant.shop import (
     ShopCog,
 )
 from src.config import Settings
+from src.localization import BotFraggTranslator
+from src.services.http import HTTPFailure
 from tests.helpers import (
     TEST_LOCALE,
     TEST_TRANSLATOR,
@@ -415,3 +418,52 @@ async def test_guild_log_transport_failure_does_not_escape(monkeypatch):
     await EventsCog(bot)._log_guild_event(
         SimpleNamespace(id=1, name="Guild"), 123, "I've joined a guild!"
     )
+
+
+async def test_botinfo_retries_soon_after_a_failed_fetch(monkeypatch):
+    """A failed commit lookup must not be cached for the full window."""
+    from src.cogs.extra import GITHUB_RETRY_SECONDS, ExtraCog
+
+    bot = SimpleNamespace(
+        riot_http=SimpleNamespace(
+            request=AsyncMock(side_effect=HTTPFailure("synthetic outage"))
+        ),
+        translator=BotFraggTranslator(),
+    )
+    cog = ExtraCog(bot)
+    monkeypatch.setattr("src.cogs.extra.monotonic", lambda: 1000.0)
+
+    summary = await cog._latest_commit_summary(discord.Locale.american_english)
+
+    assert summary == bot.translator.text(
+        discord.Locale.american_english, "botinfo-commits-unavailable"
+    )
+    assert cog._latest_updates_expires == 1000.0 + GITHUB_RETRY_SECONDS
+
+
+async def test_help_fetches_command_mentions_once():
+    """The help command must not fetch the application commands on every call."""
+    from src.cogs.extra import ExtraCog
+
+    fetch = AsyncMock(return_value=[])
+    bot = SimpleNamespace(
+        user=SimpleNamespace(
+            id=1, display_avatar=SimpleNamespace(url="https://example.com/a.png")
+        ),
+        tree=SimpleNamespace(fetch_commands=fetch, walk_commands=lambda: []),
+        translator=BotFraggTranslator(),
+        config=SimpleNamespace(support_url=None, vote_url=None, website_url=None),
+    )
+    cog = ExtraCog(bot)
+    interaction = SimpleNamespace(
+        client=bot,
+        locale=discord.Locale.american_english,
+        user=SimpleNamespace(id=2),
+        response=SimpleNamespace(defer=AsyncMock()),
+        followup=SimpleNamespace(send=AsyncMock()),
+    )
+
+    await ExtraCog.help.callback(cog, interaction)
+    await ExtraCog.help.callback(cog, interaction)
+
+    assert fetch.await_count == 1
