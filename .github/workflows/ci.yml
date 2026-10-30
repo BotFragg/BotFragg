@@ -56,7 +56,12 @@ jobs:
         with:
           context: .
           push: false
+          load: true
           tags: ghcr.io/botfragg/botfragg:ci
+      - name: Smoke-test the image
+        run: >-
+          docker run --rm ghcr.io/botfragg/botfragg:ci
+          python -c "import src.main, src.cogs.tasks, src.health"
 
   publish-image:
     name: Publish Docker image
