@@ -18,6 +18,11 @@ SELECT_RE = re.compile(
 )
 
 
+def select_custom_id(action: str, owner_id: int, payload: str) -> str:
+    """Build the persistent select custom ID shared by menus and their handlers."""
+    return f"botfragg_select:{action}:{owner_id}:{payload}"
+
+
 async def _reject_other_owner(
     interaction: discord.Interaction[Any], owner_id: int, key: str
 ) -> bool:
@@ -140,7 +145,7 @@ class OwnedSelect(discord.ui.DynamicItem[discord.ui.Select], template=SELECT_RE)
             ]
         super().__init__(
             discord.ui.Select(
-                custom_id=f"botfragg_select:{action}:{owner_id}:{payload}",
+                custom_id=select_custom_id(action, owner_id, payload),
                 placeholder=placeholder,
                 options=select_options,
             )

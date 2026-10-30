@@ -29,7 +29,7 @@ from ...services.shop import (
     ShopData,
     ShopUnavailable,
 )
-from ...views import OwnedActionButton, OwnedSelect, timestamp
+from ...views import OwnedActionButton, OwnedSelect, select_custom_id, timestamp
 from ...views.shop import (
     TIER_COLOURS,
     _price_line,
@@ -536,6 +536,9 @@ class ShopCog(commands.Cog):
             if mode in {"night", "nightmarket"} and data.night_market_incomplete:
                 await error(interaction, "error-riot-services-unavailable")
                 return
+            if mode in {"night", "nightmarket"} and not data.night_market:
+                await error(interaction, "shop-night-market-none")
+                return
             currency = await self.bot.emoji_service.currency(
                 "kc" if mode == "accessory" else "vp"
             ) or ("KC" if mode == "accessory" else "VP")
@@ -660,8 +663,8 @@ class ShopCog(commands.Cog):
             selector_payload = puuid
         else:
             selector_payload = f"{puuid}|{source}"
-        custom_id = (
-            f"botfragg_select:shop_bundle:{interaction.user.id}:{selector_payload}"
+        custom_id = select_custom_id(
+            "shop_bundle", interaction.user.id, selector_payload
         )
         if (
             not separator
@@ -675,13 +678,12 @@ class ShopCog(commands.Cog):
                 ephemeral=True,
             )
             return
+        # Acknowledge before the database lookup: the click has a 3 second budget.
+        await interaction.response.defer()
         account = await account_for_user(interaction.user.id, puuid)
         if not account:
-            await interaction.response.send_message(
-                translated(interaction, "error-account-unavailable"), ephemeral=True
-            )
+            await error(interaction, "error-account-unavailable")
             return
-        await interaction.response.defer()
         try:
             data = await self.bot.shop.storefront(account)
         except (AuthenticationRequired, ShopUnavailable) as exc:
@@ -744,7 +746,7 @@ class ShopCog(commands.Cog):
             expires = int(expiry)
         except ValueError:
             expires = 0
-        skin_menu_id = f"botfragg_select:shop_skin:{interaction.user.id}:{expiry}"
+        skin_menu_id = select_custom_id("shop_skin", interaction.user.id, expiry)
         if (
             not separator
             or expires <= time.time()
@@ -801,8 +803,8 @@ class ShopCog(commands.Cog):
             expires = int(expiry)
         except ValueError:
             expires = 0
-        variant_menu_id = (
-            f"botfragg_select:shop_variant:{interaction.user.id}:{expiry}|{skin_uuid}"
+        variant_menu_id = select_custom_id(
+            "shop_variant", interaction.user.id, f"{expiry}|{skin_uuid}"
         )
         if (
             not separator

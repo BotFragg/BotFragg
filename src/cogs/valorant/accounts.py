@@ -210,6 +210,8 @@ class AccountsCog(commands.Cog):
         self, interaction: discord.Interaction, payload: str
     ) -> None:
         """Refresh an account page privately when an old public list now hides names."""
+        # Read before acknowledging: this row is the baseline the privacy recheck
+        # below compares against, so it must predate the deferred work.
         original_user = await get_user(interaction.user.id)
         await interaction.response.defer()
         try:
