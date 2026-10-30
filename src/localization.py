@@ -45,7 +45,7 @@ class BotFraggTranslator(app_commands.Translator):
         except Exception:
             log.exception(
                 "Could not format localized message",
-                extra={"locale": locale_code, "message_id": key},
+                extra={"locale": locale_code, "message_key": key},
             )
             value = None
         if value is not None:
@@ -56,12 +56,12 @@ class BotFraggTranslator(app_commands.Translator):
             except Exception:
                 log.exception(
                     "Could not format English message",
-                    extra={"message_id": key},
+                    extra={"message_key": key},
                 )
             if value is not None:
                 return value
         if key.islower() and " " not in key:
-            log.error("Missing English message", extra={"message_id": key})
+            log.error("Missing English message", extra={"message_key": key})
         return key
 
     async def translate(

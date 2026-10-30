@@ -139,3 +139,29 @@ async def test_setting_selected_persists_the_private_shop_choice():
 
     await cog.setting_selected(interaction, "unknown|true")
     assert (await User.get(id=101)).others_can_view_shop is False
+
+
+def test_locale_checker_rejects_metadata_discord_would_refuse(tmp_path):
+    """Command names and descriptions must fit Discord's limits before a sync."""
+    from tools.check_locales import catalog_limit_errors
+
+    path = tmp_path / "de" / "messages.ftl"
+    path.parent.mkdir()
+    path.write_text(
+        "command-shop-name = shop\ncommand-shop-description = " + "x" * 101 + "\n",
+        encoding="utf-8",
+    )
+
+    errors = catalog_limit_errors(
+        path, ["command-shop-name", "command-shop-description"]
+    )
+
+    assert len(errors) == 1
+    assert "command-shop-description" in errors[0]
+
+
+def test_localization_diagnostics_keep_their_message_key():
+    """The privacy filter must not redact the field naming a broken message."""
+    from src.monitoring import _scrub
+
+    assert _scrub({"message_key": "alerts-title"}) == {"message_key": "alerts-title"}

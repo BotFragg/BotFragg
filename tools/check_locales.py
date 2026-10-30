@@ -270,6 +270,35 @@ def command_name_errors(
     return errors
 
 
+# Discord rejects command names outside this rule, and over-long descriptions,
+# with a 400 at sync time.
+DISCORD_NAME = re.compile(r"^[-_\w]{1,32}$", re.UNICODE)
+
+
+def catalog_limit_errors(path: Path, message_ids) -> list[str]:
+    """Reject localized command metadata Discord would refuse during sync."""
+    bundle = FluentBundle([path.parent.name], use_isolating=False)
+    bundle.add_resource(FluentResource(path.read_text(encoding="utf-8")))
+    errors = []
+    for message_id in message_ids:
+        prefix, _, suffix = message_id.rpartition("-")
+        if prefix.split("-")[0] not in {"command", "group", "option"}:
+            continue
+        if suffix not in {"name", "description"} or not bundle.has_message(message_id):
+            continue
+        message = bundle.get_message(message_id)
+        text = bundle.format_pattern(message.value)[0].strip() if message.value else ""
+        if suffix == "name" and not DISCORD_NAME.fullmatch(text):
+            errors.append(
+                f"{path.parent.name}:{message_id} is not a valid command name"
+            )
+        elif suffix == "description" and not 1 <= len(text) <= 100:
+            errors.append(
+                f"{path.parent.name}:{message_id} exceeds the description limit"
+            )
+    return errors
+
+
 def main() -> int:
     """Validate all supported locale files against the English source catalog."""
     english_path = LOCALES / "en-US" / "messages.ftl"
@@ -317,17 +346,19 @@ def main() -> int:
         if locale not in supported:
             print(f"Unsupported Discord locale directory: {locale}")
             return 1
-        errors = command_name_errors(path, command_scopes)
-        if errors:
-            print("\n".join(errors))
-            return 1
-        if path == english_path:
-            continue
         try:
             translated = catalog(path)
         except (OSError, ValueError) as exc:
             print(f"Invalid {locale} catalog: {exc}")
             return 1
+        errors = command_name_errors(path, command_scopes) + catalog_limit_errors(
+            path, translated
+        )
+        if errors:
+            print("\n".join(errors))
+            return 1
+        if path == english_path:
+            continue
         unknown = sorted(translated.keys() - english.keys())
         if unknown:
             print(f"{locale} contains unknown message IDs: {', '.join(unknown)}")
