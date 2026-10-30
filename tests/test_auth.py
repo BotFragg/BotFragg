@@ -11,7 +11,9 @@ from types import SimpleNamespace
 from types import SimpleNamespace as NS
 from unittest.mock import AsyncMock
 from urllib.parse import parse_qs, urlparse
+from uuid import UUID
 
+import aiohttp
 import discord
 import pytest
 from cryptography.fernet import Fernet
@@ -24,6 +26,7 @@ from src.cogs.valorant.login import LoginCog
 from src.localization import BotFraggTranslator
 from src.models import (
     Account,
+    Alert,
     User,
 )
 from src.services.accounts import delete_user_data
@@ -33,6 +36,7 @@ from src.services.auth import (
     decode_jwt,
     token_expiry,
 )
+from src.services.catalog import Skin
 from src.services.crypto import AuthVault
 from src.services.http import HTTPFailure, HTTPResult, RateLimited
 from src.services.shop import (
@@ -41,6 +45,8 @@ from src.services.shop import (
     ShopUnavailable,
 )
 from tests.helpers import (
+    TEST_LOCALE,
+    TEST_TRANSLATOR,
     _fake_access_token,
     _fake_jwt,
     _localized_bot,
@@ -1647,3 +1653,73 @@ async def test_transient_exchange_failure_keeps_the_login_attempt_retryable():
     )
 
     assert second.success
+
+
+@pytest.mark.usefixtures("database")
+async def test_testalerts_reports_a_dropped_dm_connection(monkeypatch):
+    """A transport failure while sending the test DM must not escape the command."""
+    owner = await User.create(id=123, current_account_id="synthetic")
+    account = await Account.create(puuid="synthetic", user=owner, username="Example#NA")
+    alert = await Alert.create(
+        account=account, skin_uuid=UUID("11111111-1111-4111-8111-111111111111")
+    )
+    sent: list[object] = []
+
+    class Response:
+        """Record the deferred acknowledgement."""
+
+        async def defer(self, *, thinking: bool, ephemeral: bool) -> None:
+            assert thinking and ephemeral
+
+        def is_done(self) -> bool:
+            return True
+
+    class Followup:
+        """Capture the private follow-up embeds."""
+
+        async def send(self, *, embed: discord.Embed, ephemeral: bool) -> None:
+            assert ephemeral
+            sent.append(embed)
+
+    class Target:
+        """Fail the DM the way a dropped connection does."""
+
+        async def send(self, **_kwargs) -> None:
+            raise aiohttp.ServerDisconnectedError("synthetic")
+
+    class Auth:
+        """Report a usable credential check."""
+
+        async def ensure(self, _account: object) -> object:
+            return SimpleNamespace(success=True)
+
+    async def selected_account(_user_id: int) -> Account:
+        return account
+
+    async def first_alert(_user_id: int) -> Alert:
+        return alert
+
+    monkeypatch.setattr("src.cogs.valorant.alerts.selected_account", selected_account)
+    monkeypatch.setattr("src.cogs.valorant.alerts.first_alert", first_alert)
+    interaction = _localized_interaction(
+        user=SimpleNamespace(id=123, send=Target().send),
+        response=Response(),
+        followup=Followup(),
+    )
+    bot = _localized_bot(
+        auth=Auth(),
+        emoji_service=SimpleNamespace(skin_name=lambda name, _tier: name),
+        shop=SimpleNamespace(
+            storefront=AsyncMock(return_value=ShopData([], [], [], 4_000_000_000, None))
+        ),
+        catalog=SimpleNamespace(
+            get_skin=lambda _uuid: Skin("u", "o", "Skin", None, None)
+        ),
+        register_component=lambda *_args: None,
+    )
+
+    await AlertsCog.testalerts.callback(AlertsCog(bot), interaction)
+
+    assert sent[0].description == TEST_TRANSLATOR.text(
+        TEST_LOCALE, "test-alerts-dm-failed"
+    )

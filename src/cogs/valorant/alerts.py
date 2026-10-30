@@ -13,7 +13,7 @@ from ...services.accounts import selected_account
 from ...services.alerts import create_alert, first_alert, list_alerts_page, remove_alert
 from ...services.auth import AuthenticationRequired
 from ...services.catalog import Skin
-from ...services.http import HTTPFailure
+from ...services.http import DISCORD_HTTP_ERRORS, HTTPFailure
 from ...services.shop import ShopUnavailable
 from ...views import OwnedActionButton, timestamp
 from ...views.ui import EmbedMessage, embed, error, translated, view
@@ -375,18 +375,22 @@ class AlertsCog(commands.Cog):
             )
             if skin.icon:
                 card.set_thumbnail(url=skin.icon)
-            await interaction.user.send(
-                embed=card,
-                view=view(
-                    OwnedActionButton(
-                        "remove_alert",
-                        interaction.user.id,
-                        str(alert.id),
-                        label=translated(interaction, "alerts-remove-button"),
-                        style=discord.ButtonStyle.danger,
-                    )
-                ),
-            )
+            try:
+                await interaction.user.send(
+                    embed=card,
+                    view=view(
+                        OwnedActionButton(
+                            "remove_alert",
+                            interaction.user.id,
+                            str(alert.id),
+                            label=translated(interaction, "alerts-remove-button"),
+                            style=discord.ButtonStyle.danger,
+                        )
+                    ),
+                )
+            except DISCORD_HTTP_ERRORS:
+                await error(interaction, "test-alerts-dm-failed")
+                return
         except ShopUnavailable:
             await error(
                 interaction,
@@ -395,12 +399,6 @@ class AlertsCog(commands.Cog):
             return
         except AuthenticationRequired:
             await error(interaction, "error-riot-login-expired")
-            return
-        except discord.HTTPException:
-            await error(
-                interaction,
-                "test-alerts-dm-failed",
-            )
             return
         await interaction.followup.send(
             embed=embed(translated(interaction, "test-alerts-sent")),
