@@ -22,6 +22,10 @@ MISSION_METADATA_RETRY_SECONDS = 30
 ACCESSORY_METADATA_RETRY_SECONDS = 30
 CATALOG_FORMAT_VERSION = 4
 BUDDY_ITEM_TYPE_ID = "dd3bf334-87f3-40bd-b043-682a57a8dc3a"
+PLAYER_CARD_ITEM_TYPE_ID = "3f296c07-64c3-494c-923b-fe692a4fa1bd"
+PLAYER_TITLE_ITEM_TYPE_ID = "de7caa6b-adf7-4588-bbd1-143831e786c6"
+SPRAY_ITEM_TYPE_ID = "d5f120f8-ff8c-4aac-92ea-f2b5acbe9475"
+FLEX_ITEM_TYPE_ID = "03a572de-4234-31ed-d344-ababa488f981"
 DISCORD_TO_VALORANT_LOCALE = {
     "id": "id-ID",
     "de": "de-DE",
@@ -297,30 +301,38 @@ class CatalogService:
         if self._cache_format != CATALOG_FORMAT_VERSION:
             await self.refresh()
 
-    async def refresh(self, *, check_version: bool = False) -> None:
+    async def _fetch_version(self) -> str:
+        """Return the upstream catalog version used to detect a game patch."""
+        version_response = await self.http.request(
+            "GET", "https://valorant-api.com/v1/version"
+        )
+        version_data = (
+            version_response.data.get("data")
+            if isinstance(version_response.data, dict)
+            else None
+        )
+        if version_response.status != 200 or not isinstance(version_data, dict):
+            raise HTTPFailure("Invalid VALORANT catalog version response")
+        current_version = (
+            version_data.get("manifestId") or version_data.get("version") or ""
+        )
+        if not isinstance(current_version, str) or not current_version:
+            raise HTTPFailure("Invalid VALORANT catalog version identifier")
+        return current_version
+
+    async def refresh(
+        self, *, check_version: bool = False, version: str | None = None
+    ) -> None:
         """Fetch the current weapon and bundle catalogs and save their snapshot.
 
         When ``check_version`` is true, skip rebuilding only if the upstream version
         and local cache format are current. A saved version change invalidates
         accessory metadata, including requests that began before the refresh.
         A failed save restores the previous catalog even during cancellation.
+        ``version`` lets a caller reuse a version it already fetched.
         """
         async with self._lock:
-            version_response = await self.http.request(
-                "GET", "https://valorant-api.com/v1/version"
-            )
-            version_data = (
-                version_response.data.get("data")
-                if isinstance(version_response.data, dict)
-                else None
-            )
-            if version_response.status != 200 or not isinstance(version_data, dict):
-                raise HTTPFailure("Invalid VALORANT catalog version response")
-            current_version = (
-                version_data.get("manifestId") or version_data.get("version") or ""
-            )
-            if not isinstance(current_version, str) or not current_version:
-                raise HTTPFailure("Invalid VALORANT catalog version identifier")
+            current_version = version or await self._fetch_version()
             if (
                 check_version
                 and current_version
@@ -347,7 +359,7 @@ class CatalogService:
                     raise HTTPFailure("VALORANT catalog contained no skins or bundles")
                 self.version = current_version
                 self._cache_format = CATALOG_FORMAT_VERSION
-                snapshot = self._serialize()
+                snapshot = await asyncio.to_thread(self._serialize)
                 write = asyncio.create_task(asyncio.to_thread(self._save, snapshot))
                 try:
                     await asyncio.shield(write)
@@ -532,10 +544,10 @@ class CatalogService:
         if item_type.lower() == BUDDY_ITEM_TYPE_ID:
             return await self._buddy_accessory(uuid)
         endpoints = {
-            "d5f120f8-ff8c-4aac-92ea-f2b5acbe9475": "sprays",
-            "3f296c07-64c3-494c-923b-fe692a4fa1bd": "playercards",
-            "de7caa6b-adf7-4588-bbd1-143831e786c6": "playertitles",
-            "03a572de-4234-31ed-d344-ababa488f981": "flex",
+            SPRAY_ITEM_TYPE_ID: "sprays",
+            PLAYER_CARD_ITEM_TYPE_ID: "playercards",
+            PLAYER_TITLE_ITEM_TYPE_ID: "playertitles",
+            FLEX_ITEM_TYPE_ID: "flex",
         }
         endpoint = endpoints.get(item_type.lower())
         key = (endpoint or "", uuid)

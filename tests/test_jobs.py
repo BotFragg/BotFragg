@@ -162,10 +162,12 @@ async def test_delivery_database_failures_are_not_swallowed(
     with pytest.raises(failure, match="DB outage"):
         if mode == "daily":
             await TasksCog._send_daily_shop(
-                cog, owner, account, ShopData([], [], [], 0, None)
+                cog, target, owner, account, ShopData([], [], [], 0, None)
             )
         else:
-            await TasksCog._send_alert(cog, owner.id, alert, Offer(skin, 100, 0))
+            await TasksCog._send_alert(
+                cog, target, owner.id, alert, Offer(skin, 100, 0)
+            )
     target.send.assert_not_awaited()
 
 
@@ -324,13 +326,20 @@ async def test_notifications_recheck_identity_and_preferences(mode, stage, chang
         config=NS(link_item_image=False),
     )
     cog = NS(bot=bot)
-    if mode == "daily":
-        result = await TasksCog._send_daily_shop(
-            cog, owner, account, ShopData([offer], [], [], 4_000_000_000, None)
-        )
-    else:
-        result = await TasksCog._send_alert(cog, owner.id, alert, offer)
-    assert result is True
+    cog._send_alert = lambda *args: TasksCog._send_alert(cog, *args)
+    cog._send_daily_shop = lambda *args: TasksCog._send_daily_shop(cog, *args)
+    shop = ShopData([offer], [], [], 4_000_000_000, None)
+    # The recipient is resolved once, before either delivery helper re-reads its row.
+    result = await TasksCog._deliver_daily_alert_result(
+        cog,
+        owner.id,
+        owner,
+        account,
+        shop,
+        [] if mode == "daily" else [(alert, offer)],
+        mode == "daily",
+    )
+    assert result == 0
     target.send.assert_not_awaited()
 
 
@@ -736,20 +745,19 @@ async def test_tasks_cog_awaits_cancelled_background_loops(
             self.task.cancel()
 
     monkeypatch.setattr("src.cogs.tasks.HEALTH_PATH", tmp_path / "health.json")
-    loops = [Loop(asyncio.create_task(worker())) for _ in range(5)]
+    loops = [Loop(asyncio.create_task(worker())) for _ in range(4)]
     await asyncio.sleep(0)
     cog = SimpleNamespace(
         daily_alerts=loops[0],
         version_refresh=loops[1],
-        catalog_refresh=loops[2],
-        log_flush=loops[3],
-        health_watch=loops[4],
+        log_flush=loops[2],
+        health_watch=loops[3],
         discord_log_handler=logging.NullHandler(),
     )
 
     await TasksCog.cog_unload(cog)
 
-    assert finished == 5
+    assert finished == 4
     assert all(loop.get_task().done() for loop in loops)
 
 
@@ -783,24 +791,27 @@ async def test_task_notifications_handle_http_errors_while_fetching_user(
 
     monkeypatch.setattr("src.cogs.tasks.offer_cards", lambda *_args, **_kwargs: [])
 
-    sent_alert = await TasksCog._send_alert(
+    delivery_failures = await TasksCog._deliver_daily_alert_result(
         cog,
         user_id,
-        SimpleNamespace(id=1, account=SimpleNamespace(username="Player#NA")),
-        SimpleNamespace(
-            skin=SimpleNamespace(name="Skin", icon=None, tier_uuid=None), expires=0
-        ),
-    )
-    sent_shop = await TasksCog._send_daily_shop(
-        cog,
-        SimpleNamespace(id=user_id),
+        None,
         SimpleNamespace(username="Player#NA"),
         SimpleNamespace(offers=[], expires=0),
+        [
+            (
+                SimpleNamespace(id=1, account=SimpleNamespace(username="Player#NA")),
+                SimpleNamespace(
+                    skin=SimpleNamespace(name="Skin", icon=None, tier_uuid=None),
+                    expires=0,
+                ),
+            )
+        ],
+        False,
     )
     notice_failures = await TasksCog._credentials_expired(cog, user_id)
 
-    assert fetched_ids == [user_id, user_id, user_id]
-    assert sent_alert is False and sent_shop is False and notice_failures == 1
+    assert fetched_ids == [user_id, user_id]
+    assert delivery_failures == 1 and notice_failures == 1
 
 
 async def test_extra_cog_awaits_cancelled_background_loop() -> None:
@@ -832,3 +843,48 @@ async def test_extra_cog_awaits_cancelled_background_loop() -> None:
 
     assert finished.is_set()
     assert task.done()
+
+
+@pytest.mark.usefixtures("database")
+async def test_daily_delivery_resolves_the_recipient_once():
+    """One daily run must resolve the Discord user once per recipient, not per alert."""
+    owner = await User.create(id=101)
+    account = await Account.create(
+        puuid="synthetic", user=owner, username="Synthetic#TEST"
+    )
+    skin = Skin(str(UUID(int=1)), "offer", "Skin", None, None)
+    alerts = [
+        await Alert.create(account=account, skin_uuid=UUID(int=index))
+        for index in range(1, 4)
+    ]
+    target = NS(send=AsyncMock())
+    fetched: list[int] = []
+
+    async def fetch_user(user_id):
+        fetched.append(user_id)
+        return target
+
+    bot = _localized_bot(
+        get_user=lambda _user_id: None,
+        fetch_user=fetch_user,
+        emoji_service=NS(
+            skin_name=lambda name, _tier_uuid: name,
+            skin_emoji=lambda _tier_uuid: "",
+        ),
+    )
+    cog = NS(bot=bot)
+    cog._send_alert = lambda *args: TasksCog._send_alert(cog, *args)
+
+    result = await TasksCog._deliver_daily_alert_result(
+        cog,
+        owner.id,
+        None,
+        account,
+        ShopData([], [], [], 0, None),
+        [(alert, Offer(skin, 100, 0)) for alert in alerts],
+        False,
+    )
+
+    assert result == 0
+    assert fetched == [owner.id]
+    assert target.send.await_count == 3

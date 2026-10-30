@@ -1,4 +1,4 @@
-"""Background loops for daily alerts, catalog refresh, and Discord log delivery."""
+"""Background loops for daily alerts, upstream refresh, and Discord log delivery."""
 
 from __future__ import annotations
 
@@ -53,11 +53,7 @@ class TasksCog(commands.Cog):
         self.version_refresh.change_interval(
             minutes=bot.config.user_agent_interval_minutes
         )
-        self.catalog_refresh.change_interval(
-            minutes=bot.config.game_version_interval_minutes
-        )
         self.version_refresh.add_exception_type(HTTPFailure)
-        self.catalog_refresh.add_exception_type(HTTPFailure)
         self.daily_alerts.change_interval(time=bot.config.alert_time_utc)
         self.discord_log_handler = DiscordLogHandler()
         self.log_flush.change_interval(seconds=bot.config.log_flush_interval_seconds)
@@ -73,9 +69,6 @@ class TasksCog(commands.Cog):
             "version_refresh": JobHealth(
                 bot.config.user_agent_interval_minutes * 60 + 300
             ),
-            "catalog_refresh": JobHealth(
-                bot.config.game_version_interval_minutes * 60 + 300
-            ),
             "log_flush": JobHealth(bot.config.log_flush_interval_seconds + 300),
         }
         self._health_problems: list[str] | None = None
@@ -85,7 +78,6 @@ class TasksCog(commands.Cog):
         HEALTH_PATH.unlink(missing_ok=True)
         self.daily_alerts.start()
         self.version_refresh.start()
-        self.catalog_refresh.start()
         if self.bot.config.log_channel_id:
             logging.getLogger().addHandler(self.discord_log_handler)
             self.log_flush.start()
@@ -96,7 +88,6 @@ class TasksCog(commands.Cog):
         loops = (
             self.daily_alerts,
             self.version_refresh,
-            self.catalog_refresh,
             self.log_flush,
             self.health_watch,
         )
@@ -151,20 +142,27 @@ class TasksCog(commands.Cog):
         send_daily_shop: bool,
     ) -> int:
         """Deliver matching alerts and the optional daily shop; count failed DMs."""
+        try:
+            # Resolve once: fetch_user is an API call per alert otherwise.
+            target = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
+        except DISCORD_HTTP_ERRORS:
+            log.warning("Could not resolve alert recipient", exc_info=True)
+            return len(matches) + bool(send_daily_shop and user)
         failures = 0
         for alert, offer in matches:
-            failures += not await self._send_alert(user_id, alert, offer)
+            failures += not await self._send_alert(target, user_id, alert, offer)
         if send_daily_shop and user:
-            failures += not await self._send_daily_shop(user, account, shop)
+            failures += not await self._send_daily_shop(target, user, account, shop)
         return failures
 
-    async def _send_alert(self, user_id: int, alert: Alert, offer: Offer) -> bool:
+    async def _send_alert(
+        self,
+        target: discord.User | discord.Member,
+        user_id: int,
+        alert: Alert,
+        offer: Offer,
+    ) -> bool:
         """DM an owner-scoped skin alert and report whether delivery succeeded."""
-        try:
-            user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
-        except DISCORD_HTTP_ERRORS:
-            log.warning("Could not deliver alert notification", exc_info=True)
-            return False
         current = (
             await alert.persisted_row()
             .filter(account__user_id=user_id)
@@ -201,18 +199,21 @@ class TasksCog(commands.Cog):
                     style=discord.ButtonStyle.danger,
                 )
             )
-            await user.send(embed=card, view=controls)
+            await target.send(embed=card, view=controls)
         except DISCORD_HTTP_ERRORS:
             log.warning("Could not deliver alert notification", exc_info=True)
             return False
         return True
 
     async def _send_daily_shop(
-        self, user: User, account: Account, shop: ShopData
+        self,
+        target: discord.User | discord.Member,
+        user: User,
+        account: Account,
+        shop: ShopData,
     ) -> bool:
         """DM the selected account's daily shop and report delivery success."""
         try:
-            target = self.bot.get_user(user.id) or await self.bot.fetch_user(user.id)
             locale = discord.Locale.american_english
             vp = await self.bot.emoji_service.currency("vp") or "VP"
         except DISCORD_HTTP_ERRORS:
@@ -281,22 +282,15 @@ class TasksCog(commands.Cog):
 
     @tasks.loop(minutes=15)
     async def version_refresh(self) -> None:
-        """Refresh the Riot client version used in authenticated API requests."""
+        """Refresh the Riot client version and the catalog that depends on it."""
         with (
             self.job_health["version_refresh"].track("version_refresh"),
             transaction("botfragg.job.version_refresh", "botfragg.job"),
         ):
-            await self.bot.auth.refresh_version()
-
-    @tasks.loop(minutes=15)
-    async def catalog_refresh(self) -> None:
-        """Refresh the VALORANT catalog when its upstream version changes."""
-        with (
-            self.job_health["catalog_refresh"].track("catalog_refresh"),
-            transaction("botfragg.job.catalog_refresh", "botfragg.job"),
-        ):
+            # One upstream fetch feeds both the request headers and the catalog check.
+            version = await self.bot.auth.refresh_version()
             self.bot.shop.prune_expired()
-            await self.bot.catalog.refresh(check_version=True)
+            await self.bot.catalog.refresh(check_version=True, version=version)
 
     @tasks.loop(seconds=10)
     async def log_flush(self) -> None:
@@ -399,7 +393,6 @@ class TasksCog(commands.Cog):
 
     @daily_alerts.before_loop
     @version_refresh.before_loop
-    @catalog_refresh.before_loop
     @log_flush.before_loop
     @health_watch.before_loop
     async def before_jobs(self) -> None:

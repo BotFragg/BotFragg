@@ -114,8 +114,8 @@ class AuthService:
                 if cancelled.is_set():
                     self._login_cancellations.pop(discord_id, None)
 
-    async def refresh_version(self) -> None:
-        """Fetch Riot's current client version for authenticated request headers."""
+    async def refresh_version(self) -> str:
+        """Fetch Riot's current client version and return the catalog version key."""
         self.prune_expired_nonces()
         result = await self.http.request("GET", "https://valorant-api.com/v1/version")
         version = result.data.get("data") if isinstance(result.data, dict) else None
@@ -131,6 +131,8 @@ class AuthService:
         ):
             raise HTTPFailure("Invalid VALORANT client version response")
         self._version = version
+        catalog_version = version.get("manifestId") or version.get("version")
+        return catalog_version if isinstance(catalog_version, str) else ""
 
     @property
     def riot_headers(self) -> dict[str, str]:

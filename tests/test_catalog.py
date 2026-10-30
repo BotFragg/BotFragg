@@ -269,6 +269,7 @@ async def test_cancelled_failed_catalog_save_rolls_back_and_retries(
     changing_catalog, monkeypatch
 ):
     service, state = changing_catalog
+    real_to_thread = asyncio.to_thread
     await service.refresh()
     original = service._serialize()
     spray = await service.accessory("d5f120f8-ff8c-4aac-92ea-f2b5acbe9475", "item")
@@ -278,7 +279,9 @@ async def test_cancelled_failed_catalog_save_rolls_back_and_retries(
     started, release = asyncio.Event(), asyncio.Event()
     save = service._save
 
-    async def failed_worker(_function, *_args):
+    async def failed_worker(function, *args):
+        if getattr(function, "__name__", "") != "_save":
+            return await real_to_thread(function, *args)
         started.set()
         await release.wait()
         raise OSError("synthetic write failure")
@@ -305,11 +308,20 @@ async def test_cancelled_failed_catalog_save_rolls_back_and_retries(
     )
     assert await service.accessory(catalog_module.BUDDY_ITEM_TYPE_ID, "item") is buddy
 
-    writer = AsyncMock(side_effect=lambda function, *args: function(*args))
+    writes = 0
+    saved_functions = []
+
+    async def writer(function, *args):
+        nonlocal writes
+        if getattr(function, "__name__", "") == "_save":
+            writes += 1
+            saved_functions.append(function)
+        return await real_to_thread(function, *args)
+
     monkeypatch.setattr(catalog_module.asyncio, "to_thread", writer)
     await service.refresh(check_version=True)
-    writer.assert_awaited_once()
-    assert writer.call_args.args[0] == save
+    assert writes == 1
+    assert saved_functions[0] == save
     assert json.loads(service.path.read_text(encoding="utf-8"))["version"] == "v2"
     assert service.version == "v2"
     assert service._accessory_generation == generation + 1
@@ -386,16 +398,16 @@ async def test_malformed_weapon_rows_do_not_kill_catalog_loop():
     bot = NS(
         config=NS(
             user_agent_interval_minutes=15,
-            game_version_interval_minutes=15,
             alert_time_utc=utc_time(0, 0),
             log_flush_interval_seconds=10,
         ),
         wait_until_ready=AsyncMock(),
         catalog=catalog,
         shop=NS(prune_expired=lambda: None),
+        auth=NS(refresh_version=AsyncMock(return_value="synthetic")),
     )
     cog = TasksCog(bot)
-    loop = cog.catalog_refresh
+    loop = cog.version_refresh
     task = loop.start()
     try:
         await asyncio.wait_for(asyncio.shield(task), timeout=0.15)
@@ -1178,11 +1190,22 @@ async def test_catalog_refresh_writes_a_stable_snapshot_off_event_loop(
             return original_write_text(self, *args, **kwargs)
 
         async def delayed_to_thread(function, *args, **kwargs):
-            """Wait for the test gate before invoking the worker-thread operation."""
+            """Hold the file write so the serialized snapshot stays stable."""
+            if getattr(function, "__name__", "") != "_save":
+                return await original_to_thread(function, *args, **kwargs)
             worker_started.set()
             await release_worker.wait()
             return await original_to_thread(function, *args, **kwargs)
 
+        serialize_threads: list[int] = []
+        original_serialize = service._serialize
+
+        def track_serialize():
+            """Record the thread that serializes the snapshot."""
+            serialize_threads.append(threading.get_ident())
+            return original_serialize()
+
+        service._serialize = track_serialize
         monkeypatch.setattr(Path, "write_text", track_write)
         monkeypatch.setattr(catalog_module.asyncio, "to_thread", delayed_to_thread)
         refresh = asyncio.create_task(service.refresh())
@@ -1194,6 +1217,7 @@ async def test_catalog_refresh_writes_a_stable_snapshot_off_event_loop(
             await asyncio.wait_for(refresh, timeout=2)
 
         saved = json.loads(path.read_text(encoding="utf-8"))
+        assert serialize_threads and serialize_threads[0] != caller_thread
         assert write_threads and write_threads[0] != caller_thread
         assert saved["skins"][0]["price"] is None
         assert service.skins["skin"].price == 1775
@@ -1231,6 +1255,8 @@ async def test_catalog_refresh_waits_for_file_worker_after_repeated_cancellation
 
         async def delayed_to_thread(function, *args, **kwargs):
             """Hold the file worker until cancellation behavior has been observed."""
+            if getattr(function, "__name__", "") != "_save":
+                return await original_to_thread(function, *args, **kwargs)
             worker_started.set()
             await release_worker.wait()
             return await original_to_thread(function, *args, **kwargs)
@@ -1250,3 +1276,24 @@ async def test_catalog_refresh_waits_for_file_worker_after_repeated_cancellation
 
         assert path.exists()
         assert service._accessories == {} and service._buddy_catalog is None
+
+
+async def test_version_refresh_feeds_one_fetch_to_the_catalog():
+    """One upstream version fetch must serve both request headers and the catalog."""
+    catalog_refresh = AsyncMock()
+    fetched = AsyncMock(return_value="manifest-1")
+    bot = NS(
+        config=NS(
+            user_agent_interval_minutes=15,
+            alert_time_utc=utc_time(0, 0),
+            log_flush_interval_seconds=10,
+        ),
+        auth=NS(refresh_version=fetched),
+        shop=NS(prune_expired=Mock()),
+        catalog=NS(refresh=catalog_refresh),
+    )
+
+    await TasksCog.version_refresh.coro(TasksCog(bot))
+
+    fetched.assert_awaited_once()
+    catalog_refresh.assert_awaited_once_with(check_version=True, version="manifest-1")

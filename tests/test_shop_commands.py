@@ -903,6 +903,7 @@ async def test_daily_shop_dm_includes_skin_video_menu() -> None:
 
     await TasksCog._send_daily_shop(
         SimpleNamespace(bot=bot),
+        target,
         owner,
         account,
         ShopData([Offer(skin, 1775, 1)], [], [], 4_000_000_000, None),
@@ -1213,3 +1214,59 @@ async def test_accessory_shop_metadata_failure_returns_a_localized_error(
     interaction.edit_original_response.assert_not_awaited()
     assert catalog._accessories == {}
     assert request.await_count == 1
+
+
+@pytest.mark.parametrize("mode", ["night", "nightmarket"])
+async def test_empty_night_market_reports_unavailable(monkeypatch, mode):
+    """A Night Market with no offers must not render an empty header and timer."""
+    account = NS(puuid="synthetic")
+    monkeypatch.setattr(
+        shop_module, "account_for_user", AsyncMock(return_value=account)
+    )
+    data = ShopData([], [], [], 4_000_000_000, None)
+    bot = _localized_bot(
+        shop=NS(storefront=AsyncMock(return_value=data)),
+        register_component=lambda *_args: None,
+    )
+    interaction = _localized_interaction(
+        user=NS(id=1),
+        response=NS(defer=AsyncMock(), is_done=lambda: True),
+        followup=NS(send=AsyncMock()),
+    )
+
+    await ShopCog(bot).shop_mode(interaction, f"{mode},synthetic")
+
+    sent = interaction.followup.send.call_args.kwargs
+    assert sent["ephemeral"] is True
+    assert sent["embed"].description == TEST_TRANSLATOR.text(
+        TEST_LOCALE, "shop-night-market-none"
+    )
+
+
+async def test_bundle_click_acknowledges_before_the_database_lookup(monkeypatch):
+    """The bundle handler must defer before its account query starts."""
+    order: list[str] = []
+
+    async def defer(**_kwargs):
+        order.append("defer")
+
+    async def account_for_user(*_args, **_kwargs):
+        order.append("database")
+        return None
+
+    monkeypatch.setattr(shop_module, "account_for_user", account_for_user)
+    monkeypatch.setattr(
+        ShopCog, "_selection_values", lambda *_args, **_kwargs: {"bundle-id"}
+    )
+    bot = _localized_bot(
+        shop=NS(storefront=AsyncMock()), register_component=lambda *_args: None
+    )
+    interaction = _localized_interaction(
+        user=NS(id=1),
+        response=NS(defer=defer, is_done=lambda: True, send_message=AsyncMock()),
+        followup=NS(send=AsyncMock()),
+    )
+
+    await ShopCog(bot).shop_bundle(interaction, "synthetic|command|bundle-id")
+
+    assert order[:2] == ["defer", "database"]

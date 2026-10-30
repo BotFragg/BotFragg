@@ -156,7 +156,6 @@ class Settings:
     rate_limit_cap_seconds: int
     http_timeout_seconds: int
     alert_time_utc: time
-    game_version_interval_minutes: int
     user_agent_interval_minutes: int
     log_flush_interval_seconds: int
 
@@ -238,7 +237,6 @@ class Settings:
             rate_limit_cap_seconds=_int("RATE_LIMIT_CAP_SECONDS", 3600, 1),
             http_timeout_seconds=_int("HTTP_TIMEOUT_SECONDS", 20, 1),
             alert_time_utc=_time("ALERT_TIME_UTC", "00:00:10"),
-            game_version_interval_minutes=_int("GAME_VERSION_INTERVAL_MINUTES", 15, 1),
             user_agent_interval_minutes=_int("USER_AGENT_INTERVAL_MINUTES", 15, 1),
             log_flush_interval_seconds=_int("LOG_FLUSH_INTERVAL_SECONDS", 10, 1),
         )

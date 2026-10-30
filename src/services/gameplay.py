@@ -8,7 +8,14 @@ from typing import Any, NotRequired, TypedDict
 
 from ..models import Account
 from .auth import AuthService, pd_url, request_with_claims_repair
-from .catalog import CatalogService, localized_text
+from .catalog import (
+    BUDDY_ITEM_TYPE_ID,
+    FLEX_ITEM_TYPE_ID,
+    PLAYER_CARD_ITEM_TYPE_ID,
+    SPRAY_ITEM_TYPE_ID,
+    CatalogService,
+    localized_text,
+)
 from .http import HTTPClient, HTTPFailure
 
 
@@ -440,10 +447,10 @@ class GameplayService:
                 "tier_uuid": skin.tier_uuid,
             }
         types = {
-            "EquippableCharmLevel": "dd3bf334-87f3-40bd-b043-682a57a8dc3a",
-            "PlayerCard": "3f296c07-64c3-494c-923b-fe692a4fa1bd",
-            "Spray": "d5f120f8-ff8c-4aac-92ea-f2b5acbe9475",
-            "Totem": "03a572de-4234-31ed-d344-ababa488f981",
+            "EquippableCharmLevel": BUDDY_ITEM_TYPE_ID,
+            "PlayerCard": PLAYER_CARD_ITEM_TYPE_ID,
+            "Spray": SPRAY_ITEM_TYPE_ID,
+            "Totem": FLEX_ITEM_TYPE_ID,
         }
         if kind in types and (item := await self.catalog.accessory(types[kind], uuid)):
             return {

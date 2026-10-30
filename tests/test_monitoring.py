@@ -340,7 +340,6 @@ async def test_split_log_retries_preserve_content_and_order(failure, stage):
     for loop in (
         cog.daily_alerts,
         cog.version_refresh,
-        cog.catalog_refresh,
         cog.log_flush,
     ):
         assert loop._before_loop is TasksCog.before_jobs
