@@ -186,3 +186,11 @@ def test_production_requires_database_url(monkeypatch: pytest.MonkeyPatch) -> No
     monkeypatch.delenv("DATABASE_URL", raising=False)
     with pytest.raises(ValueError, match="DATABASE_URL"):
         Settings.from_env()
+
+
+@pytest.mark.parametrize("value", ["0", "-1", "1001", "5000"])
+def test_shard_count_is_bounded(monkeypatch, value):
+    """An out-of-range shard count must fail fast instead of stalling startup."""
+    monkeypatch.setenv("SHARD_COUNT", value)
+    with pytest.raises(ValueError, match="SHARD_COUNT"):
+        Settings.from_env(require_secrets=False)

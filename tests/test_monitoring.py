@@ -9,6 +9,7 @@ from collections import deque
 from datetime import time as daytime
 from types import SimpleNamespace
 from types import SimpleNamespace as NS
+from unittest.mock import Mock
 
 import aiohttp
 import discord
@@ -140,16 +141,13 @@ def test_rate_limit_warnings_scrub_discord_url_identifiers(path, expected):
     assert _scrub({"exception": {"url": url}}) == {"exception": {"url": filtered_url}}
 
 
-@pytest.mark.parametrize("verbose", [False, True])
-def test_verbose_logging_keeps_dependency_payloads_out_of_logs(
-    monkeypatch, capsys, verbose
-):
+def test_dependency_payloads_stay_out_of_logs(monkeypatch, capsys):
     root = logging.getLogger()
     monkeypatch.setattr(root, "handlers", [])
     monkeypatch.setattr(root, "level", logging.NOTSET)
     for name in ("src", "discord.gateway", "tortoise.db_client", "aiosqlite"):
         monkeypatch.setattr(logging.getLogger(name), "level", logging.NOTSET)
-    config = NS(verbose_logging=verbose, discord_token=None)
+    config = NS(discord_token=None)
     monkeypatch.setattr(entrypoint.Settings, "from_env", lambda: config)
     monkeypatch.setattr(entrypoint, "configure_monitoring", lambda _: None)
 
@@ -163,7 +161,7 @@ def test_verbose_logging_keeps_dependency_payloads_out_of_logs(
     try:
         entrypoint.main()
         output = capsys.readouterr().err
-        assert ("Application diagnostic" in output) is verbose
+        assert "Application diagnostic" not in output
         assert "SYNTHETIC_PRIVATE" not in output
         assert "Dependency warning" in output
     finally:
@@ -637,3 +635,15 @@ async def test_log_flush_failure_restores_a_partial_batch():
     await TasksCog.log_flush.coro(cog)
 
     assert len(cog.discord_log_handler.messages) == 600
+
+
+def test_malformed_glitchtip_dsn_disables_reporting(monkeypatch):
+    """A malformed optional DSN must warn instead of stopping the bot."""
+    init = Mock()
+    monkeypatch.setattr("src.monitoring.sentry_sdk.init", init)
+
+    monitoring.configure_monitoring(
+        NS(glitchtip_dsn="https://app.glitchtip.com/settings/x")
+    )
+
+    init.assert_not_called()

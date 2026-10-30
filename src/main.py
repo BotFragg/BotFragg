@@ -20,9 +20,6 @@ def main() -> None:
         level=logging.INFO,
         handlers=[handler],
     )
-    logging.getLogger("src").setLevel(
-        logging.DEBUG if config.verbose_logging else logging.INFO
-    )
     configure_monitoring(config)
     bot = BotFraggBot(config)
     bot.run(config.discord_token, log_handler=None)

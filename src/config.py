@@ -46,8 +46,8 @@ def _sample_rate(name: str, default: float) -> float:
     return value
 
 
-def _optional_int(name: str) -> int | None:
-    """Return a positive optional integer setting, or ``None`` when it is blank."""
+def _optional_int(name: str, *, maximum: int | None = None) -> int | None:
+    """Return a bounded optional positive integer setting, or ``None`` when blank."""
     value = os.getenv(name, "").strip()
     if not value:
         return None
@@ -55,8 +55,8 @@ def _optional_int(name: str) -> int | None:
         parsed = int(value)
     except ValueError as exc:
         raise ValueError(f"{name} must be a positive integer") from exc
-    if parsed <= 0:
-        raise ValueError(f"{name} must be a positive integer")
+    if parsed <= 0 or (maximum is not None and parsed > maximum):
+        raise ValueError(f"{name} must be a positive integer within bounds")
     return parsed
 
 
@@ -142,7 +142,6 @@ class Settings:
     glitchtip_profiles_sample_rate: float
     glitchtip_logs_enabled: bool
     log_urls: bool
-    verbose_logging: bool
     link_item_image: bool
     use_shop_cache: bool
     auto_refresh_tokens: bool
@@ -202,7 +201,7 @@ class Settings:
             database_url=database_url,
             token_encryption_key=encryption_key,
             auto_sync_commands=_bool("AUTO_SYNC_COMMANDS", True),
-            shard_count=_optional_int("SHARD_COUNT"),
+            shard_count=_optional_int("SHARD_COUNT", maximum=1000),
             log_channel_id=_optional_int("LOG_CHANNEL_ID"),
             guild_join_log_channel_id=_optional_int("GUILD_JOIN_LOG_CHANNEL_ID"),
             guild_leave_log_channel_id=_optional_int("GUILD_LEAVE_LOG_CHANNEL_ID"),
@@ -221,7 +220,6 @@ class Settings:
             ),
             glitchtip_logs_enabled=_bool("GLITCHTIP_LOGS_ENABLED", True),
             log_urls=_bool("LOG_URLS", False),
-            verbose_logging=_bool("VERBOSE_LOGGING", False),
             link_item_image=_bool("LINK_ITEM_IMAGE", True),
             use_shop_cache=_bool("USE_SHOP_CACHE", True),
             auto_refresh_tokens=_bool("AUTO_REFRESH_TOKENS", True),
