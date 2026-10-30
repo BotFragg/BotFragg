@@ -110,6 +110,17 @@ async def review_suggestion(
     return suggestion, follower_ids
 
 
+async def current_followers(suggestion_id: int, candidate_ids: set[int]) -> set[int]:
+    """Return the candidate follower IDs that still follow the suggestion."""
+    if not candidate_ids:
+        return set()
+    return set(  # Tortoise flat=True returns scalar IDs.
+        await SuggestionFollower.filter(
+            suggestion_id=suggestion_id, user_id__in=candidate_ids
+        ).values_list("user_id", flat=True)  # type: ignore[arg-type]
+    )
+
+
 async def count_suggestions_by_author(author_id: int) -> int:
     """Count suggestions submitted by a Discord user."""
     return await Suggestion.filter(author_id=author_id).count()

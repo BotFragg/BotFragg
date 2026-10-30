@@ -16,6 +16,7 @@ from ..models import Suggestion
 from ..services.http import DISCORD_HTTP_ERRORS
 from ..services.suggestions import (
     create_suggestion,
+    current_followers,
     delete_suggestion,
     follow_suggestion,
     record_suggestion_delivery,
@@ -293,6 +294,13 @@ class SuggestionsCog(commands.Cog):
             return
         suggestion, recipient_ids = result
         await self._update_suggestion_log(suggestion)
+        # Untrack or deletedata can land between the review and the DMs.
+        try:
+            recipient_ids = await current_followers(suggestion.id, recipient_ids)
+        except TRANSIENT_DATABASE_ERRORS:
+            # Fail closed: the committed snapshot may include opted-out users.
+            log.warning("Could not recheck suggestion followers", exc_info=True)
+            recipient_ids = set()
         for user_id in recipient_ids:
             try:
                 user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)

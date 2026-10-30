@@ -633,3 +633,48 @@ async def test_long_review_reason_is_rejected_before_persisting():
     )
     assert recipient.send.call_count == 0
     assert (await Suggestion.get(id=suggestion.id)).status == "pending"
+
+
+@pytest.mark.usefixtures("database")
+async def test_review_skips_a_follower_who_opted_out_before_the_dm(monkeypatch):
+    """A follower removed after the review must not receive its DM."""
+    suggestion = await create_suggestion(101, "Synthetic request", 201)
+    await record_suggestion_delivery(suggestion, 301)
+    await follow_suggestion(suggestion.id, 202)
+    sent: set[int] = set()
+
+    def user(user_id):
+        async def send(**_kwargs):
+            sent.add(user_id)
+
+        return SimpleNamespace(
+            id=user_id, locale=discord.Locale.american_english, send=send
+        )
+
+    original_update = SuggestionsCog._update_suggestion_log
+
+    async def update_then_untrack(self, reviewed):
+        await SuggestionFollower.filter(suggestion_id=reviewed.id, user_id=202).delete()
+        return await original_update(self, reviewed)
+
+    monkeypatch.setattr(SuggestionsCog, "_update_suggestion_log", update_then_untrack)
+    cog = SuggestionsCog(
+        _localized_bot(
+            is_owner=AsyncMock(return_value=True),
+            get_channel=lambda _channel_id: None,
+            fetch_channel=AsyncMock(),
+            get_user=user,
+            fetch_user=AsyncMock(),
+        )
+    )
+    interaction = _localized_interaction(
+        user=SimpleNamespace(id=999),
+        response=SimpleNamespace(defer=AsyncMock(), is_done=lambda: True),
+        followup=SimpleNamespace(send=AsyncMock()),
+    )
+
+    await cog._review_suggestion(
+        interaction, suggestion.id, "Synthetic reason", "approved"
+    )
+
+    assert sent == {101}
