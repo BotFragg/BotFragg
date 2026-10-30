@@ -1046,7 +1046,9 @@ async def test_alert_worker_does_not_deliver_replacement_owners_alerts(
     )
 
 
-async def test_alert_insert_serializes_with_deletion_and_relink(database, monkeypatch):
+async def test_alert_insert_serializes_with_deletion_and_relink(
+    backend_database, monkeypatch
+):
     owner = await User.create(id=101)
     account = await Account.create(puuid="synthetic", user=owner, username="Original")
     inserting, release = asyncio.Event(), asyncio.Event()
@@ -1080,3 +1082,41 @@ async def test_alert_unique_per_account_and_skin() -> None:
     await Alert.create(account=account, skin_uuid=skin)
     with pytest.raises(IntegrityError):
         await Alert.create(account=account, skin_uuid=skin)
+
+
+async def test_concurrent_workers_count_every_delivery_failure(database):
+    """Concurrent workers must not overwrite each other's failure counts."""
+    for user_id in (101, 202):
+        owner = await User.create(id=user_id)
+        account = await Account.create(
+            puuid=f"account-{user_id}", user=owner, username="Synthetic#NA"
+        )
+        await Alert.create(account=account, skin_uuid=SKIN_ID)
+    skin = Skin(str(SKIN_ID), "offer", "Synthetic skin", None, None)
+    shop = NS(
+        storefront=AsyncMock(
+            return_value=ShopData([Offer(skin, 100, 4_000_000_000)], [], [], 0, None)
+        )
+    )
+    entered = 0
+    release = asyncio.Event()
+
+    async def on_shop(*_args):
+        nonlocal entered
+        entered += 1
+        if entered == 2:
+            release.set()
+        await asyncio.wait_for(release.wait(), timeout=2)
+        return 1
+
+    summary = await run_daily_alerts(
+        shop,
+        alert_concurrency=2,
+        delay_between_alerts_seconds=0,
+        dry_run=False,
+        on_shop=on_shop,
+        on_credentials_expired=AsyncMock(),
+    )
+
+    assert summary["delivery_failures"] == 2
+    assert summary["failures"] == 2

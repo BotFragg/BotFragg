@@ -18,6 +18,9 @@ from ...services.shop import ShopUnavailable
 from ...views import OwnedActionButton, timestamp
 from ...views.ui import EmbedMessage, embed, error, translated, view
 
+# Marks a remove payload that refreshes from an alert ID instead of a page number.
+ANCHOR_PREFIX = "anchor:"
+
 
 class AlertsCog(commands.Cog):
     """Manage owner-scoped alert records and their persistent Discord controls."""
@@ -151,11 +154,23 @@ class AlertsCog(commands.Cog):
         return self.bot.emoji_service.skin_emoji(skin.tier_uuid) or None
 
     async def manager_view(
-        self, user_id: int, page: int, locale: discord.Locale
+        self,
+        user_id: int,
+        page: int,
+        locale: discord.Locale,
+        *,
+        anchor_id: int | None = None,
+        forward: bool = True,
+        inclusive: bool = False,
     ) -> tuple[discord.Embed, discord.ui.View | None]:
         """Render one alert page with per-alert removal and optional page controls."""
         page_data = await list_alerts_page(
-            user_id, page, self.bot.config.alerts_per_page
+            user_id,
+            page,
+            self.bot.config.alerts_per_page,
+            anchor_id=anchor_id,
+            forward=forward,
+            inclusive=inclusive,
         )
         if not page_data.total or not page_data.alerts:
             return (
@@ -164,9 +179,7 @@ class AlertsCog(commands.Cog):
             )
         visible = page_data.alerts
         lines: list[str] = []
-        for number, alert in enumerate(
-            visible, page_data.page * page_data.page_size + 1
-        ):
+        for number, alert in enumerate(visible, page_data.start):
             skin = self.bot.catalog.get_skin(str(alert.skin_uuid))
             name = self._skin_display_name(skin, locale)
             lines.append(
@@ -192,7 +205,9 @@ class AlertsCog(commands.Cog):
                 OwnedActionButton(
                     "remove_alert",
                     user_id,
-                    f"{alert.id},{page_data.page}",
+                    # Anchor the refresh to this window's first alert, not a page
+                    # number: a removed alert shifts every offset below it.
+                    f"{alert.id},anchor:{visible[0].id}",
                     label=(
                         skin_name
                         or self.bot.translator.text(locale, "alert-unknown-skin")
@@ -204,12 +219,12 @@ class AlertsCog(commands.Cog):
         if page_data.pages > 1:
             controls.add_item(
                 OwnedActionButton(
-                    "alert_page", user_id, str(page_data.page - 1), emoji="◀"
+                    "alert_page", user_id, f"prev,{visible[0].id}", emoji="◀"
                 )
             )
             controls.add_item(
                 OwnedActionButton(
-                    "alert_page", user_id, str(page_data.page + 1), emoji="▶"
+                    "alert_page", user_id, f"next,{visible[-1].id}", emoji="▶"
                 )
             )
         return card, controls
@@ -222,15 +237,39 @@ class AlertsCog(commands.Cog):
         raw_id, separator, raw_page = payload.partition(",")
         try:
             alert_id = int(raw_id)
-            page = int(raw_page) if separator else None
         except ValueError:
             await error(interaction, "alert-control-invalid")
             return
+        page: int | None = None
+        anchor_id: int | None = None
+        if separator:
+            if raw_page.startswith(ANCHOR_PREFIX):
+                try:
+                    anchor_id = int(raw_page.removeprefix(ANCHOR_PREFIX))
+                except ValueError:
+                    anchor_id = None
+            else:
+                try:
+                    # Older messages carried the page number.
+                    page = int(raw_page)
+                except ValueError:
+                    page = None
         alert = await remove_alert(interaction.user.id, alert_id)
         if not alert:
             await error(interaction, "alert-no-longer-exists")
             return
         skin = self.bot.catalog.get_skin(str(alert.skin_uuid))
+        if anchor_id is not None:
+            card, controls = await self.manager_view(
+                interaction.user.id,
+                0,
+                interaction.locale,
+                anchor_id=anchor_id,
+                forward=True,
+                inclusive=True,
+            )
+            await interaction.edit_original_response(embed=card, view=controls)
+            return
         if page is not None:
             card, controls = await self.manager_view(
                 interaction.user.id, page, interaction.locale
@@ -257,13 +296,30 @@ class AlertsCog(commands.Cog):
         """Validate a page payload and update the alert-management message."""
         await interaction.response.defer()
         try:
-            page = int(payload)
+            # Older messages carry a page index only, including negative wraps.
+            legacy_page = int(payload)
         except ValueError:
-            await error(interaction, "alert-page-invalid")
-            return
-        card, controls = await self.manager_view(
-            interaction.user.id, page, interaction.locale
-        )
+            legacy_page = None
+        if legacy_page is not None:
+            card, controls = await self.manager_view(
+                interaction.user.id, legacy_page, interaction.locale
+            )
+        else:
+            direction, _, raw_id = payload.partition(",")
+            try:
+                anchor_id = int(raw_id)
+            except ValueError:
+                anchor_id = 0
+            if direction not in {"next", "prev"} or anchor_id < 1:
+                await error(interaction, "alert-page-invalid")
+                return
+            card, controls = await self.manager_view(
+                interaction.user.id,
+                0,
+                interaction.locale,
+                anchor_id=anchor_id,
+                forward=direction == "next",
+            )
         await interaction.edit_original_response(embed=card, view=controls)
 
     @app_commands.command(

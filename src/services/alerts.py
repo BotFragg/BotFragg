@@ -36,6 +36,7 @@ class AlertPage:
     page: int
     pages: int
     page_size: int
+    start: int = 1
 
 
 async def create_alert(
@@ -58,26 +59,84 @@ async def create_alert(
         )
 
 
-async def list_alerts_page(user_id: int, page: int, page_size: int) -> AlertPage:
-    """Fetch an owner-scoped alert page, wrapping page indexes and bounding size."""
+async def _alert_boundary_page(
+    user_id: int,
+    anchor_id: int,
+    page_size: int,
+    *,
+    forward: bool,
+    inclusive: bool = False,
+) -> list[Alert]:
+    """Return the page that starts at, after, or before one alert ID."""
+    if forward:
+        boundary = {"id__gte": anchor_id} if inclusive else {"id__gt": anchor_id}
+        return await (
+            Alert.filter(account__user_id=user_id, **boundary)
+            .order_by("id")
+            .limit(page_size)
+        )
+    rows = await (
+        Alert.filter(account__user_id=user_id, id__lt=anchor_id)
+        .order_by("-id")
+        .limit(page_size)
+    )
+    return list(reversed(rows))
+
+
+async def list_alerts_page(
+    user_id: int,
+    page: int,
+    page_size: int,
+    *,
+    anchor_id: int | None = None,
+    forward: bool = True,
+    inclusive: bool = False,
+) -> AlertPage:
+    """Fetch an owner-scoped alert page, wrapping page indexes and bounding size.
+
+    When ``anchor_id`` is given the page is anchored to that alert instead of a row
+    offset, so an alert removed from another view cannot shift the page and skip a
+    row. ``forward`` selects the page after or before the anchor; paging past either
+    end wraps around. ``inclusive`` keeps the anchor itself, which re-renders the
+    same window after one of its rows is removed.
+    """
     page_size = max(1, min(page_size, MAX_ALERTS_PER_PAGE))
-    query = Alert.filter(account__user_id=user_id).order_by("id")
-    total = await query.count()
+    rows = Alert.filter(account__user_id=user_id)
+    total = await rows.count()
     if not total:
         return AlertPage([], 0, 0, 0, page_size)
-
     pages = (total + page_size - 1) // page_size
-    page %= pages
-    alerts = await query.offset(page * page_size).limit(page_size)
+
+    if anchor_id is None:
+        page %= pages
+        start = page * page_size + 1
+        alerts = await rows.order_by("id").offset(page * page_size).limit(page_size)
+    else:
+        alerts = await _alert_boundary_page(
+            user_id, anchor_id, page_size, forward=forward, inclusive=inclusive
+        )
+        if alerts:
+            start = (
+                await Alert.filter(
+                    account__user_id=user_id, id__lt=alerts[0].id
+                ).count()
+                + 1
+            )
+            page = (start - 1) // page_size
+        else:
+            page = 0 if forward else pages - 1
+            start = page * page_size + 1
+            alerts = await rows.order_by("id").offset(page * page_size).limit(page_size)
     if not alerts:
-        total = await query.count()
+        total = await rows.count()
         if not total:
             return AlertPage([], 0, 0, 0, page_size)
         pages = (total + page_size - 1) // page_size
         page %= pages
-        alerts = await query.offset(page * page_size).limit(page_size)
+        start = page * page_size + 1
+        alerts = await rows.order_by("id").offset(page * page_size).limit(page_size)
 
-    return AlertPage(alerts, total, page, pages, page_size)
+    return AlertPage(alerts, total, page, pages, page_size, start)
 
 
 async def remove_alert(user_id: int, alert_id: int) -> Alert | None:
@@ -235,9 +294,9 @@ async def run_daily_alerts(
                     and not notified_expired
                     and await _retry_lookup(account.persisted_row().exists)
                 ):
-                    summary["delivery_failures"] += await on_credentials_expired(
-                        user_id
-                    )
+                    # Await into a local: `+= await f()` races with other workers.
+                    expired = await on_credentials_expired(user_id)
+                    summary["delivery_failures"] += expired
                     notified_expired = True
                 continue
             except ShopUnavailable:
@@ -266,7 +325,8 @@ async def run_daily_alerts(
             summary["alerts"] += len(matches)
 
             if not dry_run and (matches or send_daily_shop):
-                summary["delivery_failures"] += await on_shop(
+                # Await into a local: `+= await f()` races with other workers.
+                failed = await on_shop(
                     user_id,
                     current_account.user,
                     current_account,
@@ -277,6 +337,7 @@ async def run_daily_alerts(
                     ],
                     send_daily_shop,
                 )
+                summary["delivery_failures"] += failed
             if delay_between_alerts_seconds:
                 await asyncio.sleep(delay_between_alerts_seconds)
 
