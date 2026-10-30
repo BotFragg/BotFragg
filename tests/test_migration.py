@@ -74,7 +74,7 @@ async def test_migrations_apply_write_delete_and_rollback(migration_url):
 
 
 async def test_shop_sharing_migration_backfills_existing_users(migration_url):
-    """Verify that the opt-in migration resets users stored under the old default."""
+    """Verify that opting in survives a rollback and existing users start private."""
     apps = TORTOISE_CONFIG["apps"]
     await Tortoise.init(
         config={
@@ -95,7 +95,8 @@ async def test_shop_sharing_migration_backfills_existing_users(migration_url):
         await executor.migrate(
             [MigrationTarget("models", "0004_add_shard_status_message")]
         )
-        assert (await User.get(id=101)).others_can_view_shop is True
+        # Rolling back must not publish shops the user chose to keep private.
+        assert (await User.get(id=101)).others_can_view_shop is False
     finally:
         await Tortoise.close_connections()
 

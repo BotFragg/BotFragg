@@ -11,9 +11,7 @@ async def _reset_shop_sharing(apps, schema_editor) -> None:
 
 
 async def _restore_shop_sharing(apps, schema_editor) -> None:
-    """Restore the previous shared-by-default value when rolling back."""
-    user = apps.get_model("models", "User")
-    await user.all().using_db(schema_editor.client).update(others_can_view_shop=True)
+    """Leave stored choices alone; only the schema default reverts on rollback."""
 
 
 class Migration(migrations.Migration):
