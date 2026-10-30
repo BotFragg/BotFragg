@@ -238,7 +238,7 @@ General BotFragg commands for status, links, help, and shard health.
 
 **Scope:** `src/cogs/extra.py` · `module`
 
-[Source](../src/cogs/extra.py#L41)
+[Source](../src/cogs/extra.py#L43)
 
 Provide public utility commands and the persistent shard-status message.
 
@@ -246,7 +246,7 @@ Provide public utility commands and the persistent shard-status message.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L44)
+[Source](../src/cogs/extra.py#L46)
 
 Store the bot and record when this cog started for the info command.
 
@@ -254,7 +254,7 @@ Store the bot and record when this cog started for the info command.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L64)
+[Source](../src/cogs/extra.py#L67)
 
 Start shard-status updates when their destination is configured.
 
@@ -262,7 +262,7 @@ Start shard-status updates when their destination is configured.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L69)
+[Source](../src/cogs/extra.py#L72)
 
 Cancel and await the shard-status task during extension shutdown.
 
@@ -270,7 +270,7 @@ Cancel and await the shard-status task during extension shutdown.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L83)
+[Source](../src/cogs/extra.py#L86)
 
 Report Discord gateway latency and a live database probe duration.
 
@@ -278,7 +278,7 @@ Report Discord gateway latency and a live database probe duration.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L113)
+[Source](../src/cogs/extra.py#L116)
 
 Show recent public updates and BotFragg runtime information.
 
@@ -286,7 +286,7 @@ Show recent public updates and BotFragg runtime information.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L221)
+[Source](../src/cogs/extra.py#L224)
 
 Fetch and cache five public commits, formatting them per request locale.
 
@@ -294,7 +294,7 @@ Fetch and cache five public commits, formatting them per request locale.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L302)
+[Source](../src/cogs/extra.py#L309)
 
 Build link buttons for the configured public URLs.
 
@@ -302,7 +302,7 @@ Build link buttons for the configured public URLs.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L333)
+[Source](../src/cogs/extra.py#L340)
 
 Use each command's cog module to place it in a help category.
 
@@ -310,7 +310,7 @@ Use each command's cog module to place it in a help category.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L354)
+[Source](../src/cogs/extra.py#L361)
 
 Return Discord-formatted mentions for all synced commands and subcommands.
 
@@ -318,7 +318,7 @@ Return Discord-formatted mentions for all synced commands and subcommands.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L381)
+[Source](../src/cogs/extra.py#L388)
 
 List registered slash commands by category in the embed description.
 
@@ -326,7 +326,7 @@ List registered slash commands by category in the embed description.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L446)
+[Source](../src/cogs/extra.py#L459)
 
 Show an invite link and any configured support, vote, and website links.
 
@@ -334,7 +334,7 @@ Show an invite link and any configured support, vote, and website links.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L462)
+[Source](../src/cogs/extra.py#L475)
 
 Measure the shard-status job and preserve its existing retry behavior.
 
@@ -342,7 +342,7 @@ Measure the shard-status job and preserve its existing retry behavior.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L467)
+[Source](../src/cogs/extra.py#L480)
 
 Update or recreate the persistent embed containing per-shard health.
 
@@ -350,7 +350,7 @@ Update or recreate the persistent embed containing per-shard health.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L512)
+[Source](../src/cogs/extra.py#L525)
 
 Wait for Discord readiness before the first shard-status update.
 
@@ -358,7 +358,7 @@ Wait for Discord readiness before the first shard-status update.
 
 **Scope:** `src/cogs/extra.py` · `module`
 
-[Source](../src/cogs/extra.py#L517)
+[Source](../src/cogs/extra.py#L530)
 
 Register the general utility cog with the bot.
 
@@ -510,7 +510,7 @@ Authorize a review, update its record, and notify its followers.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L319)
+[Source](../src/cogs/suggestions.py#L320)
 
 Render the localized review shared by follower DMs and completed tracking.
 
@@ -518,7 +518,7 @@ Render the localized review shared by follower DMs and completed tracking.
 
 **Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
 
-[Source](../src/cogs/suggestions.py#L337)
+[Source](../src/cogs/suggestions.py#L338)
 
 Edit the original suggestion post with the final status and review reason.
 
@@ -526,7 +526,7 @@ Edit the original suggestion post with the final status and review reason.
 
 **Scope:** `src/cogs/suggestions.py` · `module`
 
-[Source](../src/cogs/suggestions.py#L364)
+[Source](../src/cogs/suggestions.py#L365)
 
 Register suggestion commands and review handlers.
 
@@ -634,7 +634,7 @@ DM the selected account's daily shop and report delivery success.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L276)
+[Source](../src/cogs/tasks.py#L277)
 
 Notify a user that credentials expired and return the delivery failure count.
 
@@ -642,7 +642,7 @@ Notify a user that credentials expired and return the delivery failure count.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L294)
+[Source](../src/cogs/tasks.py#L295)
 
 Refresh the Riot client version and the catalog that depends on it.
 
@@ -650,7 +650,7 @@ Refresh the Riot client version and the catalog that depends on it.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L315)
+[Source](../src/cogs/tasks.py#L316)
 
 Measure log delivery, preserving the queue after Discord failures.
 
@@ -658,7 +658,7 @@ Measure log delivery, preserving the queue after Discord failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L320)
+[Source](../src/cogs/tasks.py#L321)
 
 Send buffered log lines to Discord and requeue them after delivery failures.
 
@@ -666,7 +666,7 @@ Send buffered log lines to Discord and requeue them after delivery failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L368)
+[Source](../src/cogs/tasks.py#L369)
 
 Publish Discord, database, and scheduled-job health for Docker and operators.
 
@@ -674,7 +674,7 @@ Publish Discord, database, and scheduled-job health for Docker and operators.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L419)
+[Source](../src/cogs/tasks.py#L420)
 
 Wait for Discord readiness before starting any background job.
 
@@ -682,7 +682,7 @@ Wait for Discord readiness before starting any background job.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L424)
+[Source](../src/cogs/tasks.py#L425)
 
 Register the background-task cog with the bot.
 
@@ -870,7 +870,7 @@ Check login and shop availability, then send the caller a test alert DM.
 
 **Scope:** `src/cogs/valorant/alerts.py` · `module`
 
-[Source](../src/cogs/valorant/alerts.py#L411)
+[Source](../src/cogs/valorant/alerts.py#L409)
 
 Register the skin-alert commands and their persistent handlers.
 
@@ -1206,7 +1206,7 @@ Show a shop after rechecking its original account and current privacy.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L148)
+[Source](../src/cogs/valorant/shop.py#L149)
 
 Render daily shop cards and controls without further preparation waits.
 
@@ -1214,7 +1214,7 @@ Render daily shop cards and controls without further preparation waits.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L234)
+[Source](../src/cogs/valorant/shop.py#L236)
 
 Show the selected account's current featured bundle offers and controls.
 
@@ -1222,7 +1222,7 @@ Show the selected account's current featured bundle offers and controls.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L254)
+[Source](../src/cogs/valorant/shop.py#L256)
 
 Build current featured bundles with shop-style cards and controls.
 
@@ -1230,7 +1230,7 @@ Build current featured bundles with shop-style cards and controls.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L353)
+[Source](../src/cogs/valorant/shop.py#L355)
 
 Resolve static bundle metadata or provide a safe live-offer fallback.
 
@@ -1238,7 +1238,7 @@ Resolve static bundle metadata or provide a safe live-offer fallback.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L367)
+[Source](../src/cogs/valorant/shop.py#L369)
 
 Format only Riot-supplied VP totals, retaining exact discount values.
 
@@ -1246,7 +1246,7 @@ Format only Riot-supplied VP totals, retaining exact discount values.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L381)
+[Source](../src/cogs/valorant/shop.py#L390)
 
 Render one live bundle item in the shop's card, tier, and price style.
 
@@ -1254,7 +1254,7 @@ Render one live bundle item in the shop's card, tier, and price style.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L441)
+[Source](../src/cogs/valorant/shop.py#L458)
 
 Render a bundle summary and up to nine shop-style item cards.
 
@@ -1262,7 +1262,7 @@ Render a bundle summary and up to nine shop-style item cards.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L507)
+[Source](../src/cogs/valorant/shop.py#L524)
 
 Render the selected daily, Night Market, accessory, or bundle mode.
 
@@ -1270,7 +1270,7 @@ Render the selected daily, Night Market, accessory, or bundle mode.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L642)
+[Source](../src/cogs/valorant/shop.py#L659)
 
 Read the values actually offered by this message's matching select menu.
 
@@ -1278,7 +1278,7 @@ Read the values actually offered by this message's matching select menu.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L656)
+[Source](../src/cogs/valorant/shop.py#L673)
 
 Revalidate a selected featured bundle against the caller's account and view.
 
@@ -1286,7 +1286,7 @@ Revalidate a selected featured bundle against the caller's account and view.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L709)
+[Source](../src/cogs/valorant/shop.py#L726)
 
 List playable levels and chromas within Discord's select-menu limit.
 
@@ -1294,7 +1294,7 @@ List playable levels and chromas within Discord's select-menu limit.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L742)
+[Source](../src/cogs/valorant/shop.py#L759)
 
 Open a private level/chroma menu for a skin offered in this message.
 
@@ -1302,7 +1302,7 @@ Open a private level/chroma menu for a skin offered in this message.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L796)
+[Source](../src/cogs/valorant/shop.py#L813)
 
 Privately return a selected video only when it belongs to that skin.
 
@@ -1310,7 +1310,7 @@ Privately return a selected video only when it belongs to that skin.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L857)
+[Source](../src/cogs/valorant/shop.py#L874)
 
 Validate the selected account and reopen the corresponding shop mode.
 
@@ -1318,7 +1318,7 @@ Validate the selected account and reopen the corresponding shop mode.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L873)
+[Source](../src/cogs/valorant/shop.py#L890)
 
 Display discounted Night Market offers for the selected Riot account.
 
@@ -1326,7 +1326,7 @@ Display discounted Night Market offers for the selected Riot account.
 
 **Scope:** `src/cogs/valorant/shop.py` · `NightMarketCog`
 
-[Source](../src/cogs/valorant/shop.py#L876)
+[Source](../src/cogs/valorant/shop.py#L893)
 
 Bind the shared shop, account, and emoji services.
 
@@ -1334,7 +1334,7 @@ Bind the shared shop, account, and emoji services.
 
 **Scope:** `src/cogs/valorant/shop.py` · `NightMarketCog`
 
-[Source](../src/cogs/valorant/shop.py#L887)
+[Source](../src/cogs/valorant/shop.py#L904)
 
 Fetch and render Night Market offers or report that none are active.
 
@@ -1342,7 +1342,7 @@ Fetch and render Night Market offers or report that none are active.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L927)
+[Source](../src/cogs/valorant/shop.py#L944)
 
 Display the selected account's three VALORANT wallet balances.
 
@@ -1350,7 +1350,7 @@ Display the selected account's three VALORANT wallet balances.
 
 **Scope:** `src/cogs/valorant/shop.py` · `BalanceCog`
 
-[Source](../src/cogs/valorant/shop.py#L930)
+[Source](../src/cogs/valorant/shop.py#L947)
 
 Bind the shared shop and user-preference services.
 
@@ -1358,7 +1358,7 @@ Bind the shared shop and user-preference services.
 
 **Scope:** `src/cogs/valorant/shop.py` · `BalanceCog`
 
-[Source](../src/cogs/valorant/shop.py#L941)
+[Source](../src/cogs/valorant/shop.py#L958)
 
 Fetch and display VP, Radianite, and Kingdom Credit balances.
 
@@ -1366,7 +1366,7 @@ Fetch and display VP, Radianite, and Kingdom Credit balances.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L990)
+[Source](../src/cogs/valorant/shop.py#L1007)
 
 Register the shop, Night Market, and wallet-balance cogs.
 
@@ -1398,13 +1398,13 @@ Parse an integer setting and reject values below its configured minimum.
 
 Parse a telemetry sample rate constrained to the inclusive range 0 to 1.
 
-### `def _optional_int(name: str) -> int | None`
+### `def _optional_int(name: str, *, maximum: int | None = None) -> int | None`
 
 **Scope:** `src/config.py` · `module`
 
 [Source](../src/config.py#L49)
 
-Return a positive optional integer setting, or ``None`` when it is blank.
+Return a bounded optional positive integer setting, or ``None`` when blank.
 
 ### `def _optional_url(name: str) -> str | None`
 
@@ -1442,7 +1442,7 @@ Immutable runtime configuration populated from environment variables.
 
 **Scope:** `src/config.py` · `Settings`
 
-[Source](../src/config.py#L163)
+[Source](../src/config.py#L162)
 
 Load settings, validate URLs and limits, and optionally require secrets.
 
@@ -1810,7 +1810,7 @@ Structured logging and privacy filters for logs and GlitchTip events.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L69)
+[Source](../src/monitoring.py#L70)
 
 Format log records as JSON after filtering sensitive values.
 
@@ -1818,7 +1818,7 @@ Format log records as JSON after filtering sensitive values.
 
 **Scope:** `src/monitoring.py` · `StructuredFormatter`
 
-[Source](../src/monitoring.py#L72)
+[Source](../src/monitoring.py#L73)
 
 Serialize a scrubbed log record and its safe structured fields.
 
@@ -1826,7 +1826,7 @@ Serialize a scrubbed log record and its safe structured fields.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L91)
+[Source](../src/monitoring.py#L92)
 
 Render a scrubbed log record as plain text for console output.
 
@@ -1834,7 +1834,7 @@ Render a scrubbed log record as plain text for console output.
 
 **Scope:** `src/monitoring.py` · `PlainFormatter`
 
-[Source](../src/monitoring.py#L94)
+[Source](../src/monitoring.py#L95)
 
 Scrub the message, structured fields, and traceback, then render a line.
 
@@ -1842,7 +1842,7 @@ Scrub the message, structured fields, and traceback, then render a line.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L115)
+[Source](../src/monitoring.py#L116)
 
 Filter credentials and personal identifiers from nested event data.
 
@@ -1850,7 +1850,7 @@ Filter credentials and personal identifiers from nested event data.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L145)
+[Source](../src/monitoring.py#L146)
 
 Drop network and unrelated log breadcrumbs, then scrub retained data.
 
@@ -1858,7 +1858,7 @@ Drop network and unrelated log breadcrumbs, then scrub retained data.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L159)
+[Source](../src/monitoring.py#L160)
 
 Remove request data and sensitive values from an error event.
 
@@ -1866,7 +1866,7 @@ Remove request data and sensitive values from an error event.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L169)
+[Source](../src/monitoring.py#L170)
 
 Remove request payloads and HTTP span details from a transaction.
 
@@ -1874,7 +1874,7 @@ Remove request payloads and HTTP span details from a transaction.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L180)
+[Source](../src/monitoring.py#L181)
 
 Keep BotFragg logs and serious Discord errors after removing URL data.
 
@@ -1882,7 +1882,7 @@ Keep BotFragg logs and serious Discord errors after removing URL data.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L199)
+[Source](../src/monitoring.py#L200)
 
 Return the installed BotFragg release label or an unknown fallback.
 
@@ -1890,7 +1890,7 @@ Return the installed BotFragg release label or an unknown fallback.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L207)
+[Source](../src/monitoring.py#L208)
 
 Enable privacy-filtered GlitchTip telemetry when a DSN is configured.
 
@@ -1898,7 +1898,7 @@ Enable privacy-filtered GlitchTip telemetry when a DSN is configured.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L237)
+[Source](../src/monitoring.py#L246)
 
 Start a GlitchTip transaction with the supplied name and operation.
 
@@ -1906,7 +1906,7 @@ Start a GlitchTip transaction with the supplied name and operation.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L242)
+[Source](../src/monitoring.py#L251)
 
 End the current monitoring session and flush queued telemetry.
 
@@ -3456,7 +3456,7 @@ Build a compact red embed for an invalid or unavailable component action.
 
 Shared shop presentation for slash commands and scheduled notifications.
 
-### `def _price_line(currency: str, final_price: int, original_price: int | None = None, discount_percent: int | None = None) -> str`
+### `def _price_line(currency: str, final_price: int, original_price: int | None = None, discount_percent: int | None = None, *, translator: BotFraggTranslator, locale: discord.Locale | str | None) -> str`
 
 **Scope:** `src/views/shop.py` · `module`
 
@@ -3464,11 +3464,11 @@ Shared shop presentation for slash commands and scheduled notifications.
 
 Format a current price and any original price discount on one line.
 
-### `def offer_cards(header: str, offers: list[Offer], currency: str, *, link_item_image: bool, unknown_skin_name: str, emoji_service: ApplicationEmojiService | None = None, header_colour: int = 2105893, locale: object | None = None) -> list[discord.Embed]`
+### `def offer_cards(header: str, offers: list[Offer], currency: str, *, link_item_image: bool, unknown_skin_name: str, translator: BotFraggTranslator, emoji_service: ApplicationEmojiService | None = None, header_colour: int = 2105893, locale: discord.Locale | str | None = None) -> list[discord.Embed]`
 
 **Scope:** `src/views/shop.py` · `module`
 
-[Source](../src/views/shop.py#L45)
+[Source](../src/views/shop.py#L56)
 
 Render a heading and one tier-coloured embed for each skin offer.
 
@@ -3476,7 +3476,7 @@ Render a heading and one tier-coloured embed for each skin offer.
 
 **Scope:** `src/views/shop.py` · `module`
 
-[Source](../src/views/shop.py#L83)
+[Source](../src/views/shop.py#L97)
 
 Add a menu containing only the skin offers rendered beside it.
 
@@ -3484,7 +3484,7 @@ Add a menu containing only the skin offers rendered beside it.
 
 **Scope:** `src/views/shop.py` · `module`
 
-[Source](../src/views/shop.py#L125)
+[Source](../src/views/shop.py#L139)
 
 Render an account selector from prepared accounts and current name privacy.
 
@@ -3492,7 +3492,7 @@ Render an account selector from prepared accounts and current name privacy.
 
 **Scope:** `src/views/shop.py` · `module`
 
-[Source](../src/views/shop.py#L161)
+[Source](../src/views/shop.py#L175)
 
 Render Night Market offers and controls without further preparation waits.
 

@@ -9,6 +9,9 @@
 - The Riot client-version and catalog refresh jobs are merged into one loop; the same
   upstream fetch now feeds both. `GAME_VERSION_INTERVAL_MINUTES` is removed — use
   `USER_AGENT_INTERVAL_MINUTES` to set the cadence.
+- The inert `VERBOSE_LOGGING` setting is removed; the bot logs at `INFO`.
+- `SHARD_COUNT` is limited to 1–1000 so a typo fails at startup instead of stalling shard
+  launches.
 
 ### Fixed
 
@@ -16,6 +19,14 @@
   discarded, and `/logout` drops the cached entry.
 - Switching accounts on a Night Market view for an account without offers now reports that
   no Night Market is available instead of rendering an empty header.
+- A suggestion review now confirms to the owner before notifying followers, so a large
+  follower list no longer stalls or fails the confirmation.
+- Shop prices and discounts use each locale's number formatting.
+- A malformed `GLITCHTIP_DSN` logs a warning and disables error reporting instead of
+  stopping the bot.
+- `/testalerts` reports a failed DM when the connection drops instead of hanging.
+- `/botinfo` retries a failed commit lookup after a minute instead of an hour.
+- `/help` fetches the command list once per process instead of on every call.
 - Alert pagination no longer skips an alert when another view removes one from an earlier
   page.
 - Rolling migration 0005 back no longer republishes every user's shop.
