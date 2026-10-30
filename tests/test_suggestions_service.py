@@ -678,3 +678,45 @@ async def test_review_skips_a_follower_who_opted_out_before_the_dm(monkeypatch):
     )
 
     assert sent == {101}
+
+
+@pytest.mark.usefixtures("database")
+async def test_review_confirms_before_notifying_followers():
+    """The owner must get a confirmation before the follower fan-out starts."""
+    suggestion = await create_suggestion(101, "Synthetic request", 201)
+    await record_suggestion_delivery(suggestion, 301)
+    await follow_suggestion(suggestion.id, 202)
+    order: list[str] = []
+
+    def user(user_id):
+        async def send(**_kwargs):
+            order.append(f"dm:{user_id}")
+
+        return SimpleNamespace(
+            id=user_id, locale=discord.Locale.american_english, send=send
+        )
+
+    async def confirm(**_kwargs):
+        order.append("confirmed")
+
+    cog = SuggestionsCog(
+        _localized_bot(
+            is_owner=AsyncMock(return_value=True),
+            get_channel=lambda _channel_id: None,
+            fetch_channel=AsyncMock(),
+            get_user=user,
+            fetch_user=AsyncMock(),
+        )
+    )
+    interaction = _localized_interaction(
+        user=SimpleNamespace(id=999),
+        response=SimpleNamespace(defer=AsyncMock(), is_done=lambda: True),
+        followup=SimpleNamespace(send=confirm),
+    )
+
+    await cog._review_suggestion(
+        interaction, suggestion.id, "Synthetic reason", "approved"
+    )
+
+    assert order[0] == "confirmed"
+    assert order[1].startswith("dm:")

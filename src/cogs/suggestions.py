@@ -301,6 +301,11 @@ class SuggestionsCog(commands.Cog):
             # Fail closed: the committed snapshot may include opted-out users.
             log.warning("Could not recheck suggestion followers", exc_info=True)
             recipient_ids = set()
+        # Confirm before the fan-out: one DM per follower can take minutes.
+        await interaction.followup.send(
+            embed=embed(f"Suggestion **#{id}** has been **{status}**."),
+            ephemeral=True,
+        )
         for user_id in recipient_ids:
             try:
                 user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
@@ -311,10 +316,6 @@ class SuggestionsCog(commands.Cog):
                     "Could not notify suggestion follower %s of the review", user_id
                 )
                 continue
-        await interaction.followup.send(
-            embed=embed(f"Suggestion **#{id}** has been **{status}**."),
-            ephemeral=True,
-        )
 
     def _review_card(
         self, suggestion: Suggestion, locale: discord.Locale
