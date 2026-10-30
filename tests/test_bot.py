@@ -6,12 +6,14 @@ import sys
 from types import SimpleNamespace
 from urllib.parse import parse_qs, urlparse
 
+import aiohttp
 import discord
 import pytest
 from cryptography.fernet import Fernet
 from discord.ext import commands
 
 from src.bot import BotFraggBot, BotFraggCommandTree
+from src.cogs.events import EventsCog
 from src.cogs.extra import ExtraCog
 from src.cogs.staff import StaffCog
 from src.cogs.suggestions import SuggestionsCog
@@ -371,3 +373,27 @@ async def test_setup_hook_passes_bot_settings_to_database(
         "settings": bot.config,
         "generate_schemas": True,
     }
+
+
+async def test_shard_webhook_transport_failure_does_not_escape(monkeypatch):
+    """A dropped webhook connection must not raise out of the shard listener."""
+
+    class Hook:
+        """Stand in for the Discord webhook whose send fails."""
+
+        @classmethod
+        def from_url(cls, _url, session=None):
+            """Return a webhook double that fails the way aiohttp does."""
+            return SimpleNamespace(send=fail)
+
+    async def fail(*_args, **_kwargs):
+        raise aiohttp.ServerDisconnectedError("synthetic")
+
+    monkeypatch.setattr("src.cogs.events.discord.Webhook", Hook)
+    bot = SimpleNamespace(
+        config=SimpleNamespace(shard_log_webhook_url="https://example.invalid/hook"),
+        riot_http=SimpleNamespace(session=object()),
+        shard_count=2,
+    )
+
+    await EventsCog(bot)._log_shard_event(0, "connected")

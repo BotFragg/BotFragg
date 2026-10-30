@@ -9,6 +9,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from ..bot import BotFraggBot
+from ..services.http import DISCORD_HTTP_ERRORS
 from ..views import timestamp
 from ..views.ui import embed
 
@@ -120,7 +121,7 @@ class EventsCog(commands.Cog):
                 content=f"Shard {shard_id} {state}. Total shards: {self.bot.shard_count}.",
                 username="BotFragg Shard Manager",
             )
-        except discord.HTTPException:
+        except DISCORD_HTTP_ERRORS:
             log.warning("Could not deliver shard %s event", shard_id, exc_info=True)
 
 
