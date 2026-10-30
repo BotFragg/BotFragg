@@ -112,3 +112,30 @@ async def test_callback_without_a_code_is_a_localized_failure():
     result = await auth.redeem_callback(101, "http://localhost/redirect")
     assert result.error_key == "login-code-missing"
     assert auth.http.request.await_count == 0
+
+
+@pytest.mark.usefixtures("database")
+async def test_setting_selected_persists_the_private_shop_choice():
+    """The privacy select must store the chosen value, not its inverse."""
+    from src.models import User
+
+    await User.create(id=101)
+    bot = NS(register_component=lambda *_args: None, translator=BotFraggTranslator())
+    interaction = NS(
+        user=NS(id=101),
+        client=bot,
+        locale=discord.Locale.american_english,
+        response=NS(defer=AsyncMock(), is_done=lambda: True),
+        followup=NS(send=AsyncMock()),
+        edit_original_response=AsyncMock(),
+    )
+    cog = SettingsCog(bot)
+
+    await cog.setting_selected(interaction, "others_can_view_shop|true")
+    assert (await User.get(id=101)).others_can_view_shop is True
+
+    await cog.setting_selected(interaction, "others_can_view_shop|false")
+    assert (await User.get(id=101)).others_can_view_shop is False
+
+    await cog.setting_selected(interaction, "unknown|true")
+    assert (await User.get(id=101)).others_can_view_shop is False

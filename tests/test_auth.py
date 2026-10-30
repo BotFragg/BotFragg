@@ -1490,3 +1490,120 @@ def test_jwt_decode_and_expiry() -> None:
     assert decode_jwt(token)["sub"] == "puuid"
     assert token_expiry(token) == expires
     assert decode_jwt("broken") == {}
+
+
+@pytest.mark.usefixtures("database")
+async def test_login_rejects_a_callback_minted_for_another_login():
+    """A callback whose nonce was not issued to this user must not link an account."""
+    service = auth_service(
+        NS(
+            request=AsyncMock(
+                return_value=HTTPResult(
+                    200,
+                    {
+                        "access_token": lifetime_jwt(
+                            sub="synthetic", exp=int(time.time()) + 3600
+                        ),
+                        "id_token": lifetime_jwt(nonce="another-users-nonce"),
+                        "refresh_token": "synthetic-refresh",
+                    },
+                )
+            )
+        )
+    )
+    service.login_url(101)
+
+    result = await service.redeem_callback(
+        101, "http://localhost/redirect?code=synthetic"
+    )
+
+    assert result.error_key == "login-nonce-mismatch"
+    assert service.http.request.await_count == 1
+    assert not await User.exists() and not await Account.exists()
+
+
+@pytest.mark.usefixtures("database")
+async def test_login_refuses_an_account_linked_to_another_discord_user():
+    """A second Discord user must not take over an account through a fresh login."""
+    service = auth_service()
+    owner = await User.create(id=101)
+    original_blob = service.vault.encrypt({"rso": "owner-token"})
+    await Account.create(
+        puuid="synthetic", user=owner, username="Owner#NA", auth_blob=original_blob
+    )
+    service.login_url(202)
+    nonce = service._pending_nonces[202][0]
+    service.http = NS(
+        request=AsyncMock(
+            return_value=HTTPResult(
+                200,
+                {
+                    "access_token": lifetime_jwt(
+                        sub="synthetic", exp=int(time.time()) + 3600
+                    ),
+                    "id_token": lifetime_jwt(nonce=nonce),
+                    "refresh_token": "synthetic-refresh",
+                },
+            )
+        )
+    )
+    service._user_info = AsyncMock(
+        return_value={"game_name": "Other", "tag_line": "NA"}
+    )
+    service._entitlement = AsyncMock(return_value="synthetic-ent")
+    service._region = AsyncMock(return_value="na")
+
+    result = await service.redeem_callback(
+        202, "http://localhost/redirect?code=synthetic"
+    )
+
+    assert result.error_key == "login-account-already-linked"
+    account = await Account.get(puuid="synthetic")
+    assert account.user_id == 101
+    assert account.auth_blob == original_blob
+
+
+@pytest.mark.usefixtures("database")
+async def test_disabled_auto_refresh_uses_valid_tokens_and_rejects_expired_ones():
+    """AUTO_REFRESH_TOKENS=false must never refresh, and must reject expired tokens."""
+    service = AuthService(
+        NS(
+            token_refresh_buffer_minutes=5,
+            auto_refresh_tokens=False,
+            max_accounts_per_user=10,
+        ),
+        NS(request=AsyncMock()),
+        AuthVault(Fernet.generate_key().decode()),
+    )
+    owner = await User.create(id=101)
+    valid = await Account.create(
+        puuid="valid",
+        user=owner,
+        username="Valid",
+        auth_blob=service.vault.encrypt(
+            {
+                "rso": lifetime_jwt(sub="valid", exp=int(time.time()) + 60),
+                "ent": "synthetic-ent",
+            }
+        ),
+    )
+
+    headers = await service.auth_headers(valid)
+
+    assert headers["X-Riot-Entitlements-JWT"] == "synthetic-ent"
+    service.http.request.assert_not_awaited()
+
+    expired = await Account.create(
+        puuid="expired",
+        user=owner,
+        username="Expired",
+        auth_blob=service.vault.encrypt(
+            {
+                "rso": lifetime_jwt(sub="expired", exp=int(time.time()) - 60),
+                "ent": "synthetic-ent",
+            }
+        ),
+    )
+    with pytest.raises(AuthenticationRequired):
+        await service.auth_headers(expired)
+    service.http.request.assert_not_awaited()
