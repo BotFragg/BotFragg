@@ -18,11 +18,13 @@ data/
 *.db
 *.db-shm
 *.db-wal
+.vscode/
 
 # Test caches
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
+pytest-of-*/
 
 # Private working notes
 /tasks/
