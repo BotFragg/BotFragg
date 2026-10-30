@@ -59,7 +59,7 @@ async def test_lookup_retries_are_bounded_and_only_transient(failure, monkeypatc
     delay = AsyncMock()
     monkeypatch.setattr(alert_service.asyncio, "sleep", delay)
     with pytest.raises(type(error)):
-        await alert_service._retry_lookup(operation)
+        await alert_service.retry_lookup(operation)
     assert operation.await_count == (1 if failure == "ordinary_shop" else 3)
     assert delay.await_count == (0 if failure == "ordinary_shop" else 2)
 
@@ -70,7 +70,7 @@ async def test_lookup_retry_preserves_cancellation(monkeypatch):
         alert_service.asyncio, "sleep", AsyncMock(side_effect=asyncio.CancelledError)
     )
     with pytest.raises(asyncio.CancelledError):
-        await alert_service._retry_lookup(operation)
+        await alert_service.retry_lookup(operation)
     operation.assert_awaited_once()
 
 
@@ -81,7 +81,7 @@ async def test_long_host_cooldown_fails_fast(monkeypatch):
     delay = AsyncMock()
     monkeypatch.setattr(alert_service.asyncio, "sleep", delay)
     with pytest.raises(ShopUnavailable):
-        await alert_service._retry_lookup(operation)
+        await alert_service.retry_lookup(operation)
     operation.assert_awaited_once()
     assert delay.await_count == 0
 

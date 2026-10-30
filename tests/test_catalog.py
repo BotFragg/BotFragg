@@ -1297,3 +1297,23 @@ async def test_version_refresh_feeds_one_fetch_to_the_catalog():
 
     fetched.assert_awaited_once()
     catalog_refresh.assert_awaited_once_with(check_version=True, version="manifest-1")
+
+
+async def test_version_refresh_still_runs_the_catalog_when_the_version_fails():
+    """A rejected version payload must not stop the catalog check."""
+    catalog_refresh = AsyncMock()
+    bot = NS(
+        config=NS(
+            user_agent_interval_minutes=15,
+            alert_time_utc=utc_time(0, 0),
+            log_flush_interval_seconds=10,
+        ),
+        auth=NS(refresh_version=AsyncMock(side_effect=HTTPFailure("synthetic"))),
+        shop=NS(prune_expired=Mock()),
+        catalog=NS(refresh=catalog_refresh),
+    )
+
+    with pytest.raises(HTTPFailure):
+        await TasksCog.version_refresh.coro(TasksCog(bot))
+
+    catalog_refresh.assert_awaited_once_with(check_version=True, version=None)

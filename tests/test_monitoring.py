@@ -616,3 +616,24 @@ def test_error_tracking_flushes_on_shutdown(monkeypatch: pytest.MonkeyPatch) -> 
     )
     monitoring.flush_monitoring()
     assert captured == {"session": True, "timeout": 2.0}
+
+
+@pytest.mark.asyncio
+async def test_log_flush_failure_restores_a_partial_batch():
+    """A failed send must restore every line when the buffer still had room."""
+
+    async def send(*, embed):
+        raise discord.HTTPException(NS(status=503, reason="Unavailable"), "retry")
+
+    config = NS(
+        user_agent_interval_minutes=15,
+        alert_time_utc=daytime(0, 0),
+        log_flush_interval_seconds=10,
+        log_channel_id=123,
+    )
+    cog = TasksCog(NS(config=config, get_channel=lambda _: NS(send=send)))
+    cog.discord_log_handler.messages.extend(f"line {index}" for index in range(600))
+
+    await TasksCog.log_flush.coro(cog)
+
+    assert len(cog.discord_log_handler.messages) == 600

@@ -16,7 +16,7 @@ from ..database import TRANSIENT_DATABASE_ERRORS, ping_database
 from ..health import HEALTH_PATH, JobHealth, write_health
 from ..models import Account, Alert, User
 from ..monitoring import StructuredFormatter, transaction
-from ..services.alerts import run_daily_alerts
+from ..services.alerts import retry_lookup, run_daily_alerts
 from ..services.http import DISCORD_HTTP_ERRORS, HTTPFailure
 from ..services.shop import Offer, ShopData
 from ..views import OwnedActionButton, timestamp
@@ -148,9 +148,27 @@ class TasksCog(commands.Cog):
         except DISCORD_HTTP_ERRORS:
             log.warning("Could not resolve alert recipient", exc_info=True)
             return len(matches) + bool(send_daily_shop and user)
+        # One ownership recheck per account instead of one per alert.
+        surviving: dict[int, Alert] = {}
+        if matches:
+            alert_ids = [alert.id for alert, _ in matches]
+            surviving = {
+                alert.id: alert
+                for alert in await retry_lookup(
+                    lambda: Alert.filter(
+                        id__in=alert_ids,
+                        account_id=account.puuid,
+                        account__user_id=user_id,
+                        account__created_at=account.created_at,
+                    ).select_related("account")
+                )
+            }
         failures = 0
         for alert, offer in matches:
-            failures += not await self._send_alert(target, user_id, alert, offer)
+            current = surviving.get(alert.id)
+            if current is None:
+                continue
+            failures += not await self._send_alert(target, current, offer)
         if send_daily_shop and user:
             failures += not await self._send_daily_shop(target, user, account, shop)
         return failures
@@ -158,20 +176,10 @@ class TasksCog(commands.Cog):
     async def _send_alert(
         self,
         target: discord.User | discord.Member,
-        user_id: int,
         alert: Alert,
         offer: Offer,
     ) -> bool:
         """DM an owner-scoped skin alert and report whether delivery succeeded."""
-        current = (
-            await alert.persisted_row()
-            .filter(account__user_id=user_id)
-            .select_related("account")
-            .get_or_none()
-        )
-        if current is None:
-            return True
-        alert = current
         try:
             locale = discord.Locale.american_english
             skin_name = self.bot.emoji_service.skin_name(
@@ -193,7 +201,7 @@ class TasksCog(commands.Cog):
             controls = view(
                 OwnedActionButton(
                     "remove_alert",
-                    user_id,
+                    alert.account.user_id,
                     str(alert.id),
                     label=self.bot.translator.text(locale, "alerts-remove-button"),
                     style=discord.ButtonStyle.danger,
@@ -219,7 +227,9 @@ class TasksCog(commands.Cog):
         except DISCORD_HTTP_ERRORS:
             log.warning("Could not deliver daily shop notification", exc_info=True)
             return False
-        current = await account.persisted_row().select_related("user").get_or_none()
+        current = await retry_lookup(
+            account.persisted_row().select_related("user").get_or_none
+        )
         if (
             current is None
             or current.user_id != user.id
@@ -288,9 +298,18 @@ class TasksCog(commands.Cog):
             transaction("botfragg.job.version_refresh", "botfragg.job"),
         ):
             # One upstream fetch feeds both the request headers and the catalog check.
-            version = await self.bot.auth.refresh_version()
+            failure: HTTPFailure | None = None
+            try:
+                version = await self.bot.auth.refresh_version()
+            except HTTPFailure as exc:
+                # The catalog has its own, looser parser; let it still run.
+                failure = exc
+                version = None
             self.bot.shop.prune_expired()
             await self.bot.catalog.refresh(check_version=True, version=version)
+            if failure is not None:
+                # Re-raise so the loop retries and the job is marked failed.
+                raise failure
 
     @tasks.loop(seconds=10)
     async def log_flush(self) -> None:
@@ -340,7 +359,9 @@ class TasksCog(commands.Cog):
                 else max(0, messages.maxlen - len(messages))
             )
             # Keep the newest lines when the buffer filled during the failed send.
-            for line in reversed(lines[len(lines) - room :]):
+            # Clamp the slice: room can exceed the batch and a negative start
+            # would silently restore only the last line.
+            for line in reversed(lines[max(0, len(lines) - room) :]):
                 messages.appendleft(line)
 
     @tasks.loop(seconds=30)

@@ -154,20 +154,24 @@ async def test_delivery_database_failures_are_not_swallowed(
             emoji_service=NS(currency=AsyncMock(return_value="VP")),
         )
     )
-    monkeypatch.setattr(
-        connections.get("default"),
-        "execute_query",
-        AsyncMock(side_effect=failure("Synthetic DB outage")),
-    )
+    cog._send_alert = lambda *args: TasksCog._send_alert(cog, *args)
+    cog._send_daily_shop = lambda *args: TasksCog._send_daily_shop(cog, *args)
+    sleeps = AsyncMock()
+    monkeypatch.setattr("src.services.alerts.asyncio.sleep", sleeps)
+    execute_query = AsyncMock(side_effect=failure("Synthetic DB outage"))
+    monkeypatch.setattr(connections.get("default"), "execute_query", execute_query)
     with pytest.raises(failure, match="DB outage"):
-        if mode == "daily":
-            await TasksCog._send_daily_shop(
-                cog, target, owner, account, ShopData([], [], [], 0, None)
-            )
-        else:
-            await TasksCog._send_alert(
-                cog, target, owner.id, alert, Offer(skin, 100, 0)
-            )
+        await TasksCog._deliver_daily_alert_result(
+            cog,
+            owner.id,
+            owner,
+            account,
+            ShopData([], [], [], 0, None),
+            [] if mode == "daily" else [(alert, Offer(skin, 100, 0))],
+            mode == "daily",
+        )
+    # Transient failures are retried before the run gives up on this user.
+    assert sleeps.await_count == (2 if failure is TimeoutError else 0)
     target.send.assert_not_awaited()
 
 
@@ -440,6 +444,8 @@ async def test_refresh_loop_survives_transient_http_failure():
         auth=SimpleNamespace(
             refresh_version=AsyncMock(side_effect=HTTPFailure("synthetic timeout"))
         ),
+        shop=SimpleNamespace(prune_expired=lambda: None),
+        catalog=SimpleNamespace(refresh=AsyncMock()),
     )
     cog = TasksCog(bot)
     loop = cog.version_refresh

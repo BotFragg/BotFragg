@@ -193,7 +193,7 @@ ShopOutcomeHandler = Callable[
 CredentialsExpiredHandler = Callable[[int], Awaitable[int]]
 
 
-async def _retry_lookup[T](operation: Callable[[], Awaitable[T]]) -> T:
+async def retry_lookup[T](operation: Callable[[], Awaitable[T]]) -> T:
     """Retry transient lookups up to three times without replaying deliveries.
 
     Short host cooldowns are waited out; longer ones raise so the run can finish
@@ -230,8 +230,8 @@ async def run_daily_alerts(
     counts. Totals distinguish expired credentials, shop and delivery failures;
     ``failures`` is their sum.
     """
-    user_ids = await _retry_lookup(user_ids_with_alerts)
-    user_ids.update(await _retry_lookup(daily_shop_user_ids))
+    user_ids = await retry_lookup(user_ids_with_alerts)
+    user_ids.update(await retry_lookup(daily_shop_user_ids))
     summary = {
         "users": len(user_ids),
         "shops": 0,
@@ -245,7 +245,7 @@ async def run_daily_alerts(
     accounts_by_user: dict[int, list[Account]] = defaultdict(list)
     # ponytail: materialize eligible accounts; page users if measured memory grows.
     accounts = (
-        await _retry_lookup(
+        await retry_lookup(
             lambda: (
                 Account.filter(user_id__in=user_ids)
                 .select_related("user")
@@ -257,7 +257,7 @@ async def run_daily_alerts(
     )
     for account in accounts:
         accounts_by_user[account.user_id].append(account)
-    alerted_accounts = await _retry_lookup(
+    alerted_accounts = await retry_lookup(
         lambda: account_ids_with_alerts([account.puuid for account in accounts])
     )
 
@@ -266,7 +266,7 @@ async def run_daily_alerts(
         user_accounts = accounts_by_user.get(user_id, [])
         user = user_accounts[0].user if user_accounts else None
         current = (
-            await _retry_lookup(
+            await retry_lookup(
                 lambda: selected_account(user_id, user=user, accounts=user_accounts)
             )
             if user
@@ -284,7 +284,7 @@ async def run_daily_alerts(
                 continue
 
             try:
-                storefront = await _retry_lookup(
+                storefront = await retry_lookup(
                     partial(shop.storefront, account, use_cache=False)
                 )
             except AuthenticationRequired:
@@ -292,7 +292,7 @@ async def run_daily_alerts(
                 if (
                     not dry_run
                     and not notified_expired
-                    and await _retry_lookup(account.persisted_row().exists)
+                    and await retry_lookup(account.persisted_row().exists)
                 ):
                     # Await into a local: `+= await f()` races with other workers.
                     expired = await on_credentials_expired(user_id)
@@ -304,7 +304,7 @@ async def run_daily_alerts(
                 continue
 
             summary["shops"] += 1
-            current_account = await _retry_lookup(
+            current_account = await retry_lookup(
                 account.persisted_row().select_related("user").get_or_none
             )
             if current_account is None:
@@ -316,7 +316,7 @@ async def run_daily_alerts(
             )
             offers_by_uuid = {offer.skin.uuid: offer for offer in storefront.offers}
             matches = (
-                await _retry_lookup(
+                await retry_lookup(
                     partial(matching_alerts_for_skins, account, list(offers_by_uuid))
                 )
                 if has_alerts
