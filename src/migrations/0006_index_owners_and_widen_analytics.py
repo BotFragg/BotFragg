@@ -1,8 +1,30 @@
 """Index account ownership columns and widen analytics ids."""
 
 from tortoise import fields, migrations
+from tortoise.exceptions import OperationalError
 from tortoise.indexes import Index
 from tortoise.migrations import operations as ops
+
+
+async def _create_account_index(apps, schema_editor) -> None:
+    """Create the owner index unless a development schema already made it."""
+    account = apps.get_model("models", "Account")
+    try:
+        await schema_editor.add_index(account, Index(fields=["user_id"]))
+    except OperationalError as exc:
+        if "already exists" not in str(exc).lower():
+            raise
+
+
+async def _drop_account_index(apps, schema_editor) -> None:
+    """Remove the owner index, tolerating a schema that never had it."""
+    account = apps.get_model("models", "Account")
+    try:
+        await schema_editor.remove_index(account, Index(fields=["user_id"]))
+    except OperationalError as exc:
+        message = str(exc).lower()
+        if "no such index" not in message and "does not exist" not in message:
+            raise
 
 
 async def _widen_sequence(apps, schema_editor) -> None:
@@ -35,7 +57,7 @@ class Migration(migrations.Migration):
     initial = False
 
     operations = [
-        ops.AddIndex(model_name="Account", index=Index(fields=["user_id"])),
+        ops.RunPython(_create_account_index, _drop_account_index),
         ops.AlterField(
             model_name="CommandInvocation",
             name="id",

@@ -9,7 +9,7 @@ from uuid import UUID
 
 import pytest
 from tortoise import Tortoise, connections
-from tortoise.exceptions import IntegrityError
+from tortoise.exceptions import IntegrityError, OperationalError
 from tortoise.migrations.executor import MigrationExecutor, MigrationTarget
 
 import src.database as database
@@ -114,6 +114,28 @@ async def test_shop_sharing_migration_backfills_existing_users(migration_url):
 
 
 @pytest.mark.parametrize(
+    ("message", "raises"),
+    [
+        ("index idx_account_user_id_synthetic already exists", False),
+        ("disk I/O error", True),
+    ],
+)
+async def test_index_migration_tolerates_a_preexisting_index(message, raises) -> None:
+    """A dev database may already have the index from schema generation."""
+    module = importlib.import_module(
+        "src.migrations.0006_index_owners_and_widen_analytics"
+    )
+    editor = SimpleNamespace(add_index=AsyncMock(side_effect=OperationalError(message)))
+    apps = SimpleNamespace(get_model=lambda *_args: SimpleNamespace())
+
+    if raises:
+        with pytest.raises(OperationalError):
+            await module._create_account_index(apps, editor)
+    else:
+        await module._create_account_index(apps, editor)
+
+
+@pytest.mark.parametrize(
     ("max_id", "sequence_value", "refused"),
     [
         (2**31, 1, True),
@@ -203,7 +225,7 @@ def test_native_initial_migration_matches_current_models() -> None:
     ]
     assert [
         type(operation).__name__ for operation in index_module.Migration.operations
-    ] == ["AddIndex", "AlterField", "RunPython"]
+    ] == ["RunPython", "AlterField", "RunPython"]
 
     options_module = importlib.import_module("src.migrations.0007_record_model_options")
     assert options_module.Migration.dependencies == [

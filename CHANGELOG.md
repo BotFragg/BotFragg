@@ -57,6 +57,8 @@
   and process numbers for the locale.
 - A failed application-emoji fetch at startup is retried instead of disabling tier emojis
   until the next restart.
+- Applying migration 0006 to a development database whose schema was generated from the
+  models no longer fails with an "index already exists" error.
 
 ## [1.2.3] - 2026-10-22
 

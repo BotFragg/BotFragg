@@ -1706,11 +1706,27 @@ Require users to opt in before others can view their shop.
 
 Index account ownership columns and widen analytics ids.
 
+### `async def _create_account_index(apps, schema_editor) -> None`
+
+**Scope:** `src/migrations/0006_index_owners_and_widen_analytics.py` · `module`
+
+[Source](../src/migrations/0006_index_owners_and_widen_analytics.py#L9)
+
+Create the owner index unless a development schema already made it.
+
+### `async def _drop_account_index(apps, schema_editor) -> None`
+
+**Scope:** `src/migrations/0006_index_owners_and_widen_analytics.py` · `module`
+
+[Source](../src/migrations/0006_index_owners_and_widen_analytics.py#L19)
+
+Remove the owner index, tolerating a schema that never had it.
+
 ### `async def _widen_sequence(apps, schema_editor) -> None`
 
 **Scope:** `src/migrations/0006_index_owners_and_widen_analytics.py` · `module`
 
-[Source](../src/migrations/0006_index_owners_and_widen_analytics.py#L8)
+[Source](../src/migrations/0006_index_owners_and_widen_analytics.py#L30)
 
 Widen the analytics id sequence, which ALTER COLUMN does not touch.
 
@@ -1718,7 +1734,7 @@ Widen the analytics id sequence, which ALTER COLUMN does not touch.
 
 **Scope:** `src/migrations/0006_index_owners_and_widen_analytics.py` · `module`
 
-[Source](../src/migrations/0006_index_owners_and_widen_analytics.py#L15)
+[Source](../src/migrations/0006_index_owners_and_widen_analytics.py#L37)
 
 Refuse a rollback that would put ids or the sequence back over 32 bits.
 
@@ -1726,7 +1742,7 @@ Refuse a rollback that would put ids or the sequence back over 32 bits.
 
 **Scope:** `src/migrations/0006_index_owners_and_widen_analytics.py` · `module`
 
-[Source](../src/migrations/0006_index_owners_and_widen_analytics.py#L30)
+[Source](../src/migrations/0006_index_owners_and_widen_analytics.py#L52)
 
 Speed up per-owner lookups and stop analytics ids overflowing at 2^31.
 
