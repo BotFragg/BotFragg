@@ -51,6 +51,10 @@ async def test_migrations_apply_write_delete_and_rollback(migration_url):
         with pytest.raises(IntegrityError):
             await Alert.create(account=account, skin_uuid=skin)
         await CommandInvocation.create(user_id=user.id, command="synthetic")
+        large = await CommandInvocation.create(
+            id=2**31, user_id=user.id, command="synthetic-large"
+        )
+        assert large.id == 2**31
         suggestion = await Suggestion.create(author_id=user.id, content="Synthetic")
         await SuggestionFollower.create(suggestion=suggestion, user_id=user.id)
         await ShardStatusMessage.create(channel_id=101, message_id=201)
@@ -152,6 +156,16 @@ def test_native_initial_migration_matches_current_models() -> None:
     assert [
         type(operation).__name__ for operation in sharing_module.Migration.operations
     ] == ["AlterField", "RunPython"]
+
+    index_module = importlib.import_module(
+        "src.migrations.0006_index_owners_and_widen_analytics"
+    )
+    assert index_module.Migration.dependencies == [
+        ("models", "0005_shop_sharing_opt_in")
+    ]
+    assert [
+        type(operation).__name__ for operation in index_module.Migration.operations
+    ] == ["AddIndex", "AddIndex", "AlterField", "RunPython"]
 
 
 async def test_connect_database_uses_passed_settings(

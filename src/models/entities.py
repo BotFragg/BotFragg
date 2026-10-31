@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from tortoise import fields
+from tortoise.indexes import Index
 from tortoise.models import Model
 from tortoise.queryset import QuerySet
 
@@ -44,6 +45,11 @@ class Account(Model):
 
     alerts: fields.ReverseRelation[Alert]
 
+    class Meta:
+        """Index the owner column used by every account lookup."""
+
+        indexes = (Index(fields=["user_id"]),)
+
 
 class Alert(Model):
     """Store a skin alert belonging to one linked Riot account."""
@@ -66,15 +72,17 @@ class Alert(Model):
     created_at = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
-        """Prevent duplicate alerts for the same account and skin."""
+        """Prevent duplicate alerts and index the account used by alert lookups."""
 
         unique_together = (("account", "skin_uuid"),)
+        indexes = (Index(fields=["account_id"]),)
 
 
 class CommandInvocation(Model):
     """Store a completed command and its optional guild and channel context."""
 
-    id = fields.IntField(primary_key=True)
+    # BigIntField because this table is never pruned and its ids must not overflow.
+    id = fields.BigIntField(primary_key=True)
     command = fields.CharField(max_length=256)
     user_id = fields.BigIntField()
     guild_id = fields.BigIntField(null=True)
