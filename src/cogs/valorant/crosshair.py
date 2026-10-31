@@ -1,10 +1,12 @@
-"""Commands for viewing and exporting the caller's VALORANT crosshairs."""
+"""Commands for viewing and sharing the caller's VALORANT crosshairs."""
 
 from __future__ import annotations
 
 import asyncio
 import io
+import math
 from collections.abc import Sequence
+from time import monotonic
 
 import discord
 from discord import app_commands
@@ -15,11 +17,36 @@ from ...models import Account
 from ...services.accounts import account_for_user, selected_account
 from ...services.auth import AuthenticationRequired
 from ...services.crosshair import CrosshairProfile, CrosshairUnavailable
-from ...services.http import HTTPFailure
+from ...services.http import DISCORD_HTTP_ERRORS, HTTPFailure
 from ...views.ui import DARK, embed, error, translated
 
 MAX_OPTIONS = 25
 VIEW_TIMEOUT = 900
+SHARE_COOLDOWN_SECONDS = 30
+SHARE_CONFIRM_TIMEOUT = 120
+
+
+def _share_target(
+    interaction: discord.Interaction,
+) -> tuple[discord.abc.Messageable | None, str | None]:
+    """Return a channel that accepts a public card, or the matching error key."""
+    guild = getattr(interaction, "guild", None)
+    channel = getattr(interaction, "channel", None)
+    if (
+        guild is None
+        or guild.me is None
+        or not isinstance(channel, discord.abc.Messageable)
+    ):
+        return None, "crosshair-share-guild-only"
+    permissions_for = getattr(channel, "permissions_for", None)
+    permissions = permissions_for(guild.me) if permissions_for else None
+    if permissions is None or not (
+        permissions.send_messages
+        and permissions.embed_links
+        and permissions.attach_files
+    ):
+        return None, "crosshair-share-no-permission"
+    return channel, None
 
 
 class CrosshairView(discord.ui.View):
@@ -39,6 +66,7 @@ class CrosshairView(discord.ui.View):
         self.owner_id = interaction.user.id
         self.account = account
         self.profiles = list(profiles)
+        self.selected = selected
         options = []
         for profile in self._visible(profiles):
             options.append(
@@ -54,6 +82,8 @@ class CrosshairView(discord.ui.View):
                 )
             )
         self.add_item(CrosshairSelect(interaction, options))
+        if getattr(interaction, "guild", None) is not None:
+            self.add_item(ShareButton(interaction))
 
     @staticmethod
     def _visible(profiles: Sequence[CrosshairProfile]) -> list[CrosshairProfile]:
@@ -95,6 +125,122 @@ class CrosshairView(discord.ui.View):
             embed=card, attachments=[file], view=controls
         )
 
+    async def share_preview(self, interaction: discord.Interaction) -> None:
+        """Show a private preview of the public share card."""
+        if interaction.user.id != self.owner_id:
+            await error(interaction, "error-command-failed")
+            return
+        _channel, failure = _share_target(interaction)
+        if failure:
+            await error(interaction, failure)
+            return
+        try:
+            card, png = await self.cog.render_card(interaction, self.selected)
+        except CrosshairUnavailable:
+            await error(interaction, "crosshair-unavailable")
+            return
+        card.set_footer(text=self.cog.share_footer(interaction))
+        file = discord.File(io.BytesIO(png), filename="crosshair.png")
+        confirm = ShareConfirmView(self.cog, self.selected, interaction)
+        await interaction.response.send_message(
+            content=translated(interaction, "crosshair-share-preview-description"),
+            embed=card,
+            file=file,
+            view=confirm,
+            ephemeral=True,
+        )
+
+
+class ShareButton(discord.ui.Button[CrosshairView]):
+    """Open the private preview for a public crosshair share."""
+
+    def __init__(self, interaction: discord.Interaction) -> None:
+        """Label the button in the interaction's locale."""
+        super().__init__(
+            label=translated(interaction, "crosshair-share-button"),
+            style=discord.ButtonStyle.secondary,
+            row=1,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        """Open the share preview for the selected profile."""
+        view = self.view
+        if isinstance(view, CrosshairView):
+            await view.share_preview(interaction)
+
+
+class ShareConfirmView(discord.ui.View):
+    """Confirm and post a public crosshair card."""
+
+    def __init__(
+        self,
+        cog: CrosshairCog,
+        profile: CrosshairProfile,
+        interaction: discord.Interaction,
+    ) -> None:
+        """Bind the profile to share and localize the two buttons."""
+        super().__init__(timeout=SHARE_CONFIRM_TIMEOUT)
+        self.cog = cog
+        self.profile = profile
+        self.owner_id = interaction.user.id
+        self.post.label = translated(interaction, "crosshair-share-post")
+        self.cancel.label = translated(interaction, "crosshair-share-cancel")
+
+    @discord.ui.button(label="Post", style=discord.ButtonStyle.success)
+    async def post(
+        self, interaction: discord.Interaction, _button: discord.ui.Button
+    ) -> None:
+        """Post the previewed crosshair to the current channel."""
+        if interaction.user.id != self.owner_id:
+            await error(interaction, "error-command-failed")
+            return
+        remaining = self.cog.share_cooldown_remaining(interaction.user.id)
+        if remaining:
+            await error(interaction, "crosshair-share-cooldown", seconds=remaining)
+            return
+        channel, failure = _share_target(interaction)
+        if failure or channel is None:
+            await error(interaction, failure or "crosshair-share-guild-only")
+            return
+        try:
+            card, png = await self.cog.render_card(interaction, self.profile)
+        except CrosshairUnavailable:
+            await error(interaction, "crosshair-unavailable")
+            return
+        card.set_footer(text=self.cog.share_footer(interaction))
+        file = discord.File(io.BytesIO(png), filename="crosshair.png")
+        try:
+            await channel.send(
+                embed=card,
+                file=file,
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
+        except DISCORD_HTTP_ERRORS:
+            await error(interaction, "crosshair-share-failed")
+            return
+        self.cog.mark_shared(interaction.user.id)
+        await interaction.response.edit_message(
+            content=translated(interaction, "crosshair-share-success"),
+            embed=None,
+            attachments=[],
+            view=None,
+        )
+
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary)
+    async def cancel(
+        self, interaction: discord.Interaction, _button: discord.ui.Button
+    ) -> None:
+        """Dismiss the preview without posting anything."""
+        if interaction.user.id != self.owner_id:
+            await error(interaction, "error-command-failed")
+            return
+        await interaction.response.edit_message(
+            content=translated(interaction, "crosshair-share-cancelled"),
+            embed=None,
+            attachments=[],
+            view=None,
+        )
+
 
 class CrosshairSelect(discord.ui.Select):
     """Select one crosshair profile from the owner's saved profiles."""
@@ -127,8 +273,9 @@ class CrosshairCog(commands.Cog):
     )
 
     def __init__(self, bot: BotFraggBot) -> None:
-        """Bind the bot's crosshair service."""
+        """Bind the bot's crosshair service and start the share cooldown map."""
         self.bot = bot
+        self._share_times: dict[int, float] = {}
 
     @crosshair_group.command(
         name=app_commands.locale_str("view", key="command-crosshair-view-name"),
@@ -174,6 +321,23 @@ class CrosshairCog(commands.Cog):
         profile: CrosshairProfile,
     ) -> tuple[discord.Embed, discord.File, CrosshairView]:
         """Render one profile into an embed, attachment, and selector view."""
+        card, png = await self.render_card(interaction, profile)
+        if len(profiles) > MAX_OPTIONS:
+            card.set_footer(
+                text=translated(
+                    interaction,
+                    "crosshair-more-profiles",
+                    count=len(profiles) - MAX_OPTIONS,
+                )
+            )
+        file = discord.File(io.BytesIO(png), filename="crosshair.png")
+        controls = CrosshairView(self, interaction, account, list(profiles), profile)
+        return card, file, controls
+
+    async def render_card(
+        self, interaction: discord.Interaction, profile: CrosshairProfile
+    ) -> tuple[discord.Embed, bytes]:
+        """Render one profile into an embed and PNG bytes."""
         try:
             png = await asyncio.to_thread(self.bot.crosshair.render_png, profile)
         except ValueError:
@@ -188,17 +352,31 @@ class CrosshairCog(commands.Cog):
             colour=DARK,
         )
         card.set_image(url="attachment://crosshair.png")
-        if len(profiles) > MAX_OPTIONS:
-            card.set_footer(
-                text=translated(
-                    interaction,
-                    "crosshair-more-profiles",
-                    count=len(profiles) - MAX_OPTIONS,
-                )
-            )
-        file = discord.File(io.BytesIO(png), filename="crosshair.png")
-        controls = CrosshairView(self, interaction, account, list(profiles), profile)
-        return card, file, controls
+        return card, png
+
+    def share_footer(self, interaction: discord.Interaction) -> str:
+        """Return the public card footer naming the sharer."""
+        return translated(
+            interaction,
+            "crosshair-public-footer",
+            user=discord.utils.escape_markdown(interaction.user.display_name),
+        )
+
+    def share_cooldown_remaining(self, user_id: int) -> int:
+        """Return the seconds left before this user may share again."""
+        last = self._share_times.get(user_id)
+        if last is None:
+            return 0
+        return max(0, math.ceil(SHARE_COOLDOWN_SECONDS - (monotonic() - last)))
+
+    def mark_shared(self, user_id: int) -> None:
+        """Record a successful share and bound the tracking map."""
+        self._share_times[user_id] = monotonic()
+        if len(self._share_times) > 1000:
+            cutoff = monotonic() - SHARE_COOLDOWN_SECONDS
+            for key, value in list(self._share_times.items()):
+                if value < cutoff:
+                    del self._share_times[key]
 
 
 async def setup(bot: BotFraggBot) -> None:

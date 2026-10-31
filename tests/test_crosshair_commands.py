@@ -6,10 +6,11 @@ from datetime import UTC, datetime
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
+import discord
 import pytest
 
 from src.cogs.valorant import crosshair as crosshair_cog
-from src.cogs.valorant.crosshair import CrosshairCog, CrosshairView
+from src.cogs.valorant.crosshair import CrosshairCog, CrosshairView, ShareConfirmView
 from src.services.auth import AuthenticationRequired
 from src.services.crosshair import CrosshairProfile, CrosshairUnavailable
 from tests.helpers import (
@@ -47,6 +48,11 @@ class Response:
         """Start with no recorded calls."""
         self.deferred: tuple[bool, bool] | None = None
         self.edited: dict[str, object] | None = None
+        self.sent: dict[str, object] | None = None
+
+    async def send_message(self, **kwargs: object) -> None:
+        """Record a direct message response."""
+        self.sent = kwargs
 
     async def defer(self, *, thinking: bool, ephemeral: bool) -> None:
         """Record how the interaction was deferred."""
@@ -304,3 +310,183 @@ def test_view_keeps_the_current_profile_when_profiles_exceed_the_menu_limit():
 
     assert len(view.children[0].options) == 25
     assert view.children[0].options[0].value == "30"
+
+
+class Channel(discord.abc.Messageable):
+    """Capture public sends and return configurable permissions."""
+
+    def __init__(self, *, allowed: bool = True) -> None:
+        """Start with no sent messages and the requested permission state."""
+        self.allowed = allowed
+        self.send = AsyncMock()
+
+    async def _get_channel(self):
+        """Return this object so the abstract Messageable contract is satisfied."""
+        return self
+
+    def permissions_for(self, _member: object) -> SimpleNamespace:
+        """Return the three permissions the share flow needs."""
+        return SimpleNamespace(
+            send_messages=self.allowed,
+            embed_links=self.allowed,
+            attach_files=self.allowed,
+        )
+
+
+def guild_interaction(
+    *,
+    channel: Channel | None = None,
+    response: Response | None = None,
+    followup: Followup | None = None,
+    user_id: int = 1,
+) -> SimpleNamespace:
+    """Build a guild interaction with the fields the share flow uses."""
+    return _localized_interaction(
+        user=SimpleNamespace(id=user_id, display_name="Example"),
+        response=response or Response(),
+        followup=followup or Followup(),
+        guild=SimpleNamespace(me=SimpleNamespace(id=1)),
+        channel=channel or Channel(),
+    )
+
+
+def make_cog() -> CrosshairCog:
+    """Build a crosshair cog with the fake rendering service."""
+    bot, _service = build_bot()
+    return CrosshairCog(bot)
+
+
+def test_share_button_appears_only_in_a_guild():
+    """The public share control must not exist in DMs."""
+    cog = make_cog()
+    guild_view = CrosshairView(
+        cog, guild_interaction(), account(), profiles(), profiles()[1]
+    )
+    dm_view = CrosshairView(
+        cog,
+        _localized_interaction(user=SimpleNamespace(id=1)),
+        account(),
+        profiles(),
+        profiles()[1],
+    )
+
+    assert [
+        item.label
+        for item in guild_view.children
+        if isinstance(item, discord.ui.Button)
+    ] == ["Share"]
+    assert not any(isinstance(item, discord.ui.Button) for item in dm_view.children)
+
+
+async def test_share_button_shows_the_card_that_will_be_posted():
+    """The preview must show the same profile, code, image, and footer."""
+    cog = make_cog()
+    response = Response()
+    interaction = guild_interaction(response=response)
+    view = CrosshairView(cog, interaction, account(), profiles(), profiles()[1])
+    button = next(item for item in view.children if isinstance(item, discord.ui.Button))
+
+    await button.callback(interaction)
+
+    assert response.sent is not None
+    assert response.sent["ephemeral"] is True
+    assert response.sent["content"] == TEST_TRANSLATOR.text(
+        TEST_LOCALE, "crosshair-share-preview-description"
+    )
+    card = response.sent["embed"]
+    assert card.title == TEST_TRANSLATOR.text(
+        TEST_LOCALE, "crosshair-title", name="two"
+    )
+    assert CODE in card.description
+    assert card.footer.text == TEST_TRANSLATOR.text(
+        TEST_LOCALE, "crosshair-public-footer", user="Example"
+    )
+    assert response.sent["file"].filename == "crosshair.png"
+    assert isinstance(response.sent["view"], ShareConfirmView)
+
+
+async def test_share_post_sends_the_public_card_and_starts_cooldown(monkeypatch):
+    """Posting must send one public message and block immediate repeats."""
+    clock = [1000.0]
+    monkeypatch.setattr(crosshair_cog, "monotonic", lambda: clock[0])
+    cog = make_cog()
+    channel = Channel()
+    preview_response = Response()
+    interaction = guild_interaction(channel=channel, response=preview_response)
+    view = CrosshairView(cog, interaction, account(), profiles(), profiles()[1])
+    await view.share_preview(interaction)
+    confirm = preview_response.sent["view"]
+
+    post_response = Response()
+    post_interaction = guild_interaction(channel=channel, response=post_response)
+    await confirm.post.callback(post_interaction)
+
+    assert channel.send.await_count == 1
+    sent = channel.send.await_args.kwargs
+    assert sent["file"].filename == "crosshair.png"
+    assert sent["embed"].footer.text == TEST_TRANSLATOR.text(
+        TEST_LOCALE, "crosshair-public-footer", user="Example"
+    )
+    assert sent["allowed_mentions"].everyone is False
+    assert post_response.edited["content"] == TEST_TRANSLATOR.text(
+        TEST_LOCALE, "crosshair-share-success"
+    )
+    assert post_response.edited["view"] is None
+
+    second_followup = Followup()
+    second_interaction = guild_interaction(
+        channel=channel, response=Response(), followup=second_followup
+    )
+    await confirm.post.callback(second_interaction)
+
+    assert channel.send.await_count == 1
+    assert second_followup.sent[0]["embed"].description == TEST_TRANSLATOR.text(
+        TEST_LOCALE, "crosshair-share-cooldown", seconds=30
+    )
+
+
+async def test_share_reports_a_missing_channel_permission():
+    """A channel that cannot accept image embeds must be rejected early."""
+    cog = make_cog()
+    followup = Followup()
+    interaction = guild_interaction(channel=Channel(allowed=False), followup=followup)
+    view = CrosshairView(cog, interaction, account(), profiles(), profiles()[1])
+
+    await view.share_preview(interaction)
+
+    assert followup.sent[0]["embed"].description == TEST_TRANSLATOR.text(
+        TEST_LOCALE, "crosshair-share-no-permission"
+    )
+
+
+async def test_share_rejects_a_direct_message():
+    """There is no public channel to share into from a DM."""
+    cog = make_cog()
+    followup = Followup()
+    interaction = _localized_interaction(
+        user=SimpleNamespace(id=1, display_name="Example"),
+        response=Response(),
+        followup=followup,
+    )
+    view = CrosshairView(cog, interaction, account(), profiles(), profiles()[1])
+
+    await view.share_preview(interaction)
+
+    assert followup.sent[0]["embed"].description == TEST_TRANSLATOR.text(
+        TEST_LOCALE, "crosshair-share-guild-only"
+    )
+
+
+async def test_share_cancel_dismisses_the_preview():
+    """Cancelling must remove the preview without posting."""
+    cog = make_cog()
+    response = Response()
+    interaction = guild_interaction(response=response)
+    confirm = ShareConfirmView(cog, profiles()[1], interaction)
+
+    await confirm.cancel.callback(interaction)
+
+    assert response.edited["content"] == TEST_TRANSLATOR.text(
+        TEST_LOCALE, "crosshair-share-cancelled"
+    )
+    assert response.edited["view"] is None

@@ -350,3 +350,15 @@ crosshair-select-placeholder = Choose a crosshair profile
 crosshair-current-profile = Current profile
 crosshair-more-profiles = { $count } more profiles are not shown
 crosshair-unavailable = Your crosshair settings could not be loaded. Try again later.
+
+crosshair-share-button = Share
+crosshair-share-preview-description = This is exactly what will be posted in this channel.
+crosshair-share-post = Post
+crosshair-share-cancel = Cancel
+crosshair-share-success = Crosshair shared.
+crosshair-share-cancelled = Share cancelled.
+crosshair-share-guild-only = Crosshairs can only be shared in a server channel.
+crosshair-share-no-permission = BotFragg cannot post images in this channel.
+crosshair-share-cooldown = Wait { $seconds } seconds before sharing again.
+crosshair-share-failed = The crosshair could not be shared.
+crosshair-public-footer = Shared by { $user }
