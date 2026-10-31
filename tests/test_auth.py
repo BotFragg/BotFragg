@@ -1616,6 +1616,57 @@ async def test_disabled_auto_refresh_uses_valid_tokens_and_rejects_expired_ones(
 
 
 @pytest.mark.usefixtures("database")
+async def test_disabled_auto_refresh_does_not_repair_a_missing_entitlement():
+    """A missing entitlement must not force a refresh when refreshing is disabled."""
+    service = auth_service()
+    service.config.auto_refresh_tokens = False
+    owner = await User.create(id=101)
+    account = await Account.create(
+        puuid="noent",
+        user=owner,
+        username="NoEnt",
+        auth_blob=service.vault.encrypt(
+            {"rso": lifetime_jwt(sub="noent", exp=int(time.time()) + 60)}
+        ),
+    )
+    service._entitlement = AsyncMock(return_value=None)
+    service._refresh_locked = AsyncMock()
+
+    with pytest.raises(AuthenticationRequired):
+        await service.auth_headers(account)
+
+    service._refresh_locked.assert_not_awaited()
+
+
+@pytest.mark.usefixtures("database")
+@pytest.mark.parametrize(
+    ("status", "error_key"),
+    [
+        (400, "login-code-rejected"),
+        (408, "error-riot-auth-temporarily-unavailable"),
+        (425, "error-riot-auth-temporarily-unavailable"),
+        (500, "error-riot-auth-temporarily-unavailable"),
+        (503, "error-riot-auth-temporarily-unavailable"),
+    ],
+)
+async def test_login_exchange_outages_are_not_reported_as_a_rejected_code(
+    status, error_key
+):
+    """An upstream outage must not tell the user their login code was rejected."""
+    service = auth_service()
+    service.login_url(101)
+    service.http = NS(
+        request=AsyncMock(return_value=HTTPResult(status, {"error": "synthetic"}))
+    )
+
+    result = await service.redeem_callback(
+        101, "http://localhost/redirect?code=synthetic"
+    )
+
+    assert result.error_key == error_key
+
+
+@pytest.mark.usefixtures("database")
 async def test_transient_exchange_failure_keeps_the_login_attempt_retryable():
     """A failed token exchange must not consume the pending nonce."""
     service = auth_service()

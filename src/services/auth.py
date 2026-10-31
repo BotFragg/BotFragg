@@ -201,6 +201,10 @@ class AuthService:
                 False, error_key="error-riot-auth-temporarily-unavailable"
             )
         if response.status != 200 or not isinstance(response.data, dict):
+            if response.status in {408, 425} or response.status >= 500:
+                return AuthResult(
+                    False, error_key="error-riot-auth-temporarily-unavailable"
+                )
             return AuthResult(False, error_key="login-code-rejected")
         try:
             token_data = _token_data(response.data)
@@ -310,7 +314,10 @@ class AuthService:
             if isinstance(auth.get("ent"), str) and auth["ent"]:
                 return AuthResult(True, account=account)
             return await self._repair_entitlement(
-                account, auth, cancelled=cancelled, refresh_on_missing=True
+                account,
+                auth,
+                cancelled=cancelled,
+                refresh_on_missing=self.config.auto_refresh_tokens,
             )
         if not self.config.auto_refresh_tokens:
             return AuthResult(
