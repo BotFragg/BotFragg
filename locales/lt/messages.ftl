@@ -366,4 +366,3 @@ crosshair-share-guild-only = Taikiklius galima bendrinti tik serverio kanale.
 crosshair-share-no-permission = BotFragg negali skelbti paveikslėlių šiame kanale.
 crosshair-share-cooldown = Palauk { $seconds } sek. prieš bendrindamas vėl.
 crosshair-share-failed = Taikiklio bendrinti nepavyko.
-crosshair-public-footer = Bendrino { $user }

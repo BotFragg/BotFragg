@@ -360,4 +360,3 @@ crosshair-share-guild-only = Tähtäimiä voi jakaa vain palvelimen kanavalla.
 crosshair-share-no-permission = BotFragg ei voi julkaista kuvia tällä kanavalla.
 crosshair-share-cooldown = Odota { $seconds } sekuntia ennen uutta jakoa.
 crosshair-share-failed = Tähtäintä ei voitu jakaa.
-crosshair-public-footer = Jakanut { $user }

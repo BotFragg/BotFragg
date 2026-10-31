@@ -366,4 +366,3 @@ crosshair-share-guild-only = Celowniki można udostępniać tylko na kanale serw
 crosshair-share-no-permission = BotFragg nie może publikować obrazów na tym kanale.
 crosshair-share-cooldown = Odczekaj { $seconds } sekund przed kolejnym udostępnieniem.
 crosshair-share-failed = Nie udało się udostępnić celownika.
-crosshair-public-footer = Udostępnił { $user }

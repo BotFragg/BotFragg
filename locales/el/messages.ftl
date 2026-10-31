@@ -360,4 +360,3 @@ crosshair-share-guild-only = Τα crosshair κοινοποιούνται μόν�
 crosshair-share-no-permission = Το BotFragg δεν μπορεί να δημοσιεύσει εικόνες σε αυτό το κανάλι.
 crosshair-share-cooldown = Περίμενε { $seconds } δευτερόλεπτα πριν κοινοποιήσεις ξανά.
 crosshair-share-failed = Το crosshair δεν μπορούσε να κοινοποιηθεί.
-crosshair-public-footer = Κοινοποιήθηκε από { $user }

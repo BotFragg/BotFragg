@@ -363,4 +363,3 @@ crosshair-share-guild-only = Reticulele pot fi distribuite doar pe un canal de s
 crosshair-share-no-permission = BotFragg nu poate publica imagini pe acest canal.
 crosshair-share-cooldown = Așteaptă { $seconds } secunde înainte de a distribui din nou.
 crosshair-share-failed = Reticulul nu a putut fi distribuit.
-crosshair-public-footer = Distribuit de { $user }

@@ -360,4 +360,3 @@ crosshair-share-guild-only = Les réticules ne peuvent être partagés que dans 
 crosshair-share-no-permission = BotFragg ne peut pas publier d'images dans ce salon.
 crosshair-share-cooldown = Attendez { $seconds } secondes avant de partager à nouveau.
 crosshair-share-failed = Le réticule n'a pas pu être partagé.
-crosshair-public-footer = Partagé par { $user }

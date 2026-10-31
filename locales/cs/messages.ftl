@@ -366,4 +366,3 @@ crosshair-share-guild-only = Zaměřovače lze sdílet pouze v kanálu serveru.
 crosshair-share-no-permission = BotFragg nemůže v tomto kanálu zveřejňovat obrázky.
 crosshair-share-cooldown = Před dalším sdílením počkej { $seconds } sekund.
 crosshair-share-failed = Zaměřovač se nepodařilo sdílet.
-crosshair-public-footer = Sdílel { $user }

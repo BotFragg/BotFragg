@@ -366,4 +366,3 @@ crosshair-share-guild-only = Прицелами можно делиться то
 crosshair-share-no-permission = BotFragg не может публиковать изображения в этом канале.
 crosshair-share-cooldown = Подождите { $seconds } секунд перед повторной публикацией.
 crosshair-share-failed = Не удалось поделиться прицелом.
-crosshair-public-footer = Поделился { $user }

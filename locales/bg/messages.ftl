@@ -360,4 +360,3 @@ crosshair-share-guild-only = Мерници могат да се споделя�
 crosshair-share-no-permission = BotFragg не може да публикува изображения в този канал.
 crosshair-share-cooldown = Изчакай { $seconds } секунди преди да споделиш отново.
 crosshair-share-failed = Мерникът не можа да бъде споделен.
-crosshair-public-footer = Споделено от { $user }

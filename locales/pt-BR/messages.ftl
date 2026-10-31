@@ -360,4 +360,3 @@ crosshair-share-guild-only = Miras só podem ser compartilhadas em um canal de s
 crosshair-share-no-permission = BotFragg não pode publicar imagens neste canal.
 crosshair-share-cooldown = Aguarde { $seconds } segundos antes de compartilhar novamente.
 crosshair-share-failed = Não foi possível compartilhar a mira.
-crosshair-public-footer = Compartilhado por { $user }

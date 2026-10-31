@@ -360,4 +360,3 @@ crosshair-share-guild-only = Crosshair hanya dapat dibagikan di kanal server.
 crosshair-share-no-permission = BotFragg tidak dapat memposting gambar di kanal ini.
 crosshair-share-cooldown = Tunggu { $seconds } detik sebelum membagikan lagi.
 crosshair-share-failed = Crosshair tidak dapat dibagikan.
-crosshair-public-footer = Dibagikan oleh { $user }

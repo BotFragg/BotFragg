@@ -360,4 +360,3 @@ crosshair-share-guild-only = I mirini possono essere condivisi solo in un canale
 crosshair-share-no-permission = BotFragg non può pubblicare immagini in questo canale.
 crosshair-share-cooldown = Attendi { $seconds } secondi prima di condividere di nuovo.
 crosshair-share-failed = Impossibile condividere il mirino.
-crosshair-public-footer = Condiviso da { $user }

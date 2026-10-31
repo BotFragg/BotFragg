@@ -357,4 +357,3 @@ crosshair-share-guild-only = Chỉ có thể chia sẻ tâm ngắm trong kênh m
 crosshair-share-no-permission = BotFragg không thể đăng hình ảnh trong kênh này.
 crosshair-share-cooldown = Đợi { $seconds } giây trước khi chia sẻ lại.
 crosshair-share-failed = Không thể chia sẻ tâm ngắm.
-crosshair-public-footer = Được chia sẻ bởi { $user }

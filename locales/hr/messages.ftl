@@ -363,4 +363,3 @@ crosshair-share-guild-only = Nišani se mogu dijeliti samo na kanalu poslužitel
 crosshair-share-no-permission = BotFragg ne može objavljivati slike na ovom kanalu.
 crosshair-share-cooldown = Pričekaj { $seconds } sekundi prije ponovnog dijeljenja.
 crosshair-share-failed = Nišan nije bilo moguće podijeliti.
-crosshair-public-footer = Podijelio { $user }

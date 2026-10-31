@@ -357,4 +357,3 @@ crosshair-share-guild-only = Nişangahlar yalnızca sunucu kanalında paylaşıl
 crosshair-share-no-permission = BotFragg bu kanalda görsel yayınlayamaz.
 crosshair-share-cooldown = Tekrar paylaşmadan önce { $seconds } saniye bekle.
 crosshair-share-failed = Nişangah paylaşılamadı.
-crosshair-public-footer = Paylaşan { $user }

@@ -360,4 +360,3 @@ crosshair-share-guild-only = Célkeresztet csak szervercsatornán lehet megoszta
 crosshair-share-no-permission = A BotFragg nem tud képeket közzétenni ezen a csatornán.
 crosshair-share-cooldown = Várj { $seconds } másodpercet a következő megosztás előtt.
 crosshair-share-failed = A célkeresztet nem sikerült megosztani.
-crosshair-public-footer = Megosztotta: { $user }

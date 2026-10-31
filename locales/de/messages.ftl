@@ -360,4 +360,3 @@ crosshair-share-guild-only = Fadenkreuze können nur in einem Serverkanal geteil
 crosshair-share-no-permission = BotFragg kann in diesem Kanal keine Bilder veröffentlichen.
 crosshair-share-cooldown = Warte { $seconds } Sekunden, bevor du erneut teilst.
 crosshair-share-failed = Das Fadenkreuz konnte nicht geteilt werden.
-crosshair-public-footer = Geteilt von { $user }
