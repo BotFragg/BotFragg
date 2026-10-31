@@ -615,7 +615,13 @@ class ShopCog(commands.Cog):
                 title_text = item.title_text_for(interaction.locale)
                 detail = f"`{title_text}`\n\n" if title_text else ""
                 card = embed(
-                    f"{detail}{currency} **{accessory_offer.price:,}**",
+                    detail
+                    + self.bot.translator.text(
+                        interaction.locale,
+                        "shop-price",
+                        currency=currency,
+                        price=accessory_offer.price,
+                    ),
                     title=item.name_for(interaction.locale)
                     or self.bot.translator.text(interaction.locale, "common-unknown"),
                 )
@@ -998,7 +1004,12 @@ class BalanceCog(commands.Cog):
         ):
             card.add_field(
                 name=name,
-                value=f"{currencies[key]} **{value:,}**",
+                value=self.bot.translator.text(
+                    interaction.locale,
+                    "shop-price",
+                    currency=currencies[key],
+                    price=value,
+                ),
                 inline=True,
             )
         await interaction.followup.send(embed=card)

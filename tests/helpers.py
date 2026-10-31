@@ -41,8 +41,9 @@ def _localized_bot(**attributes: object) -> SimpleNamespace:
 
 def _localized_interaction(**attributes: object) -> SimpleNamespace:
     """Build a fake interaction with its Discord locale and client translator."""
+    locale = attributes.pop("locale", TEST_LOCALE)
     return SimpleNamespace(
         client=SimpleNamespace(translator=TEST_TRANSLATOR),
-        locale=TEST_LOCALE,
+        locale=locale,
         **attributes,
     )

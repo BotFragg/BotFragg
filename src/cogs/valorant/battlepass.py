@@ -199,8 +199,8 @@ class BattlepassCog(commands.Cog):
                             locale,
                             "missions-progress",
                             bar=bar,
-                            progress=f"{min(progress, target):,}",
-                            target=f"{target:,}",
+                            progress=min(progress, target),
+                            target=target,
                         )
                     )
                 if not tasks:
@@ -269,8 +269,8 @@ class BattlepassCog(commands.Cog):
             value=translator.text(
                 locale,
                 "battlepass-xp-progress",
-                progress=f"{data['progress']:,}",
-                target=f"{data['next_level_xp']:,}",
+                progress=data["progress"],
+                target=data["next_level_xp"],
                 bar=bar,
             ),
             inline=False,

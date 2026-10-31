@@ -1055,10 +1055,16 @@ async def test_shop_deletion_cleanup_waits_for_storefront_headers_in_flight() ->
     assert account.puuid not in service._cache
 
 
+@pytest.mark.parametrize(
+    ("locale", "expected_price"),
+    [(TEST_LOCALE, "KC **1,500**"), (discord.Locale.german, "KC **1.500**")],
+)
 @pytest.mark.parametrize("accessory_expiry", [None, 4_000_259_200])
 async def test_accessory_shop_renders_catalog_item_and_own_expiry(
     monkeypatch: pytest.MonkeyPatch,
     accessory_expiry,
+    locale,
+    expected_price,
 ) -> None:
     """Render accessory metadata with its own expiry or a localized fallback."""
     item = Accessory("Buddy", "https://example.com/buddy.png", "Limited edition")
@@ -1136,6 +1142,7 @@ async def test_accessory_shop_renders_catalog_item_and_own_expiry(
         user=SimpleNamespace(id=123),
         response=Response(),
         edit_original_response=edit_original_response,
+        locale=locale,
     )
     await ShopCog(bot).shop_mode(interaction, "accessory,account")
 
@@ -1144,12 +1151,12 @@ async def test_accessory_shop_renders_catalog_item_and_own_expiry(
     expected_expiry = (
         f"<t:{accessory_expiry}:R>"
         if accessory_expiry is not None
-        else TEST_TRANSLATOR.text(TEST_LOCALE, "common-unknown")
+        else TEST_TRANSLATOR.text(locale, "common-unknown")
     )
     assert expected_expiry in embeds[0].description
     assert "<t:4000000000:R>" not in embeds[0].description
     assert embeds[1].title == "Buddy"
-    assert embeds[1].description == "`Limited edition`\n\nKC **1,500**"
+    assert embeds[1].description == f"`Limited edition`\n\n{expected_price}"
     assert embeds[1].url == item.icon
     assert embeds[1].thumbnail.url == item.icon
     controls = rendered["view"]
