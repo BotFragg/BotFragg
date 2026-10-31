@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib
 from types import SimpleNamespace
+from unittest.mock import AsyncMock
 from uuid import UUID
 
 import pytest
@@ -42,6 +43,13 @@ async def test_migrations_apply_write_delete_and_rollback(migration_url):
         executor = MigrationExecutor(connections.get("default"), apps)
         await executor.migrate()
         await executor.migrate()
+        if url.startswith("postgres"):
+            _, rows = await connections.get("default").execute_query(
+                "SELECT data_type FROM information_schema.sequences "
+                "WHERE sequence_name = 'commandinvocation_id_seq' "
+                "AND sequence_schema = current_schema()"
+            )
+            assert rows[0]["data_type"] == "bigint"
         user = await User.create(id=101)
         account = await Account.create(
             puuid="synthetic", user=user, username="Synthetic"
@@ -105,6 +113,36 @@ async def test_shop_sharing_migration_backfills_existing_users(migration_url):
         await Tortoise.close_connections()
 
 
+@pytest.mark.parametrize(
+    ("max_id", "sequence_value", "refused"),
+    [
+        (2**31, 1, True),
+        (1, 2**31, True),
+        (None, 1, False),
+        (2**31 - 1, 2**31 - 1, False),
+    ],
+)
+async def test_rollback_guard_checks_ids_and_sequence(
+    max_id, sequence_value, refused
+) -> None:
+    """Rolling back must not silently narrow a column that no longer fits."""
+    module = importlib.import_module(
+        "src.migrations.0006_index_owners_and_widen_analytics"
+    )
+    client = SimpleNamespace(
+        execute_query=AsyncMock(
+            return_value=(1, [{"max_id": max_id, "sequence_value": sequence_value}])
+        )
+    )
+    editor = SimpleNamespace(DIALECT="postgres", client=client)
+
+    if refused:
+        with pytest.raises(RuntimeError):
+            await module._guard_rollback(None, editor)
+    else:
+        await module._guard_rollback(None, editor)
+
+
 def test_sqlite_in_memory_url_is_preserved() -> None:
     """Verify that the SQLite in-memory URL is preserved."""
     assert database._database_url("sqlite://:memory:") == "sqlite://:memory:"
@@ -165,7 +203,16 @@ def test_native_initial_migration_matches_current_models() -> None:
     ]
     assert [
         type(operation).__name__ for operation in index_module.Migration.operations
-    ] == ["AddIndex", "AddIndex", "AlterField", "RunPython"]
+    ] == ["AddIndex", "AlterField", "RunPython"]
+
+    options_module = importlib.import_module("src.migrations.0007_record_model_options")
+    assert options_module.Migration.dependencies == [
+        ("models", "0006_index_owners_and_widen_analytics")
+    ]
+    assert {
+        type(operation).__name__ for operation in options_module.Migration.operations
+    } == {"AlterModelOptions"}
+    assert len(options_module.Migration.operations) == 7
 
 
 async def test_connect_database_uses_passed_settings(

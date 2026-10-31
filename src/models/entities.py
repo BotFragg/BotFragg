@@ -72,10 +72,9 @@ class Alert(Model):
     created_at = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
-        """Prevent duplicate alerts and index the account used by alert lookups."""
+        """Prevent duplicate alerts for the same account and skin."""
 
         unique_together = (("account", "skin_uuid"),)
-        indexes = (Index(fields=["account_id"]),)
 
 
 class CommandInvocation(Model):

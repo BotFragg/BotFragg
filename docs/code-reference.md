@@ -101,6 +101,8 @@ docstring. Regenerate it after application documentation changes with
 | [src/migrations/0003_add_suggestions.py](../src/migrations/0003_add_suggestions.py) | Adds suggestions and unique follower records. |
 | [src/migrations/0004_add_shard_status_message.py](../src/migrations/0004_add_shard_status_message.py) | Adds persistent shard-status message references. |
 | [src/migrations/0005_shop_sharing_opt_in.py](../src/migrations/0005_shop_sharing_opt_in.py) | Makes cross-user shop viewing opt-in and resets existing users to private. |
+| [src/migrations/0006_index_owners_and_widen_analytics.py](../src/migrations/0006_index_owners_and_widen_analytics.py) | Indexes account ownership and widens command analytics ids. |
+| [src/migrations/0007_record_model_options.py](../src/migrations/0007_record_model_options.py) | Records model options that earlier migrations left out of migration state. |
 | [src/models/__init__.py](../src/models/__init__.py) | Re-exports model classes for application code. |
 | [src/models/entities.py](../src/models/entities.py) | Defines ORM records and uniqueness constraints. |
 | [src/services/__init__.py](../src/services/__init__.py) | Defines the service package. |
