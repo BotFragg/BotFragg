@@ -115,9 +115,10 @@ class TasksCog(commands.Cog):
                 summary = await self.run_alerts()
                 if summary["shop_failures"] or summary["delivery_failures"]:
                     self.job_health["daily_alerts"].failure("daily_alerts")
-            except* TRANSIENT_DATABASE_ERRORS:
+            except* TRANSIENT_DATABASE_ERRORS as group:
                 # Clock-loop retries can execute the next scheduled day's run twice.
                 self.job_health["daily_alerts"].failure("daily_alerts")
+                log.warning("Daily alert run failed", exc_info=group)
 
     async def run_alerts(self) -> dict[str, int]:
         """Process eligible users' shops and return counts for the completed run."""

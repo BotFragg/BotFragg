@@ -704,6 +704,27 @@ async def test_daily_job_keeps_unrelated_worker_errors_visible(
     assert raised.value.subgroup(lambda error: error is unknown) is not None
 
 
+async def test_daily_job_logs_the_transient_failure(caplog):
+    """A swallowed transient failure must still leave its traceback in the logs."""
+    cog = TasksCog(
+        NS(
+            config=NS(
+                user_agent_interval_minutes=15,
+                game_version_interval_minutes=15,
+                alert_time_utc=utc_time(0, 0),
+                log_flush_interval_seconds=10,
+            )
+        )
+    )
+    cog.run_alerts = AsyncMock(side_effect=DBConnectionError("Synthetic outage"))
+
+    with caplog.at_level(logging.WARNING):
+        await cog.daily_alerts()
+
+    records = [r for r in caplog.records if r.message == "Daily alert run failed"]
+    assert records and records[0].exc_info is not None
+
+
 @pytest.mark.parametrize(
     "failure",
     [
