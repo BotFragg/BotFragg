@@ -14,6 +14,7 @@ import pytest
 from src.cogs.tasks import TasksCog
 from src.cogs.valorant import shop as shop_module
 from src.cogs.valorant.shop import (
+    BalanceCog,
     NightMarketCog,
     ShopCog,
 )
@@ -1279,6 +1280,67 @@ async def test_bundle_click_acknowledges_before_the_database_lookup(monkeypatch)
     await ShopCog(bot).shop_bundle(interaction, "synthetic|command|bundle-id")
 
     assert order[:2] == ["defer", "database"]
+
+
+async def test_balance_uses_the_interaction_locale(monkeypatch):
+    """Wallet balances must use the locale's number grouping."""
+    sent: dict[str, object] = {}
+
+    class Response:
+        """Capture whether the interaction was deferred."""
+
+        async def defer(self, *, thinking: bool) -> None:
+            """Record the deferral request."""
+
+    class Followup:
+        """Capture the embed sent after the wallet lookup."""
+
+        async def send(self, *, embed: discord.Embed) -> None:
+            """Record the follow-up embed."""
+            sent["embed"] = embed
+
+    account = SimpleNamespace(puuid="account", username="One#NA")
+
+    async def selected_account(_user_id: int):
+        """Return the test account without touching the database."""
+        return account
+
+    async def account_viewer(_interaction, _account, _translator):
+        """Return the prepared account and its display name."""
+        return account, False, "One#NA"
+
+    class Shop:
+        """Return a fixed wallet for the balance command."""
+
+        async def wallet(self, _account):
+            """Return balances above 1,000 so grouping is visible."""
+            return {"vp": 1500, "rp": 0, "kc": 12500}
+
+    class EmojiService:
+        """Return a stable currency marker."""
+
+        async def currency(self, _key: str) -> str:
+            """Return the same marker for every currency."""
+            return "VP"
+
+    monkeypatch.setattr(shop_module, "selected_account", selected_account)
+    monkeypatch.setattr(shop_module, "account_viewer", account_viewer)
+    bot = _localized_bot(shop=Shop(), emoji_service=EmojiService())
+    interaction = _localized_interaction(
+        user=SimpleNamespace(id=123),
+        response=Response(),
+        followup=Followup(),
+        locale=discord.Locale.german,
+    )
+
+    await BalanceCog(bot).balance.callback(BalanceCog(bot), interaction)
+
+    card = sent["embed"]
+    assert [field.value for field in card.fields] == [
+        "VP **1.500**",
+        "VP **0**",
+        "VP **12.500**",
+    ]
 
 
 async def test_offer_prices_use_the_interaction_locale():

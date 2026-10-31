@@ -132,8 +132,8 @@ botinfo-process = Prosessi
 botinfo-os = **Käyttöjärjestelmä:** { $name }
 botinfo-bot-uptime = **Botin käyttöaika:** { $timestamp }
 botinfo-system-uptime = **Järjestelmän käyttöaika:** { $timestamp }
-botinfo-process-cpu = **Prosessin CPU-käyttö:** { $value }
-botinfo-memory = **Muisti:** { $value }
+botinfo-process-cpu = **Prosessin CPU-käyttö:** { $value }{ $unit }
+botinfo-memory = **Muisti:** { $value }{ $unit }
 
 help-title = BotFragg-ohje
 help-intro = Kaikki komennot ovat käytettävissä kauttaviivakomentoina (`/`).

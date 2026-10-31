@@ -132,8 +132,8 @@ botinfo-process = İşlem
 botinfo-os = **İşletim sistemi:** { $name }
 botinfo-bot-uptime = **Botun çalışma süresi:** { $timestamp }
 botinfo-system-uptime = **Sistemin çalışma süresi:** { $timestamp }
-botinfo-process-cpu = **İşlemin CPU kullanımı:** { $value }
-botinfo-memory = **Bellek:** { $value }
+botinfo-process-cpu = **İşlemin CPU kullanımı:** { $value }{ $unit }
+botinfo-memory = **Bellek:** { $value }{ $unit }
 
 help-title = BotFragg Yardım
 help-intro = Tüm komutlar eğik çizgi komutları (`/`) olarak kullanılabilir.

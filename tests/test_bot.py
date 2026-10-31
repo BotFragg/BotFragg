@@ -13,6 +13,7 @@ import discord
 import pytest
 from cryptography.fernet import Fernet
 from discord.ext import commands
+from tortoise.exceptions import DBConnectionError
 
 from src.bot import BotFraggBot, BotFraggCommandTree
 from src.cogs.events import EventsCog
@@ -383,6 +384,45 @@ async def test_ping_reports_a_stalled_database_instead_of_hanging(
     assert card.fields[1].value == "Unavailable"
 
 
+async def test_ping_reports_an_unreachable_database(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A database that fails immediately must also show as unavailable."""
+    sent: dict[str, object] = {}
+
+    class Response:
+        """Capture whether the interaction was deferred."""
+
+        async def defer(self, *, thinking: bool) -> None:
+            """Record the deferral request."""
+
+    class Followup:
+        """Capture the embed sent after the probe."""
+
+        async def send(self, *, embed: discord.Embed) -> None:
+            """Record the follow-up embed."""
+            sent["embed"] = embed
+
+    async def unavailable() -> None:
+        """Fail the way a closed pool or refused connection does."""
+        raise DBConnectionError("synthetic outage")
+
+    monkeypatch.setattr("src.cogs.extra.ping_database", unavailable)
+    bot = _localized_bot(
+        get_shard=lambda _shard_id: SimpleNamespace(latency=0.041), latency=0.2
+    )
+    interaction = _localized_interaction(
+        response=Response(),
+        followup=Followup(),
+        guild=SimpleNamespace(shard_id=3),
+    )
+
+    await ExtraCog.ping.callback(ExtraCog(bot), interaction)
+
+    card = sent["embed"]
+    assert card.fields[1].value == "Unavailable"
+
+
 async def test_setup_hook_passes_bot_settings_to_database(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -480,6 +520,36 @@ async def test_botinfo_retries_soon_after_a_failed_fetch(monkeypatch):
         discord.Locale.american_english, "botinfo-commits-unavailable"
     )
     assert cog._latest_updates_expires == 1000.0 + GITHUB_RETRY_SECONDS
+
+
+def test_botinfo_numbers_use_the_locale_grouping() -> None:
+    """Source lines and process numbers must render with locale grouping."""
+    translator = BotFraggTranslator()
+
+    assert "5.125" in translator.text(
+        discord.Locale.german, "botinfo-source-lines", count=5125
+    )
+    assert "1,5%" in translator.text(
+        discord.Locale.german, "botinfo-process-cpu", value=1.5, unit="%"
+    )
+
+
+async def test_botinfo_caps_the_commit_field(monkeypatch):
+    """Five long commit lines must not exceed Discord's embed-field limit."""
+    from src.cogs.extra import ExtraCog
+
+    bot = SimpleNamespace(riot_http=SimpleNamespace(), translator=BotFraggTranslator())
+    cog = ExtraCog(bot)
+    monkeypatch.setattr("src.cogs.extra.monotonic", lambda: 0.0)
+    cog._latest_updates = [("a" * 64, "x" * 100, None) for _ in range(5)]
+    cog._latest_updates_expires = float("inf")
+
+    summary = await cog._latest_commit_summary(discord.Locale.american_english)
+
+    assert len(summary) == 1024
+    assert summary.startswith(
+        "[`aaaaaaa`](https://github.com/BotFragg/BotFragg/commit/"
+    )
 
 
 async def test_help_fetches_command_mentions_once():

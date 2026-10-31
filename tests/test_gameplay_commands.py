@@ -251,3 +251,28 @@ def test_battlepass_uses_qotix_progress_hierarchy() -> None:
     ]
     assert card.image.url == "https://example.com/prime.png"
     assert card.fields[-1].value.endswith("<:ebar:2>" * 10)
+
+
+def test_battlepass_progress_uses_the_locale_grouping() -> None:
+    """Battlepass XP must use the locale's number grouping."""
+    card = BattlepassCog._battlepass_card(
+        "Agent#NA1",
+        {
+            "act": "Episode 10 Act 1",
+            "level": 12,
+            "progress": 500,
+            "next_level_xp": 9500,
+            "end": datetime.now(UTC),
+            "next_reward": {
+                "name": "Prime Vandal",
+                "type": "EquippableSkinLevel",
+                "icon": "https://example.com/prime.png",
+            },
+        },
+        "<:fbar:1>",
+        "<:ebar:2>",
+        translator=TEST_TRANSLATOR,
+        locale=discord.Locale.german,
+    )
+
+    assert card.fields[-1].value.startswith("`500/9.500`")

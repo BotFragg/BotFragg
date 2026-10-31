@@ -132,8 +132,8 @@ botinfo-process = Folyamat
 botinfo-os = **Operációs rendszer:** { $name }
 botinfo-bot-uptime = **Bot működési ideje:** { $timestamp }
 botinfo-system-uptime = **Rendszer működési ideje:** { $timestamp }
-botinfo-process-cpu = **Folyamat CPU-használata:** { $value }
-botinfo-memory = **Memória:** { $value }
+botinfo-process-cpu = **Folyamat CPU-használata:** { $value }{ $unit }
+botinfo-memory = **Memória:** { $value }{ $unit }
 
 help-title = BotFragg súgó
 help-intro = Minden parancs slash parancsként (`/`) érhető el.

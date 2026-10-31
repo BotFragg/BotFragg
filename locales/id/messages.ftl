@@ -132,8 +132,8 @@ botinfo-process = Proses
 botinfo-os = **Sistem operasi:** { $name }
 botinfo-bot-uptime = **Waktu aktif bot:** { $timestamp }
 botinfo-system-uptime = **Waktu aktif sistem:** { $timestamp }
-botinfo-process-cpu = **CPU proses:** { $value }
-botinfo-memory = **Memori:** { $value }
+botinfo-process-cpu = **CPU proses:** { $value }{ $unit }
+botinfo-memory = **Memori:** { $value }{ $unit }
 
 help-title = Bantuan BotFragg
 help-intro = Semua perintah dapat digunakan sebagai slash command (`/`).

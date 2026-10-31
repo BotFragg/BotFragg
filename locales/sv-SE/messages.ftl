@@ -132,8 +132,8 @@ botinfo-process = Process
 botinfo-os = **Operativsystem:** { $name }
 botinfo-bot-uptime = **Botens drifttid:** { $timestamp }
 botinfo-system-uptime = **Systemets drifttid:** { $timestamp }
-botinfo-process-cpu = **Processorns CPU-användning:** { $value }
-botinfo-memory = **Minne:** { $value }
+botinfo-process-cpu = **Processorns CPU-användning:** { $value }{ $unit }
+botinfo-memory = **Minne:** { $value }{ $unit }
 
 help-title = BotFragg-hjälp
 help-intro = Alla kommandon är tillgängliga som snedstreckskommandon (`/`).

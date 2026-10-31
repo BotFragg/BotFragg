@@ -132,8 +132,8 @@ botinfo-process = Διεργασία
 botinfo-os = **Λειτουργικό σύστημα:** { $name }
 botinfo-bot-uptime = **Χρόνος λειτουργίας bot:** { $timestamp }
 botinfo-system-uptime = **Χρόνος λειτουργίας συστήματος:** { $timestamp }
-botinfo-process-cpu = **Χρήση CPU διεργασίας:** { $value }
-botinfo-memory = **Μνήμη:** { $value }
+botinfo-process-cpu = **Χρήση CPU διεργασίας:** { $value }{ $unit }
+botinfo-memory = **Μνήμη:** { $value }{ $unit }
 
 help-title = Βοήθεια BotFragg
 help-intro = Όλες οι εντολές είναι διαθέσιμες ως εντολές με κάθετο (`/`).

@@ -132,8 +132,8 @@ botinfo-process = Tiến trình
 botinfo-os = **Hệ điều hành:** { $name }
 botinfo-bot-uptime = **Thời gian bot hoạt động:** { $timestamp }
 botinfo-system-uptime = **Thời gian hệ thống hoạt động:** { $timestamp }
-botinfo-process-cpu = **Mức sử dụng CPU của tiến trình:** { $value }
-botinfo-memory = **Bộ nhớ:** { $value }
+botinfo-process-cpu = **Mức sử dụng CPU của tiến trình:** { $value }{ $unit }
+botinfo-memory = **Bộ nhớ:** { $value }{ $unit }
 
 help-title = Trợ giúp BotFragg
 help-intro = Tất cả lệnh đều có thể dùng dưới dạng lệnh dấu gạch chéo (`/`).

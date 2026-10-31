@@ -132,8 +132,8 @@ botinfo-process = Proces
 botinfo-os = **Sistem de operare:** { $name }
 botinfo-bot-uptime = **Timp de funcționare al botului:** { $timestamp }
 botinfo-system-uptime = **Timp de funcționare al sistemului:** { $timestamp }
-botinfo-process-cpu = **Utilizarea CPU a procesului:** { $value }
-botinfo-memory = **Memorie:** { $value }
+botinfo-process-cpu = **Utilizarea CPU a procesului:** { $value }{ $unit }
+botinfo-memory = **Memorie:** { $value }{ $unit }
 
 help-title = Ajutor BotFragg
 help-intro = Toate comenzile sunt disponibile ca și comenzi slash (`/`).

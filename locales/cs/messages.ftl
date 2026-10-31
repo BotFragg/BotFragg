@@ -132,8 +132,8 @@ botinfo-process = Proces
 botinfo-os = **Operační systém:** { $name }
 botinfo-bot-uptime = **Doba běhu bota:** { $timestamp }
 botinfo-system-uptime = **Doba běhu systému:** { $timestamp }
-botinfo-process-cpu = **Využití CPU procesem:** { $value }
-botinfo-memory = **Paměť:** { $value }
+botinfo-process-cpu = **Využití CPU procesem:** { $value }{ $unit }
+botinfo-memory = **Paměť:** { $value }{ $unit }
 
 help-title = Nápověda BotFragg
 help-intro = Všechny příkazy jsou dostupné jako příkazy se lomítkem (`/`).

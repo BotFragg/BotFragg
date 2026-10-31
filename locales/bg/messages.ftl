@@ -132,8 +132,8 @@ botinfo-process = Процес
 botinfo-os = **Операционна система:** { $name }
 botinfo-bot-uptime = **Време на работа на бота:** { $timestamp }
 botinfo-system-uptime = **Време на работа на системата:** { $timestamp }
-botinfo-process-cpu = **CPU на процеса:** { $value }
-botinfo-memory = **Памет:** { $value }
+botinfo-process-cpu = **CPU на процеса:** { $value }{ $unit }
+botinfo-memory = **Памет:** { $value }{ $unit }
 
 help-title = Помощ за BotFragg
 help-intro = Всички команди са налични като slash команди (`/`).

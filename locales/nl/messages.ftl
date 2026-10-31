@@ -132,8 +132,8 @@ botinfo-process = Proces
 botinfo-os = **Besturingssysteem:** { $name }
 botinfo-bot-uptime = **Uptime van de bot:** { $timestamp }
 botinfo-system-uptime = **Uptime van het systeem:** { $timestamp }
-botinfo-process-cpu = **CPU van het proces:** { $value }
-botinfo-memory = **Geheugen:** { $value }
+botinfo-process-cpu = **CPU van het proces:** { $value }{ $unit }
+botinfo-memory = **Geheugen:** { $value }{ $unit }
 
 help-title = BotFragg-help
 help-intro = Alle opdrachten zijn beschikbaar als slash-opdrachten (`/`).

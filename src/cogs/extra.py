@@ -92,7 +92,7 @@ class ExtraCog(commands.Cog):
         try:
             await asyncio.wait_for(ping_database(), timeout=PING_TIMEOUT_SECONDS)
             database_ms: float | None = (monotonic() - started) * 1000
-        except TimeoutError:
+        except TRANSIENT_DATABASE_ERRORS:
             database_ms = None
         shard = (
             self.bot.get_shard(interaction.guild.shard_id)
@@ -140,7 +140,7 @@ class ExtraCog(commands.Cog):
         except psutil.Error:
             cpu_percent = memory_mb = system_started = None
         source_lines = (
-            f"{self.source_line_count:,}"
+            self.source_line_count
             if self.source_line_count is not None
             else translated(interaction, "common-unavailable")
         )
@@ -150,15 +150,17 @@ class ExtraCog(commands.Cog):
             else translated(interaction, "common-unavailable")
         )
         cpu_usage = (
-            f"{cpu_percent:.1f}%"
+            round(cpu_percent, 1)
             if cpu_percent is not None
             else translated(interaction, "common-unavailable")
         )
+        cpu_unit = "%" if cpu_percent is not None else ""
         memory_usage = (
-            f"{memory_mb:.2f} MB"
+            round(memory_mb, 2)
             if memory_mb is not None
             else translated(interaction, "common-unavailable")
         )
+        memory_unit = " MB" if memory_mb is not None else ""
         card = embed(
             translated(interaction, "botinfo-description"),
             title=translated(interaction, "botinfo-title", name=user.name),
@@ -219,9 +221,16 @@ class ExtraCog(commands.Cog):
                     interaction, "botinfo-system-uptime", timestamp=system_uptime
                 )
                 + "\n"
-                + translated(interaction, "botinfo-process-cpu", value=cpu_usage)
+                + translated(
+                    interaction, "botinfo-process-cpu", value=cpu_usage, unit=cpu_unit
+                )
                 + "\n"
-                + translated(interaction, "botinfo-memory", value=memory_usage)
+                + translated(
+                    interaction,
+                    "botinfo-memory",
+                    value=memory_usage,
+                    unit=memory_unit,
+                )
             ),
             inline=False,
         )
@@ -313,7 +322,7 @@ class ExtraCog(commands.Cog):
                 f"[`{sha[:7]}`]({GITHUB_COMMIT_URL.format(sha)}) "
                 f"{subject or self.bot.translator.text(locale, 'botinfo-commit')}{age}"
             )
-        return "\n".join(lines)
+        return "\n".join(lines)[:1024]
 
     def _public_links(
         self, user: discord.ClientUser, locale: discord.Locale
