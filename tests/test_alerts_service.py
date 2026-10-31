@@ -335,6 +335,69 @@ async def test_alert_job_queries_are_bounded_to_users_accounts_and_skins() -> No
     assert await matching_alerts_for_skins(first, []) == []
 
 
+@pytest.mark.usefixtures("database")
+async def test_alert_presence_lookup_is_chunked_below_the_bind_limit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A large account list must be split instead of exceeding asyncpg's limit."""
+    batches: list[int] = []
+    original_filter = Alert.filter
+
+    def tracked_filter(cls, **filters):
+        """Record the size of each account-ID query."""
+        if "account_id__in" in filters:
+            batches.append(len(filters["account_id__in"]))
+        return original_filter(**filters)
+
+    monkeypatch.setattr(Alert, "filter", classmethod(tracked_filter))
+    account_ids = [
+        f"synthetic-{index}" for index in range(alert_service.BULK_QUERY_SIZE + 1)
+    ]
+
+    assert await account_ids_with_alerts(account_ids) == set()
+    assert batches == [alert_service.BULK_QUERY_SIZE, 1]
+
+
+@pytest.mark.usefixtures("database")
+async def test_daily_alert_account_lookup_is_chunked_below_the_bind_limit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The eligible-user query must be split instead of failing on many users."""
+    batches: list[int] = []
+    original_filter = Account.filter
+
+    def tracked_filter(cls, **filters):
+        """Record the size of each eligible-user query."""
+        if "user_id__in" in filters:
+            batches.append(len(filters["user_id__in"]))
+        return original_filter(**filters)
+
+    monkeypatch.setattr(Account, "filter", classmethod(tracked_filter))
+    monkeypatch.setattr(
+        alert_service,
+        "user_ids_with_alerts",
+        AsyncMock(return_value=set(range(alert_service.BULK_QUERY_SIZE + 1))),
+    )
+    monkeypatch.setattr(
+        alert_service, "daily_shop_user_ids", AsyncMock(return_value=set())
+    )
+
+    async def unused_callback(*_args):
+        """Fail the test if an unexpected notification callback is invoked."""
+        return 0
+
+    await run_daily_alerts(
+        SimpleNamespace(),
+        alert_concurrency=1,
+        delay_between_alerts_seconds=0,
+        dry_run=True,
+        on_shop=unused_callback,
+        on_credentials_expired=unused_callback,
+    )
+
+    assert batches == [alert_service.BULK_QUERY_SIZE, 1]
+
+
 async def test_alert_page_uses_a_bounded_owner_scoped_query(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

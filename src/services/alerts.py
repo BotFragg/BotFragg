@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from collections import defaultdict
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Iterator
 from dataclasses import dataclass
 from functools import partial
 from uuid import UUID
@@ -25,6 +25,14 @@ from .shop import Offer, ShopData, ShopService, ShopUnavailable
 MAX_ALERTS_PER_PAGE = 20
 # A long Riot cooldown is reported as a failure instead of stalling the daily run.
 MAX_RATE_LIMIT_WAIT_SECONDS = 120
+# asyncpg rejects more than 32,767 bind arguments in one statement.
+BULK_QUERY_SIZE = 1000
+
+
+def _batched[T](values: list[T]) -> Iterator[list[T]]:
+    """Split IDs so a single query cannot exceed the bind-argument limit."""
+    for start in range(0, len(values), BULK_QUERY_SIZE):
+        yield values[start : start + BULK_QUERY_SIZE]
 
 
 @dataclass(slots=True)
@@ -160,15 +168,25 @@ async def user_ids_with_alerts() -> set[int]:
     return set(await Alert.all().distinct().values_list("account__user_id", flat=True))  # type: ignore[arg-type]
 
 
+async def accounts_for_users(user_ids: list[int]) -> list[Account]:
+    """Return the accounts of one bounded user batch in creation order."""
+    return await (
+        Account.filter(user_id__in=user_ids)
+        .select_related("user")
+        .order_by("created_at")
+    )
+
+
 async def account_ids_with_alerts(account_ids: list[str]) -> set[str]:
     """Return only the supplied account IDs that currently have alerts."""
-    if not account_ids:
-        return set()
-    return set(  # Tortoise flat=True returns scalar IDs, not tuples.
-        await Alert.filter(account_id__in=account_ids).values_list(
-            "account_id", flat=True
-        )  # type: ignore[arg-type]
-    )
+    found: set[str] = set()
+    for batch in _batched(account_ids):
+        found.update(
+            await Alert.filter(account_id__in=batch).values_list(  # type: ignore[arg-type]
+                "account_id", flat=True
+            )
+        )
+    return found
 
 
 async def matching_alerts_for_skins(
@@ -244,17 +262,9 @@ async def run_daily_alerts(
 
     accounts_by_user: dict[int, list[Account]] = defaultdict(list)
     # ponytail: materialize eligible accounts; page users if measured memory grows.
-    accounts = (
-        await retry_lookup(
-            lambda: (
-                Account.filter(user_id__in=user_ids)
-                .select_related("user")
-                .order_by("created_at")
-            )
-        )
-        if user_ids
-        else []
-    )
+    accounts: list[Account] = []
+    for batch in _batched(sorted(user_ids)):
+        accounts.extend(await retry_lookup(partial(accounts_for_users, batch)))
     for account in accounts:
         accounts_by_user[account.user_id].append(account)
     alerted_accounts = await retry_lookup(
