@@ -37,6 +37,8 @@ GITHUB_COMMIT_URL = f"{GITHUB_REPOSITORY_URL}/commit/{{}}"
 GITHUB_CACHE_SECONDS = 1800
 # A failed fetch is retried soon instead of being cached for the full window.
 GITHUB_RETRY_SECONDS = 60
+# Same bound as the health probe, so a stalled database cannot hang /ping.
+PING_TIMEOUT_SECONDS = 5
 COMMIT_SHA = re.compile(r"[0-9a-f]{40,64}", re.IGNORECASE)
 
 
@@ -87,8 +89,11 @@ class ExtraCog(commands.Cog):
         """Report Discord gateway latency and a live database probe duration."""
         await interaction.response.defer(thinking=True)
         started = monotonic()
-        await ping_database()
-        database_ms = (monotonic() - started) * 1000
+        try:
+            await asyncio.wait_for(ping_database(), timeout=PING_TIMEOUT_SECONDS)
+            database_ms: float | None = (monotonic() - started) * 1000
+        except TimeoutError:
+            database_ms = None
         shard = (
             self.bot.get_shard(interaction.guild.shard_id)
             if interaction.guild
@@ -102,7 +107,11 @@ class ExtraCog(commands.Cog):
         )
         card.add_field(
             name=translated(interaction, "ping-database-latency"),
-            value=f"{database_ms:.0f}ms",
+            value=(
+                translated(interaction, "common-unavailable")
+                if database_ms is None
+                else f"{database_ms:.0f}ms"
+            ),
         )
         await interaction.followup.send(embed=card)
 
@@ -490,7 +499,8 @@ class ExtraCog(commands.Cog):
                 self.job_health.failure("shard_status")
                 return
             card = embed(title="Shard information")
-            for shard_id in sorted(self.bot.shards)[:25]:
+            shard_ids = sorted(self.bot.shards)
+            for shard_id in shard_ids[:25]:
                 shard = self.bot.get_shard(shard_id)
                 latency = "N/A" if not shard else f"{shard.latency * 1000:.0f}ms"
                 guilds = sum(guild.shard_id == shard_id for guild in self.bot.guilds)
@@ -498,6 +508,8 @@ class ExtraCog(commands.Cog):
                     name=f"Shard {shard_id}",
                     value=f"**Latency:** {latency}\n**Servers:** {guilds}",
                 )
+            if len(shard_ids) > 25:
+                card.set_footer(text=f"Shards {shard_ids[25]}-{shard_ids[-1]} omitted")
             card.timestamp = datetime.now(UTC)
             saved_message_id = self._pending_status_message
             if saved_message_id is not None:

@@ -390,7 +390,11 @@ class TasksCog(commands.Cog):
         problems = [name for name, state in jobs.items() if not state["healthy"]]
         if missing_shard_job:
             problems.append("shard_status")
-        if not self.bot.is_ready() or self.bot.is_closed():
+        if (
+            not self.bot.is_ready()
+            or self.bot.is_closed()
+            or any(shard.is_closed() for shard in self.bot.shards.values())
+        ):
             problems.append("discord")
         try:
             await asyncio.wait_for(ping_database(), timeout=5)

@@ -108,6 +108,7 @@ async def test_watchdog_checks_jobs_discord_database_and_recovers(monkeypatch):
         ),
         is_ready=lambda: True,
         is_closed=lambda: False,
+        shards={},
         get_cog=lambda _: None,
     )
     cog = TasksCog(bot)
@@ -136,3 +137,8 @@ async def test_watchdog_checks_jobs_discord_database_and_recovers(monkeypatch):
     bot.config.shard_status_channel_id = None
     await TasksCog.health_watch.coro(cog)
     assert snapshots[-1]["healthy"]
+
+    # A dropped gateway keeps is_ready() true, so the shard state must be checked.
+    bot.shards = {0: SimpleNamespace(is_closed=lambda: True)}
+    await TasksCog.health_watch.coro(cog)
+    assert snapshots[-1]["problems"] == ["discord"]

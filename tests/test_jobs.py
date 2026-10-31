@@ -377,6 +377,38 @@ async def test_shard_status_retries_saved_message_id_without_posting_twice(monke
 
 
 @pytest.mark.usefixtures("database")
+async def test_shard_status_names_the_shards_hidden_by_the_field_limit(monkeypatch):
+    """Shards beyond Discord's 25 fields must still be accounted for."""
+
+    class Channel(discord.abc.Messageable):
+        async def _get_channel(self):
+            return self
+
+    channel = Channel()
+    channel.send = AsyncMock(return_value=NS(id=111))
+    monkeypatch.setattr(
+        extra_module, "get_shard_status_message_id", AsyncMock(return_value=None)
+    )
+    monkeypatch.setattr(extra_module, "save_shard_status_message", AsyncMock())
+    shards = {index: NS(latency=0.01) for index in range(26)}
+    cog = ExtraCog(
+        NS(
+            config=NS(shard_status_channel_id=101),
+            shards=shards,
+            guilds=[],
+            get_shard=shards.__getitem__,
+            get_channel=lambda _: channel,
+        )
+    )
+
+    await cog._update_shard_status()
+
+    card = channel.send.await_args.kwargs["embed"]
+    assert len(card.fields) == 25
+    assert card.footer.text == "Shards 25-25 omitted"
+
+
+@pytest.mark.usefixtures("database")
 @pytest.mark.parametrize(
     "outcome", ["unavailable", "expired", "delivery", "expired_delivery", "success"]
 )

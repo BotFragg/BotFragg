@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import sys
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
@@ -340,6 +341,46 @@ async def test_ping_uses_database_probe_and_keeps_latency_embed(
     ]
     assert card.fields[0].value == "41ms"
     assert card.fields[1].value.endswith("ms")
+
+
+async def test_ping_reports_a_stalled_database_instead_of_hanging(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A database probe that never returns must not leave /ping hanging."""
+    sent: dict[str, object] = {}
+
+    class Response:
+        """Capture whether the interaction was deferred."""
+
+        async def defer(self, *, thinking: bool) -> None:
+            """Record the deferral request."""
+
+    class Followup:
+        """Capture the embed sent after the probe."""
+
+        async def send(self, *, embed: discord.Embed) -> None:
+            """Record the follow-up embed."""
+            sent["embed"] = embed
+
+    async def stalled() -> None:
+        """Never return before the probe timeout."""
+        await asyncio.sleep(60)
+
+    monkeypatch.setattr("src.cogs.extra.ping_database", stalled)
+    monkeypatch.setattr("src.cogs.extra.PING_TIMEOUT_SECONDS", 0.01)
+    bot = _localized_bot(
+        get_shard=lambda _shard_id: SimpleNamespace(latency=0.041), latency=0.2
+    )
+    interaction = _localized_interaction(
+        response=Response(),
+        followup=Followup(),
+        guild=SimpleNamespace(shard_id=3),
+    )
+
+    await ExtraCog.ping.callback(ExtraCog(bot), interaction)
+
+    card = sent["embed"]
+    assert card.fields[1].value == "Unavailable"
 
 
 async def test_setup_hook_passes_bot_settings_to_database(
