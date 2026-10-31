@@ -36,15 +36,14 @@ class ApplicationEmojiService:
         self.client = client
         self._emojis: dict[str, discord.Emoji] = {}
         self._retry_at: dict[str, float] = {}
+        self._loaded = False
+        self._load_retry_at = 0.0
         self._lock = asyncio.Lock()
 
     async def warm(self) -> None:
         """Load existing application emojis and create any bundled assets that are missing."""
         try:
-            self._emojis = {
-                emoji.name: emoji
-                for emoji in await self.client.fetch_application_emojis()
-            }
+            await self._load()
             for name, filename in (
                 *CURRENCY_EMOJIS.values(),
                 ("fbar", "fbar.png"),
@@ -54,6 +53,23 @@ class ApplicationEmojiService:
                 await self._get_or_create(name, ROOT / "assets" / filename)
         except DISCORD_HTTP_ERRORS:
             log.warning("Could not warm application emoji cache; using text fallbacks")
+
+    async def _load(self) -> None:
+        """Replace the cache with the application emojis that currently exist."""
+        self._emojis = {
+            emoji.name: emoji for emoji in await self.client.fetch_application_emojis()
+        }
+        self._loaded = True
+
+    async def _retry_load(self) -> None:
+        """Reload after a failed warm, at most once per cooldown window."""
+        if time.monotonic() < self._load_retry_at:
+            return
+        try:
+            await self._load()
+        except DISCORD_HTTP_ERRORS:
+            self._load_retry_at = time.monotonic() + 30
+            log.warning("Could not load application emoji cache", exc_info=True)
 
     async def currency(self, kind: str) -> str:
         """Return the emoji for VP, Radianite, or Kingdom Credits, if available."""
@@ -91,6 +107,10 @@ class ApplicationEmojiService:
                 return str(emoji)
             if time.monotonic() < self._retry_at.get(name, 0):
                 return ""
+            if not self._loaded:
+                await self._retry_load()
+                if emoji := self._emojis.get(name):
+                    return str(emoji)
             try:
                 image = await asyncio.to_thread(source.read_bytes)
                 emoji = await self.client.create_application_emoji(

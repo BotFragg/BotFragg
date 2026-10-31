@@ -66,7 +66,12 @@ async def test_emoji_failures_use_per_emoji_cooldown_and_recover(monkeypatch, fa
         else failure("Synthetic outage")
     )
     create = AsyncMock(side_effect=[error, error, "<:vp:123>"])
-    service = ApplicationEmojiService(SimpleNamespace(create_application_emoji=create))
+    service = ApplicationEmojiService(
+        SimpleNamespace(
+            create_application_emoji=create,
+            fetch_application_emojis=AsyncMock(return_value=[]),
+        )
+    )
     assert (
         await asyncio.gather(*(service.currency("vp") for _ in range(10))) == [""] * 10
     )
@@ -84,3 +89,32 @@ async def test_emoji_failures_use_per_emoji_cooldown_and_recover(monkeypatch, fa
     assert create.await_count == 3
     assert await service.currency("vp") == "<:vp:123>"
     assert create.await_count == 3
+
+
+async def test_warm_failure_reloads_existing_emojis(monkeypatch):
+    """A failed warm must retry the emoji list before creating duplicates."""
+    clock = [1000]
+    monkeypatch.setattr("src.services.emojis.time.monotonic", lambda: clock[0])
+
+    class Emoji:
+        """Stand in for a Discord application emoji."""
+
+        name = "ValPointsIcon"
+
+        def __str__(self) -> str:
+            """Return the emoji mention used in message text."""
+            return "<:vp:1>"
+
+    fetch = AsyncMock(
+        side_effect=[aiohttp.ServerDisconnectedError("Synthetic outage"), [Emoji()]]
+    )
+    create = AsyncMock()
+    service = ApplicationEmojiService(
+        SimpleNamespace(fetch_application_emojis=fetch, create_application_emoji=create)
+    )
+
+    await service.warm()
+
+    assert await service.currency("vp") == "<:vp:1>"
+    assert fetch.await_count == 2
+    create.assert_not_awaited()
