@@ -12,6 +12,9 @@
 - The inert `VERBOSE_LOGGING` setting is removed; the bot logs at `INFO`.
 - `SHARD_COUNT` is limited to 1–1000 so a typo fails at startup instead of stalling shard
   launches.
+- Account ownership columns are indexed, and command analytics ids are 64-bit, so
+  lookups stay fast and the never-pruned table cannot overflow.
+- Container images built for a version tag are smoke-tested before they are published.
 
 ### Fixed
 
@@ -33,6 +36,18 @@
 - Suggestion review no longer DMs a follower who untracked or deleted their data mid-review.
 - Concurrent daily-alert workers no longer lose delivery-failure counts.
 - Shard webhook transport failures are logged instead of escaping the listener.
+- Daily alert runs query accounts and alerts in batches, so a large opted-in user base no
+  longer exceeds the database's parameter limit and stops the job.
+- A malformed `GLITCHTIP_DSN` port disables error reporting instead of stopping the bot.
+- `AUTO_REFRESH_TOKENS=false` is honoured when an account has a valid access token but no
+  entitlement token.
+- `/ping` reports the database as unavailable after a five-second probe instead of hanging.
+- The health probe reports a closed gateway shard, so a disconnected bot no longer looks
+  healthy.
+- Accessory shop prices, wallet balances, and battlepass progress use the locale's number
+  formatting.
+- A Riot login outage is reported as temporarily unavailable instead of a rejected code.
+- The shard-status message notes any shards hidden by Discord's 25-field limit.
 
 ## [1.2.3] - 2026-10-22
 

@@ -238,7 +238,7 @@ General BotFragg commands for status, links, help, and shard health.
 
 **Scope:** `src/cogs/extra.py` · `module`
 
-[Source](../src/cogs/extra.py#L43)
+[Source](../src/cogs/extra.py#L45)
 
 Provide public utility commands and the persistent shard-status message.
 
@@ -246,7 +246,7 @@ Provide public utility commands and the persistent shard-status message.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L46)
+[Source](../src/cogs/extra.py#L48)
 
 Store the bot and record when this cog started for the info command.
 
@@ -254,7 +254,7 @@ Store the bot and record when this cog started for the info command.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L67)
+[Source](../src/cogs/extra.py#L69)
 
 Start shard-status updates when their destination is configured.
 
@@ -262,7 +262,7 @@ Start shard-status updates when their destination is configured.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L72)
+[Source](../src/cogs/extra.py#L74)
 
 Cancel and await the shard-status task during extension shutdown.
 
@@ -270,7 +270,7 @@ Cancel and await the shard-status task during extension shutdown.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L86)
+[Source](../src/cogs/extra.py#L88)
 
 Report Discord gateway latency and a live database probe duration.
 
@@ -278,7 +278,7 @@ Report Discord gateway latency and a live database probe duration.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L116)
+[Source](../src/cogs/extra.py#L125)
 
 Show recent public updates and BotFragg runtime information.
 
@@ -286,7 +286,7 @@ Show recent public updates and BotFragg runtime information.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L224)
+[Source](../src/cogs/extra.py#L233)
 
 Fetch and cache five public commits, formatting them per request locale.
 
@@ -294,7 +294,7 @@ Fetch and cache five public commits, formatting them per request locale.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L309)
+[Source](../src/cogs/extra.py#L318)
 
 Build link buttons for the configured public URLs.
 
@@ -302,7 +302,7 @@ Build link buttons for the configured public URLs.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L340)
+[Source](../src/cogs/extra.py#L349)
 
 Use each command's cog module to place it in a help category.
 
@@ -310,7 +310,7 @@ Use each command's cog module to place it in a help category.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L361)
+[Source](../src/cogs/extra.py#L370)
 
 Return Discord-formatted mentions for all synced commands and subcommands.
 
@@ -318,7 +318,7 @@ Return Discord-formatted mentions for all synced commands and subcommands.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L388)
+[Source](../src/cogs/extra.py#L397)
 
 List registered slash commands by category in the embed description.
 
@@ -326,7 +326,7 @@ List registered slash commands by category in the embed description.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L459)
+[Source](../src/cogs/extra.py#L468)
 
 Show an invite link and any configured support, vote, and website links.
 
@@ -334,7 +334,7 @@ Show an invite link and any configured support, vote, and website links.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L475)
+[Source](../src/cogs/extra.py#L484)
 
 Measure the shard-status job and preserve its existing retry behavior.
 
@@ -342,7 +342,7 @@ Measure the shard-status job and preserve its existing retry behavior.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L480)
+[Source](../src/cogs/extra.py#L489)
 
 Update or recreate the persistent embed containing per-shard health.
 
@@ -350,7 +350,7 @@ Update or recreate the persistent embed containing per-shard health.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L525)
+[Source](../src/cogs/extra.py#L537)
 
 Wait for Discord readiness before the first shard-status update.
 
@@ -358,7 +358,7 @@ Wait for Discord readiness before the first shard-status update.
 
 **Scope:** `src/cogs/extra.py` · `module`
 
-[Source](../src/cogs/extra.py#L530)
+[Source](../src/cogs/extra.py#L542)
 
 Register the general utility cog with the bot.
 
@@ -674,7 +674,7 @@ Publish Discord, database, and scheduled-job health for Docker and operators.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L420)
+[Source](../src/cogs/tasks.py#L424)
 
 Wait for Discord readiness before starting any background job.
 
@@ -682,7 +682,7 @@ Wait for Discord readiness before starting any background job.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L425)
+[Source](../src/cogs/tasks.py#L429)
 
 Register the background-task cog with the bot.
 
@@ -1270,7 +1270,7 @@ Render the selected daily, Night Market, accessory, or bundle mode.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L659)
+[Source](../src/cogs/valorant/shop.py#L665)
 
 Read the values actually offered by this message's matching select menu.
 
@@ -1278,7 +1278,7 @@ Read the values actually offered by this message's matching select menu.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L673)
+[Source](../src/cogs/valorant/shop.py#L679)
 
 Revalidate a selected featured bundle against the caller's account and view.
 
@@ -1286,7 +1286,7 @@ Revalidate a selected featured bundle against the caller's account and view.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L726)
+[Source](../src/cogs/valorant/shop.py#L732)
 
 List playable levels and chromas within Discord's select-menu limit.
 
@@ -1294,7 +1294,7 @@ List playable levels and chromas within Discord's select-menu limit.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L759)
+[Source](../src/cogs/valorant/shop.py#L765)
 
 Open a private level/chroma menu for a skin offered in this message.
 
@@ -1302,7 +1302,7 @@ Open a private level/chroma menu for a skin offered in this message.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L813)
+[Source](../src/cogs/valorant/shop.py#L819)
 
 Privately return a selected video only when it belongs to that skin.
 
@@ -1310,7 +1310,7 @@ Privately return a selected video only when it belongs to that skin.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L874)
+[Source](../src/cogs/valorant/shop.py#L880)
 
 Validate the selected account and reopen the corresponding shop mode.
 
@@ -1318,7 +1318,7 @@ Validate the selected account and reopen the corresponding shop mode.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L890)
+[Source](../src/cogs/valorant/shop.py#L896)
 
 Display discounted Night Market offers for the selected Riot account.
 
@@ -1326,7 +1326,7 @@ Display discounted Night Market offers for the selected Riot account.
 
 **Scope:** `src/cogs/valorant/shop.py` · `NightMarketCog`
 
-[Source](../src/cogs/valorant/shop.py#L893)
+[Source](../src/cogs/valorant/shop.py#L899)
 
 Bind the shared shop, account, and emoji services.
 
@@ -1334,7 +1334,7 @@ Bind the shared shop, account, and emoji services.
 
 **Scope:** `src/cogs/valorant/shop.py` · `NightMarketCog`
 
-[Source](../src/cogs/valorant/shop.py#L904)
+[Source](../src/cogs/valorant/shop.py#L910)
 
 Fetch and render Night Market offers or report that none are active.
 
@@ -1342,7 +1342,7 @@ Fetch and render Night Market offers or report that none are active.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L944)
+[Source](../src/cogs/valorant/shop.py#L950)
 
 Display the selected account's three VALORANT wallet balances.
 
@@ -1350,7 +1350,7 @@ Display the selected account's three VALORANT wallet balances.
 
 **Scope:** `src/cogs/valorant/shop.py` · `BalanceCog`
 
-[Source](../src/cogs/valorant/shop.py#L947)
+[Source](../src/cogs/valorant/shop.py#L953)
 
 Bind the shared shop and user-preference services.
 
@@ -1358,7 +1358,7 @@ Bind the shared shop and user-preference services.
 
 **Scope:** `src/cogs/valorant/shop.py` · `BalanceCog`
 
-[Source](../src/cogs/valorant/shop.py#L958)
+[Source](../src/cogs/valorant/shop.py#L964)
 
 Fetch and display VP, Radianite, and Kingdom Credit balances.
 
@@ -1366,7 +1366,7 @@ Fetch and display VP, Radianite, and Kingdom Credit balances.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L1007)
+[Source](../src/cogs/valorant/shop.py#L1018)
 
 Register the shop, Night Market, and wallet-balance cogs.
 
@@ -1702,6 +1702,26 @@ Leave stored choices alone; only the schema default reverts on rollback.
 
 Require users to opt in before others can view their shop.
 
+## `src/migrations/0006_index_owners_and_widen_analytics.py`
+
+Index account ownership columns and widen analytics ids.
+
+### `async def _widen_sequence(apps, schema_editor) -> None`
+
+**Scope:** `src/migrations/0006_index_owners_and_widen_analytics.py` · `module`
+
+[Source](../src/migrations/0006_index_owners_and_widen_analytics.py#L8)
+
+Widen the analytics id sequence, which ALTER COLUMN does not touch.
+
+### `class Migration(migrations.Migration)`
+
+**Scope:** `src/migrations/0006_index_owners_and_widen_analytics.py` · `module`
+
+[Source](../src/migrations/0006_index_owners_and_widen_analytics.py#L15)
+
+Speed up per-owner lookups and stop analytics ids overflowing at 2^31.
+
 ## `src/migrations/__init__.py`
 
 Tortoise migration package for the BotFragg database schema.
@@ -1718,7 +1738,7 @@ Tortoise ORM entities and database constraints for BotFragg data.
 
 **Scope:** `src/models/entities.py` · `module`
 
-[Source](../src/models/entities.py#L10)
+[Source](../src/models/entities.py#L11)
 
 Store Discord preferences and the selected linked VALORANT account.
 
@@ -1726,7 +1746,7 @@ Store Discord preferences and the selected linked VALORANT account.
 
 **Scope:** `src/models/entities.py` · `module`
 
-[Source](../src/models/entities.py#L24)
+[Source](../src/models/entities.py#L25)
 
 Store a user's Riot identity and encrypted authentication payload.
 
@@ -1734,15 +1754,23 @@ Store a user's Riot identity and encrypted authentication payload.
 
 **Scope:** `src/models/entities.py` · `Account`
 
-[Source](../src/models/entities.py#L27)
+[Source](../src/models/entities.py#L28)
 
 Scope access to this account's original owner and creation time.
+
+### `class Meta`
+
+**Scope:** `src/models/entities.py` · `Account`
+
+[Source](../src/models/entities.py#L48)
+
+Index the owner column used by every account lookup.
 
 ### `class Alert(Model)`
 
 **Scope:** `src/models/entities.py` · `module`
 
-[Source](../src/models/entities.py#L48)
+[Source](../src/models/entities.py#L54)
 
 Store a skin alert belonging to one linked Riot account.
 
@@ -1750,7 +1778,7 @@ Store a skin alert belonging to one linked Riot account.
 
 **Scope:** `src/models/entities.py` · `Alert`
 
-[Source](../src/models/entities.py#L51)
+[Source](../src/models/entities.py#L57)
 
 Scope access to this alert and its account's original identity.
 
@@ -1758,15 +1786,15 @@ Scope access to this alert and its account's original identity.
 
 **Scope:** `src/models/entities.py` · `Alert`
 
-[Source](../src/models/entities.py#L68)
+[Source](../src/models/entities.py#L74)
 
-Prevent duplicate alerts for the same account and skin.
+Prevent duplicate alerts and index the account used by alert lookups.
 
 ### `class CommandInvocation(Model)`
 
 **Scope:** `src/models/entities.py` · `module`
 
-[Source](../src/models/entities.py#L74)
+[Source](../src/models/entities.py#L81)
 
 Store a completed command and its optional guild and channel context.
 
@@ -1774,7 +1802,7 @@ Store a completed command and its optional guild and channel context.
 
 **Scope:** `src/models/entities.py` · `module`
 
-[Source](../src/models/entities.py#L85)
+[Source](../src/models/entities.py#L93)
 
 Store a user's submitted idea and its review and delivery state.
 
@@ -1782,7 +1810,7 @@ Store a user's submitted idea and its review and delivery state.
 
 **Scope:** `src/models/entities.py` · `module`
 
-[Source](../src/models/entities.py#L100)
+[Source](../src/models/entities.py#L108)
 
 Link a Discord user to a suggestion whose review they want to follow.
 
@@ -1790,7 +1818,7 @@ Link a Discord user to a suggestion whose review they want to follow.
 
 **Scope:** `src/models/entities.py` · `SuggestionFollower`
 
-[Source](../src/models/entities.py#L109)
+[Source](../src/models/entities.py#L117)
 
 Allow each user to follow a suggestion at most once.
 
@@ -1798,7 +1826,7 @@ Allow each user to follow a suggestion at most once.
 
 **Scope:** `src/models/entities.py` · `module`
 
-[Source](../src/models/entities.py#L115)
+[Source](../src/models/entities.py#L123)
 
 Map each configured Discord channel to its persistent status message.
 
@@ -2006,11 +2034,19 @@ Delete the user's stored BotFragg records and all linked Riot accounts.
 
 Persistence and orchestration for alerts.
 
+### `def _batched(values: list[T]) -> Iterator[list[T]]`
+
+**Scope:** `src/services/alerts.py` · `module`
+
+[Source](../src/services/alerts.py#L32)
+
+Split IDs so a single query cannot exceed the bind-argument limit.
+
 ### `class AlertPage`
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L31)
+[Source](../src/services/alerts.py#L39)
 
 Hold one bounded page of alerts and its normalized pagination metadata.
 
@@ -2018,7 +2054,7 @@ Hold one bounded page of alerts and its normalized pagination metadata.
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L42)
+[Source](../src/services/alerts.py#L50)
 
 Create an account-scoped skin alert or return the existing duplicate.
 
@@ -2026,7 +2062,7 @@ Create an account-scoped skin alert or return the existing duplicate.
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L62)
+[Source](../src/services/alerts.py#L70)
 
 Return the page that starts at, after, or before one alert ID.
 
@@ -2034,7 +2070,7 @@ Return the page that starts at, after, or before one alert ID.
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L86)
+[Source](../src/services/alerts.py#L94)
 
 Fetch an owner-scoped alert page, wrapping page indexes and bounding size.
 
@@ -2048,7 +2084,7 @@ same window after one of its rows is removed.
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L142)
+[Source](../src/services/alerts.py#L150)
 
 Delete and return an alert only when it belongs to the requesting user.
 
@@ -2056,7 +2092,7 @@ Delete and return an alert only when it belongs to the requesting user.
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L150)
+[Source](../src/services/alerts.py#L158)
 
 Return a user's first alert with its linked account loaded.
 
@@ -2064,15 +2100,23 @@ Return a user's first alert with its linked account loaded.
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L157)
+[Source](../src/services/alerts.py#L165)
 
 Return distinct Discord IDs that own at least one alert.
+
+### `async def accounts_for_users(user_ids: list[int]) -> list[Account]`
+
+**Scope:** `src/services/alerts.py` · `module`
+
+[Source](../src/services/alerts.py#L171)
+
+Return the accounts of one bounded user batch in creation order.
 
 ### `async def account_ids_with_alerts(account_ids: list[str]) -> set[str]`
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L163)
+[Source](../src/services/alerts.py#L180)
 
 Return only the supplied account IDs that currently have alerts.
 
@@ -2080,7 +2124,7 @@ Return only the supplied account IDs that currently have alerts.
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L174)
+[Source](../src/services/alerts.py#L192)
 
 Fetch alerts matching one account and a bounded set of shop skin IDs.
 
@@ -2088,7 +2132,7 @@ Fetch alerts matching one account and a bounded set of shop skin IDs.
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L196)
+[Source](../src/services/alerts.py#L214)
 
 Retry transient lookups up to three times without replaying deliveries.
 
@@ -2099,7 +2143,7 @@ and report the affected accounts as failures.
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L217)
+[Source](../src/services/alerts.py#L235)
 
 Check eligible accounts with bounded concurrency and report run totals.
 
@@ -2263,7 +2307,7 @@ rejected without replacing the existing owner.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L281)
+[Source](../src/services/auth.py#L285)
 
 Serialize credential checks for an account and return its usable auth state.
 
@@ -2271,7 +2315,7 @@ Serialize credential checks for an account and return its usable auth state.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L295)
+[Source](../src/services/auth.py#L299)
 
 Check token lifetime and repair or refresh credentials while holding its lock.
 
@@ -2279,7 +2323,7 @@ Check token lifetime and repair or refresh credentials while holding its lock.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L324)
+[Source](../src/services/auth.py#L331)
 
 Refresh one account's Riot tokens under its per-account lock.
 
@@ -2287,7 +2331,7 @@ Refresh one account's Riot tokens under its per-account lock.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L338)
+[Source](../src/services/auth.py#L345)
 
 Refresh tokens with version-checked persistence to protect concurrent updates.
 
@@ -2295,7 +2339,7 @@ Refresh tokens with version-checked persistence to protect concurrent updates.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L432)
+[Source](../src/services/auth.py#L439)
 
 Persist a returned token without repeating its exchange after a DB outage.
 
@@ -2303,7 +2347,7 @@ Persist a returned token without repeating its exchange after a DB outage.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L452)
+[Source](../src/services/auth.py#L459)
 
 Share transient failure cooldowns under the caller's account lock.
 
@@ -2311,7 +2355,7 @@ Share transient failure cooldowns under the caller's account lock.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L474)
+[Source](../src/services/auth.py#L481)
 
 Remove the selected account's Riot tokens while coordinating with refreshes.
 
@@ -2319,7 +2363,7 @@ Remove the selected account's Riot tokens while coordinating with refreshes.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L487)
+[Source](../src/services/auth.py#L494)
 
 Clear credentials only if the stored auth version still matches the caller.
 
@@ -2327,7 +2371,7 @@ Clear credentials only if the stored auth version still matches the caller.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L495)
+[Source](../src/services/auth.py#L502)
 
 Return fresh Riot authorization headers or raise when login is required.
 
@@ -2335,7 +2379,7 @@ Return fresh Riot authorization headers or raise when login is required.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L523)
+[Source](../src/services/auth.py#L530)
 
 Fetch and persist an entitlement token, optionally refreshing on absence.
 
@@ -2343,7 +2387,7 @@ Fetch and persist an entitlement token, optionally refreshing on absence.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L568)
+[Source](../src/services/auth.py#L575)
 
 Release abandoned login attempts after their ten-minute lifetime.
 
@@ -2351,7 +2395,7 @@ Release abandoned login attempts after their ten-minute lifetime.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L577)
+[Source](../src/services/auth.py#L584)
 
 Fetch the Riot game name and tag line associated with an access token.
 
@@ -2359,7 +2403,7 @@ Fetch the Riot game name and tag line associated with an access token.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L594)
+[Source](../src/services/auth.py#L601)
 
 Request an entitlement token and surface transient Riot failures.
 
@@ -2367,7 +2411,7 @@ Request an entitlement token and surface transient Riot failures.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L619)
+[Source](../src/services/auth.py#L626)
 
 Resolve the VALORANT shard affinity associated with an ID token.
 
@@ -2375,7 +2419,7 @@ Resolve the VALORANT shard affinity associated with an ID token.
 
 **Scope:** `src/services/auth.py` · `AuthService`
 
-[Source](../src/services/auth.py#L641)
+[Source](../src/services/auth.py#L648)
 
 Build the Riot authentication user agent from the latest client build.
 
@@ -2383,7 +2427,7 @@ Build the Riot authentication user agent from the latest client build.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L651)
+[Source](../src/services/auth.py#L658)
 
 Validate token response fields before using or persisting credentials.
 
@@ -2391,7 +2435,7 @@ Validate token response fields before using or persisting credentials.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L666)
+[Source](../src/services/auth.py#L673)
 
 Decode a JWT payload for claim lookup without performing signature validation.
 
@@ -2399,7 +2443,7 @@ Decode a JWT payload for claim lookup without performing signature validation.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L679)
+[Source](../src/services/auth.py#L686)
 
 Return the token's Unix expiry time, or zero when it cannot be decoded.
 
@@ -2407,7 +2451,7 @@ Return the token's Unix expiry time, or zero when it cannot be decoded.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L687)
+[Source](../src/services/auth.py#L694)
 
 Map missing and LATAM/Brazil affinities to Riot's North America API host.
 
@@ -2415,7 +2459,7 @@ Map missing and LATAM/Brazil affinities to Riot's North America API host.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L692)
+[Source](../src/services/auth.py#L699)
 
 Build a regional VALORANT player-data URL for one API path.
 
@@ -2423,7 +2467,7 @@ Build a regional VALORANT player-data URL for one API path.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L697)
+[Source](../src/services/auth.py#L704)
 
 Raised when a Riot request cannot proceed without a new user login.
 
@@ -2431,7 +2475,7 @@ Raised when a Riot request cannot proceed without a new user login.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L701)
+[Source](../src/services/auth.py#L708)
 
 Return whether Riot rejected the stored entitlement token.
 
@@ -2439,7 +2483,7 @@ Return whether Riot rejected the stored entitlement token.
 
 **Scope:** `src/services/auth.py` · `module`
 
-[Source](../src/services/auth.py#L710)
+[Source](../src/services/auth.py#L717)
 
 Send an authenticated request, refreshing once when Riot rejects its claims.
 

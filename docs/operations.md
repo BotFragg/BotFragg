@@ -46,10 +46,12 @@ re-send the day's successful notifications; health recovers after a clean daily
 run. Check Discord DM permissions as well as upstream availability when investigating.
 
 Daily lookups get at most three attempts: rate limits wait for the HTTP client's
-bounded host cooldown, and transient database errors wait five seconds between
-attempts. Only the failed lookup is retried; delivered notifications are not
-replayed. Exhausted database retries skip the affected user's remaining accounts
-while other users continue. An exhausted initial database lookup ends the run.
+bounded host cooldown, up to two minutes, and transient database errors wait five
+seconds between attempts. A longer Riot cooldown is not waited out; the affected
+accounts count as shop failures and the job is marked unhealthy. Only the failed
+lookup is retried; delivered notifications are not replayed. Exhausted database
+retries skip the affected user's remaining accounts while other users continue.
+An exhausted initial database lookup ends the run.
 Both cases mark the job unhealthy and leave recovery to the next scheduled run.
 Unreadable encrypted credentials count as a shop failure for that account and
 remain stored for recovery with the matching key. Incomplete skin catalogs also
