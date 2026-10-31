@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any
 
 import sentry_sdk
 from sentry_sdk.integrations.logging import LoggingIntegration
-from sentry_sdk.utils import BadDsn, Dsn
+from sentry_sdk.utils import Dsn
 
 from .config import Settings
 
@@ -211,7 +211,7 @@ def configure_monitoring(config: Settings) -> None:
         return
     try:
         Dsn(config.glitchtip_dsn)
-    except BadDsn:
+    except ValueError:
         # Telemetry is optional: a malformed DSN must not stop the bot.
         logging.getLogger(__name__).warning(
             "GLITCHTIP_DSN is not a valid DSN; error reporting is disabled"

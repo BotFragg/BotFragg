@@ -637,13 +637,19 @@ async def test_log_flush_failure_restores_a_partial_batch():
     assert len(cog.discord_log_handler.messages) == 600
 
 
-def test_malformed_glitchtip_dsn_disables_reporting(monkeypatch):
+@pytest.mark.parametrize(
+    "dsn",
+    [
+        "https://app.glitchtip.com/settings/x",
+        "https://key@glitchtip.example:notaport/1",
+        "https://key@glitchtip.example:99999/1",
+    ],
+)
+def test_malformed_glitchtip_dsn_disables_reporting(monkeypatch, dsn):
     """A malformed optional DSN must warn instead of stopping the bot."""
     init = Mock()
     monkeypatch.setattr("src.monitoring.sentry_sdk.init", init)
 
-    monitoring.configure_monitoring(
-        NS(glitchtip_dsn="https://app.glitchtip.com/settings/x")
-    )
+    monitoring.configure_monitoring(NS(glitchtip_dsn=dsn))
 
     init.assert_not_called()
