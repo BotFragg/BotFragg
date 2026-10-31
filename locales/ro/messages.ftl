@@ -354,6 +354,7 @@ crosshair-current-profile = Profilul actual
 crosshair-more-profiles = Alte { $count } profiluri nu sunt afișate
 crosshair-unavailable = Setările reticulului nu au putut fi încărcate. Încearcă din nou mai târziu.
 crosshair-share-button = Distribuie
+crosshair-refresh-button = Reîmprospătează
 crosshair-share-preview-description = Exact aceasta va fi publicat pe acest canal.
 crosshair-share-post = Publică
 crosshair-share-cancel = Anulează

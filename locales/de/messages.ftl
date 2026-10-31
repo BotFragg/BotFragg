@@ -351,6 +351,7 @@ crosshair-current-profile = Aktuelles Profil
 crosshair-more-profiles = { $count } weitere Profile werden nicht angezeigt
 crosshair-unavailable = Deine Fadenkreuz-Einstellungen konnten nicht geladen werden. Versuche es später erneut.
 crosshair-share-button = Teilen
+crosshair-refresh-button = Aktualisieren
 crosshair-share-preview-description = Genau das wird in diesem Kanal veröffentlicht.
 crosshair-share-post = Veröffentlichen
 crosshair-share-cancel = Abbrechen

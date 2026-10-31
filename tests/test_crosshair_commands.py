@@ -6,11 +6,17 @@ from datetime import UTC, datetime
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
+import aiohttp
 import discord
 import pytest
 
 from src.cogs.valorant import crosshair as crosshair_cog
-from src.cogs.valorant.crosshair import CrosshairCog, CrosshairView, ShareConfirmView
+from src.cogs.valorant.crosshair import (
+    CrosshairCog,
+    CrosshairView,
+    RefreshButton,
+    ShareConfirmView,
+)
 from src.services.auth import AuthenticationRequired
 from src.services.crosshair import CrosshairProfile, CrosshairUnavailable
 from tests.helpers import (
@@ -48,13 +54,14 @@ class Response:
         """Start with no recorded calls."""
         self.deferred: tuple[bool, bool] | None = None
         self.edited: dict[str, object] | None = None
+        self.original: dict[str, object] | None = None
         self.sent: dict[str, object] | None = None
 
     async def send_message(self, **kwargs: object) -> None:
         """Record a direct message response."""
         self.sent = kwargs
 
-    async def defer(self, *, thinking: bool, ephemeral: bool) -> None:
+    async def defer(self, *, thinking: bool = False, ephemeral: bool = False) -> None:
         """Record how the interaction was deferred."""
         self.deferred = (thinking, ephemeral)
 
@@ -66,6 +73,10 @@ class Response:
     async def edit_message(self, **kwargs: object) -> None:
         """Record the edited message payload."""
         self.edited = kwargs
+
+    async def edit_original_response(self, **kwargs: object) -> None:
+        """Record the edited original message payload."""
+        self.original = kwargs
 
 
 class Followup:
@@ -312,6 +323,98 @@ def test_view_keeps_the_current_profile_when_profiles_exceed_the_menu_limit():
     assert view.children[0].options[0].value == "30"
 
 
+async def test_refresh_refetches_and_keeps_the_selected_profile(monkeypatch):
+    """The refresh control must bypass the cache and redraw the same message."""
+    current = account()
+    monkeypatch.setattr(
+        crosshair_cog, "account_for_user", AsyncMock(return_value=current)
+    )
+    bot, service = build_bot()
+    service.profiles = AsyncMock(
+        return_value=[
+            CrosshairProfile(index=0, name="one", code=CODE, current=False),
+            CrosshairProfile(index=1, name="two", code=CODE, current=True),
+        ]
+    )
+    response = Response()
+    interaction = _localized_interaction(
+        user=SimpleNamespace(id=1),
+        response=response,
+        followup=Followup(),
+        locale=TEST_LOCALE,
+        edit_original_response=response.edit_original_response,
+    )
+    view = CrosshairView(
+        CrosshairCog(bot), interaction, current, profiles(), profiles()[0]
+    )
+    button = next(item for item in view.children if isinstance(item, RefreshButton))
+
+    await button.callback(interaction)
+
+    assert service.profiles.await_args.kwargs == {"refresh": True}
+    assert response.deferred == (False, False)
+    assert response.original["embed"].title == TEST_TRANSLATOR.text(
+        TEST_LOCALE, "crosshair-title", name="one"
+    )
+    assert response.original["attachments"][0].filename == "crosshair.png"
+    refreshed = response.original["view"]
+    assert isinstance(refreshed, CrosshairView)
+    assert refreshed.children[0].options[0].default is True
+
+
+@pytest.mark.parametrize(
+    ("lookup", "key"),
+    [
+        (None, "error-not-registered"),
+        (AuthenticationRequired("expired"), "error-riot-login-expired"),
+        (CrosshairUnavailable("unavailable"), "crosshair-unavailable"),
+    ],
+)
+async def test_refresh_reports_lookup_and_fetch_failures(monkeypatch, lookup, key):
+    """A relinked account or a failed refetch must keep the old message intact."""
+    current = None if lookup is None else account()
+    monkeypatch.setattr(
+        crosshair_cog, "account_for_user", AsyncMock(return_value=current)
+    )
+    bot, service = build_bot()
+    if isinstance(lookup, Exception):
+        service.profiles = AsyncMock(side_effect=lookup)
+    response = Response()
+    followup = Followup()
+    interaction = _localized_interaction(
+        user=SimpleNamespace(id=1),
+        response=response,
+        followup=followup,
+        locale=TEST_LOCALE,
+    )
+    view = CrosshairView(
+        CrosshairCog(bot), interaction, account(), profiles(), profiles()[1]
+    )
+    button = next(item for item in view.children if isinstance(item, RefreshButton))
+
+    await button.callback(interaction)
+
+    assert response.original is None
+    assert followup.sent[0]["embed"].description == TEST_TRANSLATOR.text(
+        TEST_LOCALE, key
+    )
+
+
+async def test_refresh_rejects_a_foreign_user():
+    """Another user must not refetch or redraw the owner's message."""
+    cog = make_cog()
+    view = CrosshairView(cog, guild_interaction(), account(), profiles(), profiles()[1])
+    button = next(item for item in view.children if isinstance(item, RefreshButton))
+    followup = Followup()
+
+    await button.callback(guild_interaction(user_id=2, followup=followup))
+
+    assert followup.sent[0]["embed"].description == TEST_TRANSLATOR.text(
+        TEST_LOCALE, "error-command-failed"
+    )
+    assert cog.bot.crosshair.profiles.await_count == 0
+
+
 class Channel(discord.abc.Messageable):
     """Capture public sends and return configurable permissions."""
 
@@ -376,8 +479,10 @@ def test_share_button_appears_only_in_a_guild():
         item.label
         for item in guild_view.children
         if isinstance(item, discord.ui.Button)
-    ] == ["Share"]
-    assert not any(isinstance(item, discord.ui.Button) for item in dm_view.children)
+    ] == ["Share", "Refresh"]
+    assert [
+        item.label for item in dm_view.children if isinstance(item, discord.ui.Button)
+    ] == ["Refresh"]
 
 
 async def test_share_button_shows_the_card_that_will_be_posted():
@@ -445,6 +550,45 @@ async def test_share_post_sends_the_public_card_and_starts_cooldown(monkeypatch)
     assert second_followup.sent[0]["embed"].description == TEST_TRANSLATOR.text(
         TEST_LOCALE, "crosshair-share-cooldown", seconds=30
     )
+
+
+async def test_share_reserves_the_cooldown_before_posting(monkeypatch):
+    """A second click must be blocked while the first post is still in flight."""
+    clock = [1000.0]
+    monkeypatch.setattr(crosshair_cog, "monotonic", lambda: clock[0])
+    cog = make_cog()
+    channel = Channel()
+    observed: list[int] = []
+
+    async def send(**_kwargs: object) -> None:
+        """Record the cooldown visible from inside the public send."""
+        observed.append(cog.share_cooldown_remaining(1))
+
+    channel.send.side_effect = send
+    interaction = guild_interaction(channel=channel)
+    confirm = ShareConfirmView(cog, profiles()[1], interaction)
+
+    await confirm.post.callback(interaction)
+
+    assert observed == [30]
+
+
+async def test_share_failure_releases_the_cooldown(monkeypatch):
+    """A failed post must not cost the user the next attempt."""
+    clock = [1000.0]
+    monkeypatch.setattr(crosshair_cog, "monotonic", lambda: clock[0])
+    cog = make_cog()
+    channel = Channel()
+    channel.send.side_effect = aiohttp.ClientError("Synthetic outage")
+    confirm = ShareConfirmView(cog, profiles()[1], guild_interaction(channel=channel))
+    followup = Followup()
+
+    await confirm.post.callback(guild_interaction(channel=channel, followup=followup))
+
+    assert followup.sent[0]["embed"].description == TEST_TRANSLATOR.text(
+        TEST_LOCALE, "crosshair-share-failed"
+    )
+    assert cog.share_cooldown_remaining(1) == 0
 
 
 async def test_share_reports_a_missing_channel_permission():

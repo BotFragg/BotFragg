@@ -351,6 +351,7 @@ crosshair-current-profile = Nykyinen profiili
 crosshair-more-profiles = { $count } muuta profiilia ei näytetä
 crosshair-unavailable = Tähtäinasetuksia ei voitu ladata. Yritä myöhemmin uudelleen.
 crosshair-share-button = Jaa
+crosshair-refresh-button = Päivitä
 crosshair-share-preview-description = Juuri tämä julkaistaan tällä kanavalla.
 crosshair-share-post = Julkaise
 crosshair-share-cancel = Peruuta

@@ -351,6 +351,7 @@ crosshair-current-profile = Τρέχον προφίλ
 crosshair-more-profiles = { $count } ακόμη προφίλ δεν εμφανίζονται
 crosshair-unavailable = Οι ρυθμίσεις crosshair δεν φορτώθηκαν. Δοκίμασε ξανά αργότερα.
 crosshair-share-button = Κοινοποίηση
+crosshair-refresh-button = Ανανέωση
 crosshair-share-preview-description = Αυτό ακριβώς θα δημοσιευτεί σε αυτό το κανάλι.
 crosshair-share-post = Δημοσίευση
 crosshair-share-cancel = Ακύρωση

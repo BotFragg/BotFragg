@@ -348,6 +348,7 @@ crosshair-current-profile = Geçerli profil
 crosshair-more-profiles = { $count } profil daha gösterilmiyor
 crosshair-unavailable = Nişangah ayarların yüklenemedi. Daha sonra tekrar dene.
 crosshair-share-button = Paylaş
+crosshair-refresh-button = Yenile
 crosshair-share-preview-description = Bu kanalda tam olarak bu yayınlanacak.
 crosshair-share-post = Yayınla
 crosshair-share-cancel = İptal

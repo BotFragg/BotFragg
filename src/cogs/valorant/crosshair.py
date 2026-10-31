@@ -84,6 +84,7 @@ class CrosshairView(discord.ui.View):
         self.add_item(CrosshairSelect(interaction, options))
         if getattr(interaction, "guild", None) is not None:
             self.add_item(ShareButton(interaction))
+        self.add_item(RefreshButton(interaction))
 
     @staticmethod
     def _visible(profiles: Sequence[CrosshairProfile]) -> list[CrosshairProfile]:
@@ -96,16 +97,23 @@ class CrosshairView(discord.ui.View):
         rest = [profile for profile in profiles if profile is not current]
         return [current, *rest[: MAX_OPTIONS - 1]]
 
+    async def _owned_account(self, interaction: discord.Interaction) -> Account | None:
+        """Recheck that the caller still owns this account, or report an error."""
+        if interaction.user.id != self.owner_id:
+            await error(interaction, "error-command-failed")
+            return None
+        current = await account_for_user(interaction.user.id, self.account.puuid)
+        if current is None or current.created_at != self.account.created_at:
+            await error(interaction, "error-not-registered")
+            return None
+        return current
+
     async def profile_selected(
         self, interaction: discord.Interaction, index: int
     ) -> None:
         """Recheck ownership and edit the message with the chosen profile."""
-        if interaction.user.id != self.owner_id:
-            await error(interaction, "error-command-failed")
-            return
-        current = await account_for_user(interaction.user.id, self.account.puuid)
-        if current is None or current.created_at != self.account.created_at:
-            await error(interaction, "error-not-registered")
+        current = await self._owned_account(interaction)
+        if current is None:
             return
         profile = next(
             (profile for profile in self.profiles if profile.index == index),
@@ -122,6 +130,35 @@ class CrosshairView(discord.ui.View):
             await error(interaction, "crosshair-unavailable")
             return
         await interaction.response.edit_message(
+            embed=card, attachments=[file], view=controls
+        )
+
+    async def refresh_profiles(self, interaction: discord.Interaction) -> None:
+        """Refetch the profiles from Riot, update the cache, and redraw the message."""
+        current = await self._owned_account(interaction)
+        if current is None:
+            return
+        await interaction.response.defer()
+        try:
+            profiles = await self.cog.bot.crosshair.profiles(current, refresh=True)
+        except AuthenticationRequired as exc:
+            await error(interaction, exc)
+            return
+        except CrosshairUnavailable, HTTPFailure:
+            await error(interaction, "crosshair-unavailable")
+            return
+        selected = next(
+            (profile for profile in profiles if profile.index == self.selected.index),
+            next((profile for profile in profiles if profile.current), profiles[0]),
+        )
+        try:
+            card, file, controls = await self.cog.build_card(
+                interaction, current, profiles, selected
+            )
+        except CrosshairUnavailable:
+            await error(interaction, "crosshair-unavailable")
+            return
+        await interaction.edit_original_response(
             embed=card, attachments=[file], view=controls
         )
 
@@ -171,6 +208,24 @@ class ShareButton(discord.ui.Button[CrosshairView]):
             await view.share_preview(interaction)
 
 
+class RefreshButton(discord.ui.Button[CrosshairView]):
+    """Refetch the caller's profiles and redraw the message."""
+
+    def __init__(self, interaction: discord.Interaction) -> None:
+        """Label the button in the interaction's locale."""
+        super().__init__(
+            label=translated(interaction, "crosshair-refresh-button"),
+            style=discord.ButtonStyle.secondary,
+            row=1,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        """Refresh the owner's cached profiles from Riot."""
+        view = self.view
+        if isinstance(view, CrosshairView):
+            await view.refresh_profiles(interaction)
+
+
 class ShareConfirmView(discord.ui.View):
     """Confirm and post a public crosshair card."""
 
@@ -204,11 +259,14 @@ class ShareConfirmView(discord.ui.View):
         if failure or channel is None:
             await error(interaction, failure or "crosshair-share-guild-only")
             return
+        # Reserve before the first await so a double-click cannot post twice.
+        self.cog.mark_shared(interaction.user.id)
         try:
             card, png = await self.cog.render_card(
                 interaction, self.profile, locale="en-US"
             )
         except CrosshairUnavailable:
+            self.cog.clear_shared(interaction.user.id)
             await error(interaction, "crosshair-unavailable")
             return
         card.set_footer(text=self.cog.share_footer(interaction))
@@ -220,9 +278,9 @@ class ShareConfirmView(discord.ui.View):
                 allowed_mentions=discord.AllowedMentions.none(),
             )
         except DISCORD_HTTP_ERRORS:
+            self.cog.clear_shared(interaction.user.id)
             await error(interaction, "crosshair-share-failed")
             return
-        self.cog.mark_shared(interaction.user.id)
         await interaction.response.edit_message(
             content=translated(interaction, "crosshair-share-success"),
             embed=None,
@@ -381,13 +439,17 @@ class CrosshairCog(commands.Cog):
         return max(0, math.ceil(SHARE_COOLDOWN_SECONDS - (monotonic() - last)))
 
     def mark_shared(self, user_id: int) -> None:
-        """Record a successful share and bound the tracking map."""
+        """Reserve a user's share slot and bound the tracking map."""
         self._share_times[user_id] = monotonic()
         if len(self._share_times) > 1000:
             cutoff = monotonic() - SHARE_COOLDOWN_SECONDS
             for key, value in list(self._share_times.items()):
                 if value < cutoff:
                     del self._share_times[key]
+
+    def clear_shared(self, user_id: int) -> None:
+        """Release a reserved share slot after a failed post."""
+        self._share_times.pop(user_id, None)
 
 
 async def setup(bot: BotFraggBot) -> None:

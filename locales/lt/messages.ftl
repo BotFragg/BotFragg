@@ -357,6 +357,7 @@ crosshair-current-profile = Dabartinis profilis
 crosshair-more-profiles = Dar { $count } profiliai nerodomi
 crosshair-unavailable = Taikiklio nustatymų įkelti nepavyko. Bandyk vėliau.
 crosshair-share-button = Bendrinti
+crosshair-refresh-button = Atnaujinti
 crosshair-share-preview-description = Būtent tai bus paskelbta šiame kanale.
 crosshair-share-post = Paskelbti
 crosshair-share-cancel = Atšaukti

@@ -357,6 +357,7 @@ crosshair-current-profile = Aktuální profil
 crosshair-more-profiles = Dalších { $count } profilů se nezobrazuje
 crosshair-unavailable = Nastavení zaměřovače se nepodařilo načíst. Zkus to později.
 crosshair-share-button = Sdílet
+crosshair-refresh-button = Obnovit
 crosshair-share-preview-description = Přesně toto bude zveřejněno v tomto kanálu.
 crosshair-share-post = Zveřejnit
 crosshair-share-cancel = Zrušit

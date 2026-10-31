@@ -357,6 +357,7 @@ crosshair-current-profile = Bieżący profil
 crosshair-more-profiles = Nie pokazano { $count } kolejnych profili
 crosshair-unavailable = Nie udało się wczytać ustawień celownika. Spróbuj ponownie później.
 crosshair-share-button = Udostępnij
+crosshair-refresh-button = Odśwież
 crosshair-share-preview-description = Dokładnie to zostanie opublikowane na tym kanale.
 crosshair-share-post = Opublikuj
 crosshair-share-cancel = Anuluj

@@ -351,6 +351,7 @@ crosshair-current-profile = Текущ профил
 crosshair-more-profiles = Още { $count } профила не се показват
 crosshair-unavailable = Настройките на мерника не можаха да бъдат заредени. Опитай отново по-късно.
 crosshair-share-button = Сподели
+crosshair-refresh-button = Обнови
 crosshair-share-preview-description = Точно това ще бъде публикувано в този канал.
 crosshair-share-post = Публикувай
 crosshair-share-cancel = Отказ

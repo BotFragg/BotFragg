@@ -966,23 +966,39 @@ Build the selector from the caller's profiles.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairView`
 
-[Source](../src/cogs/valorant/crosshair.py#L89)
+[Source](../src/cogs/valorant/crosshair.py#L90)
 
 Keep the current profile first and cap the menu at Discord's limit.
+
+### `async def _owned_account(self, interaction: discord.Interaction) -> Account | None`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairView`
+
+[Source](../src/cogs/valorant/crosshair.py#L100)
+
+Recheck that the caller still owns this account, or report an error.
 
 ### `async def profile_selected(self, interaction: discord.Interaction, index: int) -> None`
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairView`
 
-[Source](../src/cogs/valorant/crosshair.py#L99)
+[Source](../src/cogs/valorant/crosshair.py#L111)
 
 Recheck ownership and edit the message with the chosen profile.
+
+### `async def refresh_profiles(self, interaction: discord.Interaction) -> None`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairView`
+
+[Source](../src/cogs/valorant/crosshair.py#L136)
+
+Refetch the profiles from Riot, update the cache, and redraw the message.
 
 ### `async def share_preview(self, interaction: discord.Interaction) -> None`
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairView`
 
-[Source](../src/cogs/valorant/crosshair.py#L128)
+[Source](../src/cogs/valorant/crosshair.py#L165)
 
 Show a private preview of the public share card.
 
@@ -990,7 +1006,7 @@ Show a private preview of the public share card.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `module`
 
-[Source](../src/cogs/valorant/crosshair.py#L156)
+[Source](../src/cogs/valorant/crosshair.py#L193)
 
 Open the private preview for a public crosshair share.
 
@@ -998,7 +1014,7 @@ Open the private preview for a public crosshair share.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `ShareButton`
 
-[Source](../src/cogs/valorant/crosshair.py#L159)
+[Source](../src/cogs/valorant/crosshair.py#L196)
 
 Label the button in the interaction's locale.
 
@@ -1006,15 +1022,39 @@ Label the button in the interaction's locale.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `ShareButton`
 
-[Source](../src/cogs/valorant/crosshair.py#L167)
+[Source](../src/cogs/valorant/crosshair.py#L204)
 
 Open the share preview for the selected profile.
+
+### `class RefreshButton(discord.ui.Button[CrosshairView])`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `module`
+
+[Source](../src/cogs/valorant/crosshair.py#L211)
+
+Refetch the caller's profiles and redraw the message.
+
+### `def __init__(self, interaction: discord.Interaction) -> None`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `RefreshButton`
+
+[Source](../src/cogs/valorant/crosshair.py#L214)
+
+Label the button in the interaction's locale.
+
+### `async def callback(self, interaction: discord.Interaction) -> None`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `RefreshButton`
+
+[Source](../src/cogs/valorant/crosshair.py#L222)
+
+Refresh the owner's cached profiles from Riot.
 
 ### `class ShareConfirmView(discord.ui.View)`
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `module`
 
-[Source](../src/cogs/valorant/crosshair.py#L174)
+[Source](../src/cogs/valorant/crosshair.py#L229)
 
 Confirm and post a public crosshair card.
 
@@ -1022,7 +1062,7 @@ Confirm and post a public crosshair card.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `ShareConfirmView`
 
-[Source](../src/cogs/valorant/crosshair.py#L177)
+[Source](../src/cogs/valorant/crosshair.py#L232)
 
 Bind the profile to share and localize the two buttons.
 
@@ -1030,7 +1070,7 @@ Bind the profile to share and localize the two buttons.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `ShareConfirmView`
 
-[Source](../src/cogs/valorant/crosshair.py#L192)
+[Source](../src/cogs/valorant/crosshair.py#L247)
 
 Post the previewed crosshair to the current channel.
 
@@ -1038,7 +1078,7 @@ Post the previewed crosshair to the current channel.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `ShareConfirmView`
 
-[Source](../src/cogs/valorant/crosshair.py#L234)
+[Source](../src/cogs/valorant/crosshair.py#L292)
 
 Dismiss the preview without posting anything.
 
@@ -1046,7 +1086,7 @@ Dismiss the preview without posting anything.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `module`
 
-[Source](../src/cogs/valorant/crosshair.py#L249)
+[Source](../src/cogs/valorant/crosshair.py#L307)
 
 Select one crosshair profile from the owner's saved profiles.
 
@@ -1054,7 +1094,7 @@ Select one crosshair profile from the owner's saved profiles.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairSelect`
 
-[Source](../src/cogs/valorant/crosshair.py#L252)
+[Source](../src/cogs/valorant/crosshair.py#L310)
 
 Build the selector with the interaction's localized placeholder.
 
@@ -1062,7 +1102,7 @@ Build the selector with the interaction's localized placeholder.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairSelect`
 
-[Source](../src/cogs/valorant/crosshair.py#L261)
+[Source](../src/cogs/valorant/crosshair.py#L319)
 
 Forward the selection to the owning view.
 
@@ -1070,7 +1110,7 @@ Forward the selection to the owning view.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `module`
 
-[Source](../src/cogs/valorant/crosshair.py#L268)
+[Source](../src/cogs/valorant/crosshair.py#L326)
 
 View and export the caller's VALORANT crosshair profiles.
 
@@ -1078,7 +1118,7 @@ View and export the caller's VALORANT crosshair profiles.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
 
-[Source](../src/cogs/valorant/crosshair.py#L279)
+[Source](../src/cogs/valorant/crosshair.py#L337)
 
 Bind the bot's crosshair service and start the share cooldown map.
 
@@ -1086,7 +1126,7 @@ Bind the bot's crosshair service and start the share cooldown map.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
 
-[Source](../src/cogs/valorant/crosshair.py#L291)
+[Source](../src/cogs/valorant/crosshair.py#L349)
 
 Show the caller's current crosshair, its code, and a profile menu.
 
@@ -1094,7 +1134,7 @@ Show the caller's current crosshair, its code, and a profile menu.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
 
-[Source](../src/cogs/valorant/crosshair.py#L320)
+[Source](../src/cogs/valorant/crosshair.py#L378)
 
 Render one profile into an embed, attachment, and selector view.
 
@@ -1102,7 +1142,7 @@ Render one profile into an embed, attachment, and selector view.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
 
-[Source](../src/cogs/valorant/crosshair.py#L341)
+[Source](../src/cogs/valorant/crosshair.py#L399)
 
 Render one profile into an embed and PNG bytes.
 
@@ -1110,7 +1150,7 @@ Render one profile into an embed and PNG bytes.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
 
-[Source](../src/cogs/valorant/crosshair.py#L368)
+[Source](../src/cogs/valorant/crosshair.py#L426)
 
 Return the English footer used on every public share card.
 
@@ -1118,7 +1158,7 @@ Return the English footer used on every public share card.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
 
-[Source](../src/cogs/valorant/crosshair.py#L376)
+[Source](../src/cogs/valorant/crosshair.py#L434)
 
 Return the seconds left before this user may share again.
 
@@ -1126,15 +1166,23 @@ Return the seconds left before this user may share again.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
 
-[Source](../src/cogs/valorant/crosshair.py#L383)
+[Source](../src/cogs/valorant/crosshair.py#L441)
 
-Record a successful share and bound the tracking map.
+Reserve a user's share slot and bound the tracking map.
+
+### `def clear_shared(self, user_id: int) -> None`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
+
+[Source](../src/cogs/valorant/crosshair.py#L450)
+
+Release a reserved share slot after a failed post.
 
 ### `async def setup(bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `module`
 
-[Source](../src/cogs/valorant/crosshair.py#L393)
+[Source](../src/cogs/valorant/crosshair.py#L455)
 
 Register the crosshair command group.
 
@@ -3020,7 +3068,7 @@ Fetch, decode, and encode a user's VALORANT crosshair profiles.
 
 **Scope:** `src/services/crosshair.py` · `module`
 
-[Source](../src/services/crosshair.py#L47)
+[Source](../src/services/crosshair.py#L49)
 
 Raised when Riot's crosshair settings cannot be loaded or decoded.
 
@@ -3028,7 +3076,7 @@ Raised when Riot's crosshair settings cannot be loaded or decoded.
 
 **Scope:** `src/services/crosshair.py` · `module`
 
-[Source](../src/services/crosshair.py#L52)
+[Source](../src/services/crosshair.py#L54)
 
 One crosshair profile and its import/export code.
 
@@ -3036,7 +3084,7 @@ One crosshair profile and its import/export code.
 
 **Scope:** `src/services/crosshair.py` · `module`
 
-[Source](../src/services/crosshair.py#L62)
+[Source](../src/services/crosshair.py#L64)
 
 Cached profiles tied to one account identity.
 
@@ -3044,7 +3092,7 @@ Cached profiles tied to one account identity.
 
 **Scope:** `src/services/crosshair.py` · `module`
 
-[Source](../src/services/crosshair.py#L70)
+[Source](../src/services/crosshair.py#L72)
 
 Format one RGBA colour mapping as an uppercase hex string.
 
@@ -3052,7 +3100,7 @@ Format one RGBA colour mapping as an uppercase hex string.
 
 **Scope:** `src/services/crosshair.py` · `module`
 
-[Source](../src/services/crosshair.py#L76)
+[Source](../src/services/crosshair.py#L78)
 
 Format a setting the same way the game writes it into a share code.
 
@@ -3060,7 +3108,7 @@ Format a setting the same way the game writes it into a share code.
 
 **Scope:** `src/services/crosshair.py` · `module`
 
-[Source](../src/services/crosshair.py#L88)
+[Source](../src/services/crosshair.py#L90)
 
 Collect code tokens and warnings for one crosshair section.
 
@@ -3068,7 +3116,7 @@ Collect code tokens and warnings for one crosshair section.
 
 **Scope:** `src/services/crosshair.py` · `_Encoder`
 
-[Source](../src/services/crosshair.py#L91)
+[Source](../src/services/crosshair.py#L93)
 
 Start an empty token list.
 
@@ -3076,7 +3124,7 @@ Start an empty token list.
 
 **Scope:** `src/services/crosshair.py` · `_Encoder`
 
-[Source](../src/services/crosshair.py#L96)
+[Source](../src/services/crosshair.py#L98)
 
 Emit ``key;value`` unless it equals the game's default.
 
@@ -3084,7 +3132,7 @@ Emit ``key;value`` unless it equals the game's default.
 
 **Scope:** `src/services/crosshair.py` · `module`
 
-[Source](../src/services/crosshair.py#L106)
+[Source](../src/services/crosshair.py#L108)
 
 Encode the colour index and custom colour of one crosshair section.
 
@@ -3092,7 +3140,7 @@ Encode the colour index and custom colour of one crosshair section.
 
 **Scope:** `src/services/crosshair.py` · `module`
 
-[Source](../src/services/crosshair.py#L127)
+[Source](../src/services/crosshair.py#L129)
 
 Encode one set of inner or outer lines.
 
@@ -3100,7 +3148,7 @@ Encode one set of inner or outer lines.
 
 **Scope:** `src/services/crosshair.py` · `module`
 
-[Source](../src/services/crosshair.py#L160)
+[Source](../src/services/crosshair.py#L162)
 
 Encode one primary, ADS, or focus-mode crosshair section.
 
@@ -3108,7 +3156,7 @@ Encode one primary, ADS, or focus-mode crosshair section.
 
 **Scope:** `src/services/crosshair.py` · `module`
 
-[Source](../src/services/crosshair.py#L189)
+[Source](../src/services/crosshair.py#L191)
 
 Encode one saved crosshair profile into a VALORANT share code.
 
@@ -3116,7 +3164,7 @@ Encode one saved crosshair profile into a VALORANT share code.
 
 **Scope:** `src/services/crosshair.py` · `module`
 
-[Source](../src/services/crosshair.py#L231)
+[Source](../src/services/crosshair.py#L233)
 
 Decode Riot's base64 and zlib player-preferences payload into JSON.
 
@@ -3124,7 +3172,7 @@ Decode Riot's base64 and zlib player-preferences payload into JSON.
 
 **Scope:** `src/services/crosshair.py` · `module`
 
-[Source](../src/services/crosshair.py#L255)
+[Source](../src/services/crosshair.py#L257)
 
 Extract and encode every saved crosshair profile.
 
@@ -3132,7 +3180,7 @@ Extract and encode every saved crosshair profile.
 
 **Scope:** `src/services/crosshair.py` · `module`
 
-[Source](../src/services/crosshair.py#L313)
+[Source](../src/services/crosshair.py#L315)
 
 Fetch crosshair profiles from Riot and encode them for the command.
 
@@ -3140,7 +3188,7 @@ Fetch crosshair profiles from Riot and encode them for the command.
 
 **Scope:** `src/services/crosshair.py` · `CrosshairService`
 
-[Source](../src/services/crosshair.py#L316)
+[Source](../src/services/crosshair.py#L318)
 
 Bind the authentication and HTTP services and start an empty cache.
 
@@ -3148,15 +3196,15 @@ Bind the authentication and HTTP services and start an empty cache.
 
 **Scope:** `src/services/crosshair.py` · `CrosshairService`
 
-[Source](../src/services/crosshair.py#L329)
+[Source](../src/services/crosshair.py#L332)
 
-Return encoded profiles, reusing the account's cache when it is fresh.
+Return encoded profiles, reusing or refreshing the account's cache.
 
-### `def render_png(self, profile: CrosshairProfile, *, scale: int = 2) -> bytes`
+### `def render_png(self, profile: CrosshairProfile) -> bytes`
 
 **Scope:** `src/services/crosshair.py` · `CrosshairService`
 
-[Source](../src/services/crosshair.py#L358)
+[Source](../src/services/crosshair.py#L364)
 
 Render one encoded profile to PNG bytes.
 
@@ -3164,7 +3212,7 @@ Render one encoded profile to PNG bytes.
 
 **Scope:** `src/services/crosshair.py` · `CrosshairService`
 
-[Source](../src/services/crosshair.py#L362)
+[Source](../src/services/crosshair.py#L368)
 
 Drop a cached account after logout or credential changes.
 
@@ -3172,7 +3220,7 @@ Drop a cached account after logout or credential changes.
 
 **Scope:** `src/services/crosshair.py` · `CrosshairService`
 
-[Source](../src/services/crosshair.py#L366)
+[Source](../src/services/crosshair.py#L372)
 
 Drop expired entries and bound the cache size.
 

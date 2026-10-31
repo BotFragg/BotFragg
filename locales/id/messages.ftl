@@ -351,6 +351,7 @@ crosshair-current-profile = Profil saat ini
 crosshair-more-profiles = { $count } profil lainnya tidak ditampilkan
 crosshair-unavailable = Pengaturan crosshair tidak dapat dimuat. Coba lagi nanti.
 crosshair-share-button = Bagikan
+crosshair-refresh-button = Segarkan
 crosshair-share-preview-description = Inilah yang akan diposting di kanal ini.
 crosshair-share-post = Posting
 crosshair-share-cancel = Batal

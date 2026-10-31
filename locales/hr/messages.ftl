@@ -354,6 +354,7 @@ crosshair-current-profile = Trenutačni profil
 crosshair-more-profiles = Još { $count } profila nije prikazano
 crosshair-unavailable = Postavke nišana nije moguće učitati. Pokušaj ponovno kasnije.
 crosshair-share-button = Podijeli
+crosshair-refresh-button = Osvježi
 crosshair-share-preview-description = Točno ovo bit će objavljeno na ovom kanalu.
 crosshair-share-post = Objavi
 crosshair-share-cancel = Odustani

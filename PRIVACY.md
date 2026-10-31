@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last updated:** October 30, 2026
+**Last updated:** October 31, 2026
 
 This policy describes data handled by BotFragg when you use its Discord bot
 features. BotFragg is an independent project and is not affiliated with Riot
@@ -44,9 +44,11 @@ encrypted with the operator's Fernet `TOKEN_ENCRYPTION_KEY`.
 
 BotFragg sends the necessary Riot session credentials and account identifiers
 to Riot authentication and VALORANT endpoints to retrieve your store, wallet,
-mission, and battlepass information. It also requests public game catalog and
-version data from [VALORANT-API.com](https://valorant-api.com/). Those external
-services handle requests under their own terms and privacy practices.
+mission, battlepass, and crosshair information. Crosshair profiles are decoded
+in memory, cached for up to five minutes, and never written to BotFragg's
+database. It also requests public game catalog and version data from
+[VALORANT-API.com](https://valorant-api.com/). Those external services handle
+requests under their own terms and privacy practices.
 
 ## Discord messages and optional integrations
 
@@ -55,6 +57,11 @@ delivery is configured, a suggestion is posted to the configured channel with
 the submitting Discord user's display name and avatar, the suggestion text,
 and the server name. BotFragg may edit that message when the suggestion is
 reviewed. People who can access the channel can see its messages.
+
+`/crosshair view` replies privately. If you choose Share and confirm, BotFragg
+posts the selected crosshair's profile name, export code, and rendered image to
+the current channel with your Discord display name. Anyone who can read that
+channel can see the post.
 
 Operators may enable additional destinations:
 
@@ -87,10 +94,10 @@ or suggestion records.
   suggestion follows from BotFragg's database.
 
 Deleting data from BotFragg does not delete suggestion messages already sent
-to Discord, messages in configured logging channels, or telemetry already
-received by Discord or GlitchTip. Those copies follow the relevant service's
-retention and deletion controls. Operator-managed backups may also retain
-records until those backups expire.
+to Discord, crosshair cards you shared to a channel, messages in configured
+logging channels, or telemetry already received by Discord or GlitchTip. Those
+copies follow the relevant service's retention and deletion controls.
+Operator-managed backups may also retain records until those backups expire.
 
 ## Your choices and privacy requests
 

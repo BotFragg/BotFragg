@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import base64
 import json
 import zlib
@@ -204,6 +205,42 @@ async def test_service_refetches_when_the_account_identity_changes():
     await service_instance.profiles(account(user_id=2))
 
     assert http.request.await_count == 2
+
+
+async def test_explicit_refresh_bypasses_a_fresh_cache():
+    """The refresh control must always ask Riot for the current settings."""
+    service_instance, _auth, http = service()
+    http.request = AsyncMock(
+        return_value=HTTPResult(200, body(settings([saved_profile("one")])))
+    )
+    target = account()
+
+    await service_instance.profiles(target)
+    await service_instance.profiles(target, refresh=True)
+
+    assert http.request.await_count == 2
+
+
+async def test_concurrent_lookups_share_one_request():
+    """Two simultaneous lookups must not exchange the same request twice."""
+    service_instance, _auth, http = service()
+    calls = 0
+
+    async def request(*_args: object, **_kwargs: object) -> HTTPResult:
+        nonlocal calls
+        calls += 1
+        await asyncio.sleep(0)
+        return HTTPResult(200, body(settings([saved_profile("one")])))
+
+    http.request = request
+    target = account()
+
+    first, second = await asyncio.gather(
+        service_instance.profiles(target), service_instance.profiles(target)
+    )
+
+    assert calls == 1
+    assert first is second
 
 
 @pytest.mark.parametrize(

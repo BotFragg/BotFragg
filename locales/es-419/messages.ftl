@@ -351,6 +351,7 @@ crosshair-current-profile = Perfil actual
 crosshair-more-profiles = No se muestran { $count } perfiles más
 crosshair-unavailable = No se pudo cargar la configuración de la mira. Inténtalo más tarde.
 crosshair-share-button = Compartir
+crosshair-refresh-button = Actualizar
 crosshair-share-preview-description = Esto es exactamente lo que se publicará en este canal.
 crosshair-share-post = Publicar
 crosshair-share-cancel = Cancelar

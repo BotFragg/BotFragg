@@ -351,6 +351,7 @@ crosshair-current-profile = Gjeldende profil
 crosshair-more-profiles = { $count } flere profiler vises ikke
 crosshair-unavailable = Crosshair-innstillingene kunne ikke lastes. Prøv igjen senere.
 crosshair-share-button = Del
+crosshair-refresh-button = Oppdater
 crosshair-share-preview-description = Dette er nøyaktig det som blir publisert i denne kanalen.
 crosshair-share-post = Publiser
 crosshair-share-cancel = Avbryt

@@ -357,6 +357,7 @@ crosshair-current-profile = Текущий профиль
 crosshair-more-profiles = Ещё { $count } профилей не показаны
 crosshair-unavailable = Не удалось загрузить настройки прицела. Попробуйте позже.
 crosshair-share-button = Поделиться
+crosshair-refresh-button = Обновить
 crosshair-share-preview-description = Именно это будет опубликовано в этом канале.
 crosshair-share-post = Опубликовать
 crosshair-share-cancel = Отмена

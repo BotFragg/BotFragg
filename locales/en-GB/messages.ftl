@@ -351,6 +351,7 @@ crosshair-current-profile = Current profile
 crosshair-more-profiles = { $count } more profiles are not shown
 crosshair-unavailable = Your crosshair settings could not be loaded. Try again later.
 crosshair-share-button = Share
+crosshair-refresh-button = Refresh
 crosshair-share-preview-description = This is exactly what will be posted in this channel.
 crosshair-share-post = Post
 crosshair-share-cancel = Cancel

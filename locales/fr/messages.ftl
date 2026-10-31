@@ -351,6 +351,7 @@ crosshair-current-profile = Profil actuel
 crosshair-more-profiles = { $count } autres profils ne sont pas affichés
 crosshair-unavailable = Impossible de charger vos réglages de réticule. Réessayez plus tard.
 crosshair-share-button = Partager
+crosshair-refresh-button = Actualiser
 crosshair-share-preview-description = C'est exactement ce qui sera publié dans ce salon.
 crosshair-share-post = Publier
 crosshair-share-cancel = Annuler

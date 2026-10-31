@@ -24,7 +24,7 @@
 
 ## Overview
 
-BotFragg brings your VALORANT store and account information into Discord. Link one or more Riot accounts to browse your daily shop, featured bundle, and Night Market, check your balances and battlepass progress, and receive private alerts when a skin you want appears in your shop.
+BotFragg brings your VALORANT store and account information into Discord. Link one or more Riot accounts to browse your daily shop, featured bundle, and Night Market, check your balances and battlepass progress, view and share your in-game crosshairs, and receive private alerts when a skin you want appears in your shop.
 
 Riot credentials are encrypted at rest, and you can delete all of your stored data at any time.
 
@@ -32,6 +32,7 @@ Riot credentials are encrypted at rest, and you can delete all of your stored da
 
 - **Store access:** View your daily weapon and accessory shops, the featured bundle, and the Night Market.
 - **Account insights:** Check VALORANT Points, Radianite Points, Kingdom Credits, battlepass progress, and matchmaking penalties.
+- **Crosshairs:** View your saved crosshair profiles, copy their export codes, and share one to a channel.
 - **Private alerts:** Get daily shop updates and skin alerts delivered by direct message.
 - **Multiple accounts:** Link several Riot accounts and switch between them.
 - **Privacy controls:** Hide your in-game name and permanently delete your stored data.
@@ -39,13 +40,13 @@ Riot credentials are encrypted at rest, and you can delete all of your stored da
 
 ## Commands
 
-| Category  | Commands                                                                 |
-| --------- | ------------------------------------------------------------------------ |
-| Account   | `/login`, `/logout`, `/deletedata`, `/account`, `/accounts`              |
-| VALORANT  | `/shop`, `/bundles`, `/nightmarket`, `/balance`, `/battlepass`, `/missions`, `/penalties` |
-| Alerts    | `/alert`, `/alerts`, `/testalerts`                                       |
-| Settings  | `/settings view`, `/settings set`                                        |
-| Community | `/help`, `/ping`, `/botinfo`, `/links`, `/suggest`, `/suggestion`        |
+| Category  | Commands                                                                                                     |
+| --------- | ------------------------------------------------------------------------------------------------------------ |
+| Account   | `/login`, `/logout`, `/deletedata`, `/account`, `/accounts`                                                  |
+| VALORANT  | `/shop`, `/bundles`, `/nightmarket`, `/balance`, `/battlepass`, `/missions`, `/penalties`, `/crosshair view` |
+| Alerts    | `/alert`, `/alerts`, `/testalerts`                                                                           |
+| Settings  | `/settings view`, `/settings set`                                                                            |
+| Community | `/help`, `/ping`, `/botinfo`, `/links`, `/suggest`, `/suggestion`                                            |
 
 > `/userinfo` and `/serverinfo` are owner-only operational commands.
 

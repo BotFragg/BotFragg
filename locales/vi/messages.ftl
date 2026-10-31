@@ -348,6 +348,7 @@ crosshair-current-profile = Hồ sơ hiện tại
 crosshair-more-profiles = { $count } hồ sơ khác không được hiển thị
 crosshair-unavailable = Không thể tải cài đặt tâm ngắm. Hãy thử lại sau.
 crosshair-share-button = Chia sẻ
+crosshair-refresh-button = Làm mới
 crosshair-share-preview-description = Đây chính xác là nội dung sẽ được đăng trong kênh này.
 crosshair-share-post = Đăng
 crosshair-share-cancel = Hủy

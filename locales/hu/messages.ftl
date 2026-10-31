@@ -351,6 +351,7 @@ crosshair-current-profile = Jelenlegi profil
 crosshair-more-profiles = További { $count } profil nem látható
 crosshair-unavailable = A célkereszt-beállításokat nem sikerült betölteni. Próbáld újra később.
 crosshair-share-button = Megosztás
+crosshair-refresh-button = Frissítés
 crosshair-share-preview-description = Pontosan ez jelenik meg ezen a csatornán.
 crosshair-share-post = Közzététel
 crosshair-share-cancel = Mégse

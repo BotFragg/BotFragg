@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import base64
 import json
 import logging
@@ -11,6 +12,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
+from weakref import WeakValueDictionary
 
 from ..models import Account
 from .auth import AuthenticationRequired, AuthService
@@ -325,39 +327,43 @@ class CrosshairService:
         self.http = http
         self.ttl = ttl
         self._cache: dict[str, _CacheEntry] = {}
+        self._locks: WeakValueDictionary[str, asyncio.Lock] = WeakValueDictionary()
 
     async def profiles(
         self, account: Account, *, refresh: bool = False
     ) -> list[CrosshairProfile]:
-        """Return encoded profiles, reusing the account's cache when it is fresh."""
-        now = time.monotonic()
-        identity = (account.user_id, account.created_at)
-        cached = self._cache.get(account.puuid)
-        if (
-            not refresh
-            and cached is not None
-            and cached.expires > now
-            and cached.identity == identity
-        ):
-            return cached.profiles
-        headers = await self.auth.auth_headers(account)
-        result = await self.http.request("GET", PLAYER_PREFERENCES_URL, headers=headers)
-        if result.status in {401, 403}:
-            raise AuthenticationRequired("Riot login is required")
-        if result.status != 200:
-            raise CrosshairUnavailable(
-                f"Player preferences returned HTTP {result.status}"
+        """Return encoded profiles, reusing or refreshing the account's cache."""
+        async with self._locks.setdefault(account.puuid, asyncio.Lock()):
+            now = time.monotonic()
+            identity = (account.user_id, account.created_at)
+            cached = self._cache.get(account.puuid)
+            if (
+                not refresh
+                and cached is not None
+                and cached.expires > now
+                and cached.identity == identity
+            ):
+                return cached.profiles
+            headers = await self.auth.auth_headers(account)
+            result = await self.http.request(
+                "GET", PLAYER_PREFERENCES_URL, headers=headers
             )
-        profiles = profiles_from_settings(decode_settings(result.data))
-        self._cache[account.puuid] = _CacheEntry(
-            expires=now + self.ttl, identity=identity, profiles=profiles
-        )
-        self._prune(now)
-        return profiles
+            if result.status in {401, 403}:
+                raise AuthenticationRequired("Riot login is required")
+            if result.status != 200:
+                raise CrosshairUnavailable(
+                    f"Player preferences returned HTTP {result.status}"
+                )
+            profiles = profiles_from_settings(decode_settings(result.data))
+            self._cache[account.puuid] = _CacheEntry(
+                expires=now + self.ttl, identity=identity, profiles=profiles
+            )
+            self._prune(now)
+            return profiles
 
-    def render_png(self, profile: CrosshairProfile, *, scale: int = 2) -> bytes:
+    def render_png(self, profile: CrosshairProfile) -> bytes:
         """Render one encoded profile to PNG bytes."""
-        return render_png(profile.code, scale=scale)
+        return render_png(profile.code)
 
     def invalidate(self, puuid: str) -> None:
         """Drop a cached account after logout or credential changes."""
