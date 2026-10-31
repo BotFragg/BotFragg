@@ -15,6 +15,7 @@
 - Account ownership columns are indexed, and command analytics ids are 64-bit, so
   lookups stay fast and the never-pruned table cannot overflow.
 - Container images built for a version tag are smoke-tested before they are published.
+- Container images are published for both `linux/amd64` and `linux/arm64`.
 - Rolling migration 0006 back now refuses when analytics ids no longer fit in 32 bits
   instead of narrowing the column and breaking later inserts.
 
