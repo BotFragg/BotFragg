@@ -135,7 +135,9 @@ class CrosshairView(discord.ui.View):
             await error(interaction, failure)
             return
         try:
-            card, png = await self.cog.render_card(interaction, self.selected)
+            card, png = await self.cog.render_card(
+                interaction, self.selected, locale="en-US"
+            )
         except CrosshairUnavailable:
             await error(interaction, "crosshair-unavailable")
             return
@@ -203,7 +205,9 @@ class ShareConfirmView(discord.ui.View):
             await error(interaction, failure or "crosshair-share-guild-only")
             return
         try:
-            card, png = await self.cog.render_card(interaction, self.profile)
+            card, png = await self.cog.render_card(
+                interaction, self.profile, locale="en-US"
+            )
         except CrosshairUnavailable:
             await error(interaction, "crosshair-unavailable")
             return
@@ -335,17 +339,24 @@ class CrosshairCog(commands.Cog):
         return card, file, controls
 
     async def render_card(
-        self, interaction: discord.Interaction, profile: CrosshairProfile
+        self,
+        interaction: discord.Interaction,
+        profile: CrosshairProfile,
+        *,
+        locale: discord.Locale | str | None = None,
     ) -> tuple[discord.Embed, bytes]:
         """Render one profile into an embed and PNG bytes."""
+        language = locale or interaction.locale
         try:
             png = await asyncio.to_thread(self.bot.crosshair.render_png, profile)
         except ValueError:
             raise CrosshairUnavailable("The crosshair could not be rendered") from None
         card = embed(
-            translated(interaction, "crosshair-code-block", code=profile.code),
-            title=translated(
-                interaction,
+            self.bot.translator.text(
+                language, "crosshair-code-block", code=profile.code
+            ),
+            title=self.bot.translator.text(
+                language,
                 "crosshair-title",
                 name=discord.utils.escape_markdown(profile.name),
             ),
@@ -355,9 +366,9 @@ class CrosshairCog(commands.Cog):
         return card, png
 
     def share_footer(self, interaction: discord.Interaction) -> str:
-        """Return the public card footer naming the sharer."""
-        return translated(
-            interaction,
+        """Return the English footer used on every public share card."""
+        return self.bot.translator.text(
+            "en-US",
             "crosshair-public-footer",
             user=discord.utils.escape_markdown(interaction.user.display_name),
         )

@@ -7,7 +7,8 @@
 - `/crosshair view` shows the caller's saved crosshair profiles, their export codes,
   and a locally rendered preview, with a menu to switch profiles. A Share button posts
   the selected profile publicly after a private confirmation. The command and its
-  messages are available in all 25 supported locales.
+  messages are available in all 25 supported locales; publicly shared cards use English
+  labels so they read the same in every server.
 
 ## [1.3.0] - 2026-10-31
 

@@ -339,6 +339,7 @@ def guild_interaction(
     response: Response | None = None,
     followup: Followup | None = None,
     user_id: int = 1,
+    locale: discord.Locale = TEST_LOCALE,
 ) -> SimpleNamespace:
     """Build a guild interaction with the fields the share flow uses."""
     return _localized_interaction(
@@ -347,6 +348,7 @@ def guild_interaction(
         followup=followup or Followup(),
         guild=SimpleNamespace(me=SimpleNamespace(id=1)),
         channel=channel or Channel(),
+        locale=locale,
     )
 
 
@@ -490,3 +492,28 @@ async def test_share_cancel_dismisses_the_preview():
         TEST_LOCALE, "crosshair-share-cancelled"
     )
     assert response.edited["view"] is None
+
+
+async def test_public_share_card_is_english_in_a_foreign_locale():
+    """Public cards must stay readable when the sharer uses another language."""
+    cog = make_cog()
+    response = Response()
+    interaction = guild_interaction(response=response, locale=discord.Locale.german)
+    view = CrosshairView(cog, interaction, account(), profiles(), profiles()[1])
+
+    await view.share_preview(interaction)
+
+    card = response.sent["embed"]
+    assert card.title == TEST_TRANSLATOR.text(
+        TEST_LOCALE, "crosshair-title", name="two"
+    )
+    assert card.footer.text == TEST_TRANSLATOR.text(
+        TEST_LOCALE, "crosshair-public-footer", user="Example"
+    )
+    assert response.sent["content"] == TEST_TRANSLATOR.text(
+        discord.Locale.german, "crosshair-share-preview-description"
+    )
+    confirm = response.sent["view"]
+    assert confirm.post.label == TEST_TRANSLATOR.text(
+        discord.Locale.german, "crosshair-share-post"
+    )
