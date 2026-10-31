@@ -8,7 +8,7 @@ import json
 import time
 from types import SimpleNamespace
 from types import SimpleNamespace as NS
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 from uuid import UUID
 
 import discord
@@ -590,7 +590,8 @@ async def test_logout_cancels_inflight_login_and_clears_cached_shop(database):
     )
     await entered.wait()
     shop = NS(clear_cached_storefront=AsyncMock())
-    bot = NS(auth=auth, translator=BotFraggTranslator(), shop=shop)
+    crosshair = NS(invalidate=Mock())
+    bot = NS(auth=auth, translator=BotFraggTranslator(), shop=shop, crosshair=crosshair)
     interaction = NS(
         user=NS(id=101),
         client=bot,

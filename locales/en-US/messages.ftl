@@ -339,3 +339,14 @@ balance-summary = Your balance
 balance-vp = VALORANT Points
 balance-rp = Radianite Points
 balance-kc = Kingdom Credits
+
+command-crosshair-name = crosshair
+command-crosshair-description = View and copy your in-game crosshairs
+command-crosshair-view-name = view
+command-crosshair-view-description = Show your crosshair profile, export code, and preview
+crosshair-title = Crosshair — { $name }
+crosshair-code-block = ```{ $code }```
+crosshair-select-placeholder = Choose a crosshair profile
+crosshair-current-profile = Current profile
+crosshair-more-profiles = { $count } more profiles are not shown
+crosshair-unavailable = Your crosshair settings could not be loaded. Try again later.

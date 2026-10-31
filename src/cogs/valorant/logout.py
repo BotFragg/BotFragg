@@ -59,6 +59,7 @@ class LogoutCog(commands.Cog):
             await self.bot.auth.clear_credentials(target)
             # A cache hit is served without credentials, so drop the account's entry.
             await self.bot.shop.clear_cached_storefront(target.puuid)
+            self.bot.crosshair.invalidate(target.puuid)
         await interaction.followup.send(
             embed=localized_embed(
                 interaction,

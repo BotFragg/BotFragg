@@ -17,6 +17,7 @@ from .monitoring import flush_monitoring, transaction
 from .services.analytics import command_analytics, record_command_invocation
 from .services.auth import AuthService
 from .services.catalog import CatalogService
+from .services.crosshair import CrosshairService
 from .services.crypto import AuthVault
 from .services.emojis import ApplicationEmojiService
 from .services.gameplay import GameplayService
@@ -156,6 +157,7 @@ class BotFraggBot(commands.AutoShardedBot):
         self.catalog = CatalogService(self.riot_http)
         self.shop = ShopService(config, self.riot_http, self.auth, self.catalog)
         self.gameplay = GameplayService(self.riot_http, self.auth, self.catalog)
+        self.crosshair = CrosshairService(self.auth, self.riot_http)
 
     def register_component(self, action: str, handler: ComponentHandler) -> None:
         """Register a persistent component action, rejecting duplicate action names."""
@@ -227,6 +229,7 @@ class BotFraggBot(commands.AutoShardedBot):
             "src.cogs.valorant.accounts",
             "src.cogs.valorant.settings",
             "src.cogs.valorant.shop",
+            "src.cogs.valorant.crosshair",
             "src.cogs.valorant.alerts",
             "src.cogs.valorant.battlepass",
             "src.cogs.valorant.penalties",
