@@ -286,7 +286,7 @@ Show recent public updates and BotFragg runtime information.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L233)
+[Source](../src/cogs/extra.py#L242)
 
 Fetch and cache five public commits, formatting them per request locale.
 
@@ -294,7 +294,7 @@ Fetch and cache five public commits, formatting them per request locale.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L318)
+[Source](../src/cogs/extra.py#L327)
 
 Build link buttons for the configured public URLs.
 
@@ -302,7 +302,7 @@ Build link buttons for the configured public URLs.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L349)
+[Source](../src/cogs/extra.py#L358)
 
 Use each command's cog module to place it in a help category.
 
@@ -310,7 +310,7 @@ Use each command's cog module to place it in a help category.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L370)
+[Source](../src/cogs/extra.py#L379)
 
 Return Discord-formatted mentions for all synced commands and subcommands.
 
@@ -318,7 +318,7 @@ Return Discord-formatted mentions for all synced commands and subcommands.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L397)
+[Source](../src/cogs/extra.py#L406)
 
 List registered slash commands by category in the embed description.
 
@@ -326,7 +326,7 @@ List registered slash commands by category in the embed description.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L468)
+[Source](../src/cogs/extra.py#L477)
 
 Show an invite link and any configured support, vote, and website links.
 
@@ -334,7 +334,7 @@ Show an invite link and any configured support, vote, and website links.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L484)
+[Source](../src/cogs/extra.py#L493)
 
 Measure the shard-status job and preserve its existing retry behavior.
 
@@ -342,7 +342,7 @@ Measure the shard-status job and preserve its existing retry behavior.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L489)
+[Source](../src/cogs/extra.py#L498)
 
 Update or recreate the persistent embed containing per-shard health.
 
@@ -350,7 +350,7 @@ Update or recreate the persistent embed containing per-shard health.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L537)
+[Source](../src/cogs/extra.py#L546)
 
 Wait for Discord readiness before the first shard-status update.
 
@@ -358,7 +358,7 @@ Wait for Discord readiness before the first shard-status update.
 
 **Scope:** `src/cogs/extra.py` · `module`
 
-[Source](../src/cogs/extra.py#L542)
+[Source](../src/cogs/extra.py#L551)
 
 Register the general utility cog with the bot.
 
@@ -602,7 +602,7 @@ Run the daily shop and skin-alert job inside a monitoring transaction.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L122)
+[Source](../src/cogs/tasks.py#L123)
 
 Process eligible users' shops and return counts for the completed run.
 
@@ -610,7 +610,7 @@ Process eligible users' shops and return counts for the completed run.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L135)
+[Source](../src/cogs/tasks.py#L136)
 
 Deliver matching alerts and the optional daily shop; count failed DMs.
 
@@ -618,7 +618,7 @@ Deliver matching alerts and the optional daily shop; count failed DMs.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L176)
+[Source](../src/cogs/tasks.py#L177)
 
 DM an owner-scoped skin alert and report whether delivery succeeded.
 
@@ -626,7 +626,7 @@ DM an owner-scoped skin alert and report whether delivery succeeded.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L216)
+[Source](../src/cogs/tasks.py#L217)
 
 DM the selected account's daily shop and report delivery success.
 
@@ -634,7 +634,7 @@ DM the selected account's daily shop and report delivery success.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L277)
+[Source](../src/cogs/tasks.py#L278)
 
 Notify a user that credentials expired and return the delivery failure count.
 
@@ -642,7 +642,7 @@ Notify a user that credentials expired and return the delivery failure count.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L295)
+[Source](../src/cogs/tasks.py#L296)
 
 Refresh the Riot client version and the catalog that depends on it.
 
@@ -650,7 +650,7 @@ Refresh the Riot client version and the catalog that depends on it.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L316)
+[Source](../src/cogs/tasks.py#L317)
 
 Measure log delivery, preserving the queue after Discord failures.
 
@@ -658,7 +658,7 @@ Measure log delivery, preserving the queue after Discord failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L321)
+[Source](../src/cogs/tasks.py#L322)
 
 Send buffered log lines to Discord and requeue them after delivery failures.
 
@@ -666,7 +666,7 @@ Send buffered log lines to Discord and requeue them after delivery failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L369)
+[Source](../src/cogs/tasks.py#L370)
 
 Publish Discord, database, and scheduled-job health for Docker and operators.
 
@@ -674,7 +674,7 @@ Publish Discord, database, and scheduled-job health for Docker and operators.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L424)
+[Source](../src/cogs/tasks.py#L425)
 
 Wait for Discord readiness before starting any background job.
 
@@ -682,7 +682,7 @@ Wait for Discord readiness before starting any background job.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L429)
+[Source](../src/cogs/tasks.py#L430)
 
 Register the background-task cog with the bot.
 
@@ -1714,13 +1714,33 @@ Index account ownership columns and widen analytics ids.
 
 Widen the analytics id sequence, which ALTER COLUMN does not touch.
 
-### `class Migration(migrations.Migration)`
+### `async def _guard_rollback(_apps, schema_editor) -> None`
 
 **Scope:** `src/migrations/0006_index_owners_and_widen_analytics.py` · `module`
 
 [Source](../src/migrations/0006_index_owners_and_widen_analytics.py#L15)
 
+Refuse a rollback that would put ids or the sequence back over 32 bits.
+
+### `class Migration(migrations.Migration)`
+
+**Scope:** `src/migrations/0006_index_owners_and_widen_analytics.py` · `module`
+
+[Source](../src/migrations/0006_index_owners_and_widen_analytics.py#L30)
+
 Speed up per-owner lookups and stop analytics ids overflowing at 2^31.
+
+## `src/migrations/0007_record_model_options.py`
+
+Record model options that earlier migrations never wrote to migration state.
+
+### `class Migration(migrations.Migration)`
+
+**Scope:** `src/migrations/0007_record_model_options.py` · `module`
+
+[Source](../src/migrations/0007_record_model_options.py#L8)
+
+Keep future makemigrations diffs limited to real schema changes.
 
 ## `src/migrations/__init__.py`
 
@@ -1788,13 +1808,13 @@ Scope access to this alert and its account's original identity.
 
 [Source](../src/models/entities.py#L74)
 
-Prevent duplicate alerts and index the account used by alert lookups.
+Prevent duplicate alerts for the same account and skin.
 
 ### `class CommandInvocation(Model)`
 
 **Scope:** `src/models/entities.py` · `module`
 
-[Source](../src/models/entities.py#L81)
+[Source](../src/models/entities.py#L80)
 
 Store a completed command and its optional guild and channel context.
 
@@ -1802,7 +1822,7 @@ Store a completed command and its optional guild and channel context.
 
 **Scope:** `src/models/entities.py` · `module`
 
-[Source](../src/models/entities.py#L93)
+[Source](../src/models/entities.py#L92)
 
 Store a user's submitted idea and its review and delivery state.
 
@@ -1810,7 +1830,7 @@ Store a user's submitted idea and its review and delivery state.
 
 **Scope:** `src/models/entities.py` · `module`
 
-[Source](../src/models/entities.py#L108)
+[Source](../src/models/entities.py#L107)
 
 Link a Discord user to a suggestion whose review they want to follow.
 
@@ -1818,7 +1838,7 @@ Link a Discord user to a suggestion whose review they want to follow.
 
 **Scope:** `src/models/entities.py` · `SuggestionFollower`
 
-[Source](../src/models/entities.py#L117)
+[Source](../src/models/entities.py#L116)
 
 Allow each user to follow a suggestion at most once.
 
@@ -1826,7 +1846,7 @@ Allow each user to follow a suggestion at most once.
 
 **Scope:** `src/models/entities.py` · `module`
 
-[Source](../src/models/entities.py#L123)
+[Source](../src/models/entities.py#L122)
 
 Map each configured Discord channel to its persistent status message.
 
@@ -2832,15 +2852,31 @@ Bind the Discord client and initialize the serialized emoji cache.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L41)
+[Source](../src/services/emojis.py#L43)
 
 Load existing application emojis and create any bundled assets that are missing.
+
+### `async def _load(self) -> None`
+
+**Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
+
+[Source](../src/services/emojis.py#L57)
+
+Replace the cache with the application emojis that currently exist.
+
+### `async def _retry_load(self) -> None`
+
+**Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
+
+[Source](../src/services/emojis.py#L64)
+
+Reload after a failed warm, at most once per cooldown window.
 
 ### `async def currency(self, kind: str) -> str`
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L58)
+[Source](../src/services/emojis.py#L74)
 
 Return the emoji for VP, Radianite, or Kingdom Credits, if available.
 
@@ -2848,7 +2884,7 @@ Return the emoji for VP, Radianite, or Kingdom Credits, if available.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L63)
+[Source](../src/services/emojis.py#L79)
 
 Return the filled and empty battlepass progress-bar emoji strings.
 
@@ -2856,7 +2892,7 @@ Return the filled and empty battlepass progress-bar emoji strings.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L70)
+[Source](../src/services/emojis.py#L86)
 
 Return a cached application emoji for a skin tier, if available.
 
@@ -2864,7 +2900,7 @@ Return a cached application emoji for a skin tier, if available.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L78)
+[Source](../src/services/emojis.py#L94)
 
 Prefix a skin name with its cached tier emoji when available.
 
@@ -2872,7 +2908,7 @@ Prefix a skin name with its cached tier emoji when available.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L83)
+[Source](../src/services/emojis.py#L99)
 
 Resolve or create one application emoji, returning empty text on failure.
 

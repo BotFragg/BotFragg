@@ -15,6 +15,8 @@
 - Account ownership columns are indexed, and command analytics ids are 64-bit, so
   lookups stay fast and the never-pruned table cannot overflow.
 - Container images built for a version tag are smoke-tested before they are published.
+- Rolling migration 0006 back now refuses when analytics ids no longer fit in 32 bits
+  instead of narrowing the column and breaking later inserts.
 
 ### Fixed
 
@@ -48,6 +50,13 @@
   formatting.
 - A Riot login outage is reported as temporarily unavailable instead of a rejected code.
 - The shard-status message notes any shards hidden by Discord's 25-field limit.
+- `/ping` reports an unreachable database as unavailable, not only a slow one.
+- Submitting an older `/login` link no longer discards the current pending login.
+- A failed daily alert run logs its error instead of only marking the job unhealthy.
+- `/botinfo` caps its commit list below Discord's field limit and formats source lines
+  and process numbers for the locale.
+- A failed application-emoji fetch at startup is retried instead of disabling tier emojis
+  until the next restart.
 
 ## [1.2.3] - 2026-10-22
 
