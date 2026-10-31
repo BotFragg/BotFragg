@@ -213,10 +213,10 @@ class AuthService:
                 False, error_key="error-riot-auth-temporarily-unavailable"
             )
         claims = decode_jwt(token_data.get("id_token"))
-        # Riot accepted the code, so this login attempt is spent either way.
-        self._pending_nonces.pop(discord_id, None)
         if claims.get("nonce") != pending[0]:
             return AuthResult(False, error_key="login-nonce-mismatch")
+        # Riot accepted the code, so only the matching login attempt is spent.
+        self._pending_nonces.pop(discord_id, None)
         auth: LoginCredentials = {
             "rso": token_data["access_token"],
             "idt": token_data.get("id_token"),

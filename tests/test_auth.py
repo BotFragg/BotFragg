@@ -1529,6 +1529,36 @@ async def test_login_rejects_a_callback_minted_for_another_login():
 
 
 @pytest.mark.usefixtures("database")
+async def test_stale_callback_keeps_the_newer_login_attempt_alive():
+    """Submitting an older /login link must not delete the current nonce."""
+    service = auth_service()
+    service.login_url(101)
+    service.login_url(101)
+    current = service._pending_nonces[101][0]
+    service.http = NS(
+        request=AsyncMock(
+            return_value=HTTPResult(
+                200,
+                {
+                    "access_token": lifetime_jwt(
+                        sub="synthetic", exp=int(time.time()) + 3600
+                    ),
+                    "id_token": lifetime_jwt(nonce="older-nonce"),
+                    "refresh_token": "synthetic-refresh",
+                },
+            )
+        )
+    )
+
+    result = await service.redeem_callback(
+        101, "http://localhost/redirect?code=synthetic"
+    )
+
+    assert result.error_key == "login-nonce-mismatch"
+    assert service._pending_nonces[101][0] == current
+
+
+@pytest.mark.usefixtures("database")
 async def test_login_refuses_an_account_linked_to_another_discord_user():
     """A second Discord user must not take over an account through a fresh login."""
     service = auth_service()
