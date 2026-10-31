@@ -90,6 +90,7 @@ docstring. Regenerate it after application documentation changes with
 | [src/cogs/valorant/accounts.py](../src/cogs/valorant/accounts.py) | Implements account switching, listing, and pagination commands. |
 | [src/cogs/valorant/alerts.py](../src/cogs/valorant/alerts.py) | Implements user-owned skin alerts and alert-management controls. |
 | [src/cogs/valorant/battlepass.py](../src/cogs/valorant/battlepass.py) | Displays battlepass and mission progress using Riot gameplay data. |
+| [src/cogs/valorant/crosshair.py](../src/cogs/valorant/crosshair.py) | Displays the caller's crosshair profiles, export codes, and locally rendered previews. |
 | [src/cogs/valorant/login.py](../src/cogs/valorant/login.py) | Handles nonce-bound Riot sign-in through a private Discord modal. |
 | [src/cogs/valorant/logout.py](../src/cogs/valorant/logout.py) | Clears Riot credentials or deletes the caller's stored data. |
 | [src/cogs/valorant/penalties.py](../src/cogs/valorant/penalties.py) | Displays paginated private matchmaking-penalty summaries for the selected Riot account. |
@@ -112,6 +113,8 @@ docstring. Regenerate it after application documentation changes with
 | [src/services/suggestions.py](../src/services/suggestions.py) | Owns suggestion persistence, following, and atomic review outcomes. |
 | [src/services/auth.py](../src/services/auth.py) | Owns Riot OAuth, credential refresh, entitlement repair, and account linking. |
 | [src/services/catalog.py](../src/services/catalog.py) | Loads, searches, refreshes, and caches skin, bundle, accessory, and mission metadata. |
+| [src/services/crosshair.py](../src/services/crosshair.py) | Fetches, decodes, encodes, and caches a user's crosshair profiles. |
+| [src/services/crosshair_render.py](../src/services/crosshair_render.py) | Renders crosshair share codes to PNG locally with Pillow. |
 | [src/services/crypto.py](../src/services/crypto.py) | Encrypts and decrypts stored Riot credentials with Fernet. |
 | [src/services/emojis.py](../src/services/emojis.py) | Caches application emojis and creates missing ones from packaged assets. |
 | [src/services/gameplay.py](../src/services/gameplay.py) | Normalizes VALORANT battlepass, mission, and matchmaking-penalty data. |
@@ -140,6 +143,9 @@ docstring. Regenerate it after application documentation changes with
 | [tests/test_catalog.py](../tests/test_catalog.py) | Catalog validation, persistence, refresh, localization, and search. |
 | [tests/test_components.py](../tests/test_components.py) | Persistent component reconstruction and ownership checks. |
 | [tests/test_config.py](../tests/test_config.py) | Configuration validation and safe errors for invalid values. |
+| [tests/test_crosshair_commands.py](../tests/test_crosshair_commands.py) | Crosshair profile selection, ownership rechecks, privacy, and service error mapping. |
+| [tests/test_crosshair_render.py](../tests/test_crosshair_render.py) | Share-code encoding and pixel-exact local crosshair rendering. |
+| [tests/test_crosshair_service.py](../tests/test_crosshair_service.py) | Player-preferences decoding, profile encoding, caching, and service errors. |
 | [tests/test_crypto.py](../tests/test_crypto.py) | Authenticated encryption round trips and mismatched-key rejection. |
 | [tests/test_data_deletion.py](../tests/test_data_deletion.py) | Transactional deletion, pending-login cancellation, and analytics behavior after deletion. |
 | [tests/test_emojis.py](../tests/test_emojis.py) | Application emoji transport failures, per-emoji cooldown, and text fallbacks. |

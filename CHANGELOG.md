@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- `/crosshair view` shows the caller's saved crosshair profiles, their export codes,
+  and a locally rendered preview, with a menu to switch profiles.
+
 ## [1.3.0] - 2026-10-31
 
 ### Changed

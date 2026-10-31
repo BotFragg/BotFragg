@@ -18,7 +18,7 @@ Discord client construction, command handling, service wiring, and shutdown.
 
 **Scope:** `src/bot.py` · `module`
 
-[Source](../src/bot.py#L31)
+[Source](../src/bot.py#L32)
 
 Build the generic, user-safe response shown after an unhandled command error.
 
@@ -26,7 +26,7 @@ Build the generic, user-safe response shown after an unhandled command error.
 
 **Scope:** `src/bot.py` · `module`
 
-[Source](../src/bot.py#L41)
+[Source](../src/bot.py#L42)
 
 Application-command tree with shared context rules and error reporting.
 
@@ -34,7 +34,7 @@ Application-command tree with shared context rules and error reporting.
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L44)
+[Source](../src/bot.py#L45)
 
 Allow commands in servers and private contexts for guild and user installs.
 
@@ -42,7 +42,7 @@ Allow commands in servers and private contexts for guild and user installs.
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L54)
+[Source](../src/bot.py#L55)
 
 Record command executions while leaving autocomplete requests untraced.
 
@@ -50,7 +50,7 @@ Record command executions while leaving autocomplete requests untraced.
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L83)
+[Source](../src/bot.py#L84)
 
 Return the dotted parent and subcommand path from Discord's payload.
 
@@ -58,7 +58,7 @@ Return the dotted parent and subcommand path from Discord's payload.
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L102)
+[Source](../src/bot.py#L103)
 
 Log unhandled app-command errors and send a private generic response.
 
@@ -66,7 +66,7 @@ Log unhandled app-command errors and send a private generic response.
 
 **Scope:** `src/bot.py` · `module`
 
-[Source](../src/bot.py#L131)
+[Source](../src/bot.py#L132)
 
 Own Discord lifecycle and the shared Riot, database, and presentation services.
 
@@ -74,7 +74,7 @@ Own Discord lifecycle and the shared Riot, database, and presentation services.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L134)
+[Source](../src/bot.py#L135)
 
 Configure the bot's intents and application services.
 
@@ -82,7 +82,7 @@ Configure the bot's intents and application services.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L160)
+[Source](../src/bot.py#L162)
 
 Register a persistent component action, rejecting duplicate action names.
 
@@ -90,7 +90,7 @@ Register a persistent component action, rejecting duplicate action names.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L166)
+[Source](../src/bot.py#L168)
 
 Discard only the handlers bound to the given cog instance.
 
@@ -98,7 +98,7 @@ Discard only the handlers bound to the given cog instance.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L174)
+[Source](../src/bot.py#L176)
 
 Discard a failed cog's component handlers so loading it can be retried.
 
@@ -106,7 +106,7 @@ Discard a failed cog's component handlers so loading it can be retried.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L194)
+[Source](../src/bot.py#L196)
 
 Remove a cog's component handlers along with its commands and listeners.
 
@@ -114,7 +114,7 @@ Remove a cog's component handlers along with its commands and listeners.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L208)
+[Source](../src/bot.py#L210)
 
 Initialize shared resources, load extensions, and optionally sync commands.
 
@@ -122,7 +122,7 @@ Initialize shared resources, load extensions, and optionally sync commands.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L244)
+[Source](../src/bot.py#L247)
 
 Set the online activity and log the connected shard and guild counts.
 
@@ -130,7 +130,7 @@ Set the online activity and log the connected shard and guild counts.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L257)
+[Source](../src/bot.py#L260)
 
 Close Discord, Riot HTTP, database, and monitoring resources in order.
 
@@ -934,6 +934,106 @@ Render the active act, current tier, next reward, and XP progress bar.
 
 Register the battlepass and mission commands.
 
+## `src/cogs/valorant/crosshair.py`
+
+Commands for viewing and exporting the caller's VALORANT crosshairs.
+
+### `class CrosshairView(discord.ui.View)`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `module`
+
+[Source](../src/cogs/valorant/crosshair.py#L25)
+
+Owner-scoped profile selector for one crosshair message.
+
+### `def __init__(self, cog: CrosshairCog, interaction: discord.Interaction, account: Account, profiles: Sequence[CrosshairProfile], selected: CrosshairProfile) -> None`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairView`
+
+[Source](../src/cogs/valorant/crosshair.py#L28)
+
+Build the selector from the caller's profiles.
+
+### `def _visible(profiles: Sequence[CrosshairProfile]) -> list[CrosshairProfile]`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairView`
+
+[Source](../src/cogs/valorant/crosshair.py#L59)
+
+Keep the current profile first and cap the menu at Discord's limit.
+
+### `async def profile_selected(self, interaction: discord.Interaction, index: int) -> None`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairView`
+
+[Source](../src/cogs/valorant/crosshair.py#L69)
+
+Recheck ownership and edit the message with the chosen profile.
+
+### `class CrosshairSelect(discord.ui.Select)`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `module`
+
+[Source](../src/cogs/valorant/crosshair.py#L99)
+
+Select one crosshair profile from the owner's saved profiles.
+
+### `def __init__(self, interaction: discord.Interaction, options: list[discord.SelectOption]) -> None`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairSelect`
+
+[Source](../src/cogs/valorant/crosshair.py#L102)
+
+Build the selector with the interaction's localized placeholder.
+
+### `async def callback(self, interaction: discord.Interaction) -> None`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairSelect`
+
+[Source](../src/cogs/valorant/crosshair.py#L111)
+
+Forward the selection to the owning view.
+
+### `class CrosshairCog(commands.Cog)`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `module`
+
+[Source](../src/cogs/valorant/crosshair.py#L118)
+
+View and export the caller's VALORANT crosshair profiles.
+
+### `def __init__(self, bot: BotFraggBot) -> None`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
+
+[Source](../src/cogs/valorant/crosshair.py#L129)
+
+Bind the bot's crosshair service.
+
+### `async def crosshair_view(self, interaction: discord.Interaction) -> None`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
+
+[Source](../src/cogs/valorant/crosshair.py#L140)
+
+Show the caller's current crosshair, its code, and a profile menu.
+
+### `async def build_card(self, interaction: discord.Interaction, account: Account, profiles: Sequence[CrosshairProfile], profile: CrosshairProfile) -> tuple[discord.Embed, discord.File, CrosshairView]`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
+
+[Source](../src/cogs/valorant/crosshair.py#L169)
+
+Render one profile into an embed, attachment, and selector view.
+
+### `async def setup(bot: BotFraggBot) -> None`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `module`
+
+[Source](../src/cogs/valorant/crosshair.py#L204)
+
+Register the crosshair command group.
+
 ## `src/cogs/valorant/login.py`
 
 Private Riot sign-in flow using an authorization link and callback modal.
@@ -1050,7 +1150,7 @@ Clear Riot credentials for one linked account while preserving its settings.
 
 **Scope:** `src/cogs/valorant/logout.py` · `LogoutCog`
 
-[Source](../src/cogs/valorant/logout.py#L87)
+[Source](../src/cogs/valorant/logout.py#L88)
 
 Permanently delete the caller's records and clear cached storefronts.
 
@@ -1058,7 +1158,7 @@ Permanently delete the caller's records and clear cached storefronts.
 
 **Scope:** `src/cogs/valorant/logout.py` · `module`
 
-[Source](../src/cogs/valorant/logout.py#L115)
+[Source](../src/cogs/valorant/logout.py#L116)
 
 Register the account logout and personal data deletion commands.
 
@@ -2807,6 +2907,230 @@ Write a complete catalog snapshot through a temporary file replacement.
 [Source](../src/services/catalog.py#L731)
 
 Restore catalog records from a snapshot and rebuild lookup indexes.
+
+## `src/services/crosshair.py`
+
+Fetch, decode, and encode a user's VALORANT crosshair profiles.
+
+### `class CrosshairUnavailable(RuntimeError)`
+
+**Scope:** `src/services/crosshair.py` · `module`
+
+[Source](../src/services/crosshair.py#L47)
+
+Raised when Riot's crosshair settings cannot be loaded or decoded.
+
+### `class CrosshairProfile`
+
+**Scope:** `src/services/crosshair.py` · `module`
+
+[Source](../src/services/crosshair.py#L52)
+
+One crosshair profile and its import/export code.
+
+### `class _CacheEntry`
+
+**Scope:** `src/services/crosshair.py` · `module`
+
+[Source](../src/services/crosshair.py#L62)
+
+Cached profiles tied to one account identity.
+
+### `def _hex(color: Mapping[str, Any], *, alpha: bool = False) -> str`
+
+**Scope:** `src/services/crosshair.py` · `module`
+
+[Source](../src/services/crosshair.py#L70)
+
+Format one RGBA colour mapping as an uppercase hex string.
+
+### `def _fmt(value: Any) -> str`
+
+**Scope:** `src/services/crosshair.py` · `module`
+
+[Source](../src/services/crosshair.py#L76)
+
+Format a setting the same way the game writes it into a share code.
+
+### `class _Encoder`
+
+**Scope:** `src/services/crosshair.py` · `module`
+
+[Source](../src/services/crosshair.py#L88)
+
+Collect code tokens and warnings for one crosshair section.
+
+### `def __init__(self) -> None`
+
+**Scope:** `src/services/crosshair.py` · `_Encoder`
+
+[Source](../src/services/crosshair.py#L91)
+
+Start an empty token list.
+
+### `def put(self, key: str, value: object, default: object) -> None`
+
+**Scope:** `src/services/crosshair.py` · `_Encoder`
+
+[Source](../src/services/crosshair.py#L96)
+
+Emit ``key;value`` unless it equals the game's default.
+
+### `def _color(encoder: _Encoder, color: Mapping[str, Any], custom: Mapping[str, Any], use_custom: bool, default_index: int) -> None`
+
+**Scope:** `src/services/crosshair.py` · `module`
+
+[Source](../src/services/crosshair.py#L106)
+
+Encode the colour index and custom colour of one crosshair section.
+
+### `def _lines(encoder: _Encoder, group: Mapping[str, Any], prefix: str, defaults: Mapping[str, object]) -> None`
+
+**Scope:** `src/services/crosshair.py` · `module`
+
+[Source](../src/services/crosshair.py#L127)
+
+Encode one set of inner or outer lines.
+
+### `def _crosshair(profile: Mapping[str, Any]) -> _Encoder`
+
+**Scope:** `src/services/crosshair.py` · `module`
+
+[Source](../src/services/crosshair.py#L160)
+
+Encode one primary, ADS, or focus-mode crosshair section.
+
+### `def profile_to_code(profile: Mapping[str, Any]) -> tuple[str, list[str]]`
+
+**Scope:** `src/services/crosshair.py` · `module`
+
+[Source](../src/services/crosshair.py#L189)
+
+Encode one saved crosshair profile into a VALORANT share code.
+
+### `def decode_settings(body: Any) -> dict[str, Any]`
+
+**Scope:** `src/services/crosshair.py` · `module`
+
+[Source](../src/services/crosshair.py#L231)
+
+Decode Riot's base64 and zlib player-preferences payload into JSON.
+
+### `def profiles_from_settings(settings: Mapping[str, Any]) -> list[CrosshairProfile]`
+
+**Scope:** `src/services/crosshair.py` · `module`
+
+[Source](../src/services/crosshair.py#L255)
+
+Extract and encode every saved crosshair profile.
+
+### `class CrosshairService`
+
+**Scope:** `src/services/crosshair.py` · `module`
+
+[Source](../src/services/crosshair.py#L313)
+
+Fetch crosshair profiles from Riot and encode them for the command.
+
+### `def __init__(self, auth: AuthService, http: HTTPClient, *, ttl: float = CACHE_TTL_SECONDS) -> None`
+
+**Scope:** `src/services/crosshair.py` · `CrosshairService`
+
+[Source](../src/services/crosshair.py#L316)
+
+Bind the authentication and HTTP services and start an empty cache.
+
+### `async def profiles(self, account: Account, *, refresh: bool = False) -> list[CrosshairProfile]`
+
+**Scope:** `src/services/crosshair.py` · `CrosshairService`
+
+[Source](../src/services/crosshair.py#L329)
+
+Return encoded profiles, reusing the account's cache when it is fresh.
+
+### `def render_png(self, profile: CrosshairProfile, *, scale: int = 2) -> bytes`
+
+**Scope:** `src/services/crosshair.py` · `CrosshairService`
+
+[Source](../src/services/crosshair.py#L358)
+
+Render one encoded profile to PNG bytes.
+
+### `def invalidate(self, puuid: str) -> None`
+
+**Scope:** `src/services/crosshair.py` · `CrosshairService`
+
+[Source](../src/services/crosshair.py#L362)
+
+Drop a cached account after logout or credential changes.
+
+### `def _prune(self, now: float) -> None`
+
+**Scope:** `src/services/crosshair.py` · `CrosshairService`
+
+[Source](../src/services/crosshair.py#L366)
+
+Drop expired entries and bound the cache size.
+
+## `src/services/crosshair_render.py`
+
+Render a VALORANT crosshair share code to a PNG without network access.
+
+### `class CrosshairCodeError(ValueError)`
+
+**Scope:** `src/services/crosshair_render.py` · `module`
+
+[Source](../src/services/crosshair_render.py#L29)
+
+Raised when a share code cannot be parsed or drawn.
+
+### `def parse_code(code: str) -> dict[str, str]`
+
+**Scope:** `src/services/crosshair_render.py` · `module`
+
+[Source](../src/services/crosshair_render.py#L33)
+
+Parse a share code and return the primary (``P``) section's settings.
+
+### `def _number(settings: dict[str, str], key: str, default: float, maximum: float, *, minimum: float = 0.0) -> float`
+
+**Scope:** `src/services/crosshair_render.py` · `module`
+
+[Source](../src/services/crosshair_render.py#L65)
+
+Read one finite, in-range setting value.
+
+### `def _integer(settings: dict[str, str], key: str, default: float, maximum: float) -> int`
+
+**Scope:** `src/services/crosshair_render.py` · `module`
+
+[Source](../src/services/crosshair_render.py#L83)
+
+Read one setting that the game stores as a whole number.
+
+### `def _composite(image: Image.Image, box: tuple[int, int, int, int], fill: tuple[int, int, int, int]) -> Image.Image`
+
+**Scope:** `src/services/crosshair_render.py` · `module`
+
+[Source](../src/services/crosshair_render.py#L91)
+
+Draw one rectangle on its own layer and composite it onto the canvas.
+
+### `def render_crosshair(code: str, *, transparent: bool = True) -> Image.Image`
+
+**Scope:** `src/services/crosshair_render.py` · `module`
+
+[Source](../src/services/crosshair_render.py#L100)
+
+Render the primary crosshair of a share code to a 256x256 image.
+
+### `def render_png(code: str, *, transparent: bool = True, scale: int = 2) -> bytes`
+
+**Scope:** `src/services/crosshair_render.py` · `module`
+
+[Source](../src/services/crosshair_render.py#L177)
+
+Render a share code to PNG bytes, optionally upscaled 1-4 times.
 
 ## `src/services/crypto.py`
 
