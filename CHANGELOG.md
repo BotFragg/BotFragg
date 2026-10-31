@@ -5,7 +5,8 @@
 ### Added
 
 - `/crosshair view` shows the caller's saved crosshair profiles, their export codes,
-  and a locally rendered preview, with a menu to switch profiles.
+  and a locally rendered preview, with a menu to switch profiles. A Share button posts
+  the selected profile publicly after a private confirmation.
 
 ## [1.3.0] - 2026-10-31
 

@@ -90,7 +90,7 @@ docstring. Regenerate it after application documentation changes with
 | [src/cogs/valorant/accounts.py](../src/cogs/valorant/accounts.py) | Implements account switching, listing, and pagination commands. |
 | [src/cogs/valorant/alerts.py](../src/cogs/valorant/alerts.py) | Implements user-owned skin alerts and alert-management controls. |
 | [src/cogs/valorant/battlepass.py](../src/cogs/valorant/battlepass.py) | Displays battlepass and mission progress using Riot gameplay data. |
-| [src/cogs/valorant/crosshair.py](../src/cogs/valorant/crosshair.py) | Displays the caller's crosshair profiles, export codes, and locally rendered previews. |
+| [src/cogs/valorant/crosshair.py](../src/cogs/valorant/crosshair.py) | Displays crosshair profiles and codes, renders previews, and shares one publicly after confirmation. |
 | [src/cogs/valorant/login.py](../src/cogs/valorant/login.py) | Handles nonce-bound Riot sign-in through a private Discord modal. |
 | [src/cogs/valorant/logout.py](../src/cogs/valorant/logout.py) | Clears Riot credentials or deletes the caller's stored data. |
 | [src/cogs/valorant/penalties.py](../src/cogs/valorant/penalties.py) | Displays paginated private matchmaking-penalty summaries for the selected Riot account. |

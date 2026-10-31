@@ -936,13 +936,21 @@ Register the battlepass and mission commands.
 
 ## `src/cogs/valorant/crosshair.py`
 
-Commands for viewing and exporting the caller's VALORANT crosshairs.
+Commands for viewing and sharing the caller's VALORANT crosshairs.
+
+### `def _share_target(interaction: discord.Interaction) -> tuple[discord.abc.Messageable | None, str | None]`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `module`
+
+[Source](../src/cogs/valorant/crosshair.py#L29)
+
+Return a channel that accepts a public card, or the matching error key.
 
 ### `class CrosshairView(discord.ui.View)`
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `module`
 
-[Source](../src/cogs/valorant/crosshair.py#L25)
+[Source](../src/cogs/valorant/crosshair.py#L52)
 
 Owner-scoped profile selector for one crosshair message.
 
@@ -950,7 +958,7 @@ Owner-scoped profile selector for one crosshair message.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairView`
 
-[Source](../src/cogs/valorant/crosshair.py#L28)
+[Source](../src/cogs/valorant/crosshair.py#L55)
 
 Build the selector from the caller's profiles.
 
@@ -958,7 +966,7 @@ Build the selector from the caller's profiles.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairView`
 
-[Source](../src/cogs/valorant/crosshair.py#L59)
+[Source](../src/cogs/valorant/crosshair.py#L89)
 
 Keep the current profile first and cap the menu at Discord's limit.
 
@@ -966,15 +974,79 @@ Keep the current profile first and cap the menu at Discord's limit.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairView`
 
-[Source](../src/cogs/valorant/crosshair.py#L69)
+[Source](../src/cogs/valorant/crosshair.py#L99)
 
 Recheck ownership and edit the message with the chosen profile.
+
+### `async def share_preview(self, interaction: discord.Interaction) -> None`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairView`
+
+[Source](../src/cogs/valorant/crosshair.py#L128)
+
+Show a private preview of the public share card.
+
+### `class ShareButton(discord.ui.Button[CrosshairView])`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `module`
+
+[Source](../src/cogs/valorant/crosshair.py#L154)
+
+Open the private preview for a public crosshair share.
+
+### `def __init__(self, interaction: discord.Interaction) -> None`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `ShareButton`
+
+[Source](../src/cogs/valorant/crosshair.py#L157)
+
+Label the button in the interaction's locale.
+
+### `async def callback(self, interaction: discord.Interaction) -> None`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `ShareButton`
+
+[Source](../src/cogs/valorant/crosshair.py#L165)
+
+Open the share preview for the selected profile.
+
+### `class ShareConfirmView(discord.ui.View)`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `module`
+
+[Source](../src/cogs/valorant/crosshair.py#L172)
+
+Confirm and post a public crosshair card.
+
+### `def __init__(self, cog: CrosshairCog, profile: CrosshairProfile, interaction: discord.Interaction) -> None`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `ShareConfirmView`
+
+[Source](../src/cogs/valorant/crosshair.py#L175)
+
+Bind the profile to share and localize the two buttons.
+
+### `async def post(self, interaction: discord.Interaction, _button: discord.ui.Button) -> None`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `ShareConfirmView`
+
+[Source](../src/cogs/valorant/crosshair.py#L190)
+
+Post the previewed crosshair to the current channel.
+
+### `async def cancel(self, interaction: discord.Interaction, _button: discord.ui.Button) -> None`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `ShareConfirmView`
+
+[Source](../src/cogs/valorant/crosshair.py#L230)
+
+Dismiss the preview without posting anything.
 
 ### `class CrosshairSelect(discord.ui.Select)`
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `module`
 
-[Source](../src/cogs/valorant/crosshair.py#L99)
+[Source](../src/cogs/valorant/crosshair.py#L245)
 
 Select one crosshair profile from the owner's saved profiles.
 
@@ -982,7 +1054,7 @@ Select one crosshair profile from the owner's saved profiles.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairSelect`
 
-[Source](../src/cogs/valorant/crosshair.py#L102)
+[Source](../src/cogs/valorant/crosshair.py#L248)
 
 Build the selector with the interaction's localized placeholder.
 
@@ -990,7 +1062,7 @@ Build the selector with the interaction's localized placeholder.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairSelect`
 
-[Source](../src/cogs/valorant/crosshair.py#L111)
+[Source](../src/cogs/valorant/crosshair.py#L257)
 
 Forward the selection to the owning view.
 
@@ -998,7 +1070,7 @@ Forward the selection to the owning view.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `module`
 
-[Source](../src/cogs/valorant/crosshair.py#L118)
+[Source](../src/cogs/valorant/crosshair.py#L264)
 
 View and export the caller's VALORANT crosshair profiles.
 
@@ -1006,15 +1078,15 @@ View and export the caller's VALORANT crosshair profiles.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
 
-[Source](../src/cogs/valorant/crosshair.py#L129)
+[Source](../src/cogs/valorant/crosshair.py#L275)
 
-Bind the bot's crosshair service.
+Bind the bot's crosshair service and start the share cooldown map.
 
 ### `async def crosshair_view(self, interaction: discord.Interaction) -> None`
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
 
-[Source](../src/cogs/valorant/crosshair.py#L140)
+[Source](../src/cogs/valorant/crosshair.py#L287)
 
 Show the caller's current crosshair, its code, and a profile menu.
 
@@ -1022,15 +1094,47 @@ Show the caller's current crosshair, its code, and a profile menu.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
 
-[Source](../src/cogs/valorant/crosshair.py#L169)
+[Source](../src/cogs/valorant/crosshair.py#L316)
 
 Render one profile into an embed, attachment, and selector view.
+
+### `async def render_card(self, interaction: discord.Interaction, profile: CrosshairProfile) -> tuple[discord.Embed, bytes]`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
+
+[Source](../src/cogs/valorant/crosshair.py#L337)
+
+Render one profile into an embed and PNG bytes.
+
+### `def share_footer(self, interaction: discord.Interaction) -> str`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
+
+[Source](../src/cogs/valorant/crosshair.py#L357)
+
+Return the public card footer naming the sharer.
+
+### `def share_cooldown_remaining(self, user_id: int) -> int`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
+
+[Source](../src/cogs/valorant/crosshair.py#L365)
+
+Return the seconds left before this user may share again.
+
+### `def mark_shared(self, user_id: int) -> None`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
+
+[Source](../src/cogs/valorant/crosshair.py#L372)
+
+Record a successful share and bound the tracking map.
 
 ### `async def setup(bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `module`
 
-[Source](../src/cogs/valorant/crosshair.py#L204)
+[Source](../src/cogs/valorant/crosshair.py#L382)
 
 Register the crosshair command group.
 
