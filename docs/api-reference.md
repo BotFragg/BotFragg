@@ -540,7 +540,7 @@ Background loops for daily alerts, upstream refresh, and Discord log delivery.
 
 [Source](../src/cogs/tasks.py#L30)
 
-Buffer privacy-filtered structured log lines for periodic Discord delivery.
+Buffer privacy-filtered plain log lines for periodic Discord delivery.
 
 ### `def __init__(self) -> None`
 
@@ -2268,29 +2268,13 @@ Map each configured Discord channel to its persistent status message.
 
 ## `src/monitoring.py`
 
-Structured logging and privacy filters for logs and GlitchTip events.
-
-### `class StructuredFormatter(logging.Formatter)`
-
-**Scope:** `src/monitoring.py` · `module`
-
-[Source](../src/monitoring.py#L70)
-
-Format log records as JSON after filtering sensitive values.
-
-### `def format(self, record: logging.LogRecord) -> str`
-
-**Scope:** `src/monitoring.py` · `StructuredFormatter`
-
-[Source](../src/monitoring.py#L73)
-
-Serialize a scrubbed log record and its safe structured fields.
+Plain-text log formatting and privacy filters for logs and GlitchTip events.
 
 ### `class PlainFormatter(logging.Formatter)`
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L92)
+[Source](../src/monitoring.py#L69)
 
 Render a scrubbed log record as plain text for console output.
 
@@ -2298,7 +2282,7 @@ Render a scrubbed log record as plain text for console output.
 
 **Scope:** `src/monitoring.py` · `PlainFormatter`
 
-[Source](../src/monitoring.py#L95)
+[Source](../src/monitoring.py#L72)
 
 Scrub the message, structured fields, and traceback, then render a line.
 
@@ -2306,7 +2290,7 @@ Scrub the message, structured fields, and traceback, then render a line.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L116)
+[Source](../src/monitoring.py#L93)
 
 Filter credentials and personal identifiers from nested event data.
 
@@ -2314,7 +2298,7 @@ Filter credentials and personal identifiers from nested event data.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L146)
+[Source](../src/monitoring.py#L123)
 
 Drop network and unrelated log breadcrumbs, then scrub retained data.
 
@@ -2322,7 +2306,7 @@ Drop network and unrelated log breadcrumbs, then scrub retained data.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L160)
+[Source](../src/monitoring.py#L137)
 
 Remove request data and sensitive values from an error event.
 
@@ -2330,7 +2314,7 @@ Remove request data and sensitive values from an error event.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L170)
+[Source](../src/monitoring.py#L147)
 
 Remove request payloads and HTTP span details from a transaction.
 
@@ -2338,7 +2322,7 @@ Remove request payloads and HTTP span details from a transaction.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L181)
+[Source](../src/monitoring.py#L158)
 
 Keep BotFragg logs and serious Discord errors after removing URL data.
 
@@ -2346,7 +2330,7 @@ Keep BotFragg logs and serious Discord errors after removing URL data.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L200)
+[Source](../src/monitoring.py#L177)
 
 Return the installed BotFragg release label or an unknown fallback.
 
@@ -2354,7 +2338,7 @@ Return the installed BotFragg release label or an unknown fallback.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L208)
+[Source](../src/monitoring.py#L185)
 
 Enable privacy-filtered GlitchTip telemetry when a DSN is configured.
 
@@ -2362,7 +2346,7 @@ Enable privacy-filtered GlitchTip telemetry when a DSN is configured.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L246)
+[Source](../src/monitoring.py#L223)
 
 Start a GlitchTip transaction with the supplied name and operation.
 
@@ -2370,7 +2354,7 @@ Start a GlitchTip transaction with the supplied name and operation.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L251)
+[Source](../src/monitoring.py#L228)
 
 End the current monitoring session and flush queued telemetry.
 

@@ -89,7 +89,7 @@ retrying the same emoji. Other emoji names can still be created during that cool
 
 ## Responding to an unhealthy process
 
-1. Inspect the heartbeat's `problems` and structured logs. For `database`,
+1. Inspect the heartbeat's `problems` and the filtered log lines. For `database`,
    check reachability and database health. For `discord`, check connectivity and
    Discord's service status. A failed catalog/version job usually indicates an
    upstream outage; check whether its next retry succeeds.

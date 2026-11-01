@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last updated:** October 31, 2026
+**Last updated:** November 1, 2026
 
 This policy describes data handled by BotFragg when you use its Discord bot
 features. BotFragg is an independent project and is not affiliated with Riot
@@ -82,8 +82,8 @@ Operators may enable additional destinations:
   creation time, member count, text and voice channel counts, server icon, and
   BotFragg's current server count.
 - **Shard webhooks** include the shard ID, connection state, and shard count.
-- **Application log channels** receive structured logs after BotFragg filters
-  credential fields and common Riot or Discord identifiers.
+- **Application log channels** receive plain-text log lines after BotFragg
+  filters credential fields and common Riot or Discord identifiers.
 - **GlitchTip** may receive error reports and logs when the operator configures
   a DSN; traces and profiles use the configured sampling rates. BotFragg
   disables default PII and local variable capture, removes request data,

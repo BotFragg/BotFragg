@@ -26,6 +26,11 @@
   are available in all 25 supported locales; publicly shared cards use English labels so
   they read the same in every server.
 
+### Fixed
+
+- The Discord log channel now receives the same plain-text log lines as the
+  console instead of JSON objects.
+
 ## [1.3.0] - 2026-10-31
 
 ### Changed

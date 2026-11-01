@@ -15,7 +15,7 @@ from ..bot import BotFraggBot
 from ..database import TRANSIENT_DATABASE_ERRORS, ping_database
 from ..health import HEALTH_PATH, JobHealth, write_health
 from ..models import Account, Alert, User
-from ..monitoring import StructuredFormatter, transaction
+from ..monitoring import LOG_FORMAT, PlainFormatter, transaction
 from ..services.alerts import retry_lookup, run_daily_alerts
 from ..services.http import DISCORD_HTTP_ERRORS, HTTPFailure
 from ..services.shop import Offer, ShopData
@@ -28,13 +28,13 @@ log = logging.getLogger(__name__)
 
 
 class DiscordLogHandler(logging.Handler):
-    """Buffer privacy-filtered structured log lines for periodic Discord delivery."""
+    """Buffer privacy-filtered plain log lines for periodic Discord delivery."""
 
     def __init__(self) -> None:
         """Create a bounded log buffer using BotFragg's privacy-aware formatter."""
         super().__init__()
         self.messages: deque[str] = deque(maxlen=1000)
-        self.setFormatter(StructuredFormatter())
+        self.setFormatter(PlainFormatter(LOG_FORMAT))
 
     def emit(self, record: logging.LogRecord) -> None:
         """Format a log record into the buffer or delegate failures to logging."""

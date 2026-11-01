@@ -1,12 +1,10 @@
-"""Structured logging and privacy filters for logs and GlitchTip events."""
+"""Plain-text log formatting and privacy filters for logs and GlitchTip events."""
 
 from __future__ import annotations
 
 import copy
-import json
 import logging
 import re
-from datetime import UTC, datetime
 from importlib.metadata import PackageNotFoundError, version
 from typing import TYPE_CHECKING, Any
 
@@ -65,28 +63,7 @@ _OAUTH_SECRET = re.compile(
     r"(?i)([?&#](?:code|state|nonce|access_token|refresh_token|id_token)=)[^&#\s\"'\\]+"
 )
 _STANDARD_LOG_FIELDS = frozenset(logging.makeLogRecord({}).__dict__)
-
-
-class StructuredFormatter(logging.Formatter):
-    """Format log records as JSON after filtering sensitive values."""
-
-    def format(self, record: logging.LogRecord) -> str:
-        """Serialize a scrubbed log record and its safe structured fields."""
-        extras = {
-            key: value
-            for key, value in record.__dict__.items()
-            if key not in _STANDARD_LOG_FIELDS
-        }
-        payload = {
-            "timestamp": datetime.fromtimestamp(record.created, UTC).isoformat(),
-            "level": record.levelname,
-            "logger": record.name,
-            "message": _scrub(record.getMessage()),
-            **_scrub(extras),
-        }
-        if record.exc_info:
-            payload["exception"] = _scrub(self.formatException(record.exc_info))
-        return json.dumps(payload, ensure_ascii=False, default=str)
+LOG_FORMAT = "%(asctime)s %(levelname)-8s %(name)s %(message)s"
 
 
 class PlainFormatter(logging.Formatter):

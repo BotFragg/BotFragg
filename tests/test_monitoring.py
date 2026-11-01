@@ -21,7 +21,7 @@ from sentry_sdk.transport import Transport
 from src import main as entrypoint
 from src import monitoring
 from src.cogs.tasks import DiscordLogHandler, TasksCog
-from src.monitoring import PlainFormatter, StructuredFormatter, _scrub
+from src.monitoring import PlainFormatter, _scrub
 
 
 @pytest.mark.parametrize(
@@ -135,7 +135,7 @@ def test_rate_limit_warnings_scrub_discord_url_identifiers(path, expected):
         (url,),
         None,
     )
-    formatted = json.loads(StructuredFormatter().format(record))["message"]
+    formatted = PlainFormatter("%(message)s").format(record)
     filtered_url = f"https://discord.com/api/v10/{expected}"
     assert filtered_url in formatted
     assert _scrub({"exception": {"url": url}}) == {"exception": {"url": filtered_url}}
@@ -183,7 +183,7 @@ def test_formatter_removes_webhook_and_interaction_tokens():
         ),
         None,
     )
-    assert synthetic_token not in StructuredFormatter().format(record)
+    assert synthetic_token not in PlainFormatter("%(message)s").format(record)
 
 
 def test_formatter_scrubs_suggestion_follower_ids():
@@ -196,7 +196,7 @@ def test_formatter_scrubs_suggestion_follower_ids():
         (123456789012345678,),
         None,
     )
-    assert "123456789012345678" not in StructuredFormatter().format(record)
+    assert "123456789012345678" not in PlainFormatter("%(message)s").format(record)
 
 
 def test_formatter_removes_oauth_code_from_gateway_payload():
@@ -217,7 +217,7 @@ def test_formatter_removes_oauth_code_from_gateway_payload():
         ),
         None,
     )
-    assert "AUDIT_SYNTHETIC_CODE" not in StructuredFormatter().format(record)
+    assert "AUDIT_SYNTHETIC_CODE" not in PlainFormatter("%(message)s").format(record)
 
 
 @pytest.mark.asyncio
@@ -400,8 +400,8 @@ def test_error_tracking_scrubs_riot_puuids() -> None:
     }
 
 
-def test_structured_logs_include_safe_extra_fields() -> None:
-    """Verify that structured logs include safe extra fields."""
+def test_plain_logs_include_safe_extra_fields() -> None:
+    """Verify that safe extra fields are scrubbed and rendered with the message."""
     puuid = "123e4567-e89b-12d3-a456-426614174000"
     record = logging.LogRecord(
         "src.services.shop",
@@ -414,12 +414,11 @@ def test_structured_logs_include_safe_extra_fields() -> None:
     )
     record.user_id = 123456789012345678
 
-    payload = json.loads(StructuredFormatter().format(record))
+    formatted = PlainFormatter("%(message)s").format(record)
 
-    assert payload["level"] == "INFO"
-    assert payload["logger"] == "src.services.shop"
-    assert payload["message"] == "Loaded account [Filtered]"
-    assert payload["user_id"] == "[Filtered]"
+    assert "Loaded account [Filtered]" in formatted
+    assert "user_id=[Filtered]" in formatted
+    assert "123456789012345678" not in formatted
 
 
 def test_plain_logs_include_structured_fields_and_a_scrubbed_traceback() -> None:
@@ -451,8 +450,8 @@ def test_plain_logs_include_structured_fields_and_a_scrubbed_traceback() -> None
     assert "delivery failed" in formatted
 
 
-def test_plain_formatter_restores_the_record_for_structured_handlers() -> None:
-    """Verify that plain formatting does not consume a shared record's traceback."""
+def test_plain_formatter_restores_the_record_for_later_handlers() -> None:
+    """Verify that one plain handler does not consume a shared record's traceback."""
     try:
         raise RuntimeError("private database detail")
     except RuntimeError:
@@ -467,18 +466,16 @@ def test_plain_formatter_restores_the_record_for_structured_handlers() -> None:
         )
     record.job = "daily_alerts"
 
-    plain = PlainFormatter("%(message)s").format(record)
-    payload = json.loads(StructuredFormatter().format(record))
+    first = PlainFormatter("%(message)s").format(record)
+    second = PlainFormatter("%(message)s").format(record)
 
-    assert "job=daily_alerts" in plain
-    assert payload["message"] == "Could not deliver daily shop notification"
-    assert payload["job"] == "daily_alerts"
-    assert "private database detail" in payload["exception"]
-    assert "Traceback (most recent call last):" not in payload["message"]
+    assert "job=daily_alerts" in first
+    assert "private database detail" in second
+    assert "Traceback (most recent call last):" in second
 
 
-def test_discord_log_handler_uses_the_scrubbed_structured_formatter() -> None:
-    """Verify that Discord log handler uses the scrubbed structured formatter."""
+def test_discord_log_handler_uses_the_scrubbed_plain_formatter() -> None:
+    """Verify that Discord log lines are normalized text with identifiers scrubbed."""
     puuid = "123e4567-e89b-12d3-a456-426614174000"
     handler = DiscordLogHandler()
     record = logging.LogRecord(
@@ -493,10 +490,11 @@ def test_discord_log_handler_uses_the_scrubbed_structured_formatter() -> None:
     record.user_id = 123456789012345678
 
     handler.emit(record)
-    payload = json.loads(handler.messages[0])
+    line = handler.messages[0]
 
-    assert payload["message"] == "Failed for [Filtered]"
-    assert payload["user_id"] == "[Filtered]"
+    assert "src.services.shop Failed for [Filtered]" in line
+    assert "user_id=[Filtered]" in line
+    assert "123456789012345678" not in line
 
 
 def test_error_tracking_ignores_http_breadcrumbs_and_handles_null_category() -> None:
