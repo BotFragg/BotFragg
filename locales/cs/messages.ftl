@@ -346,6 +346,19 @@ balance-vp = VALORANT Points
 balance-rp = Radianite Points
 balance-kc = Královské kredity
 
+command-status-name = stav
+command-status-description = Zobrazí stav služeb VALORANT pro region
+option-status-region-name = region
+option-status-region-description = Region ke kontrole (výchozí je region účtu)
+status-title = Stav VALORANT — { $region }
+status-all-clear = Nejsou hlášeny žádné aktivní incidenty ani údržba.
+status-more = { $count ->
+    [one] 1 další záznam se nezobrazuje.
+    [few] { $count } další záznamy se nezobrazují.
+    [many] Dalších { $count } záznamů se nezobrazuje.
+   *[other] Dalších { $count } záznamů se nezobrazuje.
+}
+
 command-crosshair-name = zamerovac
 command-crosshair-description = Zobraz a zkopíruj své zaměřovače ze hry
 command-crosshair-view-name = zobrazit

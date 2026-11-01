@@ -340,6 +340,17 @@ balance-vp = VALORANT-pisteet
 balance-rp = Radianite-pisteet
 balance-kc = Kingdom Credits
 
+command-status-name = tila
+command-status-description = Näyttää VALORANT-palvelujen tilan alueittain
+option-status-region-name = alue
+option-status-region-description = Tarkistettava alue (oletuksena tilisi alue)
+status-title = VALORANT-tila — { $region }
+status-all-clear = Aktiivisia häiriöitä tai huoltotöitä ei ole raportoitu.
+status-more = { $count ->
+    [one] 1 merkintä jää näyttämättä.
+   *[other] { $count } merkintää jää näyttämättä.
+}
+
 command-crosshair-name = tahtain
 command-crosshair-description = Katsele ja kopioi pelin tähtäimesi
 command-crosshair-view-name = nayta

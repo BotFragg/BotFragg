@@ -343,6 +343,18 @@ balance-vp = Puncte VALORANT
 balance-rp = Puncte Radianite
 balance-kc = Credite Kingdom
 
+command-status-name = stare
+command-status-description = Afișează starea serviciilor VALORANT pentru o regiune
+option-status-region-name = regiune
+option-status-region-description = Regiunea de verificat (implicit, cea a contului tău)
+status-title = Starea VALORANT — { $region }
+status-all-clear = Nu au fost raportate incidente sau lucrări de mentenanță active.
+status-more = { $count ->
+    [one] 1 intrare suplimentară nu este afișată.
+    [few] { $count } intrări suplimentare nu sunt afișate.
+   *[other] { $count } de intrări suplimentare nu sunt afișate.
+}
+
 command-crosshair-name = reticul
 command-crosshair-description = Vezi și copiază reticulile din joc
 command-crosshair-view-name = afiseaza

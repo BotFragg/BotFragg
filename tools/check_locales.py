@@ -47,6 +47,7 @@ PREFIXES = {
     "staff",
     "suggestion",
     "suggestions",
+    "status",
     "test",
 }
 DYNAMIC_MESSAGE_IDS = {

@@ -337,6 +337,16 @@ balance-vp = VALORANT Puanı
 balance-rp = Radyanit Puanı
 balance-kc = Kingdom Kredisi
 
+command-status-name = durum
+command-status-description = VALORANT hizmetlerinin durumunu bir bölge için gösterir
+option-status-region-name = bölge
+option-status-region-description = Kontrol edilecek bölge (varsayılan: hesabının bölgesi)
+status-title = VALORANT durumu — { $region }
+status-all-clear = Etkin bir olay veya bakım çalışması bildirilmedi.
+status-more = { $count ->
+   *[other] { $count } kayıt daha gösterilmiyor.
+}
+
 command-crosshair-name = nisangah
 command-crosshair-description = Oyun içi nişangahlarını görüntüle ve kopyala
 command-crosshair-view-name = goruntule

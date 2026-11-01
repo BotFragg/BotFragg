@@ -343,6 +343,18 @@ balance-vp = VALORANT bodovi
 balance-rp = Radianit bodovi
 balance-kc = Kingdom krediti
 
+command-status-name = status
+command-status-description = Prikazuje status VALORANT usluga za regiju
+option-status-region-name = regija
+option-status-region-description = Regija koju treba provjeriti (zadano je regija tvog računa)
+status-title = Status VALORANT — { $region }
+status-all-clear = Nisu prijavljeni aktivni incidenti ni održavanje.
+status-more = { $count ->
+    [one] 1 dodatni zapis nije prikazan.
+    [few] { $count } dodatna zapisa nisu prikazana.
+   *[other] Nije prikazano { $count } dodatnih zapisa.
+}
+
 command-crosshair-name = nisan
 command-crosshair-description = Pogledaj i kopiraj svoje nišane iz igre
 command-crosshair-view-name = prikazi

@@ -337,6 +337,16 @@ balance-vp = Điểm VALORANT
 balance-rp = Điểm Radianite
 balance-kc = Kingdom Credits
 
+command-status-name = trạng-thái
+command-status-description = Hiển thị trạng thái dịch vụ VALORANT cho một khu vực
+option-status-region-name = khu-vực
+option-status-region-description = Khu vực cần kiểm tra (mặc định là khu vực tài khoản của bạn)
+status-title = Trạng thái VALORANT — { $region }
+status-all-clear = Không có sự cố hoặc bảo trì nào đang hoạt động được báo cáo.
+status-more = { $count ->
+   *[other] { $count } mục khác không được hiển thị.
+}
+
 command-crosshair-name = tam-ngam
 command-crosshair-description = Xem và sao chép tâm ngắm trong game của bạn
 command-crosshair-view-name = xem

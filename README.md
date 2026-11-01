@@ -40,13 +40,13 @@ Riot credentials are encrypted at rest, and you can delete all of your stored da
 
 ## Commands
 
-| Category  | Commands                                                                                                     |
-| --------- | ------------------------------------------------------------------------------------------------------------ |
-| Account   | `/login`, `/logout`, `/deletedata`, `/account`, `/accounts`                                                  |
-| VALORANT  | `/shop`, `/bundles`, `/nightmarket`, `/balance`, `/battlepass`, `/missions`, `/penalties`, `/crosshair view` |
-| Alerts    | `/alert`, `/alerts`, `/testalerts`                                                                           |
-| Settings  | `/settings view`, `/settings set`                                                                            |
-| Community | `/help`, `/ping`, `/botinfo`, `/links`, `/suggest`, `/suggestion`                                            |
+| Category  | Commands                                                                                                                |
+| --------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Account   | `/login`, `/logout`, `/deletedata`, `/account`, `/accounts`                                                             |
+| VALORANT  | `/shop`, `/bundles`, `/nightmarket`, `/balance`, `/battlepass`, `/missions`, `/penalties`, `/crosshair view`, `/status` |
+| Alerts    | `/alert`, `/alerts`, `/testalerts`                                                                                      |
+| Settings  | `/settings view`, `/settings set`                                                                                       |
+| Community | `/help`, `/ping`, `/botinfo`, `/links`, `/suggest`, `/suggestion`                                                       |
 
 > `/userinfo` and `/serverinfo` are owner-only operational commands.
 

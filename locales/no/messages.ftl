@@ -340,6 +340,17 @@ balance-vp = VALORANT-poeng
 balance-rp = Radianite-poeng
 balance-kc = Kingdom Credits
 
+command-status-name = status
+command-status-description = Viser statusen for VALORANT-tjenestene i en region
+option-status-region-name = region
+option-status-region-description = Region som skal sjekkes (standard er kontoens region)
+status-title = VALORANT-status — { $region }
+status-all-clear = Det er ikke rapportert om aktive hendelser eller vedlikehold.
+status-more = { $count ->
+    [one] 1 ytterligere oppføring vises ikke.
+   *[other] { $count } ytterligere oppføringer vises ikke.
+}
+
 command-crosshair-name = siktekorn
 command-crosshair-description = Se og kopier crosshair-innstillingene dine fra spillet
 command-crosshair-view-name = vis

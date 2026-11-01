@@ -340,6 +340,17 @@ balance-vp = VALORANT-pont
 balance-rp = Radianite-pont
 balance-kc = Kingdom Credits
 
+command-status-name = állapot
+command-status-description = Megjeleníti a VALORANT-szolgáltatások állapotát egy régióban
+option-status-region-name = régió
+option-status-region-description = Ellenőrizendő régió (alapértelmezés: a fiókod régiója)
+status-title = VALORANT állapot — { $region }
+status-all-clear = Nem jelentettek aktív incidenst vagy karbantartást.
+status-more = { $count ->
+    [one] 1 további bejegyzés nincs megjelenítve.
+   *[other] { $count } további bejegyzés nincs megjelenítve.
+}
+
 command-crosshair-name = celkereszt
 command-crosshair-description = Nézd meg és másold ki a játékbeli célkeresztjeidet
 command-crosshair-view-name = megtekintes

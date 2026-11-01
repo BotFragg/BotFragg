@@ -33,6 +33,7 @@ from src.cogs.valorant.shop import (
     NightMarketCog,
     ShopCog,
 )
+from src.cogs.valorant.status import StatusCog
 from src.config import Settings
 from src.localization import BotFraggTranslator
 from src.services.http import HTTPFailure
@@ -263,6 +264,7 @@ async def test_initial_release_command_contract(
         AlertsCog(bot),
         BattlepassCog(bot),
         PenaltiesCog(bot),
+        StatusCog(bot),
         ExtraCog(bot),
         SuggestionsCog(bot),
         StaffCog(bot),
@@ -286,6 +288,7 @@ async def test_initial_release_command_contract(
         "battlepass",
         "missions",
         "penalties",
+        "status",
         "ping",
         "botinfo",
         "help",

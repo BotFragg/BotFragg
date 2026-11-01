@@ -96,6 +96,7 @@ docstring. Regenerate it after application documentation changes with
 | [src/cogs/valorant/penalties.py](../src/cogs/valorant/penalties.py) | Displays paginated private matchmaking-penalty summaries for the selected Riot account. |
 | [src/cogs/valorant/settings.py](../src/cogs/valorant/settings.py) | Displays and updates user privacy and notification preferences. |
 | [src/cogs/valorant/shop.py](../src/cogs/valorant/shop.py) | Displays daily and accessory shops, featured bundles, Night Markets, and wallet balances. |
+| [src/cogs/valorant/status.py](../src/cogs/valorant/status.py) | Shows Riot's public VALORANT service status for a region. |
 | [src/migrations/__init__.py](../src/migrations/__init__.py) | Exposes the Tortoise migration package. |
 | [src/migrations/0001_initial.py](../src/migrations/0001_initial.py) | Creates the initial user, account, and alert schema. |
 | [src/migrations/0002_add_command_analytics.py](../src/migrations/0002_add_command_analytics.py) | Adds command invocation analytics. |
@@ -120,6 +121,7 @@ docstring. Regenerate it after application documentation changes with
 | [src/services/gameplay.py](../src/services/gameplay.py) | Normalizes VALORANT battlepass, mission, and matchmaking-penalty data. |
 | [src/services/http.py](../src/services/http.py) | Provides shared Riot HTTP requests, URL redaction, and rate-limit handling. |
 | [src/services/shop.py](../src/services/shop.py) | Retrieves and normalizes account-scoped skin, bundle, accessory, Night Market, and wallet data. |
+| [src/services/valorant_status.py](../src/services/valorant_status.py) | Fetches, parses, and briefly caches Riot's public VALORANT status feed. |
 | [src/views/__init__.py](../src/views/__init__.py) | Re-exports common timestamps and persistent interactive controls. |
 | [src/views/components.py](../src/views/components.py) | Implements restart-safe, owner-restricted buttons and select menus. |
 | [src/views/shop.py](../src/views/shop.py) | Shares shop cards, account/skin selectors, and Night Market presentation between commands and background notifications. |
@@ -166,3 +168,5 @@ docstring. Regenerate it after application documentation changes with
 | [tests/test_recovery.py](../tests/test_recovery.py) | PostgreSQL read-only restore verification, key rejection, and migration-history checks. |
 | [tests/test_suggestions_service.py](../tests/test_suggestions_service.py) | Suggestion delivery, follower uniqueness, and review outcomes. |
 | [tests/test_staff.py](../tests/test_staff.py) | Owner-only user and server diagnostics with incomplete member caches. |
+| [tests/test_status_commands.py](../tests/test_status_commands.py) | Region selection, rendering, and error handling for `/status`. |
+| [tests/test_valorant_status.py](../tests/test_valorant_status.py) | Status feed parsing, cache expiry, and failure handling. |

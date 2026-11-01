@@ -4,6 +4,9 @@
 
 ### Added
 
+- `/status` shows Riot's public VALORANT incidents and maintenance for a region,
+  defaulting to the caller's account region. Content follows the user's locale when
+  Riot publishes a translation.
 - `/crosshair view` shows the caller's saved crosshair profiles, their export codes,
   and a locally rendered preview, with a menu to switch profiles. A Refresh button
   re-fetches the profiles from Riot and updates the cache. A Share button posts the

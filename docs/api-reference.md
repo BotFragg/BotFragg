@@ -18,7 +18,7 @@ Discord client construction, command handling, service wiring, and shutdown.
 
 **Scope:** `src/bot.py` · `module`
 
-[Source](../src/bot.py#L32)
+[Source](../src/bot.py#L33)
 
 Build the generic, user-safe response shown after an unhandled command error.
 
@@ -26,7 +26,7 @@ Build the generic, user-safe response shown after an unhandled command error.
 
 **Scope:** `src/bot.py` · `module`
 
-[Source](../src/bot.py#L42)
+[Source](../src/bot.py#L43)
 
 Application-command tree with shared context rules and error reporting.
 
@@ -34,7 +34,7 @@ Application-command tree with shared context rules and error reporting.
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L45)
+[Source](../src/bot.py#L46)
 
 Allow commands in servers and private contexts for guild and user installs.
 
@@ -42,7 +42,7 @@ Allow commands in servers and private contexts for guild and user installs.
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L55)
+[Source](../src/bot.py#L56)
 
 Record command executions while leaving autocomplete requests untraced.
 
@@ -50,7 +50,7 @@ Record command executions while leaving autocomplete requests untraced.
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L84)
+[Source](../src/bot.py#L85)
 
 Return the dotted parent and subcommand path from Discord's payload.
 
@@ -58,7 +58,7 @@ Return the dotted parent and subcommand path from Discord's payload.
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L103)
+[Source](../src/bot.py#L104)
 
 Log unhandled app-command errors and send a private generic response.
 
@@ -66,7 +66,7 @@ Log unhandled app-command errors and send a private generic response.
 
 **Scope:** `src/bot.py` · `module`
 
-[Source](../src/bot.py#L132)
+[Source](../src/bot.py#L133)
 
 Own Discord lifecycle and the shared Riot, database, and presentation services.
 
@@ -74,7 +74,7 @@ Own Discord lifecycle and the shared Riot, database, and presentation services.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L135)
+[Source](../src/bot.py#L136)
 
 Configure the bot's intents and application services.
 
@@ -82,7 +82,7 @@ Configure the bot's intents and application services.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L162)
+[Source](../src/bot.py#L164)
 
 Register a persistent component action, rejecting duplicate action names.
 
@@ -90,7 +90,7 @@ Register a persistent component action, rejecting duplicate action names.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L168)
+[Source](../src/bot.py#L170)
 
 Discard only the handlers bound to the given cog instance.
 
@@ -98,7 +98,7 @@ Discard only the handlers bound to the given cog instance.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L176)
+[Source](../src/bot.py#L178)
 
 Discard a failed cog's component handlers so loading it can be retried.
 
@@ -106,7 +106,7 @@ Discard a failed cog's component handlers so loading it can be retried.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L196)
+[Source](../src/bot.py#L198)
 
 Remove a cog's component handlers along with its commands and listeners.
 
@@ -114,7 +114,7 @@ Remove a cog's component handlers along with its commands and listeners.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L210)
+[Source](../src/bot.py#L212)
 
 Initialize shared resources, load extensions, and optionally sync commands.
 
@@ -122,7 +122,7 @@ Initialize shared resources, load extensions, and optionally sync commands.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L247)
+[Source](../src/bot.py#L250)
 
 Set the online activity and log the connected shard and guild counts.
 
@@ -130,7 +130,7 @@ Set the online activity and log the connected shard and guild counts.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L260)
+[Source](../src/bot.py#L263)
 
 Close Discord, Riot HTTP, database, and monitoring resources in order.
 
@@ -1621,6 +1621,50 @@ Fetch and display VP, Radianite, and Kingdom Credit balances.
 [Source](../src/cogs/valorant/shop.py#L1018)
 
 Register the shop, Night Market, and wallet-balance cogs.
+
+## `src/cogs/valorant/status.py`
+
+Public VALORANT service status for a selected region.
+
+### `def _entry_field(entry: StatusEntry) -> tuple[str, str]`
+
+**Scope:** `src/cogs/valorant/status.py` · `module`
+
+[Source](../src/cogs/valorant/status.py#L24)
+
+Format one status entry as an embed field name and value.
+
+### `class StatusCog(commands.Cog)`
+
+**Scope:** `src/cogs/valorant/status.py` · `module`
+
+[Source](../src/cogs/valorant/status.py#L41)
+
+Show Riot's public VALORANT service status.
+
+### `def __init__(self, bot: BotFraggBot) -> None`
+
+**Scope:** `src/cogs/valorant/status.py` · `StatusCog`
+
+[Source](../src/cogs/valorant/status.py#L44)
+
+Bind the bot's status service.
+
+### `async def status(self, interaction: discord.Interaction, region: str | None = None) -> None`
+
+**Scope:** `src/cogs/valorant/status.py` · `StatusCog`
+
+[Source](../src/cogs/valorant/status.py#L70)
+
+Show incidents and maintenance reported for one region.
+
+### `async def setup(bot: BotFraggBot) -> None`
+
+**Scope:** `src/cogs/valorant/status.py` · `module`
+
+[Source](../src/cogs/valorant/status.py#L100)
+
+Register the public status command.
 
 ## `src/config.py`
 
@@ -3903,6 +3947,130 @@ Return the candidate follower IDs that still follow the suggestion.
 [Source](../src/services/suggestions.py#L124)
 
 Count suggestions submitted by a Discord user.
+
+## `src/services/valorant_status.py`
+
+Fetch and parse Riot's public VALORANT service status feeds.
+
+### `class StatusUnavailable(RuntimeError)`
+
+**Scope:** `src/services/valorant_status.py` · `module`
+
+[Source](../src/services/valorant_status.py#L23)
+
+Raised when Riot's status feed cannot be loaded or decoded.
+
+### `class StatusEntry`
+
+**Scope:** `src/services/valorant_status.py` · `module`
+
+[Source](../src/services/valorant_status.py#L28)
+
+One maintenance or incident reported by Riot.
+
+### `class RegionStatus`
+
+**Scope:** `src/services/valorant_status.py` · `module`
+
+[Source](../src/services/valorant_status.py#L39)
+
+The current status entries of one region.
+
+### `class _CacheEntry`
+
+**Scope:** `src/services/valorant_status.py` · `module`
+
+[Source](../src/services/valorant_status.py#L47)
+
+A validated status payload with its expiry.
+
+### `def _locale_code(locale: object | None) -> str`
+
+**Scope:** `src/services/valorant_status.py` · `module`
+
+[Source](../src/services/valorant_status.py#L54)
+
+Map a Discord locale to the underscore code the status feed uses.
+
+### `def _texts(value: Any) -> list[tuple[str, str]]`
+
+**Scope:** `src/services/valorant_status.py` · `module`
+
+[Source](../src/services/valorant_status.py#L63)
+
+Return the locale and content pairs of a status text list.
+
+### `def _translate(texts: list[tuple[str, str]], locale: object | None) -> str | None`
+
+**Scope:** `src/services/valorant_status.py` · `module`
+
+[Source](../src/services/valorant_status.py#L77)
+
+Pick the preferred translation, falling back to English then the first.
+
+### `def _datetime(value: Any) -> datetime | None`
+
+**Scope:** `src/services/valorant_status.py` · `module`
+
+[Source](../src/services/valorant_status.py#L89)
+
+Parse an ISO timestamp, assuming UTC when it carries no offset.
+
+### `def _latest_update(updates: Any) -> tuple[dict[str, Any] | None, datetime | None]`
+
+**Scope:** `src/services/valorant_status.py` · `module`
+
+[Source](../src/services/valorant_status.py#L100)
+
+Return the newest published update and its timestamp.
+
+### `def _entry(raw: dict[str, Any], kind: str, locale: object | None) -> StatusEntry | None`
+
+**Scope:** `src/services/valorant_status.py` · `module`
+
+[Source](../src/services/valorant_status.py#L119)
+
+Normalize one feed entry, dropping archived or unusable records.
+
+### `class StatusService`
+
+**Scope:** `src/services/valorant_status.py` · `module`
+
+[Source](../src/services/valorant_status.py#L158)
+
+Fetch Riot's public status feed and cache it per region.
+
+### `def __init__(self, http: HTTPClient, *, ttl: float = CACHE_TTL_SECONDS) -> None`
+
+**Scope:** `src/services/valorant_status.py` · `StatusService`
+
+[Source](../src/services/valorant_status.py#L161)
+
+Bind the shared HTTP client and start an empty per-region cache.
+
+### `def region_for(region: str | None) -> str`
+
+**Scope:** `src/services/valorant_status.py` · `StatusService`
+
+[Source](../src/services/valorant_status.py#L169)
+
+Return the supported status region closest to a game account region.
+
+### `async def status(self, region: str | None, locale: object | None = None) -> RegionStatus`
+
+**Scope:** `src/services/valorant_status.py` · `StatusService`
+
+[Source](../src/services/valorant_status.py#L174)
+
+Return the current incidents and maintenance for one region.
+
+### `async def _payload(self, region: str) -> dict[str, Any]`
+
+**Scope:** `src/services/valorant_status.py` · `StatusService`
+
+[Source](../src/services/valorant_status.py#L194)
+
+Fetch or reuse one region's validated status payload.
 
 ## `src/views/__init__.py`
 

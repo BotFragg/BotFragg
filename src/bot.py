@@ -23,6 +23,7 @@ from .services.emojis import ApplicationEmojiService
 from .services.gameplay import GameplayService
 from .services.http import HTTPClient
 from .services.shop import ShopService
+from .services.valorant_status import StatusService
 from .views import OwnedActionButton, OwnedSelect
 
 log = logging.getLogger(__name__)
@@ -158,6 +159,7 @@ class BotFraggBot(commands.AutoShardedBot):
         self.shop = ShopService(config, self.riot_http, self.auth, self.catalog)
         self.gameplay = GameplayService(self.riot_http, self.auth, self.catalog)
         self.crosshair = CrosshairService(self.auth, self.riot_http)
+        self.valorant_status = StatusService(self.riot_http)
 
     def register_component(self, action: str, handler: ComponentHandler) -> None:
         """Register a persistent component action, rejecting duplicate action names."""
@@ -233,6 +235,7 @@ class BotFraggBot(commands.AutoShardedBot):
             "src.cogs.valorant.alerts",
             "src.cogs.valorant.battlepass",
             "src.cogs.valorant.penalties",
+            "src.cogs.valorant.status",
             "src.cogs.events",
             "src.cogs.extra",
             "src.cogs.suggestions",

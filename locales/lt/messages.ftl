@@ -346,6 +346,19 @@ balance-vp = „VALORANT“ taškai
 balance-rp = Radianito taškai
 balance-kc = „Kingdom“ kreditai
 
+command-status-name = būsena
+command-status-description = Rodo VALORANT paslaugų būseną regione
+option-status-region-name = regionas
+option-status-region-description = Tikrinamas regionas (pagal nutylėjimą – paskyros regionas)
+status-title = VALORANT būsena — { $region }
+status-all-clear = Aktyvių incidentų ar techninės priežiūros darbų nepranešta.
+status-more = { $count ->
+    [one] Nerodomas 1 papildomas įrašas.
+    [few] Nerodomi { $count } papildomi įrašai.
+    [many] Nerodoma { $count } papildomų įrašų.
+   *[other] Nerodoma { $count } papildomo įrašo.
+}
+
 command-crosshair-name = taikiklis
 command-crosshair-description = Peržiūrėk ir nukopijuok savo žaidimo taikiklius
 command-crosshair-view-name = rodyti

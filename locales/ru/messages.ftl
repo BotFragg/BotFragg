@@ -346,6 +346,19 @@ balance-vp = Очки VALORANT
 balance-rp = Очки радианита
 balance-kc = Кредиты Kingdom
 
+command-status-name = статус
+command-status-description = Показывает состояние сервисов VALORANT для региона
+option-status-region-name = регион
+option-status-region-description = Проверяемый регион (по умолчанию — регион аккаунта)
+status-title = Состояние VALORANT — { $region }
+status-all-clear = Об активных инцидентах или техработах не сообщалось.
+status-more = { $count ->
+    [one] { $count } дополнительная запись не показана.
+    [few] { $count } дополнительные записи не показаны.
+    [many] { $count } дополнительных записей не показано.
+   *[other] { $count } дополнительной записи не показано.
+}
+
 command-crosshair-name = прицел
 command-crosshair-description = Просматривайте и копируйте свои прицелы из игры
 command-crosshair-view-name = просмотр

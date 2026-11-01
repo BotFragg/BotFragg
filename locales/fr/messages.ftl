@@ -340,6 +340,17 @@ balance-vp = Points VALORANT
 balance-rp = Points Radianite
 balance-kc = Crédits Kingdom
 
+command-status-name = statut
+command-status-description = Affiche l'état des services VALORANT pour une région
+option-status-region-name = région
+option-status-region-description = Région à vérifier (par défaut, celle de votre compte)
+status-title = Statut VALORANT — { $region }
+status-all-clear = Aucun incident ni maintenance actif n'a été signalé.
+status-more = { $count ->
+    [one] 1 autre entrée n'est pas affichée.
+   *[other] { $count } autres entrées ne sont pas affichées.
+}
+
 command-crosshair-name = reticule
 command-crosshair-description = Affichez et copiez vos réticules du jeu
 command-crosshair-view-name = voir
