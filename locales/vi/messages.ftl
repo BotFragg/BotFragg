@@ -368,3 +368,24 @@ crosshair-share-guild-only = Chỉ có thể chia sẻ tâm ngắm trong kênh m
 crosshair-share-no-permission = BotFragg không thể đăng hình ảnh trong kênh này.
 crosshair-share-cooldown = Đợi { $seconds } giây trước khi chia sẻ lại.
 crosshair-share-failed = Không thể chia sẻ tâm ngắm.
+
+command-profile-name = hồ-sơ
+command-profile-description = Hiển thị hồ sơ VALORANT
+profile-unranked = Chưa xếp hạng
+profile-rr = { $rr } RR
+profile-winrate = { $percent }% WR
+profile-peak = Đỉnh { $rank }
+profile-level = Cấp độ { $level }
+profile-xp = { $xp } / { $target } XP
+profile-last-matches = Các trận xếp hạng gần đây
+profile-no-matches = Không có trận đấu gần đây
+profile-hs = { $percent }% HS
+profile-acs = { $acs } ACS
+
+option-profile-user-name = người-dùng
+option-profile-user-description = Người dùng có hồ sơ bạn muốn xem
+profile-user-not-sharing = Người dùng này không chia sẻ hồ sơ của họ.
+profile-user-login-expired = Người dùng đó cần đăng nhập lại vào Riot.
+profile-user-not-registered = Người dùng này chưa liên kết tài khoản Riot.
+setting-share-profile = Cho phép người khác xem hồ sơ của bạn bằng `/hồ-sơ`
+profile-cooldown = Đợi { $seconds } giây trước khi xem hồ sơ khác.

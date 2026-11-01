@@ -372,3 +372,24 @@ crosshair-share-guild-only = Célkeresztet csak szervercsatornán lehet megoszta
 crosshair-share-no-permission = A BotFragg nem tud képeket közzétenni ezen a csatornán.
 crosshair-share-cooldown = Várj { $seconds } másodpercet a következő megosztás előtt.
 crosshair-share-failed = A célkeresztet nem sikerült megosztani.
+
+command-profile-name = profil
+command-profile-description = Megjelenít egy VALORANT-profilt
+profile-unranked = Nem rangsorolt
+profile-rr = { $rr } RR
+profile-winrate = { $percent }% WR
+profile-peak = Csúcs { $rank }
+profile-level = Szint { $level }
+profile-xp = { $xp } / { $target } XP
+profile-last-matches = Legutóbbi rangsorolt mérkőzések
+profile-no-matches = Nincsenek legutóbbi mérkőzések
+profile-hs = { $percent }% HS
+profile-acs = { $acs } ACS
+
+option-profile-user-name = felhasznalo
+option-profile-user-description = A felhasználó, akinek a profilját meg szeretnéd nézni
+profile-user-not-sharing = Ez a felhasználó nem osztja meg a profilját.
+profile-user-login-expired = Ennek a felhasználónak újra be kell jelentkeznie a Riotba.
+profile-user-not-registered = Ez a felhasználó nem kapcsolt Riot-fiókot.
+setting-share-profile = Mások is megtekinthessék a profilodat a `/profil` paranccsal
+profile-cooldown = Várj { $seconds } másodpercet, mielőtt más profilját megnézed.

@@ -16,6 +16,7 @@ class User(Model):
     daily_shop_enabled = fields.BooleanField(default=False)
     hide_ign = fields.BooleanField(default=False)
     others_can_view_shop = fields.BooleanField(default=False)
+    others_can_view_profile = fields.BooleanField(default=False)
     created_at = fields.DatetimeField(auto_now_add=True)
     updated_at = fields.DatetimeField(auto_now=True)
 

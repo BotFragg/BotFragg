@@ -372,3 +372,24 @@ crosshair-share-guild-only = Les réticules ne peuvent être partagés que dans 
 crosshair-share-no-permission = BotFragg ne peut pas publier d'images dans ce salon.
 crosshair-share-cooldown = Attendez { $seconds } secondes avant de partager à nouveau.
 crosshair-share-failed = Le réticule n'a pas pu être partagé.
+
+command-profile-name = profil
+command-profile-description = Affiche un profil VALORANT
+profile-unranked = Non classé
+profile-rr = { $rr } RR
+profile-winrate = { $percent }% WR
+profile-peak = Record { $rank }
+profile-level = Niveau { $level }
+profile-xp = { $xp } / { $target } XP
+profile-last-matches = Dernières parties compétitives
+profile-no-matches = Aucune partie récente
+profile-hs = { $percent }% HS
+profile-acs = { $acs } ACS
+
+option-profile-user-name = utilisateur
+option-profile-user-description = Utilisateur dont tu souhaites consulter le profil
+profile-user-not-sharing = Cet utilisateur ne partage pas son profil.
+profile-user-login-expired = Cet utilisateur doit se reconnecter à Riot.
+profile-user-not-registered = Cet utilisateur n a pas lié de compte Riot.
+setting-share-profile = Autoriser les autres à voir ton profil avec `/profil`
+profile-cooldown = Attends { $seconds } secondes avant de consulter un autre profil.

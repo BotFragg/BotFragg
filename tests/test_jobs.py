@@ -477,7 +477,7 @@ async def test_refresh_loop_survives_transient_http_failure():
             refresh_version=AsyncMock(side_effect=HTTPFailure("synthetic timeout"))
         ),
         shop=SimpleNamespace(prune_expired=lambda: None),
-        catalog=SimpleNamespace(refresh=AsyncMock()),
+        catalog=SimpleNamespace(refresh=AsyncMock(), refresh_game_metadata=AsyncMock()),
     )
     cog = TasksCog(bot)
     loop = cog.version_refresh

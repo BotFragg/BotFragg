@@ -372,3 +372,24 @@ crosshair-share-guild-only = Fadenkreuze können nur in einem Serverkanal geteil
 crosshair-share-no-permission = BotFragg kann in diesem Kanal keine Bilder veröffentlichen.
 crosshair-share-cooldown = Warte { $seconds } Sekunden, bevor du erneut teilst.
 crosshair-share-failed = Das Fadenkreuz konnte nicht geteilt werden.
+
+command-profile-name = profil
+command-profile-description = Zeigt ein VALORANT-Profil
+profile-unranked = Unbewertet
+profile-rr = { $rr } RR
+profile-winrate = { $percent }% WR
+profile-peak = Höchster Rang { $rank }
+profile-level = Level { $level }
+profile-xp = { $xp } / { $target } XP
+profile-last-matches = Letzte Competitive-Matches
+profile-no-matches = Keine letzten Matches
+profile-hs = { $percent }% HS
+profile-acs = { $acs } ACS
+
+option-profile-user-name = nutzer
+option-profile-user-description = Nutzer, dessen Profil du ansehen möchtest
+profile-user-not-sharing = Dieser Nutzer teilt sein Profil nicht.
+profile-user-login-expired = Dieser Nutzer muss sich erneut bei Riot anmelden.
+profile-user-not-registered = Dieser Nutzer hat kein Riot-Konto verknüpft.
+setting-share-profile = Anderen erlauben, dein Profil mit `/profil` anzusehen
+profile-cooldown = Warte { $seconds } Sekunden, bevor du ein weiteres Profil ansiehst.

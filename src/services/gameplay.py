@@ -17,6 +17,7 @@ from .catalog import (
     localized_text,
 )
 from .http import HTTPClient, HTTPFailure
+from .riot_values import nonnegative, parse_datetime, positive
 
 
 class Reward(TypedDict):
@@ -124,8 +125,8 @@ class GameplayService:
                 item
                 for item in _api_data(seasons.data)
                 if item.get("type") == "EAresSeasonType::Act"
-                and (start := _parse_datetime(item.get("startTime"))) is not None
-                and (end := _parse_datetime(item.get("endTime"))) is not None
+                and (start := parse_datetime(item.get("startTime"))) is not None
+                and (end := parse_datetime(item.get("endTime"))) is not None
                 and start <= now < end
             ),
             key=lambda item: item.get("startTime", ""),
@@ -162,11 +163,11 @@ class GameplayService:
             raise GameplayUnavailable(
                 "The active battlepass contract is not available for this account"
             )
-        level = _nonnegative_int(contract.get("ProgressionLevelReached", 0))
-        progress = _nonnegative_int(contract.get("ProgressionTowardsNextLevel", 0))
+        level = nonnegative(contract.get("ProgressionLevelReached", 0))
+        progress = nonnegative(contract.get("ProgressionTowardsNextLevel", 0))
         if level is None or progress is None:
             raise GameplayUnavailable("Battlepass progress is malformed")
-        end = _parse_datetime(act["endTime"])
+        end = parse_datetime(act["endTime"])
         if end is None:
             raise GameplayUnavailable("Battlepass expiry is malformed")
         levels = [
@@ -309,7 +310,7 @@ class GameplayService:
                 else None
             )
             warning_tier = (
-                _nonnegative_int(warning.get("WarningTier"))
+                nonnegative(warning.get("WarningTier"))
                 if isinstance(warning, dict)
                 else None
             )
@@ -318,8 +319,8 @@ class GameplayService:
             result.append(
                 {
                     "infraction": name,
-                    "expires": _parse_datetime(row.get("Expiry")),
-                    "games_remaining": _nonnegative_int(row.get("GamesRemaining")),
+                    "expires": parse_datetime(row.get("Expiry")),
+                    "games_remaining": nonnegative(row.get("GamesRemaining")),
                     "platform_scope": platform_scope,
                     "effects": effects,
                     "warning_type": warning_type,
@@ -345,7 +346,7 @@ class GameplayService:
                 "details_unavailable": True,
                 "xp": None,
                 "complete": bool(row.get("Complete")),
-                "expires": _parse_datetime(row.get("ExpirationTime")),
+                "expires": parse_datetime(row.get("ExpirationTime")),
                 "tasks": [],
             }
 
@@ -354,7 +355,7 @@ class GameplayService:
             {
                 str(key): progress
                 for key, value in raw_objectives.items()
-                if (progress := _nonnegative_int(value)) is not None
+                if (progress := nonnegative(value)) is not None
             }
             if isinstance(raw_objectives, dict)
             else {}
@@ -365,7 +366,7 @@ class GameplayService:
             if isinstance(mission_objectives, list)
             else []
         )
-        mission_target = _positive_int(definition.get("progressToComplete"))
+        mission_target = positive(definition.get("progressToComplete"))
         live_objectives = list(current.items())
         tasks: list[MissionTask] = []
         for item in mission_objectives:
@@ -379,7 +380,7 @@ class GameplayService:
             ):
                 progress = live_objectives[0][1]
             target = mission_target if len(mission_objectives) == 1 else None
-            target = target or _positive_int(item.get("value"))
+            target = target or positive(item.get("value"))
             tasks.append(
                 {
                     "progress": progress,
@@ -404,9 +405,9 @@ class GameplayService:
         return {
             "type": mission_type,
             "title": title or None,
-            "xp": _nonnegative_int(definition.get("xpGrant")),
+            "xp": nonnegative(definition.get("xpGrant")),
             "complete": bool(row.get("Complete")),
-            "expires": _parse_datetime(row.get("ExpirationTime")),
+            "expires": parse_datetime(row.get("ExpirationTime")),
             "tasks": tasks,
         }
 
@@ -424,7 +425,7 @@ class GameplayService:
         if level < 0 or level >= len(levels) or not isinstance(levels[level], dict):
             raise GameplayUnavailable("Next battlepass level is unavailable")
         row = levels[level]
-        xp = _nonnegative_int(row.get("xp", 0))
+        xp = nonnegative(row.get("xp", 0))
         reward = row.get("reward")
         if reward is None:
             reward = {}
@@ -481,30 +482,3 @@ def _rows(value: Any) -> list[dict[str, Any]]:
 
 class GameplayUnavailable(RuntimeError):
     """Riot did not return usable gameplay data."""
-
-
-def _nonnegative_int(value: Any) -> int | None:
-    """Convert a non-Boolean value to a nonnegative integer when possible."""
-    if isinstance(value, bool) or (isinstance(value, float) and not value.is_integer()):
-        return None
-    try:
-        result = int(value)
-    except TypeError, ValueError, OverflowError:
-        return None
-    return result if result >= 0 else None
-
-
-def _positive_int(value: Any) -> int | None:
-    """Convert a value to a positive integer or return ``None``."""
-    return _nonnegative_int(value) or None
-
-
-def _parse_datetime(value: Any) -> datetime | None:
-    """Parse an ISO timestamp and attach UTC when the input has no timezone."""
-    if not isinstance(value, str) or not value:
-        return None
-    try:
-        result = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except ValueError:
-        return None
-    return result.replace(tzinfo=UTC) if result.tzinfo is None else result

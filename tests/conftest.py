@@ -13,6 +13,20 @@ import pytest_asyncio
 from tortoise import Tortoise
 from tortoise.backends.base.executor import EXECUTOR_CACHE
 
+from src.services.catalog import CatalogService
+
+
+@pytest.fixture(autouse=True)
+def isolate_game_metadata(tmp_path, monkeypatch):
+    """Keep tests from deleting the working tree's saved game metadata."""
+    initialize = CatalogService.__init__
+
+    def init(self, *args, **kwargs):
+        initialize(self, *args, **kwargs)
+        self._game_metadata_path = tmp_path / "game_metadata.json"
+
+    monkeypatch.setattr(CatalogService, "__init__", init)
+
 
 @pytest.fixture(autouse=True)
 def reset_database_query_cache():

@@ -18,7 +18,12 @@ from ..models import (
 from .analytics import deleting_analytics
 
 _USER_PREFERENCE_FIELDS = frozenset(
-    {"daily_shop_enabled", "hide_ign", "others_can_view_shop"}
+    {
+        "daily_shop_enabled",
+        "hide_ign",
+        "others_can_view_profile",
+        "others_can_view_shop",
+    }
 )
 
 

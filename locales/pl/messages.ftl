@@ -380,3 +380,24 @@ crosshair-share-guild-only = Celowniki można udostępniać tylko na kanale serw
 crosshair-share-no-permission = BotFragg nie może publikować obrazów na tym kanale.
 crosshair-share-cooldown = Odczekaj { $seconds } sekund przed kolejnym udostępnieniem.
 crosshair-share-failed = Nie udało się udostępnić celownika.
+
+command-profile-name = profil
+command-profile-description = Pokazuje profil VALORANT
+profile-unranked = Bez rangi
+profile-rr = { $rr } RR
+profile-winrate = { $percent }% WR
+profile-peak = Szczyt { $rank }
+profile-level = Poziom { $level }
+profile-xp = { $xp } / { $target } XP
+profile-last-matches = Ostatnie mecze rankingowe
+profile-no-matches = Brak ostatnich meczów
+profile-hs = { $percent }% HS
+profile-acs = { $acs } ACS
+
+option-profile-user-name = uzytkownik
+option-profile-user-description = Użytkownik, którego profil chcesz wyświetlić
+profile-user-not-sharing = Ten użytkownik nie udostępnia swojego profilu.
+profile-user-login-expired = Ten użytkownik musi ponownie zalogować się do Riot.
+profile-user-not-registered = Ten użytkownik nie połączył konta Riot.
+setting-share-profile = Pozwól innym zobaczyć twój profil za pomocą `/profil`
+profile-cooldown = Odczekaj { $seconds } sekund przed wyświetleniem innego profilu.

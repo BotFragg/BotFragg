@@ -372,3 +372,24 @@ crosshair-share-guild-only = I mirini possono essere condivisi solo in un canale
 crosshair-share-no-permission = BotFragg non può pubblicare immagini in questo canale.
 crosshair-share-cooldown = Attendi { $seconds } secondi prima di condividere di nuovo.
 crosshair-share-failed = Impossibile condividere il mirino.
+
+command-profile-name = profilo
+command-profile-description = Mostra un profilo VALORANT
+profile-unranked = Non classificato
+profile-rr = { $rr } RR
+profile-winrate = { $percent }% WR
+profile-peak = Picco { $rank }
+profile-level = Livello { $level }
+profile-xp = { $xp } / { $target } XP
+profile-last-matches = Partite competitive recenti
+profile-no-matches = Nessuna partita recente
+profile-hs = { $percent }% HS
+profile-acs = { $acs } ACS
+
+option-profile-user-name = utente
+option-profile-user-description = Utente di cui vuoi visualizzare il profilo
+profile-user-not-sharing = Quell utente non condivide il suo profilo.
+profile-user-login-expired = Quell'utente deve accedere di nuovo a Riot.
+profile-user-not-registered = Quell utente non ha collegato un account Riot.
+setting-share-profile = Consenti agli altri di vedere il tuo profilo con `/profilo`
+profile-cooldown = Attendi { $seconds } secondi prima di vedere un altro profilo.

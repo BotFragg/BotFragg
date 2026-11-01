@@ -40,6 +40,7 @@ PREFIXES = {
     "option",
     "penalties",
     "ping",
+    "profile",
     "setting",
     "settings",
     "shard",

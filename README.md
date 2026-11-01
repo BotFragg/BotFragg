@@ -31,7 +31,7 @@ Riot credentials are encrypted at rest, and you can delete all of your stored da
 ## Features
 
 - **Store access:** View your daily weapon and accessory shops, the featured bundle, and the Night Market.
-- **Account insights:** Check VALORANT Points, Radianite Points, Kingdom Credits, battlepass progress, and matchmaking penalties.
+- **Account insights:** Check VALORANT Points, Radianite Points, Kingdom Credits, battlepass progress, matchmaking penalties, competitive rank, account level, and recent matches.
 - **Crosshairs:** View your saved crosshair profiles, copy their export codes, and share one to a channel.
 - **Private alerts:** Get daily shop updates and skin alerts delivered by direct message.
 - **Multiple accounts:** Link several Riot accounts and switch between them.
@@ -43,7 +43,7 @@ Riot credentials are encrypted at rest, and you can delete all of your stored da
 | Category  | Commands                                                                                                                |
 | --------- | ----------------------------------------------------------------------------------------------------------------------- |
 | Account   | `/login`, `/logout`, `/deletedata`, `/account`, `/accounts`                                                             |
-| VALORANT  | `/shop`, `/bundles`, `/nightmarket`, `/balance`, `/battlepass`, `/missions`, `/penalties`, `/crosshair view`, `/status` |
+| VALORANT  | `/shop`, `/bundles`, `/nightmarket`, `/balance`, `/battlepass`, `/missions`, `/penalties`, `/crosshair view`, `/status`, `/profile [user]` |
 | Alerts    | `/alert`, `/alerts`, `/testalerts`                                                                                      |
 | Settings  | `/settings view`, `/settings set`                                                                                       |
 | Community | `/help`, `/ping`, `/botinfo`, `/links`, `/suggest`, `/suggestion`                                                       |

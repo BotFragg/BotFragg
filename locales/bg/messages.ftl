@@ -372,3 +372,24 @@ crosshair-share-guild-only = Мерници могат да се споделя�
 crosshair-share-no-permission = BotFragg не може да публикува изображения в този канал.
 crosshair-share-cooldown = Изчакай { $seconds } секунди преди да споделиш отново.
 crosshair-share-failed = Мерникът не можа да бъде споделен.
+
+command-profile-name = профил
+command-profile-description = Показва профил на VALORANT
+profile-unranked = Некласиран
+profile-rr = { $rr } RR
+profile-winrate = { $percent }% WR
+profile-peak = Връх { $rank }
+profile-level = Ниво { $level }
+profile-xp = { $xp } / { $target } XP
+profile-last-matches = Последни състезателни мачове
+profile-no-matches = Няма последни мачове
+profile-hs = { $percent }% HS
+profile-acs = { $acs } ACS
+
+option-profile-user-name = потребител
+option-profile-user-description = Потребителят, чийто профил искате да видите
+profile-user-not-sharing = Този потребител не споделя профила си.
+profile-user-login-expired = Този потребител трябва отново да влезе в Riot.
+profile-user-not-registered = Този потребител не е свързал Riot акаунт.
+setting-share-profile = Позволи на други да виждат профила ви с `/профил`
+profile-cooldown = Изчакайте { $seconds } секунди преди да прегледате друг профил.

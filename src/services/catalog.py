@@ -8,6 +8,7 @@ import logging
 import os
 import time
 from dataclasses import asdict, dataclass, field
+from datetime import UTC, datetime
 from typing import Any
 from weakref import WeakValueDictionary
 
@@ -15,11 +16,22 @@ from rapidfuzz import fuzz, process, utils
 
 from ..config import ROOT
 from .http import HTTPClient, HTTPFailure
+from .riot_values import parse_datetime
 
 ENGLISH_LOCALE = "en-US"
 MISSION_METADATA_TTL = 1800
 MISSION_METADATA_RETRY_SECONDS = 30
 ACCESSORY_METADATA_RETRY_SECONDS = 30
+GAME_METADATA_TTL = 1800
+GAME_METADATA_RETRY_SECONDS = 30
+# Maps, agents, ranks, and seasons only move on a game patch, so the saved
+# game-metadata copy is reused across restarts for up to a day.
+GAME_METADATA_MAX_AGE = 86400
+GAME_METADATA_DOCUMENTS = (
+    ("competitivetiers", "competitivetiers"),
+    ("maps", "maps"),
+    ("seasons", "seasons"),
+)
 CATALOG_FORMAT_VERSION = 4
 BUDDY_ITEM_TYPE_ID = "dd3bf334-87f3-40bd-b043-682a57a8dc3a"
 PLAYER_CARD_ITEM_TYPE_ID = "3f296c07-64c3-494c-923b-fe692a4fa1bd"
@@ -80,6 +92,23 @@ def _localized_values(value: Any) -> dict[str, str]:
     }
 
 
+def _combined_names(parent: dict[str, str], act: dict[str, str]) -> dict[str, str]:
+    """Join a parent season name and an act name for each localized locale."""
+    if not parent:
+        return act
+    return {
+        locale: " // ".join(
+            part
+            for part in (
+                parent.get(locale) or parent.get(ENGLISH_LOCALE),
+                act.get(locale) or act.get(ENGLISH_LOCALE),
+            )
+            if part
+        )
+        for locale in set(parent) | set(act)
+    }
+
+
 def _catalog_rows(value: Any, label: str) -> list[dict[str, Any]]:
     """Validate upstream rows and the identifiers/media consumed by catalog views."""
     if value is None:
@@ -93,6 +122,7 @@ def _catalog_rows(value: Any, label: str) -> list[dict[str, Any]]:
             "displayIcon",
             "displayIcon2",
             "largeArt",
+            "smallArt",
             "wideArt",
             "fullTransparentIcon",
             "verticalPromoImage",
@@ -166,6 +196,7 @@ class Accessory:
     title_text: str | None = None
     names: dict[str, str] = field(default_factory=dict)
     title_texts: dict[str, str] = field(default_factory=dict)
+    small_icon: str | None = None
 
     def name_for(self, locale: object | None = None) -> str:
         """Return this accessory's localized name, or empty when metadata is missing."""
@@ -278,6 +309,16 @@ class CatalogService:
         self._mission_metadata_loaded_at: float | None = None
         self._mission_metadata_retry_at = 0.0
         self._mission_metadata_lock = asyncio.Lock()
+        self._game_documents: dict[str, tuple[float, Any]] = {}
+        self._game_document_retry_at: dict[str, float] = {}
+        self._game_metadata_generation = 0
+        self._game_document_locks: WeakValueDictionary[str, asyncio.Lock] = (
+            WeakValueDictionary()
+        )
+        self._game_metadata_path = ROOT / "data" / "game_metadata.json"
+        self._game_metadata_documents: dict[str, dict[str, Any]] = {}
+        self._game_metadata_loaded = False
+        self._game_metadata_lock = asyncio.Lock()
         self.version = ""
         self._cache_format = 0
         self._lock = asyncio.Lock()
@@ -383,6 +424,7 @@ class CatalogService:
                         self._accessory_retry_at.clear()
                         self._buddy_catalog = None
                         self._buddy_retry_at = 0.0
+                        await self._drop_game_metadata()
             except Exception, asyncio.CancelledError:
                 if not saved:
                     (
@@ -463,6 +505,223 @@ class CatalogService:
             self._mission_metadata_loaded_at = time.monotonic()
             self._mission_metadata_retry_at = 0.0
             return self._mission_definitions
+
+    async def _game_document(
+        self, key: str, endpoint: str, *, force: bool = False
+    ) -> Any:
+        """Return one game-metadata document, refetching it when stale or forced."""
+        cached = self._game_documents.get(key)
+        if not force and cached is not None and cached[0] > time.monotonic():
+            return cached[1]
+        await self._load_game_metadata()
+        cached = self._game_documents.get(key)
+        if not force and cached is not None and cached[0] > time.monotonic():
+            return cached[1]
+        async with self._game_document_locks.setdefault(key, asyncio.Lock()):
+            cached = self._game_documents.get(key)
+            now = time.monotonic()
+            if not force and cached is not None and cached[0] > now:
+                return cached[1]
+            if now < self._game_document_retry_at.get(key, 0.0):
+                return cached[1] if cached is not None else None
+            generation = self._game_metadata_generation
+            try:
+                response = await self.http.request(
+                    "GET", f"https://valorant-api.com/v1/{endpoint}?language=all"
+                )
+            except HTTPFailure:
+                self._game_document_retry_at[key] = now + GAME_METADATA_RETRY_SECONDS
+                log.warning("Could not refresh %s metadata", endpoint, exc_info=True)
+                # Serve the stale copy rather than blanking the card.
+                return cached[1] if cached is not None else None
+            data = (
+                response.data.get("data")
+                if response.status == 200 and isinstance(response.data, dict)
+                else None
+            )
+            if not isinstance(data, list) or not data:
+                self._game_document_retry_at[key] = now + GAME_METADATA_RETRY_SECONDS
+                log.warning("%s metadata was not a non-empty data list", endpoint)
+                return cached[1] if cached is not None else None
+            if generation != self._game_metadata_generation:
+                # A game patch dropped the cache while this request was running.
+                return None
+            self._game_documents[key] = (now + GAME_METADATA_TTL, data)
+            self._game_document_retry_at.pop(key, None)
+            await self._save_game_metadata(key, data, generation)
+            return data
+
+    async def _load_game_metadata(self) -> None:
+        """Prefill the game-metadata cache from the saved snapshot."""
+        if self._game_metadata_loaded:
+            return
+        async with self._game_metadata_lock:
+            if self._game_metadata_loaded:
+                return
+            self._game_metadata_loaded = True
+            try:
+                raw = json.loads(
+                    await asyncio.to_thread(self._game_metadata_path.read_text, "utf-8")
+                )
+            except OSError, ValueError:
+                return
+            documents = raw.get("documents") if isinstance(raw, dict) else None
+            if not isinstance(documents, dict):
+                return
+            now = time.time()
+            for key, entry in documents.items():
+                if not isinstance(entry, dict):
+                    continue
+                fetched_at = entry.get("fetched_at")
+                data = entry.get("data")
+                if (
+                    not isinstance(fetched_at, (int, float))
+                    or not isinstance(data, list)
+                    or not data
+                ):
+                    continue
+                age = now - fetched_at
+                if age < 0 or age >= GAME_METADATA_MAX_AGE:
+                    continue
+                self._game_metadata_documents[key] = entry
+                self._game_documents[key] = (
+                    time.monotonic() + (GAME_METADATA_MAX_AGE - age),
+                    data,
+                )
+
+    async def _save_game_metadata(
+        self, key: str, data: list[dict[str, Any]], generation: int
+    ) -> None:
+        """Persist one game-metadata document unless a patch dropped it meanwhile."""
+        async with self._game_metadata_lock:
+            if generation != self._game_metadata_generation:
+                return
+            self._game_metadata_documents[key] = {
+                "fetched_at": time.time(),
+                "data": data,
+            }
+            payload = json.dumps(
+                {"documents": self._game_metadata_documents}, separators=(",", ":")
+            )
+            try:
+                await asyncio.to_thread(self._write_game_metadata, payload)
+            except OSError:
+                log.warning("Could not save VALORANT game metadata", exc_info=True)
+
+    def _write_game_metadata(self, payload: str) -> None:
+        """Write the game-metadata snapshot through a temporary file replacement."""
+        self._game_metadata_path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = self._game_metadata_path.with_suffix(".tmp")
+        temporary.write_text(payload, encoding="utf-8")
+        os.replace(temporary, self._game_metadata_path)
+
+    def _unlink_game_metadata(self) -> None:
+        """Remove the saved game-metadata snapshot when it is no longer valid."""
+        self._game_metadata_path.unlink(missing_ok=True)
+
+    async def _drop_game_metadata(self) -> None:
+        """Forget game metadata so a game patch refreshes it on next use."""
+        async with self._game_metadata_lock:
+            self._game_metadata_generation += 1
+            self._game_documents.clear()
+            self._game_metadata_documents.clear()
+            self._game_metadata_loaded = True
+            try:
+                await asyncio.to_thread(self._unlink_game_metadata)
+            except OSError:
+                log.warning("Could not drop saved game metadata", exc_info=True)
+
+    async def refresh_game_metadata(self) -> None:
+        """Refetch every game-metadata document for the version refresh."""
+        await asyncio.gather(
+            *(
+                self._game_document(key, endpoint, force=True)
+                for key, endpoint in GAME_METADATA_DOCUMENTS
+            )
+        )
+
+    async def ranks(self) -> dict[int, dict[str, str]]:
+        """Return competitive tier numbers mapped to their localized names."""
+        rows = await self._game_document("competitivetiers", "competitivetiers")
+        if not isinstance(rows, list):
+            return {}
+        latest = next(
+            (
+                row
+                for row in reversed(rows)
+                if isinstance(row, dict) and isinstance(row.get("tiers"), list)
+            ),
+            None,
+        )
+        if latest is None:
+            return {}
+        ranks: dict[int, dict[str, str]] = {}
+        for tier in latest["tiers"]:
+            if not isinstance(tier, dict):
+                continue
+            number = tier.get("tier")
+            if isinstance(number, bool) or not isinstance(number, int):
+                continue
+            names = _localized_values(tier.get("tierName"))
+            if names:
+                ranks[number] = names
+        return ranks
+
+    async def maps(self) -> dict[str, dict[str, str]]:
+        """Return map asset paths and identifiers mapped to localized names."""
+        rows = await self._game_document("maps", "maps")
+        if not isinstance(rows, list):
+            return {}
+        maps: dict[str, dict[str, str]] = {}
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            names = _localized_values(row.get("displayName"))
+            if not names:
+                continue
+            for key in (row.get("mapUrl"), row.get("uuid")):
+                if isinstance(key, str) and key:
+                    maps[key.casefold()] = names
+        return maps
+
+    async def current_act(self) -> tuple[str, dict[str, str]] | None:
+        """Return the running act's identifier and localized names, if known."""
+        rows = await self._game_document("seasons", "seasons")
+        if not isinstance(rows, list):
+            return None
+        now = datetime.now(UTC)
+        active: tuple[datetime, dict[str, Any]] | None = None
+        for row in rows:
+            if not isinstance(row, dict) or row.get("type") != "EAresSeasonType::Act":
+                continue
+            start = parse_datetime(row.get("startTime"))
+            end = parse_datetime(row.get("endTime"))
+            if (
+                start is None
+                or end is None
+                or not isinstance(row.get("uuid"), str)
+                or not start <= now < end
+            ):
+                continue
+            if active is None or start > active[0]:
+                active = (start, row)
+        if active is None:
+            return None
+        act = active[1]
+        parents = {
+            row["uuid"]: row
+            for row in rows
+            if isinstance(row, dict) and isinstance(row.get("uuid"), str)
+        }
+        parent = parents.get(act.get("parentUuid"))
+        parent_names = (
+            _localized_values(parent.get("displayName"))
+            if isinstance(parent, dict)
+            else {}
+        )
+        return act["uuid"], _combined_names(
+            parent_names, _localized_values(act.get("displayName"))
+        )
 
     def _build(
         self,
@@ -653,6 +912,7 @@ class CatalogService:
                 name,
                 raw.get("largeArt") or raw.get("wideArt"),
                 names=names,
+                small_icon=raw.get("smallArt"),
             )
         if endpoint == "playertitles":
             title_texts = _localized_values(raw.get("titleText"))

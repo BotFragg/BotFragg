@@ -376,3 +376,24 @@ crosshair-share-guild-only = Reticulele pot fi distribuite doar pe un canal de s
 crosshair-share-no-permission = BotFragg nu poate publica imagini pe acest canal.
 crosshair-share-cooldown = Așteaptă { $seconds } secunde înainte de a distribui din nou.
 crosshair-share-failed = Reticulul nu a putut fi distribuit.
+
+command-profile-name = profil
+command-profile-description = Afișează un profil VALORANT
+profile-unranked = Neclasat
+profile-rr = { $rr } RR
+profile-winrate = { $percent }% WR
+profile-peak = Maxim { $rank }
+profile-level = Nivel { $level }
+profile-xp = { $xp } / { $target } XP
+profile-last-matches = Meciuri competitive recente
+profile-no-matches = Niciun meci recent
+profile-hs = { $percent }% HS
+profile-acs = { $acs } ACS
+
+option-profile-user-name = utilizator
+option-profile-user-description = Utilizatorul căruia vrei să-i vezi profilul
+profile-user-not-sharing = Acest utilizator nu își partajează profilul.
+profile-user-login-expired = Acest utilizator trebuie să se conecteze din nou la Riot.
+profile-user-not-registered = Acest utilizator nu a conectat un cont Riot.
+setting-share-profile = Permite altora să-ți vadă profilul cu `/profil`
+profile-cooldown = Așteaptă { $seconds } secunde înainte de a vedea alt profil.

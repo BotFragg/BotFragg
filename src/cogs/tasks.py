@@ -294,7 +294,7 @@ class TasksCog(commands.Cog):
 
     @tasks.loop(minutes=15)
     async def version_refresh(self) -> None:
-        """Refresh the Riot client version and the catalog that depends on it."""
+        """Refresh the Riot client version, the catalog, and the game metadata."""
         with (
             self.job_health["version_refresh"].track("version_refresh"),
             transaction("botfragg.job.version_refresh", "botfragg.job"),
@@ -309,6 +309,8 @@ class TasksCog(commands.Cog):
                 version = None
             self.bot.shop.prune_expired()
             await self.bot.catalog.refresh(check_version=True, version=version)
+            # Warm the maps, ranks, and seasons so a profile never fetches them.
+            await self.bot.catalog.refresh_game_metadata()
             if failure is not None:
                 # Re-raise so the loop retries and the job is marked failed.
                 raise failure

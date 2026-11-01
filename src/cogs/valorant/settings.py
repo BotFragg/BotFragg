@@ -14,6 +14,10 @@ from ...views.ui import DARK, embed, error, localized_embed, translated, view
 SETTINGS = {
     "daily_shop_enabled": ("Send your shop every day by DM", "setting-daily-shop"),
     "hide_ign": ("Hide in-game name", "setting-hide-ign"),
+    "others_can_view_profile": (
+        "Allow others to view your profile with /profile",
+        "setting-share-profile",
+    ),
     "others_can_view_shop": (
         "Allow others to use /shop with your account",
         "setting-share-shop",

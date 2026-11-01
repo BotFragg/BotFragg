@@ -6,7 +6,7 @@ import asyncio
 import json
 import tempfile
 import threading
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from datetime import time as utc_time
 from pathlib import Path
 from types import SimpleNamespace
@@ -1281,6 +1281,7 @@ async def test_catalog_refresh_waits_for_file_worker_after_repeated_cancellation
 async def test_version_refresh_feeds_one_fetch_to_the_catalog():
     """One upstream version fetch must serve both request headers and the catalog."""
     catalog_refresh = AsyncMock()
+    game_metadata_refresh = AsyncMock()
     fetched = AsyncMock(return_value="manifest-1")
     bot = NS(
         config=NS(
@@ -1290,13 +1291,16 @@ async def test_version_refresh_feeds_one_fetch_to_the_catalog():
         ),
         auth=NS(refresh_version=fetched),
         shop=NS(prune_expired=Mock()),
-        catalog=NS(refresh=catalog_refresh),
+        catalog=NS(
+            refresh=catalog_refresh, refresh_game_metadata=game_metadata_refresh
+        ),
     )
 
     await TasksCog.version_refresh.coro(TasksCog(bot))
 
     fetched.assert_awaited_once()
     catalog_refresh.assert_awaited_once_with(check_version=True, version="manifest-1")
+    game_metadata_refresh.assert_awaited_once()
 
 
 async def test_version_refresh_still_runs_the_catalog_when_the_version_fails():
@@ -1310,10 +1314,299 @@ async def test_version_refresh_still_runs_the_catalog_when_the_version_fails():
         ),
         auth=NS(refresh_version=AsyncMock(side_effect=HTTPFailure("synthetic"))),
         shop=NS(prune_expired=Mock()),
-        catalog=NS(refresh=catalog_refresh),
+        catalog=NS(refresh=catalog_refresh, refresh_game_metadata=AsyncMock()),
     )
 
     with pytest.raises(HTTPFailure):
         await TasksCog.version_refresh.coro(TasksCog(bot))
 
     catalog_refresh.assert_awaited_once_with(check_version=True, version=None)
+
+
+async def test_maps_index_asset_paths_and_identifiers(tmp_path):
+    """Match details send a map asset path, so both forms must resolve."""
+
+    async def request(*args, **kwargs):
+        return NS(
+            status=200,
+            data={
+                "data": [
+                    {
+                        "uuid": "7EAECC1B-4337-BBF6-6AB9-04B8F06B3319",
+                        "mapUrl": "/Game/Maps/Ascent/Ascent",
+                        "displayName": {"en-US": "Ascent"},
+                    }
+                ]
+            },
+        )
+
+    service = CatalogService(NS(request=AsyncMock(side_effect=request)))
+    service._game_metadata_path = tmp_path / "game_metadata.json"
+
+    maps = await service.maps()
+
+    assert localized_text(maps["/game/maps/ascent/ascent"], "en-US") == "Ascent"
+    assert localized_text(maps["7eaecc1b-4337-bbf6-6ab9-04b8f06b3319"], "en-US") == (
+        "Ascent"
+    )
+
+
+async def test_game_metadata_is_reused_after_a_restart(tmp_path):
+    """Saved map data must load without another VALORANT-API request."""
+
+    async def request(*args, **kwargs):
+        return NS(
+            status=200,
+            data={
+                "data": [
+                    {
+                        "uuid": "MAP",
+                        "mapUrl": "/Game/Maps/Ascent/Ascent",
+                        "displayName": {"en-US": "Ascent"},
+                    }
+                ]
+            },
+        )
+
+    first = CatalogService(NS(request=AsyncMock(side_effect=request)))
+    first._game_metadata_path = tmp_path / "game_metadata.json"
+    await first.maps()
+
+    restarted_http = AsyncMock()
+    restarted_http.request = AsyncMock(
+        side_effect=AssertionError("saved metadata should be reused")
+    )
+    restarted = CatalogService(restarted_http)
+    restarted._game_metadata_path = tmp_path / "game_metadata.json"
+
+    maps = await restarted.maps()
+
+    assert localized_text(maps["/game/maps/ascent/ascent"], "en-US") == "Ascent"
+    restarted_http.request.assert_not_awaited()
+
+
+async def test_stale_saved_game_metadata_is_refetched(tmp_path, monkeypatch):
+    """A saved snapshot older than its lifetime must not be used."""
+    path = tmp_path / "game_metadata.json"
+    path.write_text(
+        json.dumps(
+            {
+                "documents": {
+                    "maps": {
+                        "fetched_at": 1.0,
+                        "data": [
+                            {
+                                "uuid": "OLD",
+                                "mapUrl": "/Game/Maps/Old/Old",
+                                "displayName": {"en-US": "Old"},
+                            }
+                        ],
+                    }
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    async def request(*args, **kwargs):
+        return NS(
+            status=200,
+            data={
+                "data": [
+                    {
+                        "uuid": "NEW",
+                        "mapUrl": "/Game/Maps/New/New",
+                        "displayName": {"en-US": "New"},
+                    }
+                ]
+            },
+        )
+
+    service = CatalogService(NS(request=AsyncMock(side_effect=request)))
+    service._game_metadata_path = path
+
+    maps = await service.maps()
+
+    assert localized_text(maps["/game/maps/new/new"], "en-US") == "New"
+    assert "old" not in "".join(maps)
+
+
+async def test_a_game_patch_drop_discards_an_inflight_fetch(tmp_path):
+    """Metadata fetched before a version change must not be cached or saved."""
+    path = tmp_path / "game_metadata.json"
+    started = asyncio.Event()
+    release = asyncio.Event()
+
+    async def request(*args, **kwargs):
+        started.set()
+        await release.wait()
+        return NS(
+            status=200,
+            data={
+                "data": [
+                    {
+                        "uuid": "OLD",
+                        "mapUrl": "/Game/Maps/Old/Old",
+                        "displayName": {"en-US": "Old"},
+                    }
+                ]
+            },
+        )
+
+    service = CatalogService(NS(request=AsyncMock(side_effect=request)))
+    service._game_metadata_path = path
+
+    pending = asyncio.create_task(service.maps())
+    await started.wait()
+    await service._drop_game_metadata()
+    release.set()
+
+    assert await pending == {}
+    assert not path.exists()
+
+
+async def test_current_act_joins_the_parent_season_name():
+    """The act label must carry the season name from its parent row."""
+    now = datetime.now(UTC)
+    start = (now - timedelta(days=1)).isoformat().replace("+00:00", "Z")
+    end = (now + timedelta(days=1)).isoformat().replace("+00:00", "Z")
+
+    async def request(*args, **kwargs):
+        return NS(
+            status=200,
+            data={
+                "data": [
+                    {"uuid": "EP", "type": None, "displayName": {"en-US": "V26"}},
+                    {
+                        "uuid": "ACT",
+                        "type": "EAresSeasonType::Act",
+                        "parentUuid": "EP",
+                        "displayName": {"en-US": "ACT VI"},
+                        "startTime": start,
+                        "endTime": end,
+                    },
+                ]
+            },
+        )
+
+    service = CatalogService(NS(request=AsyncMock(side_effect=request)))
+
+    assert await service.current_act() == ("ACT", {"en-US": "V26 // ACT VI"})
+
+
+async def test_a_drop_while_saving_does_not_restore_the_snapshot(tmp_path):
+    """A patch that lands while a save waits must not write the old snapshot back."""
+    path = tmp_path / "game_metadata.json"
+
+    async def request(*args, **kwargs):
+        return NS(
+            status=200,
+            data={
+                "data": [
+                    {
+                        "uuid": "OLD",
+                        "mapUrl": "/Game/Maps/Old/Old",
+                        "displayName": {"en-US": "Old"},
+                    }
+                ]
+            },
+        )
+
+    service = CatalogService(NS(request=AsyncMock(side_effect=request)))
+    service._game_metadata_path = path
+    await service._load_game_metadata()
+
+    await service._game_metadata_lock.acquire()
+    drop = asyncio.create_task(service._drop_game_metadata())
+    await asyncio.sleep(0)
+    maps = asyncio.create_task(service.maps())
+    for _ in range(10):
+        await asyncio.sleep(0)
+    service._game_metadata_lock.release()
+
+    assert await maps
+    await drop
+    assert not path.exists()
+
+
+async def test_refresh_game_metadata_fetches_every_document(tmp_path):
+    """The version refresh must warm ranks, maps, and seasons ahead of any command."""
+    urls: list[str] = []
+
+    async def request(_method, url, **kwargs):
+        urls.append(url)
+        if "competitivetiers" in url:
+            return NS(
+                status=200,
+                data={
+                    "data": [{"tiers": [{"tier": 3, "tierName": {"en-US": "Iron 1"}}]}]
+                },
+            )
+        if "seasons" in url:
+            return NS(status=200, data={"data": [{"uuid": "season"}]})
+        return NS(
+            status=200,
+            data={
+                "data": [
+                    {
+                        "uuid": "M",
+                        "mapUrl": "/Game/Maps/Ascent/Ascent",
+                        "displayName": {"en-US": "Ascent"},
+                    }
+                ]
+            },
+        )
+
+    service = CatalogService(NS(request=AsyncMock(side_effect=request)))
+    service._game_metadata_path = tmp_path / "game_metadata.json"
+
+    await service.refresh_game_metadata()
+
+    assert len(urls) == 3
+    assert service._game_metadata_path.exists()
+
+    # The version refresh refetches even while the documents are still fresh.
+    await service.refresh_game_metadata()
+
+    assert len(urls) == 6
+
+    # A lazy read uses what the refresh stored.
+    await service.ranks()
+
+    assert len(urls) == 6
+
+
+async def test_a_failed_game_metadata_refresh_keeps_the_cached_document(tmp_path):
+    """A transient VALORANT-API failure must not blank ranks or map names."""
+    calls = 0
+
+    async def request(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        if calls > 1:
+            raise HTTPFailure("synthetic outage")
+        return NS(
+            status=200,
+            data={
+                "data": [
+                    {
+                        "uuid": "M",
+                        "mapUrl": "/Game/Maps/Ascent/Ascent",
+                        "displayName": {"en-US": "Ascent"},
+                    }
+                ]
+            },
+        )
+
+    service = CatalogService(NS(request=AsyncMock(side_effect=request)))
+    service._game_metadata_path = tmp_path / "game_metadata.json"
+
+    await service.maps()
+    service._game_documents["maps"] = (0.0, service._game_documents["maps"][1])
+    maps = await service.maps()
+
+    assert localized_text(maps["/game/maps/ascent/ascent"], "en-US") == "Ascent"
+
+    # The failure cooldown must keep serving the stale copy too.
+    assert await service.maps() == maps
+    assert calls == 2

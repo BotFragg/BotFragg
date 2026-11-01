@@ -380,3 +380,24 @@ crosshair-share-guild-only = Taikiklius galima bendrinti tik serverio kanale.
 crosshair-share-no-permission = BotFragg negali skelbti paveikslėlių šiame kanale.
 crosshair-share-cooldown = Palauk { $seconds } sek. prieš bendrindamas vėl.
 crosshair-share-failed = Taikiklio bendrinti nepavyko.
+
+command-profile-name = profilis
+command-profile-description = Rodo VALORANT profilį
+profile-unranked = Nereitinguota
+profile-rr = { $rr } RR
+profile-winrate = { $percent }% WR
+profile-peak = Aukščiausias { $rank }
+profile-level = Lygis { $level }
+profile-xp = { $xp } / { $target } XP
+profile-last-matches = Paskutinės konkurencinės rungtynės
+profile-no-matches = Nėra paskutinių rungtynių
+profile-hs = { $percent }% HS
+profile-acs = { $acs } ACS
+
+option-profile-user-name = naudotojas
+option-profile-user-description = Naudotojas, kurio profilį nori peržiūrėti
+profile-user-not-sharing = Šis naudotojas nesidalija savo profiliu.
+profile-user-login-expired = Tas naudotojas turi iš naujo prisijungti prie Riot.
+profile-user-not-registered = Šis naudotojas neprisijungė Riot paskyros.
+setting-share-profile = Leisti kitiems matyti tavo profilį su `/profilis`
+profile-cooldown = Palauk { $seconds } sekundžių prieš peržiūrėdamas kitą profilį.

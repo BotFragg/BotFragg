@@ -380,3 +380,24 @@ crosshair-share-guild-only = Прицелами можно делиться то
 crosshair-share-no-permission = BotFragg не может публиковать изображения в этом канале.
 crosshair-share-cooldown = Подождите { $seconds } секунд перед повторной публикацией.
 crosshair-share-failed = Не удалось поделиться прицелом.
+
+command-profile-name = профиль
+command-profile-description = Показывает профиль VALORANT
+profile-unranked = Без ранга
+profile-rr = { $rr } RR
+profile-winrate = { $percent }% WR
+profile-peak = Пик { $rank }
+profile-level = Уровень { $level }
+profile-xp = { $xp } / { $target } XP
+profile-last-matches = Последние рейтинговые матчи
+profile-no-matches = Нет последних матчей
+profile-hs = { $percent }% HS
+profile-acs = { $acs } ACS
+
+option-profile-user-name = пользователь
+option-profile-user-description = Пользователь, чей профиль вы хотите посмотреть
+profile-user-not-sharing = Этот пользователь не делится своим профилем.
+profile-user-login-expired = Этому пользователю нужно снова войти в Riot.
+profile-user-not-registered = Этот пользователь не привязал аккаунт Riot.
+setting-share-profile = Разрешить другим смотреть ваш профиль через `/профиль`
+profile-cooldown = Подождите { $seconds } секунд, прежде чем смотреть другой профиль.

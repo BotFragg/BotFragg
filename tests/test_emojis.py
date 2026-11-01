@@ -9,7 +9,7 @@ import discord
 import pytest
 
 from src.bot import BotFraggBot
-from src.services.emojis import ApplicationEmojiService
+from src.services.emojis import PROFILE_EMOJI_ASSETS, ApplicationEmojiService
 from tests.helpers import _localized_bot
 
 
@@ -43,7 +43,7 @@ async def test_emoji_transport_failure_does_not_stop_startup(
 
     await BotFraggBot.setup_hook(bot)
 
-    assert bot.load_extension.await_count == 15
+    assert bot.load_extension.await_count == 16
     assert await service.currency("vp") == ""
     assert await service.battlepass_bars() == ("", "")
     assert service.skin_name("Synthetic skin", None) == "Synthetic skin"
@@ -118,3 +118,33 @@ async def test_warm_failure_reloads_existing_emojis(monkeypatch):
     assert await service.currency("vp") == "<:vp:1>"
     assert fetch.await_count == 2
     create.assert_not_awaited()
+
+
+async def test_missing_profile_emojis_are_retried_on_a_later_call(monkeypatch):
+    """An emoji that failed during warm-up must be created once the cooldown ends."""
+    clock = [1000]
+    monkeypatch.setattr("src.services.emojis.time.monotonic", lambda: clock[0])
+    created: list[str] = []
+
+    def create(name, image):
+        created.append(name)
+        if len(created) == 1:
+            raise OSError("Synthetic outage")
+        return f"<:{name}:1>"
+
+    service = ApplicationEmojiService(
+        SimpleNamespace(
+            create_application_emoji=AsyncMock(side_effect=create),
+            fetch_application_emojis=AsyncMock(return_value=[]),
+        )
+    )
+
+    await service.ensure_profile_emojis()
+
+    missing = [name for name, _ in PROFILE_EMOJI_ASSETS if name not in service._emojis]
+    assert len(missing) == 1
+
+    clock[0] += 30
+    await service.ensure_profile_emojis()
+
+    assert not [name for name, _ in PROFILE_EMOJI_ASSETS if name not in service._emojis]

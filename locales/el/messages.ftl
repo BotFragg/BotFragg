@@ -372,3 +372,24 @@ crosshair-share-guild-only = Τα crosshair κοινοποιούνται μόν�
 crosshair-share-no-permission = Το BotFragg δεν μπορεί να δημοσιεύσει εικόνες σε αυτό το κανάλι.
 crosshair-share-cooldown = Περίμενε { $seconds } δευτερόλεπτα πριν κοινοποιήσεις ξανά.
 crosshair-share-failed = Το crosshair δεν μπορούσε να κοινοποιηθεί.
+
+command-profile-name = προφιλ
+command-profile-description = Εμφανίζει ένα προφίλ VALORANT
+profile-unranked = Χωρίς κατάταξη
+profile-rr = { $rr } RR
+profile-winrate = { $percent }% WR
+profile-peak = Κορυφή { $rank }
+profile-level = Επίπεδο { $level }
+profile-xp = { $xp } / { $target } XP
+profile-last-matches = Πρόσφατοι ανταγωνιστικοί αγώνες
+profile-no-matches = Δεν υπάρχουν πρόσφατοι αγώνες
+profile-hs = { $percent }% HS
+profile-acs = { $acs } ACS
+
+option-profile-user-name = χρήστης
+option-profile-user-description = Ο χρήστης του οποίου θέλετε να δείτε το προφίλ
+profile-user-not-sharing = Αυτός ο χρήστης δεν μοιράζεται το προφίλ του.
+profile-user-login-expired = Αυτός ο χρήστης πρέπει να συνδεθεί ξανά στο Riot.
+profile-user-not-registered = Αυτός ο χρήστης δεν έχει συνδέσει λογαριασμό Riot.
+setting-share-profile = Να επιτρέπεται σε άλλους να βλέπουν το προφίλ σου με `/προφιλ`
+profile-cooldown = Περίμενε { $seconds } δευτερόλεπτα πριν δεις άλλο προφίλ.

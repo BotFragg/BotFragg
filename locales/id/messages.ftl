@@ -371,3 +371,24 @@ crosshair-share-guild-only = Crosshair hanya dapat dibagikan di kanal server.
 crosshair-share-no-permission = BotFragg tidak dapat memposting gambar di kanal ini.
 crosshair-share-cooldown = Tunggu { $seconds } detik sebelum membagikan lagi.
 crosshair-share-failed = Crosshair tidak dapat dibagikan.
+
+command-profile-name = profil
+command-profile-description = Menampilkan profil VALORANT
+profile-unranked = Tanpa peringkat
+profile-rr = { $rr } RR
+profile-winrate = { $percent }% WR
+profile-peak = Puncak { $rank }
+profile-level = Level { $level }
+profile-xp = { $xp } / { $target } XP
+profile-last-matches = Pertandingan competitive terbaru
+profile-no-matches = Tidak ada pertandingan terbaru
+profile-hs = { $percent }% HS
+profile-acs = { $acs } ACS
+
+option-profile-user-name = pengguna
+option-profile-user-description = Pengguna yang profilnya ingin Anda lihat
+profile-user-not-sharing = Pengguna tersebut tidak membagikan profilnya.
+profile-user-login-expired = Pengguna tersebut harus masuk ke Riot lagi.
+profile-user-not-registered = Pengguna tersebut belum menautkan akun Riot.
+setting-share-profile = Izinkan orang lain melihat profilmu dengan `/profil`
+profile-cooldown = Tunggu { $seconds } detik sebelum melihat profil lain.

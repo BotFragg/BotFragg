@@ -7,7 +7,7 @@ import base64
 import json
 import secrets
 import time
-from collections.abc import AsyncIterator, Awaitable, Callable, Mapping
+from collections.abc import AsyncIterator, Awaitable, Callable, Mapping, Sequence
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -705,13 +705,42 @@ class AuthenticationRequired(RuntimeError):
     """Raised when a Riot request cannot proceed without a new user login."""
 
 
-def _bad_claims(response: HTTPResult) -> bool:
+def bad_claims(response: HTTPResult) -> bool:
     """Return whether Riot rejected the stored entitlement token."""
     return (
         response.status in {400, 401}
         and isinstance(response.data, dict)
         and response.data.get("errorCode") == "BAD_CLAIMS"
     )
+
+
+async def request_many_with_claims_repair(
+    auth: AuthService,
+    account: Account,
+    headers: dict[str, str],
+    requests: Sequence[Callable[[dict[str, str]], Awaitable[HTTPResult]]],
+) -> list[HTTPResult]:
+    """Send authenticated requests together, refreshing once when claims are rejected.
+
+    Repairing once for the whole batch avoids rotating the same account's tokens
+    several times when Riot rejects every concurrent request.
+    """
+    responses = list(await asyncio.gather(*(request(headers) for request in requests)))
+    rejected = [
+        index for index, response in enumerate(responses) if bad_claims(response)
+    ]
+    if not rejected:
+        return responses
+    repaired = await auth.ensure(account, force=True)
+    if not repaired.success or not repaired.account:
+        raise AuthenticationRequired("Riot rejected the stored credentials")
+    headers = await auth.auth_headers(repaired.account)
+    retried = await asyncio.gather(*(requests[index](headers) for index in rejected))
+    for index, response in zip(rejected, retried, strict=True):
+        responses[index] = response
+    if any(bad_claims(responses[index]) for index in rejected):
+        raise AuthenticationRequired("Riot rejected the stored credentials")
+    return responses
 
 
 async def request_with_claims_repair(
@@ -722,13 +751,13 @@ async def request_with_claims_repair(
 ) -> HTTPResult:
     """Send an authenticated request, refreshing once when Riot rejects its claims."""
     response = await request(headers)
-    if not _bad_claims(response):
+    if not bad_claims(response):
         return response
     repaired = await auth.ensure(account, force=True)
     if not repaired.success or not repaired.account:
         raise AuthenticationRequired("Riot rejected the stored credentials")
     headers = await auth.auth_headers(repaired.account)
     response = await request(headers)
-    if _bad_claims(response):
+    if bad_claims(response):
         raise AuthenticationRequired("Riot rejected the stored credentials")
     return response

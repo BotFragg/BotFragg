@@ -376,3 +376,24 @@ crosshair-share-guild-only = Nišani se mogu dijeliti samo na kanalu poslužitel
 crosshair-share-no-permission = BotFragg ne može objavljivati slike na ovom kanalu.
 crosshair-share-cooldown = Pričekaj { $seconds } sekundi prije ponovnog dijeljenja.
 crosshair-share-failed = Nišan nije bilo moguće podijeliti.
+
+command-profile-name = profil
+command-profile-description = Prikazuje VALORANT profil
+profile-unranked = Bez ranga
+profile-rr = { $rr } RR
+profile-winrate = { $percent }% WR
+profile-peak = Vrh { $rank }
+profile-level = Razina { $level }
+profile-xp = { $xp } / { $target } XP
+profile-last-matches = Nedavne kompetitivne partije
+profile-no-matches = Nema nedavnih mečeva
+profile-hs = { $percent }% HS
+profile-acs = { $acs } ACS
+
+option-profile-user-name = korisnik
+option-profile-user-description = Korisnik čiji profil želiš pregledati
+profile-user-not-sharing = Taj korisnik ne dijeli svoj profil.
+profile-user-login-expired = Taj se korisnik mora ponovno prijaviti na Riot.
+profile-user-not-registered = Taj korisnik nije povezao Riot račun.
+setting-share-profile = Dopusti drugima da vide tvoj profil s `/profil`
+profile-cooldown = Pričekaj { $seconds } sekundi prije pregleda drugog profila.

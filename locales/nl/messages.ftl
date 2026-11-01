@@ -372,3 +372,24 @@ crosshair-share-guild-only = Crosshairs kunnen alleen in een serverkanaal worden
 crosshair-share-no-permission = BotFragg kan geen afbeeldingen in dit kanaal plaatsen.
 crosshair-share-cooldown = Wacht { $seconds } seconden voordat je opnieuw deelt.
 crosshair-share-failed = De crosshair kon niet worden gedeeld.
+
+command-profile-name = profiel
+command-profile-description = Toont een VALORANT-profiel
+profile-unranked = Ongerangschikt
+profile-rr = { $rr } RR
+profile-winrate = { $percent }% WR
+profile-peak = Hoogste { $rank }
+profile-level = Niveau { $level }
+profile-xp = { $xp } / { $target } XP
+profile-last-matches = Recente competitieve wedstrijden
+profile-no-matches = Geen recente wedstrijden
+profile-hs = { $percent }% HS
+profile-acs = { $acs } ACS
+
+option-profile-user-name = gebruiker
+option-profile-user-description = Gebruiker wiens profiel je wilt bekijken
+profile-user-not-sharing = Die gebruiker deelt het profiel niet.
+profile-user-login-expired = Die gebruiker moet zich opnieuw bij Riot aanmelden.
+profile-user-not-registered = Die gebruiker heeft geen Riot-account gekoppeld.
+setting-share-profile = Sta anderen toe je profiel te bekijken met `/profiel`
+profile-cooldown = Wacht { $seconds } seconden voordat je een ander profiel bekijkt.

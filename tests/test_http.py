@@ -95,7 +95,7 @@ async def test_version_loop_retries_an_undecodable_response(monkeypatch):
                 ),
                 auth=AuthService(NS(), NS(request=request), NS()),
                 shop=NS(prune_expired=lambda: None),
-                catalog=NS(refresh=AsyncMock()),
+                catalog=NS(refresh=AsyncMock(), refresh_game_metadata=AsyncMock()),
                 wait_until_ready=AsyncMock(),
             )
         )

@@ -368,3 +368,24 @@ crosshair-share-guild-only = Nişangahlar yalnızca sunucu kanalında paylaşıl
 crosshair-share-no-permission = BotFragg bu kanalda görsel yayınlayamaz.
 crosshair-share-cooldown = Tekrar paylaşmadan önce { $seconds } saniye bekle.
 crosshair-share-failed = Nişangah paylaşılamadı.
+
+command-profile-name = profil
+command-profile-description = Bir VALORANT profili gösterir
+profile-unranked = Derecesiz
+profile-rr = { $rr } RR
+profile-winrate = { $percent }% WR
+profile-peak = Zirve { $rank }
+profile-level = Seviye { $level }
+profile-xp = { $xp } / { $target } XP
+profile-last-matches = Son dereceli maçlar
+profile-no-matches = Son maç yok
+profile-hs = { $percent }% HS
+profile-acs = { $acs } ACS
+
+option-profile-user-name = kullanıcı
+option-profile-user-description = Profilini görüntülemek istediğin kullanıcı
+profile-user-not-sharing = Bu kullanıcı profilini paylaşmıyor.
+profile-user-login-expired = Bu kullanıcının Riot'a yeniden giriş yapması gerekiyor.
+profile-user-not-registered = Bu kullanıcı bir Riot hesabı bağlamamış.
+setting-share-profile = Başkalarının `/profil` ile profilini görmesine izin ver
+profile-cooldown = Başka bir profili görüntülemeden önce { $seconds } saniye bekle.

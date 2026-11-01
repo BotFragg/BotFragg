@@ -18,7 +18,7 @@ Discord client construction, command handling, service wiring, and shutdown.
 
 **Scope:** `src/bot.py` · `module`
 
-[Source](../src/bot.py#L33)
+[Source](../src/bot.py#L35)
 
 Build the generic, user-safe response shown after an unhandled command error.
 
@@ -26,7 +26,7 @@ Build the generic, user-safe response shown after an unhandled command error.
 
 **Scope:** `src/bot.py` · `module`
 
-[Source](../src/bot.py#L43)
+[Source](../src/bot.py#L45)
 
 Application-command tree with shared context rules and error reporting.
 
@@ -34,7 +34,7 @@ Application-command tree with shared context rules and error reporting.
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L46)
+[Source](../src/bot.py#L48)
 
 Allow commands in servers and private contexts for guild and user installs.
 
@@ -42,7 +42,7 @@ Allow commands in servers and private contexts for guild and user installs.
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L56)
+[Source](../src/bot.py#L58)
 
 Record command executions while leaving autocomplete requests untraced.
 
@@ -50,7 +50,7 @@ Record command executions while leaving autocomplete requests untraced.
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L85)
+[Source](../src/bot.py#L87)
 
 Return the dotted parent and subcommand path from Discord's payload.
 
@@ -58,7 +58,7 @@ Return the dotted parent and subcommand path from Discord's payload.
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L104)
+[Source](../src/bot.py#L106)
 
 Log unhandled app-command errors and send a private generic response.
 
@@ -66,7 +66,7 @@ Log unhandled app-command errors and send a private generic response.
 
 **Scope:** `src/bot.py` · `module`
 
-[Source](../src/bot.py#L133)
+[Source](../src/bot.py#L135)
 
 Own Discord lifecycle and the shared Riot, database, and presentation services.
 
@@ -74,7 +74,7 @@ Own Discord lifecycle and the shared Riot, database, and presentation services.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L136)
+[Source](../src/bot.py#L138)
 
 Configure the bot's intents and application services.
 
@@ -82,7 +82,7 @@ Configure the bot's intents and application services.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L164)
+[Source](../src/bot.py#L168)
 
 Register a persistent component action, rejecting duplicate action names.
 
@@ -90,7 +90,7 @@ Register a persistent component action, rejecting duplicate action names.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L170)
+[Source](../src/bot.py#L174)
 
 Discard only the handlers bound to the given cog instance.
 
@@ -98,7 +98,7 @@ Discard only the handlers bound to the given cog instance.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L178)
+[Source](../src/bot.py#L182)
 
 Discard a failed cog's component handlers so loading it can be retried.
 
@@ -106,7 +106,7 @@ Discard a failed cog's component handlers so loading it can be retried.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L198)
+[Source](../src/bot.py#L202)
 
 Remove a cog's component handlers along with its commands and listeners.
 
@@ -114,7 +114,7 @@ Remove a cog's component handlers along with its commands and listeners.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L212)
+[Source](../src/bot.py#L216)
 
 Initialize shared resources, load extensions, and optionally sync commands.
 
@@ -122,7 +122,7 @@ Initialize shared resources, load extensions, and optionally sync commands.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L250)
+[Source](../src/bot.py#L255)
 
 Set the online activity and log the connected shard and guild counts.
 
@@ -130,7 +130,7 @@ Set the online activity and log the connected shard and guild counts.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L263)
+[Source](../src/bot.py#L268)
 
 Close Discord, Riot HTTP, database, and monitoring resources in order.
 
@@ -644,13 +644,13 @@ Notify a user that credentials expired and return the delivery failure count.
 
 [Source](../src/cogs/tasks.py#L296)
 
-Refresh the Riot client version and the catalog that depends on it.
+Refresh the Riot client version, the catalog, and the game metadata.
 
 ### `async def log_flush(self) -> None`
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L317)
+[Source](../src/cogs/tasks.py#L319)
 
 Measure log delivery, preserving the queue after Discord failures.
 
@@ -658,7 +658,7 @@ Measure log delivery, preserving the queue after Discord failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L322)
+[Source](../src/cogs/tasks.py#L324)
 
 Send buffered log lines to Discord and requeue them after delivery failures.
 
@@ -666,7 +666,7 @@ Send buffered log lines to Discord and requeue them after delivery failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L370)
+[Source](../src/cogs/tasks.py#L372)
 
 Publish Discord, database, and scheduled-job health for Docker and operators.
 
@@ -674,7 +674,7 @@ Publish Discord, database, and scheduled-job health for Docker and operators.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L425)
+[Source](../src/cogs/tasks.py#L427)
 
 Wait for Discord readiness before starting any background job.
 
@@ -682,7 +682,7 @@ Wait for Discord readiness before starting any background job.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L430)
+[Source](../src/cogs/tasks.py#L432)
 
 Register the background-task cog with the bot.
 
@@ -1374,6 +1374,98 @@ Build one five-penalty embed page and owner-bound navigation controls.
 
 Register the private matchmaking-penalties command.
 
+## `src/cogs/valorant/profile.py`
+
+Commands for viewing a linked account's VALORANT profile card.
+
+### `class ProfileCog(commands.Cog)`
+
+**Scope:** `src/cogs/valorant/profile.py` · `module`
+
+[Source](../src/cogs/valorant/profile.py#L39)
+
+Display the caller's rank, level, and most recent matches.
+
+### `def __init__(self, bot: BotFraggBot) -> None`
+
+**Scope:** `src/cogs/valorant/profile.py` · `ProfileCog`
+
+[Source](../src/cogs/valorant/profile.py#L42)
+
+Bind the bot's profile, match, catalog, and emoji services.
+
+### `async def profile(self, interaction: discord.Interaction, user: discord.User | None = None) -> None`
+
+**Scope:** `src/cogs/valorant/profile.py` · `ProfileCog`
+
+[Source](../src/cogs/valorant/profile.py#L63)
+
+Show the caller's or another user's shared profile card.
+
+### `async def _ranked_changes(self, account: Account, matches: list[MatchSummary]) -> dict[str, int]`
+
+**Scope:** `src/cogs/valorant/profile.py` · `ProfileCog`
+
+[Source](../src/cogs/valorant/profile.py#L165)
+
+Return the RR change per shown match, tolerating unavailable data.
+
+### `def _claim_foreign_view(self, user_id: int) -> int`
+
+**Scope:** `src/cogs/valorant/profile.py` · `ProfileCog`
+
+[Source](../src/cogs/valorant/profile.py#L176)
+
+Reserve a third-party view slot, returning the wait when one is active.
+
+### `async def _accessory(self, item_type: str, identifier: str | None) -> Accessory | None`
+
+**Scope:** `src/cogs/valorant/profile.py` · `ProfileCog`
+
+[Source](../src/cogs/valorant/profile.py#L189)
+
+Resolve one equipped cosmetic, ignoring metadata failures.
+
+### `def _profile_card(player: str, account: Account, data: PlayerProfile, matches: list[MatchSummary], *, ranked: dict[str, int], card_art: Accessory | None, title_text: str | None, rank_names: dict[int, dict[str, str]], map_names: dict[str, dict[str, str]], act_names: dict[str, str], emoji_service: ApplicationEmojiService, translator: BotFraggTranslator, locale: discord.Locale, filled_bar: str = '█', empty_bar: str = '░') -> discord.Embed`
+
+**Scope:** `src/cogs/valorant/profile.py` · `ProfileCog`
+
+[Source](../src/cogs/valorant/profile.py#L201)
+
+Render the rank, level, and recent-match blocks of a profile card.
+
+### `def _match_block(summary: MatchSummary, *, puuid: str, map_names: dict[str, dict[str, str]], rr_change: int | None = None, emoji_service: ApplicationEmojiService, translator: BotFraggTranslator, locale: discord.Locale) -> str`
+
+**Scope:** `src/cogs/valorant/profile.py` · `module`
+
+[Source](../src/cogs/valorant/profile.py#L296)
+
+Render one match as a result line and an indented stat line.
+
+### `def _map_name(map_id: str | None, map_names: dict[str, dict[str, str]], locale: discord.Locale) -> str`
+
+**Scope:** `src/cogs/valorant/profile.py` · `module`
+
+[Source](../src/cogs/valorant/profile.py#L347)
+
+Return the localized map name for Riot's map path or identifier.
+
+### `def _log_emoji_failure(task: asyncio.Task[None]) -> None`
+
+**Scope:** `src/cogs/valorant/profile.py` · `module`
+
+[Source](../src/cogs/valorant/profile.py#L358)
+
+Log an emoji-creation failure instead of leaving the task exception unread.
+
+### `async def setup(bot: BotFraggBot) -> None`
+
+**Scope:** `src/cogs/valorant/profile.py` · `module`
+
+[Source](../src/cogs/valorant/profile.py#L364)
+
+Register the profile command.
+
 ## `src/cogs/valorant/settings.py`
 
 Private commands for viewing and changing user display and shop preferences.
@@ -1382,7 +1474,7 @@ Private commands for viewing and changing user display and shop preferences.
 
 **Scope:** `src/cogs/valorant/settings.py` · `module`
 
-[Source](../src/cogs/valorant/settings.py#L24)
+[Source](../src/cogs/valorant/settings.py#L28)
 
 Present user preferences and handle their owner-scoped select menu.
 
@@ -1390,7 +1482,7 @@ Present user preferences and handle their owner-scoped select menu.
 
 **Scope:** `src/cogs/valorant/settings.py` · `SettingsCog`
 
-[Source](../src/cogs/valorant/settings.py#L35)
+[Source](../src/cogs/valorant/settings.py#L39)
 
 Bind the bot and register the persistent preference-selection action.
 
@@ -1398,7 +1490,7 @@ Bind the bot and register the persistent preference-selection action.
 
 **Scope:** `src/cogs/valorant/settings.py` · `SettingsCog`
 
-[Source](../src/cogs/valorant/settings.py#L46)
+[Source](../src/cogs/valorant/settings.py#L50)
 
 Show the caller's saved preferences in an ephemeral response.
 
@@ -1406,7 +1498,7 @@ Show the caller's saved preferences in an ephemeral response.
 
 **Scope:** `src/cogs/valorant/settings.py` · `SettingsCog`
 
-[Source](../src/cogs/valorant/settings.py#L94)
+[Source](../src/cogs/valorant/settings.py#L98)
 
 Present Yes/No options for the caller's selected preference.
 
@@ -1414,7 +1506,7 @@ Present Yes/No options for the caller's selected preference.
 
 **Scope:** `src/cogs/valorant/settings.py` · `SettingsCog`
 
-[Source](../src/cogs/valorant/settings.py#L130)
+[Source](../src/cogs/valorant/settings.py#L134)
 
 Validate and persist a setting selection, then update its confirmation.
 
@@ -1422,7 +1514,7 @@ Validate and persist a setting selection, then update its confirmation.
 
 **Scope:** `src/cogs/valorant/settings.py` · `module`
 
-[Source](../src/cogs/valorant/settings.py#L158)
+[Source](../src/cogs/valorant/settings.py#L162)
 
 Register the user preference commands and selection handler.
 
@@ -2054,6 +2146,18 @@ Record model options that earlier migrations never wrote to migration state.
 
 Keep future makemigrations diffs limited to real schema changes.
 
+## `src/migrations/0008_add_profile_sharing.py`
+
+Add opt-in profile sharing for /profile.
+
+### `class Migration(migrations.Migration)`
+
+**Scope:** `src/migrations/0008_add_profile_sharing.py` · `module`
+
+[Source](../src/migrations/0008_add_profile_sharing.py#L7)
+
+Let users opt in before others can view their profile.
+
 ## `src/migrations/__init__.py`
 
 Tortoise migration package for the BotFragg database schema.
@@ -2078,7 +2182,7 @@ Store Discord preferences and the selected linked VALORANT account.
 
 **Scope:** `src/models/entities.py` · `module`
 
-[Source](../src/models/entities.py#L25)
+[Source](../src/models/entities.py#L26)
 
 Store a user's Riot identity and encrypted authentication payload.
 
@@ -2086,7 +2190,7 @@ Store a user's Riot identity and encrypted authentication payload.
 
 **Scope:** `src/models/entities.py` · `Account`
 
-[Source](../src/models/entities.py#L28)
+[Source](../src/models/entities.py#L29)
 
 Scope access to this account's original owner and creation time.
 
@@ -2094,7 +2198,7 @@ Scope access to this account's original owner and creation time.
 
 **Scope:** `src/models/entities.py` · `Account`
 
-[Source](../src/models/entities.py#L48)
+[Source](../src/models/entities.py#L49)
 
 Index the owner column used by every account lookup.
 
@@ -2102,7 +2206,7 @@ Index the owner column used by every account lookup.
 
 **Scope:** `src/models/entities.py` · `module`
 
-[Source](../src/models/entities.py#L54)
+[Source](../src/models/entities.py#L55)
 
 Store a skin alert belonging to one linked Riot account.
 
@@ -2110,7 +2214,7 @@ Store a skin alert belonging to one linked Riot account.
 
 **Scope:** `src/models/entities.py` · `Alert`
 
-[Source](../src/models/entities.py#L57)
+[Source](../src/models/entities.py#L58)
 
 Scope access to this alert and its account's original identity.
 
@@ -2118,7 +2222,7 @@ Scope access to this alert and its account's original identity.
 
 **Scope:** `src/models/entities.py` · `Alert`
 
-[Source](../src/models/entities.py#L74)
+[Source](../src/models/entities.py#L75)
 
 Prevent duplicate alerts for the same account and skin.
 
@@ -2126,7 +2230,7 @@ Prevent duplicate alerts for the same account and skin.
 
 **Scope:** `src/models/entities.py` · `module`
 
-[Source](../src/models/entities.py#L80)
+[Source](../src/models/entities.py#L81)
 
 Store a completed command and its optional guild and channel context.
 
@@ -2134,7 +2238,7 @@ Store a completed command and its optional guild and channel context.
 
 **Scope:** `src/models/entities.py` · `module`
 
-[Source](../src/models/entities.py#L92)
+[Source](../src/models/entities.py#L93)
 
 Store a user's submitted idea and its review and delivery state.
 
@@ -2142,7 +2246,7 @@ Store a user's submitted idea and its review and delivery state.
 
 **Scope:** `src/models/entities.py` · `module`
 
-[Source](../src/models/entities.py#L107)
+[Source](../src/models/entities.py#L108)
 
 Link a Discord user to a suggestion whose review they want to follow.
 
@@ -2150,7 +2254,7 @@ Link a Discord user to a suggestion whose review they want to follow.
 
 **Scope:** `src/models/entities.py` · `SuggestionFollower`
 
-[Source](../src/models/entities.py#L116)
+[Source](../src/models/entities.py#L117)
 
 Allow each user to follow a suggestion at most once.
 
@@ -2158,7 +2262,7 @@ Allow each user to follow a suggestion at most once.
 
 **Scope:** `src/models/entities.py` · `module`
 
-[Source](../src/models/entities.py#L122)
+[Source](../src/models/entities.py#L123)
 
 Map each configured Discord channel to its persistent status message.
 
@@ -2282,7 +2386,7 @@ Persistence operations for user preferences, Riot accounts, and personal-data de
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L25)
+[Source](../src/services/accounts.py#L30)
 
 Return the stored BotFragg user for a Discord ID, if one exists.
 
@@ -2290,7 +2394,7 @@ Return the stored BotFragg user for a Discord ID, if one exists.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L30)
+[Source](../src/services/accounts.py#L35)
 
 Count users with a stored BotFragg profile.
 
@@ -2298,7 +2402,7 @@ Count users with a stored BotFragg profile.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L35)
+[Source](../src/services/accounts.py#L40)
 
 Return Discord IDs whose saved preference enables daily shop DMs.
 
@@ -2306,7 +2410,7 @@ Return Discord IDs whose saved preference enables daily shop DMs.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L41)
+[Source](../src/services/accounts.py#L46)
 
 Return a Riot account only when it belongs to the requested Discord user.
 
@@ -2314,7 +2418,7 @@ Return a Riot account only when it belongs to the requested Discord user.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L46)
+[Source](../src/services/accounts.py#L51)
 
 Update one allowlisted Boolean preference and refresh the user's timestamp.
 
@@ -2322,7 +2426,7 @@ Update one allowlisted Boolean preference and refresh the user's timestamp.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L56)
+[Source](../src/services/accounts.py#L61)
 
 Return the active account, choosing the oldest account when none is selected.
 
@@ -2334,7 +2438,7 @@ conditional so a concurrent selection is not overwritten.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L126)
+[Source](../src/services/accounts.py#L131)
 
 Return a user's Riot accounts in creation order.
 
@@ -2342,7 +2446,7 @@ Return a user's Riot accounts in creation order.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L131)
+[Source](../src/services/accounts.py#L136)
 
 Resolve an account by PUUID, case-insensitive name, or one-based position.
 
@@ -2350,7 +2454,7 @@ Resolve an account by PUUID, case-insensitive name, or one-based position.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L158)
+[Source](../src/services/accounts.py#L163)
 
 Set a user's active account after verifying that the account is theirs.
 
@@ -2358,7 +2462,7 @@ Set a user's active account after verifying that the account is theirs.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L184)
+[Source](../src/services/accounts.py#L189)
 
 Delete the user's stored BotFragg records and all linked Riot accounts.
 
@@ -2803,7 +2907,7 @@ Build a regional VALORANT player-data URL for one API path.
 
 Raised when a Riot request cannot proceed without a new user login.
 
-### `def _bad_claims(response: HTTPResult) -> bool`
+### `def bad_claims(response: HTTPResult) -> bool`
 
 **Scope:** `src/services/auth.py` · `module`
 
@@ -2811,11 +2915,22 @@ Raised when a Riot request cannot proceed without a new user login.
 
 Return whether Riot rejected the stored entitlement token.
 
-### `async def request_with_claims_repair(auth: AuthService, account: Account, headers: dict[str, str], request: Callable[[dict[str, str]], Awaitable[HTTPResult]]) -> HTTPResult`
+### `async def request_many_with_claims_repair(auth: AuthService, account: Account, headers: dict[str, str], requests: Sequence[Callable[[dict[str, str]], Awaitable[HTTPResult]]]) -> list[HTTPResult]`
 
 **Scope:** `src/services/auth.py` · `module`
 
 [Source](../src/services/auth.py#L717)
+
+Send authenticated requests together, refreshing once when claims are rejected.
+
+Repairing once for the whole batch avoids rotating the same account's tokens
+several times when Riot rejects every concurrent request.
+
+### `async def request_with_claims_repair(auth: AuthService, account: Account, headers: dict[str, str], request: Callable[[dict[str, str]], Awaitable[HTTPResult]]) -> HTTPResult`
+
+**Scope:** `src/services/auth.py` · `module`
+
+[Source](../src/services/auth.py#L746)
 
 Send an authenticated request, refreshing once when Riot rejects its claims.
 
@@ -2827,7 +2942,7 @@ VALORANT skin, bundle, accessory, and mission metadata with a local cache.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L51)
+[Source](../src/services/catalog.py#L63)
 
 Resolve VALORANT-API text for a Discord locale with English fallback.
 
@@ -2835,15 +2950,23 @@ Resolve VALORANT-API text for a Discord locale with English fallback.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L70)
+[Source](../src/services/catalog.py#L82)
 
 Normalize a localized string or locale map into nonempty values.
+
+### `def _combined_names(parent: dict[str, str], act: dict[str, str]) -> dict[str, str]`
+
+**Scope:** `src/services/catalog.py` · `module`
+
+[Source](../src/services/catalog.py#L95)
+
+Join a parent season name and an act name for each localized locale.
 
 ### `def _catalog_rows(value: Any, label: str) -> list[dict[str, Any]]`
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L83)
+[Source](../src/services/catalog.py#L112)
 
 Validate upstream rows and the identifiers/media consumed by catalog views.
 
@@ -2851,7 +2974,7 @@ Validate upstream rows and the identifiers/media consumed by catalog views.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L109)
+[Source](../src/services/catalog.py#L139)
 
 Hold normalized skin identity, display data, pricing, levels, and chromas.
 
@@ -2859,7 +2982,7 @@ Hold normalized skin identity, display data, pricing, levels, and chromas.
 
 **Scope:** `src/services/catalog.py` · `Skin`
 
-[Source](../src/services/catalog.py#L122)
+[Source](../src/services/catalog.py#L152)
 
 Return this skin's localized or English name, or empty when missing.
 
@@ -2867,7 +2990,7 @@ Return this skin's localized or English name, or empty when missing.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L130)
+[Source](../src/services/catalog.py#L160)
 
 Hold static display metadata for a VALORANT bundle.
 
@@ -2875,7 +2998,7 @@ Hold static display metadata for a VALORANT bundle.
 
 **Scope:** `src/services/catalog.py` · `Bundle`
 
-[Source](../src/services/catalog.py#L142)
+[Source](../src/services/catalog.py#L172)
 
 Return this bundle's localized or English name, or empty when missing.
 
@@ -2883,7 +3006,7 @@ Return this bundle's localized or English name, or empty when missing.
 
 **Scope:** `src/services/catalog.py` · `Bundle`
 
-[Source](../src/services/catalog.py#L148)
+[Source](../src/services/catalog.py#L178)
 
 Return this bundle's localized subtitle, if available.
 
@@ -2891,7 +3014,7 @@ Return this bundle's localized subtitle, if available.
 
 **Scope:** `src/services/catalog.py` · `Bundle`
 
-[Source](../src/services/catalog.py#L152)
+[Source](../src/services/catalog.py#L182)
 
 Return this bundle's localized description, if available.
 
@@ -2899,7 +3022,7 @@ Return this bundle's localized description, if available.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L161)
+[Source](../src/services/catalog.py#L191)
 
 Hold normalized display data for a non-skin cosmetic reward.
 
@@ -2907,7 +3030,7 @@ Hold normalized display data for a non-skin cosmetic reward.
 
 **Scope:** `src/services/catalog.py` · `Accessory`
 
-[Source](../src/services/catalog.py#L170)
+[Source](../src/services/catalog.py#L201)
 
 Return this accessory's localized name, or empty when metadata is missing.
 
@@ -2915,7 +3038,7 @@ Return this accessory's localized name, or empty when metadata is missing.
 
 **Scope:** `src/services/catalog.py` · `Accessory`
 
-[Source](../src/services/catalog.py#L174)
+[Source](../src/services/catalog.py#L205)
 
 Return localized accessory title text, if available.
 
@@ -2923,7 +3046,7 @@ Return localized accessory title text, if available.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L182)
+[Source](../src/services/catalog.py#L213)
 
 Return whether any cached catalog row is structurally unusable.
 
@@ -2931,7 +3054,7 @@ Return whether any cached catalog row is structurally unusable.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L214)
+[Source](../src/services/catalog.py#L245)
 
 Build a skin from a cached row, tolerating legacy single-name rows.
 
@@ -2939,7 +3062,7 @@ Build a skin from a cached row, tolerating legacy single-name rows.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L232)
+[Source](../src/services/catalog.py#L263)
 
 Build a bundle from a cached row, tolerating legacy single-name rows.
 
@@ -2947,7 +3070,7 @@ Build a bundle from a cached row, tolerating legacy single-name rows.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L257)
+[Source](../src/services/catalog.py#L288)
 
 Load, refresh, search, and cache VALORANT catalog data.
 
@@ -2955,7 +3078,7 @@ Load, refresh, search, and cache VALORANT catalog data.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L260)
+[Source](../src/services/catalog.py#L291)
 
 Prepare in-memory indexes and the repository catalog snapshot.
 
@@ -2963,7 +3086,7 @@ Prepare in-memory indexes and the repository catalog snapshot.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L285)
+[Source](../src/services/catalog.py#L326)
 
 Load the saved catalog off the event loop or fetch a fresh snapshot.
 
@@ -2971,7 +3094,7 @@ Load the saved catalog off the event loop or fetch a fresh snapshot.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L304)
+[Source](../src/services/catalog.py#L345)
 
 Return the upstream catalog version used to detect a game patch.
 
@@ -2979,7 +3102,7 @@ Return the upstream catalog version used to detect a game patch.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L323)
+[Source](../src/services/catalog.py#L364)
 
 Fetch the current weapon and bundle catalogs and save their snapshot.
 
@@ -2993,7 +3116,7 @@ A failed save restores the previous catalog even during cancellation.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L398)
+[Source](../src/services/catalog.py#L440)
 
 Fetch one catalog endpoint and return its validated data rows.
 
@@ -3001,15 +3124,95 @@ Fetch one catalog endpoint and return its validated data rows.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L410)
+[Source](../src/services/catalog.py#L452)
 
 Cache mission definitions for 30 minutes and failed refreshes for 30 seconds.
+
+### `async def _game_document(self, key: str, endpoint: str, *, force: bool = False) -> Any`
+
+**Scope:** `src/services/catalog.py` · `CatalogService`
+
+[Source](../src/services/catalog.py#L509)
+
+Return one game-metadata document, refetching it when stale or forced.
+
+### `async def _load_game_metadata(self) -> None`
+
+**Scope:** `src/services/catalog.py` · `CatalogService`
+
+[Source](../src/services/catalog.py#L554)
+
+Prefill the game-metadata cache from the saved snapshot.
+
+### `async def _save_game_metadata(self, key: str, data: list[dict[str, Any]], generation: int) -> None`
+
+**Scope:** `src/services/catalog.py` · `CatalogService`
+
+[Source](../src/services/catalog.py#L592)
+
+Persist one game-metadata document unless a patch dropped it meanwhile.
+
+### `def _write_game_metadata(self, payload: str) -> None`
+
+**Scope:** `src/services/catalog.py` · `CatalogService`
+
+[Source](../src/services/catalog.py#L611)
+
+Write the game-metadata snapshot through a temporary file replacement.
+
+### `def _unlink_game_metadata(self) -> None`
+
+**Scope:** `src/services/catalog.py` · `CatalogService`
+
+[Source](../src/services/catalog.py#L618)
+
+Remove the saved game-metadata snapshot when it is no longer valid.
+
+### `async def _drop_game_metadata(self) -> None`
+
+**Scope:** `src/services/catalog.py` · `CatalogService`
+
+[Source](../src/services/catalog.py#L622)
+
+Forget game metadata so a game patch refreshes it on next use.
+
+### `async def refresh_game_metadata(self) -> None`
+
+**Scope:** `src/services/catalog.py` · `CatalogService`
+
+[Source](../src/services/catalog.py#L634)
+
+Refetch every game-metadata document for the version refresh.
+
+### `async def ranks(self) -> dict[int, dict[str, str]]`
+
+**Scope:** `src/services/catalog.py` · `CatalogService`
+
+[Source](../src/services/catalog.py#L643)
+
+Return competitive tier numbers mapped to their localized names.
+
+### `async def maps(self) -> dict[str, dict[str, str]]`
+
+**Scope:** `src/services/catalog.py` · `CatalogService`
+
+[Source](../src/services/catalog.py#L670)
+
+Return map asset paths and identifiers mapped to localized names.
+
+### `async def current_act(self) -> tuple[str, dict[str, str]] | None`
+
+**Scope:** `src/services/catalog.py` · `CatalogService`
+
+[Source](../src/services/catalog.py#L687)
+
+Return the running act's identifier and localized names, if known.
 
 ### `def _build(self, weapons: list[dict[str, Any]], bundles: list[dict[str, Any]]) -> None`
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L467)
+[Source](../src/services/catalog.py#L726)
 
 Normalize weapon and bundle responses and rebuild lookup indexes.
 
@@ -3017,7 +3220,7 @@ Normalize weapon and bundle responses and rebuild lookup indexes.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L522)
+[Source](../src/services/catalog.py#L781)
 
 Index skins by their UUID, offer UUID, and level UUID aliases.
 
@@ -3025,7 +3228,7 @@ Index skins by their UUID, offer UUID, and level UUID aliases.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L533)
+[Source](../src/services/catalog.py#L792)
 
 Resolve a skin from any indexed base, offer, or level identifier.
 
@@ -3033,7 +3236,7 @@ Resolve a skin from any indexed base, offer, or level identifier.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L537)
+[Source](../src/services/catalog.py#L796)
 
 Resolve bundle metadata by its Riot UUID.
 
@@ -3041,7 +3244,7 @@ Resolve bundle metadata by its Riot UUID.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L542)
+[Source](../src/services/catalog.py#L801)
 
 Fetch and cache a supported accessory using its Riot item type ID.
 
@@ -3049,7 +3252,7 @@ Fetch and cache a supported accessory using its Riot item type ID.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L589)
+[Source](../src/services/catalog.py#L848)
 
 Resolve a Riot bundle buddy by its buddy or level UUID.
 
@@ -3057,7 +3260,7 @@ Resolve a Riot bundle buddy by its buddy or level UUID.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L646)
+[Source](../src/services/catalog.py#L905)
 
 Convert endpoint-specific Riot accessory data into a common display shape.
 
@@ -3065,7 +3268,7 @@ Convert endpoint-specific Riot accessory data into a common display shape.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L672)
+[Source](../src/services/catalog.py#L932)
 
 Search localized names first, retaining English-name fallback matches.
 
@@ -3076,7 +3279,7 @@ fuzzy-match score accepted, and an exactly matching name scores 100.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L707)
+[Source](../src/services/catalog.py#L967)
 
 Apply current store prices to catalog skins matched by offer identifier.
 
@@ -3084,7 +3287,7 @@ Apply current store prices to catalog skins matched by offer identifier.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L714)
+[Source](../src/services/catalog.py#L974)
 
 Encode the current version, skins, and bundles as compact JSON.
 
@@ -3092,7 +3295,7 @@ Encode the current version, skins, and bundles as compact JSON.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L724)
+[Source](../src/services/catalog.py#L984)
 
 Write a complete catalog snapshot through a temporary file replacement.
 
@@ -3100,7 +3303,7 @@ Write a complete catalog snapshot through a temporary file replacement.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L731)
+[Source](../src/services/catalog.py#L991)
 
 Restore catalog records from a snapshot and rebuild lookup indexes.
 
@@ -3372,7 +3575,7 @@ Cache Discord application emojis and create them from bundled image assets.
 
 **Scope:** `src/services/emojis.py` · `module`
 
-[Source](../src/services/emojis.py#L31)
+[Source](../src/services/emojis.py#L87)
 
 Application emoji cache with safe text fallbacks.
 
@@ -3380,7 +3583,7 @@ Application emoji cache with safe text fallbacks.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L34)
+[Source](../src/services/emojis.py#L90)
 
 Bind the Discord client and initialize the serialized emoji cache.
 
@@ -3388,15 +3591,47 @@ Bind the Discord client and initialize the serialized emoji cache.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L43)
+[Source](../src/services/emojis.py#L100)
 
 Load existing application emojis and create any bundled assets that are missing.
+
+### `async def ensure_profile_emojis(self) -> None`
+
+**Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
+
+[Source](../src/services/emojis.py#L115)
+
+Create the rank, agent, and queue emojis that are still missing.
+
+### `def rank_emoji(self, tier: int | None) -> str`
+
+**Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
+
+[Source](../src/services/emojis.py#L133)
+
+Return the cached application emoji for a competitive tier, if available.
+
+### `def agent_emoji(self, agent_id: str | None) -> str`
+
+**Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
+
+[Source](../src/services/emojis.py#L139)
+
+Return the cached application emoji for one agent, if available.
+
+### `def queue_emoji(self, queue_id: str | None) -> str`
+
+**Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
+
+[Source](../src/services/emojis.py#L147)
+
+Return the cached application emoji for one queue, if available.
 
 ### `async def _load(self) -> None`
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L57)
+[Source](../src/services/emojis.py#L155)
 
 Replace the cache with the application emojis that currently exist.
 
@@ -3404,7 +3639,7 @@ Replace the cache with the application emojis that currently exist.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L64)
+[Source](../src/services/emojis.py#L162)
 
 Reload after a failed warm, at most once per cooldown window.
 
@@ -3412,7 +3647,7 @@ Reload after a failed warm, at most once per cooldown window.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L74)
+[Source](../src/services/emojis.py#L175)
 
 Return the emoji for VP, Radianite, or Kingdom Credits, if available.
 
@@ -3420,7 +3655,7 @@ Return the emoji for VP, Radianite, or Kingdom Credits, if available.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L79)
+[Source](../src/services/emojis.py#L180)
 
 Return the filled and empty battlepass progress-bar emoji strings.
 
@@ -3428,7 +3663,7 @@ Return the filled and empty battlepass progress-bar emoji strings.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L86)
+[Source](../src/services/emojis.py#L187)
 
 Return a cached application emoji for a skin tier, if available.
 
@@ -3436,7 +3671,7 @@ Return a cached application emoji for a skin tier, if available.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L94)
+[Source](../src/services/emojis.py#L195)
 
 Prefix a skin name with its cached tier emoji when available.
 
@@ -3444,7 +3679,7 @@ Prefix a skin name with its cached tier emoji when available.
 
 **Scope:** `src/services/emojis.py` · `ApplicationEmojiService`
 
-[Source](../src/services/emojis.py#L99)
+[Source](../src/services/emojis.py#L200)
 
 Resolve or create one application emoji, returning empty text on failure.
 
@@ -3456,7 +3691,7 @@ Fetch VALORANT progression and matchmaking penalties for linked accounts.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L22)
+[Source](../src/services/gameplay.py#L23)
 
 Validated display data for the next battlepass reward.
 
@@ -3464,7 +3699,7 @@ Validated display data for the next battlepass reward.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L32)
+[Source](../src/services/gameplay.py#L33)
 
 The active battlepass and its account-specific progress.
 
@@ -3472,7 +3707,7 @@ The active battlepass and its account-specific progress.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L43)
+[Source](../src/services/gameplay.py#L44)
 
 One objective's known progress and target.
 
@@ -3480,7 +3715,7 @@ One objective's known progress and target.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L50)
+[Source](../src/services/gameplay.py#L51)
 
 Mission display data, including explicitly unavailable metadata.
 
@@ -3488,7 +3723,7 @@ Mission display data, including explicitly unavailable metadata.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L62)
+[Source](../src/services/gameplay.py#L63)
 
 Normalized penalty data after validating its account identity.
 
@@ -3496,7 +3731,7 @@ Normalized penalty data after validating its account identity.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L74)
+[Source](../src/services/gameplay.py#L75)
 
 Riot gameplay APIs used by battlepass, mission, and penalty commands.
 
@@ -3504,7 +3739,7 @@ Riot gameplay APIs used by battlepass, mission, and penalty commands.
 
 **Scope:** `src/services/gameplay.py` · `GameplayService`
 
-[Source](../src/services/gameplay.py#L77)
+[Source](../src/services/gameplay.py#L78)
 
 Bind the shared Riot client, authentication service, and catalog.
 
@@ -3512,7 +3747,7 @@ Bind the shared Riot client, authentication service, and catalog.
 
 **Scope:** `src/services/gameplay.py` · `GameplayService`
 
-[Source](../src/services/gameplay.py#L86)
+[Source](../src/services/gameplay.py#L87)
 
 Return the active battlepass level, XP, expiry, and next reward.
 
@@ -3520,7 +3755,7 @@ Return the active battlepass level, XP, expiry, and next reward.
 
 **Scope:** `src/services/gameplay.py` · `GameplayService`
 
-[Source](../src/services/gameplay.py#L190)
+[Source](../src/services/gameplay.py#L191)
 
 Join the account's live mission progress with cached catalog definitions.
 
@@ -3528,7 +3763,7 @@ Join the account's live mission progress with cached catalog definitions.
 
 **Scope:** `src/services/gameplay.py` · `GameplayService`
 
-[Source](../src/services/gameplay.py#L224)
+[Source](../src/services/gameplay.py#L225)
 
 Fetch and normalize an account's current Riot matchmaking penalties.
 
@@ -3536,7 +3771,7 @@ Fetch and normalize an account's current Riot matchmaking penalties.
 
 **Scope:** `src/services/gameplay.py` · `GameplayService`
 
-[Source](../src/services/gameplay.py#L332)
+[Source](../src/services/gameplay.py#L333)
 
 Normalize one Riot mission row and its objective progress for display.
 
@@ -3544,7 +3779,7 @@ Normalize one Riot mission row and its objective progress for display.
 
 **Scope:** `src/services/gameplay.py` · `GameplayService`
 
-[Source](../src/services/gameplay.py#L413)
+[Source](../src/services/gameplay.py#L414)
 
 Resolve the next battlepass reward to display data, including its icon.
 
@@ -3552,7 +3787,7 @@ Resolve the next battlepass reward to display data, including its icon.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L470)
+[Source](../src/services/gameplay.py#L471)
 
 Return validated API metadata rows.
 
@@ -3560,7 +3795,7 @@ Return validated API metadata rows.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L475)
+[Source](../src/services/gameplay.py#L476)
 
 Reject malformed battlepass containers and rows at the API boundary.
 
@@ -3568,33 +3803,9 @@ Reject malformed battlepass containers and rows at the API boundary.
 
 **Scope:** `src/services/gameplay.py` · `module`
 
-[Source](../src/services/gameplay.py#L482)
+[Source](../src/services/gameplay.py#L483)
 
 Riot did not return usable gameplay data.
-
-### `def _nonnegative_int(value: Any) -> int | None`
-
-**Scope:** `src/services/gameplay.py` · `module`
-
-[Source](../src/services/gameplay.py#L486)
-
-Convert a non-Boolean value to a nonnegative integer when possible.
-
-### `def _positive_int(value: Any) -> int | None`
-
-**Scope:** `src/services/gameplay.py` · `module`
-
-[Source](../src/services/gameplay.py#L497)
-
-Convert a value to a positive integer or return ``None``.
-
-### `def _parse_datetime(value: Any) -> datetime | None`
-
-**Scope:** `src/services/gameplay.py` · `module`
-
-[Source](../src/services/gameplay.py#L502)
-
-Parse an ISO timestamp and attach UTC when the input has no timezone.
 
 ## `src/services/http.py`
 
@@ -3693,6 +3904,266 @@ Expose the remaining host cooldown to callers that can defer a lookup.
 [Source](../src/services/http.py#L145)
 
 Retain the failure message and a nonnegative retry delay.
+
+## `src/services/matches.py`
+
+Fetch a linked account's recent matches and reduce them for display.
+
+### `class MatchesUnavailable(RuntimeError)`
+
+**Scope:** `src/services/matches.py` · `module`
+
+[Source](../src/services/matches.py#L31)
+
+Raised when Riot's match history cannot be loaded.
+
+### `class PlayerStats`
+
+**Scope:** `src/services/matches.py` · `module`
+
+[Source](../src/services/matches.py#L36)
+
+One player's result and combat numbers in a single match.
+
+### `def headshot_percent(self) -> int | None`
+
+**Scope:** `src/services/matches.py` · `PlayerStats`
+
+[Source](../src/services/matches.py#L52)
+
+Return the share of hits that landed on the head, or ``None``.
+
+### `def combat_score(self) -> int | None`
+
+**Scope:** `src/services/matches.py` · `PlayerStats`
+
+[Source](../src/services/matches.py#L59)
+
+Return the average combat score per round, or ``None``.
+
+### `class MatchSummary`
+
+**Scope:** `src/services/matches.py` · `module`
+
+[Source](../src/services/matches.py#L67)
+
+One finished match, reduced to the numbers a profile card shows.
+
+### `def player(self, puuid: str) -> PlayerStats | None`
+
+**Scope:** `src/services/matches.py` · `MatchSummary`
+
+[Source](../src/services/matches.py#L75)
+
+Return the requested player's stats from this match.
+
+### `class MatchesService`
+
+**Scope:** `src/services/matches.py` · `module`
+
+[Source](../src/services/matches.py#L80)
+
+Fetch recent match identifiers, then cache each reduced match for good.
+
+### `def __init__(self, http: HTTPClient, auth: AuthService) -> None`
+
+**Scope:** `src/services/matches.py` · `MatchesService`
+
+[Source](../src/services/matches.py#L83)
+
+Bind the shared services and start empty history and match caches.
+
+### `async def recent(self, account: Account, *, limit: int = RECENT_MATCH_LIMIT, queue: str | None = None) -> list[MatchSummary]`
+
+**Scope:** `src/services/matches.py` · `MatchesService`
+
+[Source](../src/services/matches.py#L103)
+
+Return the account's most recent team matches, newest first.
+
+### `async def ranked_changes(self, account: Account) -> dict[str, int]`
+
+**Scope:** `src/services/matches.py` · `MatchesService`
+
+[Source](../src/services/matches.py#L129)
+
+Return each recent competitive match's RR change for one account.
+
+### `async def _recent_entries(self, account: Account, headers: dict[str, str]) -> tuple[tuple[str, str | None], ...]`
+
+**Scope:** `src/services/matches.py` · `MatchesService`
+
+[Source](../src/services/matches.py#L176)
+
+Return cached or freshly fetched match identifiers and their queues.
+
+### `async def _summaries_for(self, account: Account, headers: dict[str, str], match_ids: list[str]) -> list[MatchSummary]`
+
+**Scope:** `src/services/matches.py` · `MatchesService`
+
+[Source](../src/services/matches.py#L226)
+
+Return reduced matches, fetching only the ones not already cached.
+
+### `def _store_summaries(self, match_ids: list[str], responses: list[HTTPResult | None], found: dict[str, MatchSummary]) -> None`
+
+**Scope:** `src/services/matches.py` · `MatchesService`
+
+[Source](../src/services/matches.py#L284)
+
+Reduce successful match responses and cooldown the failed ones.
+
+### `def _match_request(http: HTTPClient, region: str | None, match_id: str) -> Any`
+
+**Scope:** `src/services/matches.py` · `module`
+
+[Source](../src/services/matches.py#L313)
+
+Build one authenticated match-detail request for a batch.
+
+### `def _summary(match_id: str, raw: dict[str, Any]) -> MatchSummary | None`
+
+**Scope:** `src/services/matches.py` · `module`
+
+[Source](../src/services/matches.py#L326)
+
+Reduce one match-details payload, dropping matches without a team result.
+
+### `def _hits_by_player(rounds: Any) -> dict[str, tuple[int, int]]`
+
+**Scope:** `src/services/matches.py` · `module`
+
+[Source](../src/services/matches.py#L382)
+
+Return headshot and total hit counts per player across every round.
+
+## `src/services/profile.py`
+
+Fetch a linked account's VALORANT identity, rank, and account level.
+
+### `class ProfileUnavailable(RuntimeError)`
+
+**Scope:** `src/services/profile.py` · `module`
+
+[Source](../src/services/profile.py#L25)
+
+Raised when Riot's profile endpoints cannot be used.
+
+### `class PlayerProfile`
+
+**Scope:** `src/services/profile.py` · `module`
+
+[Source](../src/services/profile.py#L30)
+
+Identity, rank, and level data for one linked account.
+
+### `def xp_target(self) -> int | None`
+
+**Scope:** `src/services/profile.py` · `PlayerProfile`
+
+[Source](../src/services/profile.py#L44)
+
+Return the XP needed for the next level when progress is known.
+
+### `class ProfileService`
+
+**Scope:** `src/services/profile.py` · `module`
+
+[Source](../src/services/profile.py#L51)
+
+Fetch and cache one account's profile for a few minutes.
+
+### `def __init__(self, http: HTTPClient, auth: AuthService, catalog: CatalogService) -> None`
+
+**Scope:** `src/services/profile.py` · `ProfileService`
+
+[Source](../src/services/profile.py#L54)
+
+Bind the shared services and start an empty per-account cache.
+
+### `async def profile(self, account: Account) -> PlayerProfile`
+
+**Scope:** `src/services/profile.py` · `ProfileService`
+
+[Source](../src/services/profile.py#L65)
+
+Return the account's profile, reusing a recent result when possible.
+
+### `async def _fetch(self, account: Account) -> PlayerProfile`
+
+**Scope:** `src/services/profile.py` · `ProfileService`
+
+[Source](../src/services/profile.py#L85)
+
+Fetch the loadout, account XP, and MMR payloads and normalize them.
+
+### `def _parse(loadout: dict[str, Any], xp: dict[str, Any], mmr: dict[str, Any], act_id: str | None) -> PlayerProfile`
+
+**Scope:** `src/services/profile.py` · `ProfileService`
+
+[Source](../src/services/profile.py#L112)
+
+Normalize the three Riot payloads into one profile record.
+
+### `def _profile_request(http: HTTPClient, url: str) -> Any`
+
+**Scope:** `src/services/profile.py` · `module`
+
+[Source](../src/services/profile.py#L152)
+
+Build one authenticated profile request for a batch.
+
+### `def _competitive(mmr: dict[str, Any]) -> dict[str, Any]`
+
+**Scope:** `src/services/profile.py` · `module`
+
+[Source](../src/services/profile.py#L161)
+
+Return the competitive queue block of an MMR payload.
+
+### `def _peak_tier(seasonal: dict[str, Any]) -> int | None`
+
+**Scope:** `src/services/profile.py` · `module`
+
+[Source](../src/services/profile.py#L170)
+
+Return the highest competitive tier recorded across every act.
+
+## `src/services/riot_values.py`
+
+Shared parsing helpers for values returned by Riot and VALORANT-API.
+
+### `def nonnegative(value: Any) -> int | None`
+
+**Scope:** `src/services/riot_values.py` · `module`
+
+[Source](../src/services/riot_values.py#L9)
+
+Convert a non-Boolean value to a nonnegative integer when possible.
+
+### `def positive(value: Any) -> int | None`
+
+**Scope:** `src/services/riot_values.py` · `module`
+
+[Source](../src/services/riot_values.py#L20)
+
+Convert a value to a positive integer or return ``None``.
+
+### `def identifier(value: Any) -> str | None`
+
+**Scope:** `src/services/riot_values.py` · `module`
+
+[Source](../src/services/riot_values.py#L25)
+
+Return a usable Riot identifier, ignoring the empty UUID placeholder.
+
+### `def parse_datetime(value: Any) -> datetime | None`
+
+**Scope:** `src/services/riot_values.py` · `module`
+
+[Source](../src/services/riot_values.py#L32)
+
+Parse an ISO timestamp, assuming UTC when it carries no offset.
 
 ## `src/services/shop.py`
 

@@ -44,11 +44,14 @@ encrypted with the operator's Fernet `TOKEN_ENCRYPTION_KEY`.
 
 BotFragg sends the necessary Riot session credentials and account identifiers
 to Riot authentication and VALORANT endpoints to retrieve your store, wallet,
-mission, battlepass, and crosshair information. Crosshair profiles are decoded
-in memory, cached for up to five minutes, and never written to BotFragg's
-database. It also requests public game catalog and version data from
-[VALORANT-API.com](https://valorant-api.com/). Those external services handle
-requests under their own terms and privacy practices.
+mission, battlepass, crosshair, rank, account level, and recent match
+information. Crosshair profiles are decoded in memory, cached for up to five
+minutes, and never written to BotFragg's database. Profile data is cached in
+memory for five minutes and finished match summaries, which include other
+players' combat statistics, for the lifetime of the process; neither is written
+to BotFragg's database. It also requests public game catalog and version data
+from [VALORANT-API.com](https://valorant-api.com/). Those external services
+handle requests under their own terms and privacy practices.
 
 ## Discord messages and optional integrations
 
@@ -62,6 +65,16 @@ reviewed. People who can access the channel can see its messages.
 posts the selected crosshair's profile name, export code, and rendered image to
 the current channel with your Discord display name. Anyone who can read that
 channel can see the post.
+
+`/profile` replies in the channel where it is used, so anyone who can read that
+channel can see the rank, level, equipped title, and recent-match summary it
+shows. The hide-name setting replaces your Riot ID with a generic label.
+
+By default, others cannot view your profile. Enabling profile sharing in
+`/settings` lets anyone run `/profile` with your user and see the same card; it
+is off until you turn it on, and turning it off again takes effect immediately.
+Profile data is read from the same shared in-memory cache regardless of who
+asks, so a profile viewed by many people does not cause extra Riot requests.
 
 Operators may enable additional destinations:
 

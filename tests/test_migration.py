@@ -101,14 +101,28 @@ async def test_shop_sharing_migration_backfills_existing_users(migration_url):
         await executor.migrate(
             [MigrationTarget("models", "0004_add_shard_status_message")]
         )
-        await User.create(id=101, others_can_view_shop=True)
+        client = connections.get("default")
+        # Write through SQL: the live model has columns this schema predates.
+        await client.execute_script(
+            'INSERT INTO "user" '
+            "(id, daily_shop_enabled, hide_ign, others_can_view_shop, "
+            "created_at, updated_at) VALUES "
+            "(101, FALSE, FALSE, TRUE, '2026-01-01 00:00:00+00', "
+            "'2026-01-01 00:00:00+00')"
+        )
         await executor.migrate([MigrationTarget("models", "0005_shop_sharing_opt_in")])
-        assert (await User.get(id=101)).others_can_view_shop is False
+        rows = await client.execute_query_dict(
+            'SELECT others_can_view_shop FROM "user" WHERE id = 101'
+        )
+        assert bool(rows[0]["others_can_view_shop"]) is False
         await executor.migrate(
             [MigrationTarget("models", "0004_add_shard_status_message")]
         )
         # Rolling back must not publish shops the user chose to keep private.
-        assert (await User.get(id=101)).others_can_view_shop is False
+        rows = await client.execute_query_dict(
+            'SELECT others_can_view_shop FROM "user" WHERE id = 101'
+        )
+        assert bool(rows[0]["others_can_view_shop"]) is False
     finally:
         await Tortoise.close_connections()
 
@@ -235,6 +249,14 @@ def test_native_initial_migration_matches_current_models() -> None:
         type(operation).__name__ for operation in options_module.Migration.operations
     } == {"AlterModelOptions"}
     assert len(options_module.Migration.operations) == 7
+
+    profile_module = importlib.import_module("src.migrations.0008_add_profile_sharing")
+    assert profile_module.Migration.dependencies == [
+        ("models", "0007_record_model_options")
+    ]
+    assert [
+        type(operation).__name__ for operation in profile_module.Migration.operations
+    ] == ["AddField"]
 
 
 async def test_connect_database_uses_passed_settings(

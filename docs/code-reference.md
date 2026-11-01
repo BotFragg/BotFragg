@@ -53,20 +53,16 @@ docstring. Regenerate it after application documentation changes with
 
 ## Packaged assets
 
-| File | Purpose |
+| Path | Purpose |
 | --- | --- |
 | [assets/botfragg-banner.png](../assets/botfragg-banner.png) | README banner showing the featured bundle, daily shop, and Night Market. |
 | [assets/botfragg-logo.png](../assets/botfragg-logo.png) | README logo. |
-| [assets/deluxe.png](../assets/deluxe.png) | Deluxe-tier skin emoji source. |
-| [assets/ebar.png](../assets/ebar.png) | Empty progress-bar emoji used for battlepass and mission progress. |
-| [assets/exclusive.png](../assets/exclusive.png) | Exclusive-tier skin emoji source. |
-| [assets/fbar.png](../assets/fbar.png) | Filled progress-bar emoji used for battlepass and mission progress. |
-| [assets/kc.png](../assets/kc.png) | Kingdom Credits currency emoji source. |
-| [assets/premium.png](../assets/premium.png) | Premium-tier skin emoji source. |
-| [assets/rad.png](../assets/rad.png) | Radianite Points currency emoji source. |
-| [assets/select.png](../assets/select.png) | Select-tier skin emoji source. |
-| [assets/ultra.png](../assets/ultra.png) | Ultra-tier skin emoji source. |
-| [assets/vp.png](../assets/vp.png) | VALORANT Points currency emoji source. |
+| [assets/emojis/bars/](../assets/emojis/bars/) | Filled and empty progress-bar emoji sources. |
+| [assets/emojis/currency/](../assets/emojis/currency/) | VALORANT Points, Radianite, and Kingdom Credit emoji sources. |
+| [assets/emojis/skins/](../assets/emojis/skins/) | Skin-tier emoji sources. |
+| [assets/emojis/ranks/](../assets/emojis/ranks/) | Competitive-tier emoji sources, one per tier number. |
+| [assets/emojis/agents/](../assets/emojis/agents/) | Agent emoji sources keyed by agent UUID. |
+| [assets/emojis/queues/](../assets/emojis/queues/) | Competitive-queue emoji source. |
 
 ## Application modules
 
@@ -93,6 +89,7 @@ docstring. Regenerate it after application documentation changes with
 | [src/cogs/valorant/crosshair.py](../src/cogs/valorant/crosshair.py) | Displays crosshair profiles and codes, renders previews, and shares one publicly after confirmation. |
 | [src/cogs/valorant/login.py](../src/cogs/valorant/login.py) | Handles nonce-bound Riot sign-in through a private Discord modal. |
 | [src/cogs/valorant/logout.py](../src/cogs/valorant/logout.py) | Clears Riot credentials or deletes the caller's stored data. |
+| [src/cogs/valorant/profile.py](../src/cogs/valorant/profile.py) | Renders the caller's rank, level, equipped cosmetics, and recent matches. |
 | [src/cogs/valorant/penalties.py](../src/cogs/valorant/penalties.py) | Displays paginated private matchmaking-penalty summaries for the selected Riot account. |
 | [src/cogs/valorant/settings.py](../src/cogs/valorant/settings.py) | Displays and updates user privacy and notification preferences. |
 | [src/cogs/valorant/shop.py](../src/cogs/valorant/shop.py) | Displays daily and accessory shops, featured bundles, Night Markets, and wallet balances. |
@@ -105,6 +102,7 @@ docstring. Regenerate it after application documentation changes with
 | [src/migrations/0005_shop_sharing_opt_in.py](../src/migrations/0005_shop_sharing_opt_in.py) | Makes cross-user shop viewing opt-in and resets existing users to private. |
 | [src/migrations/0006_index_owners_and_widen_analytics.py](../src/migrations/0006_index_owners_and_widen_analytics.py) | Indexes account ownership and widens command analytics ids. |
 | [src/migrations/0007_record_model_options.py](../src/migrations/0007_record_model_options.py) | Records model options that earlier migrations left out of migration state. |
+| [src/migrations/0008_add_profile_sharing.py](../src/migrations/0008_add_profile_sharing.py) | Adds the opt-in profile-sharing preference. |
 | [src/models/__init__.py](../src/models/__init__.py) | Re-exports model classes for application code. |
 | [src/models/entities.py](../src/models/entities.py) | Defines ORM records and uniqueness constraints. |
 | [src/services/__init__.py](../src/services/__init__.py) | Defines the service package. |
@@ -113,13 +111,16 @@ docstring. Regenerate it after application documentation changes with
 | [src/services/analytics.py](../src/services/analytics.py) | Records successful command use and computes scoped aggregate statistics. |
 | [src/services/suggestions.py](../src/services/suggestions.py) | Owns suggestion persistence, following, and atomic review outcomes. |
 | [src/services/auth.py](../src/services/auth.py) | Owns Riot OAuth, credential refresh, entitlement repair, and account linking. |
-| [src/services/catalog.py](../src/services/catalog.py) | Loads, searches, refreshes, and caches skin, bundle, accessory, and mission metadata. |
+| [src/services/catalog.py](../src/services/catalog.py) | Loads, searches, refreshes, and caches skin, bundle, accessory, mission, and game metadata (maps, ranks, seasons). |
 | [src/services/crosshair.py](../src/services/crosshair.py) | Fetches, decodes, encodes, and caches a user's crosshair profiles. |
 | [src/services/crosshair_render.py](../src/services/crosshair_render.py) | Renders crosshair share codes to PNG locally with Pillow. |
 | [src/services/crypto.py](../src/services/crypto.py) | Encrypts and decrypts stored Riot credentials with Fernet. |
 | [src/services/emojis.py](../src/services/emojis.py) | Caches application emojis and creates missing ones from packaged assets. |
 | [src/services/gameplay.py](../src/services/gameplay.py) | Normalizes VALORANT battlepass, mission, and matchmaking-penalty data. |
+| [src/services/matches.py](../src/services/matches.py) | Fetches recent match identifiers, reduces finished matches, and caches them by match ID. |
+| [src/services/profile.py](../src/services/profile.py) | Fetches and caches a linked account's identity, rank, win rate, and level. |
 | [src/services/http.py](../src/services/http.py) | Provides shared Riot HTTP requests, URL redaction, and rate-limit handling. |
+| [src/services/riot_values.py](../src/services/riot_values.py) | Shares numeric and identifier parsing for Riot and VALORANT-API values. |
 | [src/services/shop.py](../src/services/shop.py) | Retrieves and normalizes account-scoped skin, bundle, accessory, Night Market, and wallet data. |
 | [src/services/valorant_status.py](../src/services/valorant_status.py) | Fetches, parses, and briefly caches Riot's public VALORANT status feed. |
 | [src/views/__init__.py](../src/views/__init__.py) | Re-exports common timestamps and persistent interactive controls. |
@@ -159,6 +160,9 @@ docstring. Regenerate it after application documentation changes with
 | [tests/test_localization.py](../tests/test_localization.py) | Translated command/response contracts and catalog validation. |
 | [tests/test_migration.py](../tests/test_migration.py) | Migration/model parity and database initialization behavior. |
 | [tests/test_models.py](../tests/test_models.py) | ORM cascade and uniqueness constraints. |
+| [tests/test_matches_service.py](../tests/test_matches_service.py) | Match-history parsing, per-player reduction, and match-ID caching. |
+| [tests/test_profile_command.py](../tests/test_profile_command.py) | Profile card rendering, privacy, and service error mapping. |
+| [tests/test_profile_service.py](../tests/test_profile_service.py) | Profile parsing, caching, and service errors. |
 | [tests/test_monitoring.py](../tests/test_monitoring.py) | Privacy filtering, safe telemetry, and bounded/retryable Discord log delivery. |
 | [tests/test_penalties.py](../tests/test_penalties.py) | Private matchmaking-penalties command output, privacy, pagination, and account ownership. |
 | [tests/test_public_account_responses.py](../tests/test_public_account_responses.py) | Public account replies use the current privacy state after every preparation wait. |

@@ -380,3 +380,24 @@ crosshair-share-guild-only = Zaměřovače lze sdílet pouze v kanálu serveru.
 crosshair-share-no-permission = BotFragg nemůže v tomto kanálu zveřejňovat obrázky.
 crosshair-share-cooldown = Před dalším sdílením počkej { $seconds } sekund.
 crosshair-share-failed = Zaměřovač se nepodařilo sdílet.
+
+command-profile-name = profil
+command-profile-description = Zobrazí profil VALORANT
+profile-unranked = Bez hodnocení
+profile-rr = { $rr } RR
+profile-winrate = { $percent }% WR
+profile-peak = Maximum { $rank }
+profile-level = Úroveň { $level }
+profile-xp = { $xp } / { $target } XP
+profile-last-matches = Poslední soutěžní zápasy
+profile-no-matches = Žádné poslední zápasy
+profile-hs = { $percent }% HS
+profile-acs = { $acs } ACS
+
+option-profile-user-name = uživatel
+option-profile-user-description = Uživatel, jehož profil chcete zobrazit
+profile-user-not-sharing = Tento uživatel nesdílí svůj profil.
+profile-user-login-expired = Tento uživatel se musí znovu přihlásit k Riotu.
+profile-user-not-registered = Tento uživatel nemá propojený účet Riot.
+setting-share-profile = Povolit ostatním zobrazit tvůj profil pomocí `/profil`
+profile-cooldown = Před zobrazením dalšího profilu počkej { $seconds } s.

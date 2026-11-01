@@ -372,3 +372,24 @@ crosshair-share-guild-only = Tähtäimiä voi jakaa vain palvelimen kanavalla.
 crosshair-share-no-permission = BotFragg ei voi julkaista kuvia tällä kanavalla.
 crosshair-share-cooldown = Odota { $seconds } sekuntia ennen uutta jakoa.
 crosshair-share-failed = Tähtäintä ei voitu jakaa.
+
+command-profile-name = profiili
+command-profile-description = Näyttää VALORANT-profiilin
+profile-unranked = Sijoittamaton
+profile-rr = { $rr } RR
+profile-winrate = { $percent }% WR
+profile-peak = Paras { $rank }
+profile-level = Taso { $level }
+profile-xp = { $xp } / { $target } XP
+profile-last-matches = Viimeisimmät kilpailulliset ottelut
+profile-no-matches = Ei viimeisimpiä otteluita
+profile-hs = { $percent }% HS
+profile-acs = { $acs } ACS
+
+option-profile-user-name = käyttäjä
+option-profile-user-description = Käyttäjä, jonka profiilia haluat tarkastella
+profile-user-not-sharing = Tämä käyttäjä ei jaa profiiliaan.
+profile-user-login-expired = Kyseisen käyttäjän täytyy kirjautua Riotiin uudelleen.
+profile-user-not-registered = Tämä käyttäjä ei ole yhdistänyt Riot-tiliä.
+setting-share-profile = Salli muiden nähdä profiilisi komennolla `/profiili`
+profile-cooldown = Odota { $seconds } sekuntia ennen toisen profiilin katsomista.

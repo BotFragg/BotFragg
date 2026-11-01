@@ -372,3 +372,24 @@ crosshair-share-guild-only = Crosshairs kan bara delas i en serverkanal.
 crosshair-share-no-permission = BotFragg kan inte publicera bilder i den här kanalen.
 crosshair-share-cooldown = Vänta { $seconds } sekunder innan du delar igen.
 crosshair-share-failed = Crosshairet kunde inte delas.
+
+command-profile-name = profil
+command-profile-description = Visar en VALORANT-profil
+profile-unranked = Orankad
+profile-rr = { $rr } RR
+profile-winrate = { $percent }% WR
+profile-peak = Topp { $rank }
+profile-level = Nivå { $level }
+profile-xp = { $xp } / { $target } XP
+profile-last-matches = Senaste competitive-matcher
+profile-no-matches = Inga senaste matcher
+profile-hs = { $percent }% HS
+profile-acs = { $acs } ACS
+
+option-profile-user-name = användare
+option-profile-user-description = Användaren du vill se profilen för
+profile-user-not-sharing = Den användaren delar inte sin profil.
+profile-user-login-expired = Den användaren måste logga in på Riot igen.
+profile-user-not-registered = Den användaren har inte kopplat ett Riot-konto.
+setting-share-profile = Låt andra se din profil med `/profil`
+profile-cooldown = Vänta { $seconds } sekunder innan du visar en annan profil.

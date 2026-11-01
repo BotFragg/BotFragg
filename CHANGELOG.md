@@ -4,6 +4,18 @@
 
 ### Added
 
+- `/profile [user]` can show another user's profile when they enable the new
+  profile-sharing setting; it is off by default. The target's hide-name
+  setting is applied to the card, and third-party views share a 30-second
+  per-invoker cooldown that is refunded when no card is produced, while your
+  own profile is never rate limited.
+- `/profile` shows the selected account's rank, peak rank, act win rate, level,
+  equipped title and player card, and the four most recent competitive matches
+  with map, score, RR change, K/D/A, headshot rate and combat score. Profile
+  data is cached for five minutes, finished matches by match ID, and repeated
+  failures cool down for thirty seconds. Ranks, maps and seasons are saved to
+  `data/game_metadata.json` and refreshed with the catalog, so a restart, a
+  patch, or a profile view never waits for them.
 - `/status` shows Riot's public VALORANT incidents and maintenance for a region,
   defaulting to the caller's account region. Content follows the user's locale when
   Riot publishes a translation.
