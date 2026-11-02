@@ -8,8 +8,8 @@ docstring. Regenerate it after application documentation changes with
 
 ## Runtime flow
 
-1. `main.py` starts `src.main.main`, which loads settings, configures logging
-   and optional GlitchTip reporting, and runs `BotFraggBot`.
+1. `main.py` starts `src.main.main`, which loads settings, configures logging,
+   and runs `BotFraggBot`.
 2. `BotFraggBot.setup_hook` initializes the database and Riot HTTP client,
    warms the catalog and application emojis, registers persistent controls,
    and loads the Discord cogs.
@@ -74,8 +74,8 @@ docstring. Regenerate it after application documentation changes with
 | [src/database.py](../src/database.py) | Configures Tortoise ORM and provides database health and shard-status persistence helpers. |
 | [src/health.py](../src/health.py) | Tracks job completion/failures and provides the local container health probe. |
 | [src/localization.py](../src/localization.py) | Loads Fluent catalogs and translates command metadata and response text with English fallback. |
-| [src/main.py](../src/main.py) | Configures process logging and monitoring before starting the Discord client. |
-| [src/monitoring.py](../src/monitoring.py) | Formats plain-text log lines and strips sensitive data from logs and GlitchTip events. |
+| [src/main.py](../src/main.py) | Configures process logging before starting the Discord client. |
+| [src/monitoring.py](../src/monitoring.py) | Formats plain-text log lines and strips sensitive data from console and Discord logs. |
 | [src/cogs/__init__.py](../src/cogs/__init__.py) | Defines the Discord cog package. |
 | [src/cogs/events.py](../src/cogs/events.py) | Records command analytics and reports guild and shard lifecycle events. |
 | [src/cogs/extra.py](../src/cogs/extra.py) | Implements utility commands and persistent shard status. |
@@ -165,7 +165,7 @@ docstring. Regenerate it after application documentation changes with
 | [tests/test_matches_service.py](../tests/test_matches_service.py) | Match-history parsing, per-player reduction, and match-ID caching. |
 | [tests/test_profile_command.py](../tests/test_profile_command.py) | Profile card rendering, privacy, and service error mapping. |
 | [tests/test_profile_service.py](../tests/test_profile_service.py) | Profile parsing, caching, and service errors. |
-| [tests/test_monitoring.py](../tests/test_monitoring.py) | Privacy filtering, safe telemetry, and bounded/retryable Discord log delivery. |
+| [tests/test_monitoring.py](../tests/test_monitoring.py) | Privacy filtering and bounded/retryable Discord log delivery. |
 | [tests/test_penalties.py](../tests/test_penalties.py) | Private matchmaking-penalties command output, privacy, pagination, and account ownership. |
 | [tests/test_public_account_responses.py](../tests/test_public_account_responses.py) | Public account replies use the current privacy state after every preparation wait. |
 | [tests/test_shard_status_service.py](../tests/test_shard_status_service.py) | Reuse and replacement of saved shard-status messages. |

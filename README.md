@@ -143,7 +143,6 @@ All supported settings are documented in [`.env.example`](.env.example). A typic
 
 Optional settings:
 
-- `GLITCHTIP_DSN` enables GlitchTip error reporting.
 - `SUPPORT_URL` shows your support server in the `/links` command.
 
 Keep your `.env` file private and never commit it to version control.

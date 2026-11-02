@@ -88,12 +88,6 @@ Operators may enable additional destinations:
 - **Shard webhooks** include the shard ID, connection state, and shard count.
 - **Application log channels** receive plain-text log lines after BotFragg
   filters credential fields and common Riot or Discord identifiers.
-- **GlitchTip** may receive error reports and logs when the operator configures
-  a DSN; traces and profiles use the configured sampling rates. BotFragg
-  disables default PII and local variable capture, removes request data,
-  filters sensitive values, and strips HTTP span details before sending
-  telemetry. The GlitchTip operator controls access and retention for that
-  instance.
 
 Discord and any configured monitoring or logging service apply their own
 policies and retention controls to information they receive.
@@ -112,8 +106,8 @@ or suggestion records.
 
 Deleting data from BotFragg does not delete suggestion messages already sent
 to Discord, crosshair cards you shared to a channel, messages in configured
-logging channels, or telemetry already received by Discord or GlitchTip. Those
-copies follow the relevant service's retention and deletion controls.
+logging channels, or telemetry already received by Discord. Those copies follow
+the relevant service's retention and deletion controls.
 Operator-managed backups may also retain records until those backups expire.
 
 ## Your choices and privacy requests

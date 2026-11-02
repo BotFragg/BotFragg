@@ -35,6 +35,12 @@
 - The Discord log channel now receives the same plain-text log lines as the
   console instead of JSON objects.
 
+### Removed
+
+- GlitchTip/Sentry telemetry, the `sentry-sdk` dependency, and the
+  `GLITCHTIP_*` settings are removed. Console and Discord log-channel output
+  keep the same plain-text formatting and privacy filtering.
+
 ## [1.3.0] - 2026-10-31
 
 ### Changed
