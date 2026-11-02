@@ -19,9 +19,27 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
+      - id: locales
+        name: Locale catalogs
+        entry: uv run --frozen --no-sync python tools/check_locales.py
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: api-reference
+        name: API reference check
+        entry: uv run --frozen --no-sync python tools/generate_api_reference.py --check
+        language: system
+        pass_filenames: false
+        always_run: true
       - id: pytest
         name: pytest
         entry: uv run --frozen --no-sync pytest -q
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: compileall
+        name: Compile check
+        entry: uv run --frozen --no-sync python -m compileall -q src tests
         language: system
         pass_filenames: false
         always_run: true

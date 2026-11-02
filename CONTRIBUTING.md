@@ -15,10 +15,11 @@ Use Python 3.14 and [uv](https://docs.astral.sh/uv/).
 
    ```sh
    pre-commit run --all-files
-   uv run --frozen mypy
-   uv run --frozen python -m compileall -q src tests
-   uv run --frozen python tools/generate_api_reference.py --check
    ```
+
+   The hook runs Ruff, Mypy, the locale check, API-reference freshness,
+   pytest, and `compileall`. PostgreSQL-backed tests still skip locally unless
+   `BOTFRAGG_TEST_POSTGRES_URL` is set, as described below.
 
 Mypy checks every application module, including bodies of unannotated functions.
 

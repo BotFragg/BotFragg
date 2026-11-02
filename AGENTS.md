@@ -41,8 +41,9 @@ uv run --frozen python -m compileall -q src tests
 - Async tests need no decorator (`asyncio_mode = auto`). Command and service
   tests use `tests.helpers` (`_localized_bot`, `_localized_interaction`,
   `TEST_TRANSLATOR`) and fake Discord objects instead of live clients.
-- `pre-commit run --all-files` covers Ruff, Mypy, and pytest only; CI also
-  enforces the locale check, API-reference freshness, and `compileall`.
+- `pre-commit run --all-files` runs the same checks as CI except the
+  PostgreSQL-backed tests, which still skip unless `BOTFRAGG_TEST_POSTGRES_URL`
+  is set.
 
 ## Generated files and schema
 
