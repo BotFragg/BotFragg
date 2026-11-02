@@ -16,6 +16,7 @@ from ..services.shop import (
 )
 from ..views import OwnedActionButton, OwnedSelect, timestamp
 from .ui import embed, view
+from .video_menus import SHOP_VIDEO_MENU
 
 TIER_COLOURS = {
     "0cebb8be-46d7-c12a-d306-e9907bfc5a25": 0x009984,
@@ -126,7 +127,7 @@ def add_skin_selector(
     if options:
         controls.add_item(
             OwnedSelect(
-                "shop_skin",
+                SHOP_VIDEO_MENU.action,
                 owner_id,
                 str(expires),
                 placeholder=translator.text(locale, "shop-skin-select-placeholder"),

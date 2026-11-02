@@ -122,7 +122,7 @@ Initialize shared resources, load extensions, and optionally sync commands.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L255)
+[Source](../src/bot.py#L256)
 
 Set the online activity and log the connected shard and guild counts.
 
@@ -130,7 +130,7 @@ Set the online activity and log the connected shard and guild counts.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L268)
+[Source](../src/bot.py#L269)
 
 Close Discord, Riot HTTP, database, and monitoring resources in order.
 
@@ -1150,7 +1150,7 @@ Render one profile into an embed and PNG bytes.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
 
-[Source](../src/cogs/valorant/crosshair.py#L426)
+[Source](../src/cogs/valorant/crosshair.py#L425)
 
 Return the English footer used on every public share card.
 
@@ -1158,7 +1158,7 @@ Return the English footer used on every public share card.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
 
-[Source](../src/cogs/valorant/crosshair.py#L434)
+[Source](../src/cogs/valorant/crosshair.py#L433)
 
 Return the seconds left before this user may share again.
 
@@ -1166,7 +1166,7 @@ Return the seconds left before this user may share again.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
 
-[Source](../src/cogs/valorant/crosshair.py#L441)
+[Source](../src/cogs/valorant/crosshair.py#L440)
 
 Reserve a user's share slot and bound the tracking map.
 
@@ -1174,7 +1174,7 @@ Reserve a user's share slot and bound the tracking map.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
 
-[Source](../src/cogs/valorant/crosshair.py#L450)
+[Source](../src/cogs/valorant/crosshair.py#L449)
 
 Release a reserved share slot after a failed post.
 
@@ -1182,9 +1182,61 @@ Release a reserved share slot after a failed post.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `module`
 
-[Source](../src/cogs/valorant/crosshair.py#L455)
+[Source](../src/cogs/valorant/crosshair.py#L454)
 
 Register the crosshair command group.
+
+## `src/cogs/valorant/loadout.py`
+
+Commands for viewing a linked account's equipped VALORANT loadout.
+
+### `class LoadoutCog(commands.Cog)`
+
+**Scope:** `src/cogs/valorant/loadout.py` · `module`
+
+[Source](../src/cogs/valorant/loadout.py#L54)
+
+Display the caller's equipped skins, variants, and gun buddies.
+
+### `def __init__(self, bot: BotFraggBot) -> None`
+
+**Scope:** `src/cogs/valorant/loadout.py` · `LoadoutCog`
+
+[Source](../src/cogs/valorant/loadout.py#L57)
+
+Bind the bot and register the inspect-video selects.
+
+### `async def loadout(self, interaction: discord.Interaction) -> None`
+
+**Scope:** `src/cogs/valorant/loadout.py` · `LoadoutCog`
+
+[Source](../src/cogs/valorant/loadout.py#L70)
+
+Show the caller's equipped themed skins.
+
+### `async def loadout_video(self, interaction: discord.Interaction, payload: str) -> None`
+
+**Scope:** `src/cogs/valorant/loadout.py` · `LoadoutCog`
+
+[Source](../src/cogs/valorant/loadout.py#L167)
+
+Open a private level and chroma menu for one equipped skin.
+
+### `async def loadout_variant(self, interaction: discord.Interaction, payload: str) -> None`
+
+**Scope:** `src/cogs/valorant/loadout.py` · `LoadoutCog`
+
+[Source](../src/cogs/valorant/loadout.py#L180)
+
+Privately return the selected level or chroma inspect video.
+
+### `async def setup(bot: BotFraggBot) -> None`
+
+**Scope:** `src/cogs/valorant/loadout.py` · `module`
+
+[Source](../src/cogs/valorant/loadout.py#L194)
+
+Register the loadout command.
 
 ## `src/cogs/valorant/login.py`
 
@@ -1382,7 +1434,7 @@ Commands for viewing a linked account's VALORANT profile card.
 
 **Scope:** `src/cogs/valorant/profile.py` · `module`
 
-[Source](../src/cogs/valorant/profile.py#L39)
+[Source](../src/cogs/valorant/profile.py#L38)
 
 Display the caller's rank, level, and most recent matches.
 
@@ -1390,7 +1442,7 @@ Display the caller's rank, level, and most recent matches.
 
 **Scope:** `src/cogs/valorant/profile.py` · `ProfileCog`
 
-[Source](../src/cogs/valorant/profile.py#L42)
+[Source](../src/cogs/valorant/profile.py#L41)
 
 Bind the bot's profile, match, catalog, and emoji services.
 
@@ -1398,7 +1450,7 @@ Bind the bot's profile, match, catalog, and emoji services.
 
 **Scope:** `src/cogs/valorant/profile.py` · `ProfileCog`
 
-[Source](../src/cogs/valorant/profile.py#L63)
+[Source](../src/cogs/valorant/profile.py#L62)
 
 Show the caller's or another user's shared profile card.
 
@@ -1406,7 +1458,7 @@ Show the caller's or another user's shared profile card.
 
 **Scope:** `src/cogs/valorant/profile.py` · `ProfileCog`
 
-[Source](../src/cogs/valorant/profile.py#L165)
+[Source](../src/cogs/valorant/profile.py#L164)
 
 Return the RR change per shown match, tolerating unavailable data.
 
@@ -1414,23 +1466,15 @@ Return the RR change per shown match, tolerating unavailable data.
 
 **Scope:** `src/cogs/valorant/profile.py` · `ProfileCog`
 
-[Source](../src/cogs/valorant/profile.py#L176)
+[Source](../src/cogs/valorant/profile.py#L175)
 
 Reserve a third-party view slot, returning the wait when one is active.
-
-### `async def _accessory(self, item_type: str, identifier: str | None) -> Accessory | None`
-
-**Scope:** `src/cogs/valorant/profile.py` · `ProfileCog`
-
-[Source](../src/cogs/valorant/profile.py#L189)
-
-Resolve one equipped cosmetic, ignoring metadata failures.
 
 ### `def _profile_card(player: str, account: Account, data: PlayerProfile, matches: list[MatchSummary], *, ranked: dict[str, int], card_art: Accessory | None, title_text: str | None, rank_names: dict[int, dict[str, str]], map_names: dict[str, dict[str, str]], act_names: dict[str, str], emoji_service: ApplicationEmojiService, translator: BotFraggTranslator, locale: discord.Locale, filled_bar: str = '█', empty_bar: str = '░') -> discord.Embed`
 
 **Scope:** `src/cogs/valorant/profile.py` · `ProfileCog`
 
-[Source](../src/cogs/valorant/profile.py#L201)
+[Source](../src/cogs/valorant/profile.py#L189)
 
 Render the rank, level, and recent-match blocks of a profile card.
 
@@ -1438,7 +1482,7 @@ Render the rank, level, and recent-match blocks of a profile card.
 
 **Scope:** `src/cogs/valorant/profile.py` · `module`
 
-[Source](../src/cogs/valorant/profile.py#L296)
+[Source](../src/cogs/valorant/profile.py#L284)
 
 Render one match as a result line and an indented stat line.
 
@@ -1446,7 +1490,7 @@ Render one match as a result line and an indented stat line.
 
 **Scope:** `src/cogs/valorant/profile.py` · `module`
 
-[Source](../src/cogs/valorant/profile.py#L347)
+[Source](../src/cogs/valorant/profile.py#L335)
 
 Return the localized map name for Riot's map path or identifier.
 
@@ -1454,7 +1498,7 @@ Return the localized map name for Riot's map path or identifier.
 
 **Scope:** `src/cogs/valorant/profile.py` · `module`
 
-[Source](../src/cogs/valorant/profile.py#L358)
+[Source](../src/cogs/valorant/profile.py#L346)
 
 Log an emoji-creation failure instead of leaving the task exception unread.
 
@@ -1462,7 +1506,7 @@ Log an emoji-creation failure instead of leaving the task exception unread.
 
 **Scope:** `src/cogs/valorant/profile.py` · `module`
 
-[Source](../src/cogs/valorant/profile.py#L364)
+[Source](../src/cogs/valorant/profile.py#L352)
 
 Register the profile command.
 
@@ -1506,7 +1550,7 @@ Present Yes/No options for the caller's selected preference.
 
 **Scope:** `src/cogs/valorant/settings.py` · `SettingsCog`
 
-[Source](../src/cogs/valorant/settings.py#L134)
+[Source](../src/cogs/valorant/settings.py#L133)
 
 Validate and persist a setting selection, then update its confirmation.
 
@@ -1514,7 +1558,7 @@ Validate and persist a setting selection, then update its confirmation.
 
 **Scope:** `src/cogs/valorant/settings.py` · `module`
 
-[Source](../src/cogs/valorant/settings.py#L162)
+[Source](../src/cogs/valorant/settings.py#L161)
 
 Register the user preference commands and selection handler.
 
@@ -1526,7 +1570,7 @@ Commands for skin shops, featured bundles, and balances.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L46)
+[Source](../src/cogs/valorant/shop.py#L51)
 
 Show shops and bundles for the caller's linked account.
 
@@ -1534,7 +1578,7 @@ Show shops and bundles for the caller's linked account.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L49)
+[Source](../src/cogs/valorant/shop.py#L54)
 
 Bind the bot and register persistent shop-mode and account actions.
 
@@ -1542,7 +1586,7 @@ Bind the bot and register persistent shop-mode and account actions.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L73)
+[Source](../src/cogs/valorant/shop.py#L78)
 
 Show a shop after rechecking its original account and current privacy.
 
@@ -1550,7 +1594,7 @@ Show a shop after rechecking its original account and current privacy.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L149)
+[Source](../src/cogs/valorant/shop.py#L154)
 
 Render daily shop cards and controls without further preparation waits.
 
@@ -1558,7 +1602,7 @@ Render daily shop cards and controls without further preparation waits.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L236)
+[Source](../src/cogs/valorant/shop.py#L241)
 
 Show the selected account's current featured bundle offers and controls.
 
@@ -1566,7 +1610,7 @@ Show the selected account's current featured bundle offers and controls.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L256)
+[Source](../src/cogs/valorant/shop.py#L261)
 
 Build current featured bundles with shop-style cards and controls.
 
@@ -1574,7 +1618,7 @@ Build current featured bundles with shop-style cards and controls.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L355)
+[Source](../src/cogs/valorant/shop.py#L360)
 
 Resolve static bundle metadata or provide a safe live-offer fallback.
 
@@ -1582,7 +1626,7 @@ Resolve static bundle metadata or provide a safe live-offer fallback.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L369)
+[Source](../src/cogs/valorant/shop.py#L374)
 
 Format only Riot-supplied VP totals, retaining exact discount values.
 
@@ -1590,7 +1634,7 @@ Format only Riot-supplied VP totals, retaining exact discount values.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L390)
+[Source](../src/cogs/valorant/shop.py#L395)
 
 Render one live bundle item in the shop's card, tier, and price style.
 
@@ -1598,7 +1642,7 @@ Render one live bundle item in the shop's card, tier, and price style.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L458)
+[Source](../src/cogs/valorant/shop.py#L463)
 
 Render a bundle summary and up to nine shop-style item cards.
 
@@ -1606,39 +1650,23 @@ Render a bundle summary and up to nine shop-style item cards.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L524)
+[Source](../src/cogs/valorant/shop.py#L529)
 
 Render the selected daily, Night Market, accessory, or bundle mode.
-
-### `def _selection_values(interaction: discord.Interaction, custom_id: str) -> set[str]`
-
-**Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
-
-[Source](../src/cogs/valorant/shop.py#L665)
-
-Read the values actually offered by this message's matching select menu.
 
 ### `async def shop_bundle(self, interaction: discord.Interaction, payload: str) -> None`
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L679)
+[Source](../src/cogs/valorant/shop.py#L669)
 
 Revalidate a selected featured bundle against the caller's account and view.
-
-### `def _video_options(skin: Skin, translator: BotFraggTranslator, locale: discord.Locale) -> list[discord.SelectOption]`
-
-**Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
-
-[Source](../src/cogs/valorant/shop.py#L732)
-
-List playable levels and chromas within Discord's select-menu limit.
 
 ### `async def shop_skin(self, interaction: discord.Interaction, payload: str) -> None`
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L765)
+[Source](../src/cogs/valorant/shop.py#L721)
 
 Open a private level/chroma menu for a skin offered in this message.
 
@@ -1646,7 +1674,7 @@ Open a private level/chroma menu for a skin offered in this message.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L819)
+[Source](../src/cogs/valorant/shop.py#L732)
 
 Privately return a selected video only when it belongs to that skin.
 
@@ -1654,7 +1682,7 @@ Privately return a selected video only when it belongs to that skin.
 
 **Scope:** `src/cogs/valorant/shop.py` · `ShopCog`
 
-[Source](../src/cogs/valorant/shop.py#L880)
+[Source](../src/cogs/valorant/shop.py#L745)
 
 Validate the selected account and reopen the corresponding shop mode.
 
@@ -1662,7 +1690,7 @@ Validate the selected account and reopen the corresponding shop mode.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L896)
+[Source](../src/cogs/valorant/shop.py#L761)
 
 Display discounted Night Market offers for the selected Riot account.
 
@@ -1670,7 +1698,7 @@ Display discounted Night Market offers for the selected Riot account.
 
 **Scope:** `src/cogs/valorant/shop.py` · `NightMarketCog`
 
-[Source](../src/cogs/valorant/shop.py#L899)
+[Source](../src/cogs/valorant/shop.py#L764)
 
 Bind the shared shop, account, and emoji services.
 
@@ -1678,7 +1706,7 @@ Bind the shared shop, account, and emoji services.
 
 **Scope:** `src/cogs/valorant/shop.py` · `NightMarketCog`
 
-[Source](../src/cogs/valorant/shop.py#L910)
+[Source](../src/cogs/valorant/shop.py#L775)
 
 Fetch and render Night Market offers or report that none are active.
 
@@ -1686,7 +1714,7 @@ Fetch and render Night Market offers or report that none are active.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L950)
+[Source](../src/cogs/valorant/shop.py#L815)
 
 Display the selected account's three VALORANT wallet balances.
 
@@ -1694,7 +1722,7 @@ Display the selected account's three VALORANT wallet balances.
 
 **Scope:** `src/cogs/valorant/shop.py` · `BalanceCog`
 
-[Source](../src/cogs/valorant/shop.py#L953)
+[Source](../src/cogs/valorant/shop.py#L818)
 
 Bind the shared shop and user-preference services.
 
@@ -1702,7 +1730,7 @@ Bind the shared shop and user-preference services.
 
 **Scope:** `src/cogs/valorant/shop.py` · `BalanceCog`
 
-[Source](../src/cogs/valorant/shop.py#L964)
+[Source](../src/cogs/valorant/shop.py#L829)
 
 Fetch and display VP, Radianite, and Kingdom Credit balances.
 
@@ -1710,7 +1738,7 @@ Fetch and display VP, Radianite, and Kingdom Credit balances.
 
 **Scope:** `src/cogs/valorant/shop.py` · `module`
 
-[Source](../src/cogs/valorant/shop.py#L1018)
+[Source](../src/cogs/valorant/shop.py#L883)
 
 Register the shop, Night Market, and wallet-balance cogs.
 
@@ -1754,7 +1782,7 @@ Show incidents and maintenance reported for one region.
 
 **Scope:** `src/cogs/valorant/status.py` · `module`
 
-[Source](../src/cogs/valorant/status.py#L100)
+[Source](../src/cogs/valorant/status.py#L99)
 
 Register the public status command.
 
@@ -2970,11 +2998,35 @@ Hold normalized skin identity, display data, pricing, levels, and chromas.
 
 Return this skin's localized or English name, or empty when missing.
 
+### `def chroma_label(self, chroma_uuid: str | None, locale: object | None = None) -> str | None`
+
+**Scope:** `src/services/catalog.py` · `Skin`
+
+[Source](../src/services/catalog.py#L158)
+
+Return the equipped variant's localized label, when it has one.
+
+### `class Weapon`
+
+**Scope:** `src/services/catalog.py` · `module`
+
+[Source](../src/services/catalog.py#L187)
+
+Hold normalized identity and display data for one weapon.
+
+### `def name_for(self, locale: object | None = None) -> str`
+
+**Scope:** `src/services/catalog.py` · `Weapon`
+
+[Source](../src/services/catalog.py#L197)
+
+Return this weapon's localized or English name, or empty when missing.
+
 ### `class Bundle`
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L160)
+[Source](../src/services/catalog.py#L205)
 
 Hold static display metadata for a VALORANT bundle.
 
@@ -2982,7 +3034,7 @@ Hold static display metadata for a VALORANT bundle.
 
 **Scope:** `src/services/catalog.py` · `Bundle`
 
-[Source](../src/services/catalog.py#L172)
+[Source](../src/services/catalog.py#L217)
 
 Return this bundle's localized or English name, or empty when missing.
 
@@ -2990,7 +3042,7 @@ Return this bundle's localized or English name, or empty when missing.
 
 **Scope:** `src/services/catalog.py` · `Bundle`
 
-[Source](../src/services/catalog.py#L178)
+[Source](../src/services/catalog.py#L223)
 
 Return this bundle's localized subtitle, if available.
 
@@ -2998,7 +3050,7 @@ Return this bundle's localized subtitle, if available.
 
 **Scope:** `src/services/catalog.py` · `Bundle`
 
-[Source](../src/services/catalog.py#L182)
+[Source](../src/services/catalog.py#L227)
 
 Return this bundle's localized description, if available.
 
@@ -3006,7 +3058,7 @@ Return this bundle's localized description, if available.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L191)
+[Source](../src/services/catalog.py#L236)
 
 Hold normalized display data for a non-skin cosmetic reward.
 
@@ -3014,7 +3066,7 @@ Hold normalized display data for a non-skin cosmetic reward.
 
 **Scope:** `src/services/catalog.py` · `Accessory`
 
-[Source](../src/services/catalog.py#L201)
+[Source](../src/services/catalog.py#L246)
 
 Return this accessory's localized name, or empty when metadata is missing.
 
@@ -3022,7 +3074,7 @@ Return this accessory's localized name, or empty when metadata is missing.
 
 **Scope:** `src/services/catalog.py` · `Accessory`
 
-[Source](../src/services/catalog.py#L205)
+[Source](../src/services/catalog.py#L250)
 
 Return localized accessory title text, if available.
 
@@ -3030,7 +3082,7 @@ Return localized accessory title text, if available.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L213)
+[Source](../src/services/catalog.py#L258)
 
 Return whether any cached catalog row is structurally unusable.
 
@@ -3038,7 +3090,7 @@ Return whether any cached catalog row is structurally unusable.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L245)
+[Source](../src/services/catalog.py#L290)
 
 Build a skin from a cached row, tolerating legacy single-name rows.
 
@@ -3046,15 +3098,23 @@ Build a skin from a cached row, tolerating legacy single-name rows.
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L263)
+[Source](../src/services/catalog.py#L308)
 
 Build a bundle from a cached row, tolerating legacy single-name rows.
+
+### `def _weapon_from_snapshot(item: dict[str, Any]) -> Weapon`
+
+**Scope:** `src/services/catalog.py` · `module`
+
+[Source](../src/services/catalog.py#L333)
+
+Build a weapon from a cached row, tolerating legacy single-name rows.
 
 ### `class CatalogService`
 
 **Scope:** `src/services/catalog.py` · `module`
 
-[Source](../src/services/catalog.py#L288)
+[Source](../src/services/catalog.py#L350)
 
 Load, refresh, search, and cache VALORANT catalog data.
 
@@ -3062,7 +3122,7 @@ Load, refresh, search, and cache VALORANT catalog data.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L291)
+[Source](../src/services/catalog.py#L353)
 
 Prepare in-memory indexes and the repository catalog snapshot.
 
@@ -3070,7 +3130,7 @@ Prepare in-memory indexes and the repository catalog snapshot.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L326)
+[Source](../src/services/catalog.py#L389)
 
 Load the saved catalog off the event loop or fetch a fresh snapshot.
 
@@ -3078,7 +3138,7 @@ Load the saved catalog off the event loop or fetch a fresh snapshot.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L345)
+[Source](../src/services/catalog.py#L408)
 
 Return the upstream catalog version used to detect a game patch.
 
@@ -3086,7 +3146,7 @@ Return the upstream catalog version used to detect a game patch.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L364)
+[Source](../src/services/catalog.py#L427)
 
 Fetch the current weapon and bundle catalogs and save their snapshot.
 
@@ -3100,7 +3160,7 @@ A failed save restores the previous catalog even during cancellation.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L440)
+[Source](../src/services/catalog.py#L505)
 
 Fetch one catalog endpoint and return its validated data rows.
 
@@ -3108,7 +3168,7 @@ Fetch one catalog endpoint and return its validated data rows.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L452)
+[Source](../src/services/catalog.py#L517)
 
 Cache mission definitions for 30 minutes and failed refreshes for 30 seconds.
 
@@ -3116,7 +3176,7 @@ Cache mission definitions for 30 minutes and failed refreshes for 30 seconds.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L509)
+[Source](../src/services/catalog.py#L574)
 
 Return one game-metadata document, refetching it when stale or forced.
 
@@ -3124,7 +3184,7 @@ Return one game-metadata document, refetching it when stale or forced.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L554)
+[Source](../src/services/catalog.py#L619)
 
 Prefill the game-metadata cache from the saved snapshot.
 
@@ -3132,7 +3192,7 @@ Prefill the game-metadata cache from the saved snapshot.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L592)
+[Source](../src/services/catalog.py#L657)
 
 Persist one game-metadata document unless a patch dropped it meanwhile.
 
@@ -3140,7 +3200,7 @@ Persist one game-metadata document unless a patch dropped it meanwhile.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L611)
+[Source](../src/services/catalog.py#L676)
 
 Write the game-metadata snapshot through a temporary file replacement.
 
@@ -3148,7 +3208,7 @@ Write the game-metadata snapshot through a temporary file replacement.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L618)
+[Source](../src/services/catalog.py#L683)
 
 Remove the saved game-metadata snapshot when it is no longer valid.
 
@@ -3156,7 +3216,7 @@ Remove the saved game-metadata snapshot when it is no longer valid.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L622)
+[Source](../src/services/catalog.py#L687)
 
 Forget game metadata so a game patch refreshes it on next use.
 
@@ -3164,7 +3224,7 @@ Forget game metadata so a game patch refreshes it on next use.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L634)
+[Source](../src/services/catalog.py#L699)
 
 Refetch every game-metadata document for the version refresh.
 
@@ -3172,7 +3232,7 @@ Refetch every game-metadata document for the version refresh.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L643)
+[Source](../src/services/catalog.py#L708)
 
 Return competitive tier numbers mapped to their localized names.
 
@@ -3180,7 +3240,7 @@ Return competitive tier numbers mapped to their localized names.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L670)
+[Source](../src/services/catalog.py#L735)
 
 Return map asset paths and identifiers mapped to localized names.
 
@@ -3188,7 +3248,7 @@ Return map asset paths and identifiers mapped to localized names.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L687)
+[Source](../src/services/catalog.py#L752)
 
 Return the running act's identifier and localized names, if known.
 
@@ -3196,7 +3256,7 @@ Return the running act's identifier and localized names, if known.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L726)
+[Source](../src/services/catalog.py#L791)
 
 Normalize weapon and bundle responses and rebuild lookup indexes.
 
@@ -3204,7 +3264,7 @@ Normalize weapon and bundle responses and rebuild lookup indexes.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L781)
+[Source](../src/services/catalog.py#L866)
 
 Index skins by their UUID, offer UUID, and level UUID aliases.
 
@@ -3212,15 +3272,23 @@ Index skins by their UUID, offer UUID, and level UUID aliases.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L792)
+[Source](../src/services/catalog.py#L877)
 
 Resolve a skin from any indexed base, offer, or level identifier.
+
+### `def get_weapon(self, uuid: str) -> Weapon | None`
+
+**Scope:** `src/services/catalog.py` · `CatalogService`
+
+[Source](../src/services/catalog.py#L881)
+
+Resolve a weapon by its Riot UUID.
 
 ### `def get_bundle(self, uuid: str) -> Bundle | None`
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L796)
+[Source](../src/services/catalog.py#L885)
 
 Resolve bundle metadata by its Riot UUID.
 
@@ -3228,7 +3296,7 @@ Resolve bundle metadata by its Riot UUID.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L801)
+[Source](../src/services/catalog.py#L890)
 
 Fetch and cache a supported accessory using its Riot item type ID.
 
@@ -3236,7 +3304,7 @@ Fetch and cache a supported accessory using its Riot item type ID.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L848)
+[Source](../src/services/catalog.py#L937)
 
 Resolve a Riot bundle buddy by its buddy or level UUID.
 
@@ -3244,7 +3312,7 @@ Resolve a Riot bundle buddy by its buddy or level UUID.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L905)
+[Source](../src/services/catalog.py#L994)
 
 Convert endpoint-specific Riot accessory data into a common display shape.
 
@@ -3252,7 +3320,7 @@ Convert endpoint-specific Riot accessory data into a common display shape.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L932)
+[Source](../src/services/catalog.py#L1021)
 
 Search localized names first, retaining English-name fallback matches.
 
@@ -3263,7 +3331,7 @@ fuzzy-match score accepted, and an exactly matching name scores 100.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L967)
+[Source](../src/services/catalog.py#L1056)
 
 Apply current store prices to catalog skins matched by offer identifier.
 
@@ -3271,7 +3339,7 @@ Apply current store prices to catalog skins matched by offer identifier.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L974)
+[Source](../src/services/catalog.py#L1063)
 
 Encode the current version, skins, and bundles as compact JSON.
 
@@ -3279,7 +3347,7 @@ Encode the current version, skins, and bundles as compact JSON.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L984)
+[Source](../src/services/catalog.py#L1074)
 
 Write a complete catalog snapshot through a temporary file replacement.
 
@@ -3287,7 +3355,7 @@ Write a complete catalog snapshot through a temporary file replacement.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L991)
+[Source](../src/services/catalog.py#L1081)
 
 Restore catalog records from a snapshot and rebuild lookup indexes.
 
@@ -4033,11 +4101,19 @@ Fetch a linked account's VALORANT identity, rank, and account level.
 
 Raised when Riot's profile endpoints cannot be used.
 
-### `class PlayerProfile`
+### `class EquippedSkin`
 
 **Scope:** `src/services/profile.py` · `module`
 
 [Source](../src/services/profile.py#L30)
+
+One weapon slot's equipped skin, chroma, and gun buddy.
+
+### `class PlayerProfile`
+
+**Scope:** `src/services/profile.py` · `module`
+
+[Source](../src/services/profile.py#L40)
 
 Identity, rank, and level data for one linked account.
 
@@ -4045,7 +4121,7 @@ Identity, rank, and level data for one linked account.
 
 **Scope:** `src/services/profile.py` · `PlayerProfile`
 
-[Source](../src/services/profile.py#L44)
+[Source](../src/services/profile.py#L55)
 
 Return the XP needed for the next level when progress is known.
 
@@ -4053,7 +4129,7 @@ Return the XP needed for the next level when progress is known.
 
 **Scope:** `src/services/profile.py` · `module`
 
-[Source](../src/services/profile.py#L51)
+[Source](../src/services/profile.py#L62)
 
 Fetch and cache one account's profile for a few minutes.
 
@@ -4061,7 +4137,7 @@ Fetch and cache one account's profile for a few minutes.
 
 **Scope:** `src/services/profile.py` · `ProfileService`
 
-[Source](../src/services/profile.py#L54)
+[Source](../src/services/profile.py#L65)
 
 Bind the shared services and start an empty per-account cache.
 
@@ -4069,7 +4145,7 @@ Bind the shared services and start an empty per-account cache.
 
 **Scope:** `src/services/profile.py` · `ProfileService`
 
-[Source](../src/services/profile.py#L65)
+[Source](../src/services/profile.py#L76)
 
 Return the account's profile, reusing a recent result when possible.
 
@@ -4077,7 +4153,7 @@ Return the account's profile, reusing a recent result when possible.
 
 **Scope:** `src/services/profile.py` · `ProfileService`
 
-[Source](../src/services/profile.py#L85)
+[Source](../src/services/profile.py#L96)
 
 Fetch the loadout, account XP, and MMR payloads and normalize them.
 
@@ -4085,15 +4161,23 @@ Fetch the loadout, account XP, and MMR payloads and normalize them.
 
 **Scope:** `src/services/profile.py` · `ProfileService`
 
-[Source](../src/services/profile.py#L112)
+[Source](../src/services/profile.py#L123)
 
 Normalize the three Riot payloads into one profile record.
+
+### `def _equipped_skins(loadout: dict[str, Any]) -> tuple[EquippedSkin, ...]`
+
+**Scope:** `src/services/profile.py` · `module`
+
+[Source](../src/services/profile.py#L164)
+
+Return the loadout's equipped weapons, skipping malformed entries.
 
 ### `def _profile_request(http: HTTPClient, url: str) -> Any`
 
 **Scope:** `src/services/profile.py` · `module`
 
-[Source](../src/services/profile.py#L152)
+[Source](../src/services/profile.py#L185)
 
 Build one authenticated profile request for a batch.
 
@@ -4101,7 +4185,7 @@ Build one authenticated profile request for a batch.
 
 **Scope:** `src/services/profile.py` · `module`
 
-[Source](../src/services/profile.py#L161)
+[Source](../src/services/profile.py#L194)
 
 Return the competitive queue block of an MMR payload.
 
@@ -4109,7 +4193,7 @@ Return the competitive queue block of an MMR payload.
 
 **Scope:** `src/services/profile.py` · `module`
 
-[Source](../src/services/profile.py#L170)
+[Source](../src/services/profile.py#L203)
 
 Return the highest competitive tier recorded across every act.
 
@@ -4599,11 +4683,19 @@ Reject interactions from users other than the button's recorded owner.
 
 Dispatch the button action to its registered handler inside a trace.
 
-### `class OwnedSelect(discord.ui.DynamicItem[discord.ui.Select])`
+### `def selected_values(interaction: discord.Interaction[Any], custom_id: str) -> set[str]`
 
 **Scope:** `src/views/components.py` · `module`
 
 [Source](../src/views/components.py#L120)
+
+Read the values actually offered by this message's matching select menu.
+
+### `class OwnedSelect(discord.ui.DynamicItem[discord.ui.Select])`
+
+**Scope:** `src/views/components.py` · `module`
+
+[Source](../src/views/components.py#L134)
 
 Create a persistent select menu whose action is restricted to its owner.
 
@@ -4611,7 +4703,7 @@ Create a persistent select menu whose action is restricted to its owner.
 
 **Scope:** `src/views/components.py` · `OwnedSelect`
 
-[Source](../src/views/components.py#L123)
+[Source](../src/views/components.py#L137)
 
 Build a stable custom ID and a translated placeholder when options are empty.
 
@@ -4619,7 +4711,7 @@ Build a stable custom ID and a translated placeholder when options are empty.
 
 **Scope:** `src/views/components.py` · `OwnedSelect`
 
-[Source](../src/views/components.py#L155)
+[Source](../src/views/components.py#L169)
 
 Reconstruct a persistent select menu from its ID and current options.
 
@@ -4627,7 +4719,7 @@ Reconstruct a persistent select menu from its ID and current options.
 
 **Scope:** `src/views/components.py` · `OwnedSelect`
 
-[Source](../src/views/components.py#L174)
+[Source](../src/views/components.py#L188)
 
 Reject interactions from users other than the menu's recorded owner.
 
@@ -4635,7 +4727,7 @@ Reject interactions from users other than the menu's recorded owner.
 
 **Scope:** `src/views/components.py` · `OwnedSelect`
 
-[Source](../src/views/components.py#L180)
+[Source](../src/views/components.py#L194)
 
 Dispatch the selected value with the menu payload to its registered handler.
 
@@ -4643,7 +4735,7 @@ Dispatch the selected value with the menu payload to its registered handler.
 
 **Scope:** `src/views/components.py` · `module`
 
-[Source](../src/views/components.py#L191)
+[Source](../src/views/components.py#L205)
 
 Build a compact red embed for an invalid or unavailable component action.
 
@@ -4655,7 +4747,7 @@ Shared shop presentation for slash commands and scheduled notifications.
 
 **Scope:** `src/views/shop.py` · `module`
 
-[Source](../src/views/shop.py#L29)
+[Source](../src/views/shop.py#L30)
 
 Format a current price and any original price discount on one line.
 
@@ -4663,7 +4755,7 @@ Format a current price and any original price discount on one line.
 
 **Scope:** `src/views/shop.py` · `module`
 
-[Source](../src/views/shop.py#L56)
+[Source](../src/views/shop.py#L57)
 
 Render a heading and one tier-coloured embed for each skin offer.
 
@@ -4671,7 +4763,7 @@ Render a heading and one tier-coloured embed for each skin offer.
 
 **Scope:** `src/views/shop.py` · `module`
 
-[Source](../src/views/shop.py#L97)
+[Source](../src/views/shop.py#L98)
 
 Add a menu containing only the skin offers rendered beside it.
 
@@ -4679,7 +4771,7 @@ Add a menu containing only the skin offers rendered beside it.
 
 **Scope:** `src/views/shop.py` · `module`
 
-[Source](../src/views/shop.py#L139)
+[Source](../src/views/shop.py#L140)
 
 Render an account selector from prepared accounts and current name privacy.
 
@@ -4687,7 +4779,7 @@ Render an account selector from prepared accounts and current name privacy.
 
 **Scope:** `src/views/shop.py` · `module`
 
-[Source](../src/views/shop.py#L175)
+[Source](../src/views/shop.py#L176)
 
 Render Night Market offers and controls without further preparation waits.
 
@@ -4699,7 +4791,7 @@ VALORANT cog presentation helpers for names, views, embeds, and errors.
 
 **Scope:** `src/views/ui.py` · `module`
 
-[Source](../src/views/ui.py#L18)
+[Source](../src/views/ui.py#L19)
 
 Keyword arguments for an embed response with optional controls.
 
@@ -4751,7 +4843,7 @@ Build a standard BotFragg embed with optional description, title, and colour.
 
 Format one message using the caller's Discord locale.
 
-### `def localized_embed(interaction: discord.Interaction, description_key: str | None = None, *, title_key: str | None = None, colour: int = DARK, description_args: dict[str, object] | None = None, title_args: dict[str, object] | None = None) -> discord.Embed`
+### `def localized_embed(interaction: discord.Interaction, description_key: str | None = None, *, title_key: str | None = None, description_args: dict[str, object] | None = None, title_args: dict[str, object] | None = None) -> discord.Embed`
 
 **Scope:** `src/views/ui.py` · `module`
 
@@ -4763,7 +4855,7 @@ Build an embed from catalog message IDs and the caller's locale.
 
 **Scope:** `src/views/ui.py` · `module`
 
-[Source](../src/views/ui.py#L122)
+[Source](../src/views/ui.py#L120)
 
 Send a private error embed using the interaction's available response path.
 
@@ -4771,14 +4863,66 @@ Send a private error embed using the interaction's available response path.
 
 **Scope:** `src/views/ui.py` · `module`
 
-[Source](../src/views/ui.py#L137)
+[Source](../src/views/ui.py#L135)
 
 Log an unexpected interaction failure and send a private generic response.
+
+### `async def accessory(catalog: Any, item_type: str, identifier: str | None) -> Accessory | None`
+
+**Scope:** `src/views/ui.py` · `module`
+
+[Source](../src/views/ui.py#L146)
+
+Resolve one equipped cosmetic, ignoring metadata failures.
+
+### `def skin_video_options(skin: Skin, translator: BotFraggTranslator, locale: discord.Locale) -> list[discord.SelectOption]`
+
+**Scope:** `src/views/ui.py` · `module`
+
+[Source](../src/views/ui.py#L158)
+
+List playable levels and chromas within Discord's select-menu limit.
+
+### `def skin_video(skin: Skin, variant_uuid: str, translator: BotFraggTranslator, locale: discord.Locale) -> tuple[str, str] | None`
+
+**Scope:** `src/views/ui.py` · `module`
+
+[Source](../src/views/ui.py#L192)
+
+Return the display name and inspect video for one level or chroma.
 
 ### `def timestamp(value: int | float | datetime, style: str = 'R') -> str`
 
 **Scope:** `src/views/ui.py` · `module`
 
-[Source](../src/views/ui.py#L148)
+[Source](../src/views/ui.py#L226)
 
 Format a timestamp as a Discord inline timestamp using the requested style.
+
+## `src/views/video_menus.py`
+
+Shared two-step skin-video menus used by the shop and loadout commands.
+
+### `class VideoMenu`
+
+**Scope:** `src/views/video_menus.py` · `module`
+
+[Source](../src/views/video_menus.py#L17)
+
+Identify one command's video-menu actions and message keys.
+
+### `async def open_video_menu(interaction: discord.Interaction, payload: str, menu: VideoMenu, catalog: Any, emoji_service: Any, translator: BotFraggTranslator) -> None`
+
+**Scope:** `src/views/video_menus.py` · `module`
+
+[Source](../src/views/video_menus.py#L46)
+
+Open a private level/chroma video menu for one selected skin.
+
+### `async def send_video(interaction: discord.Interaction, payload: str, menu: VideoMenu, catalog: Any, emoji_service: Any, translator: BotFraggTranslator) -> None`
+
+**Scope:** `src/views/video_menus.py` · `module`
+
+[Source](../src/views/video_menus.py#L105)
+
+Privately return the selected level or chroma inspect video.

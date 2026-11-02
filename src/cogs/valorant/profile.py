@@ -22,10 +22,9 @@ from ...services.catalog import (
     localized_text,
 )
 from ...services.emojis import ApplicationEmojiService
-from ...services.http import HTTPFailure
 from ...services.matches import MatchesUnavailable, MatchSummary
 from ...services.profile import PlayerProfile, ProfileUnavailable
-from ...views.ui import DARK, account_viewer, embed, error
+from ...views.ui import accessory, account_viewer, embed, error
 
 log = logging.getLogger(__name__)
 
@@ -127,8 +126,8 @@ class ProfileCog(commands.Cog):
         ):
             raise matches_result
         card_art, title, act, bars, ranked = await asyncio.gather(
-            self._accessory(PLAYER_CARD_ITEM_TYPE_ID, data.card_id),
-            self._accessory(PLAYER_TITLE_ITEM_TYPE_ID, data.title_id),
+            accessory(self.bot.catalog, PLAYER_CARD_ITEM_TYPE_ID, data.card_id),
+            accessory(self.bot.catalog, PLAYER_TITLE_ITEM_TYPE_ID, data.title_id),
             self.bot.catalog.current_act(),
             self.bot.emoji_service.battlepass_bars(),
             self._ranked_changes(account, matches),
@@ -186,17 +185,6 @@ class ProfileCog(commands.Cog):
             }
         return 0
 
-    async def _accessory(
-        self, item_type: str, identifier: str | None
-    ) -> Accessory | None:
-        """Resolve one equipped cosmetic, ignoring metadata failures."""
-        if not identifier:
-            return None
-        try:
-            return await self.bot.catalog.accessory(item_type, identifier)
-        except HTTPFailure:
-            return None
-
     @staticmethod
     def _profile_card(
         player: str,
@@ -217,7 +205,7 @@ class ProfileCog(commands.Cog):
         empty_bar: str = "░",
     ) -> discord.Embed:
         """Render the rank, level, and recent-match blocks of a profile card."""
-        card = embed(colour=DARK)
+        card = embed()
         lines: list[str] = [f"**{player}**"]
         if title_text:
             lines.append(f"-# {title_text}")

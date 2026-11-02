@@ -87,6 +87,7 @@ docstring. Regenerate it after application documentation changes with
 | [src/cogs/valorant/alerts.py](../src/cogs/valorant/alerts.py) | Implements user-owned skin alerts and alert-management controls. |
 | [src/cogs/valorant/battlepass.py](../src/cogs/valorant/battlepass.py) | Displays battlepass and mission progress using Riot gameplay data. |
 | [src/cogs/valorant/crosshair.py](../src/cogs/valorant/crosshair.py) | Displays crosshair profiles and codes, renders previews, and shares one publicly after confirmation. |
+| [src/cogs/valorant/loadout.py](../src/cogs/valorant/loadout.py) | Displays the caller's equipped skins, variants, gun buddies, and inspect-video menus. |
 | [src/cogs/valorant/login.py](../src/cogs/valorant/login.py) | Handles nonce-bound Riot sign-in through a private Discord modal. |
 | [src/cogs/valorant/logout.py](../src/cogs/valorant/logout.py) | Clears Riot credentials or deletes the caller's stored data. |
 | [src/cogs/valorant/profile.py](../src/cogs/valorant/profile.py) | Renders the caller's rank, level, equipped cosmetics, and recent matches. |
@@ -111,7 +112,7 @@ docstring. Regenerate it after application documentation changes with
 | [src/services/analytics.py](../src/services/analytics.py) | Records successful command use and computes scoped aggregate statistics. |
 | [src/services/suggestions.py](../src/services/suggestions.py) | Owns suggestion persistence, following, and atomic review outcomes. |
 | [src/services/auth.py](../src/services/auth.py) | Owns Riot OAuth, credential refresh, entitlement repair, and account linking. |
-| [src/services/catalog.py](../src/services/catalog.py) | Loads, searches, refreshes, and caches skin, bundle, accessory, mission, and game metadata (maps, ranks, seasons). |
+| [src/services/catalog.py](../src/services/catalog.py) | Loads, searches, refreshes, and caches skin, weapon, bundle, accessory, mission, and game metadata (maps, ranks, seasons). |
 | [src/services/crosshair.py](../src/services/crosshair.py) | Fetches, decodes, encodes, and caches a user's crosshair profiles. |
 | [src/services/crosshair_render.py](../src/services/crosshair_render.py) | Renders crosshair share codes to PNG locally with Pillow. |
 | [src/services/crypto.py](../src/services/crypto.py) | Encrypts and decrypts stored Riot credentials with Fernet. |
@@ -126,7 +127,8 @@ docstring. Regenerate it after application documentation changes with
 | [src/views/__init__.py](../src/views/__init__.py) | Re-exports common timestamps and persistent interactive controls. |
 | [src/views/components.py](../src/views/components.py) | Implements restart-safe, owner-restricted buttons and select menus. |
 | [src/views/shop.py](../src/views/shop.py) | Shares shop cards, account/skin selectors, and Night Market presentation between commands and background notifications. |
-| [src/views/ui.py](../src/views/ui.py) | Shares embed, view, error, translation, and privacy-aware account-name helpers. |
+| [src/views/ui.py](../src/views/ui.py) | Shares embed, view, error, translation, skin-video, and privacy-aware account-name helpers. |
+| [src/views/video_menus.py](../src/views/video_menus.py) | Runs the two-step level/chroma video menus shared by the shop and loadout commands and holds their action and message-key configuration. |
 
 ## Tests
 

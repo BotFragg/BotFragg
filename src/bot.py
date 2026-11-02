@@ -241,6 +241,7 @@ class BotFraggBot(commands.AutoShardedBot):
             "src.cogs.valorant.penalties",
             "src.cogs.valorant.status",
             "src.cogs.valorant.profile",
+            "src.cogs.valorant.loadout",
             "src.cogs.events",
             "src.cogs.extra",
             "src.cogs.suggestions",

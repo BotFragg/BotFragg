@@ -18,7 +18,7 @@ from ...services.accounts import account_for_user, selected_account
 from ...services.auth import AuthenticationRequired
 from ...services.crosshair import CrosshairProfile, CrosshairUnavailable
 from ...services.http import DISCORD_HTTP_ERRORS, HTTPFailure
-from ...views.ui import DARK, embed, error, translated
+from ...views.ui import embed, error, translated
 
 MAX_OPTIONS = 25
 VIEW_TIMEOUT = 900
@@ -418,7 +418,6 @@ class CrosshairCog(commands.Cog):
                 "crosshair-title",
                 name=discord.utils.escape_markdown(profile.name),
             ),
-            colour=DARK,
         )
         card.set_image(url="attachment://crosshair.png")
         return card, png

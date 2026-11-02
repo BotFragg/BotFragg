@@ -9,7 +9,7 @@ from discord.ext import commands
 from ...bot import BotFraggBot
 from ...services.accounts import get_user, update_user_preference
 from ...views import OwnedSelect
-from ...views.ui import DARK, embed, error, localized_embed, translated, view
+from ...views.ui import embed, error, localized_embed, translated, view
 
 SETTINGS = {
     "daily_shop_enabled": ("Send your shop every day by DM", "setting-daily-shop"),
@@ -124,8 +124,7 @@ class SettingsCog(commands.Cog):
         )
         await interaction.followup.send(
             embed=embed(
-                translated(interaction, "settings-set-prompt", setting=setting_label),
-                colour=DARK,
+                translated(interaction, "settings-set-prompt", setting=setting_label)
             ),
             view=view(menu),
             ephemeral=True,

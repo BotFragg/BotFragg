@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import time
 from collections.abc import Sequence
 
 import discord
@@ -12,7 +11,6 @@ from discord import app_commands
 from discord.ext import commands
 
 from ...bot import BotFraggBot
-from ...localization import BotFraggTranslator
 from ...models import Account
 from ...services.accounts import (
     account_for_user,
@@ -21,7 +19,7 @@ from ...services.accounts import (
     selected_account,
 )
 from ...services.auth import AuthenticationRequired
-from ...services.catalog import Bundle, Skin, localized_text
+from ...services.catalog import Bundle
 from ...services.http import HTTPFailure
 from ...services.shop import (
     FeaturedBundle,
@@ -29,7 +27,13 @@ from ...services.shop import (
     ShopData,
     ShopUnavailable,
 )
-from ...views import OwnedActionButton, OwnedSelect, select_custom_id, timestamp
+from ...views import (
+    OwnedActionButton,
+    OwnedSelect,
+    select_custom_id,
+    selected_values,
+    timestamp,
+)
 from ...views.shop import (
     TIER_COLOURS,
     _price_line,
@@ -39,6 +43,7 @@ from ...views.shop import (
     offer_cards,
 )
 from ...views.ui import account_viewer, embed, error, translated, view
+from ...views.video_menus import SHOP_VIDEO_MENU, open_video_menu, send_video
 
 log = logging.getLogger(__name__)
 
@@ -51,8 +56,8 @@ class ShopCog(commands.Cog):
         self.bot = bot
         bot.register_component("shop_mode", self.shop_mode)
         bot.register_component("shop_account", self.shop_account)
-        bot.register_component("shop_skin", self.shop_skin)
-        bot.register_component("shop_variant", self.shop_variant)
+        bot.register_component(SHOP_VIDEO_MENU.action, self.shop_skin)
+        bot.register_component(SHOP_VIDEO_MENU.variant_action, self.shop_variant)
         bot.register_component("shop_bundle", self.shop_bundle)
 
     @app_commands.command(
@@ -661,21 +666,6 @@ class ShopCog(commands.Cog):
             )
         await interaction.edit_original_response(embeds=embeds, view=controls)
 
-    @staticmethod
-    def _selection_values(interaction: discord.Interaction, custom_id: str) -> set[str]:
-        """Read the values actually offered by this message's matching select menu."""
-        message = getattr(interaction, "message", None)
-        values: set[str] = set()
-        for row in getattr(message, "components", ()):
-            for component in getattr(row, "children", ()):
-                if getattr(component, "custom_id", None) == custom_id:
-                    values.update(
-                        str(option.value)
-                        for option in getattr(component, "options", ())
-                    )
-                    return values
-        return values
-
     async def shop_bundle(self, interaction: discord.Interaction, payload: str) -> None:
         """Revalidate a selected featured bundle against the caller's account and view."""
         puuid, separator, remainder = payload.partition("|")
@@ -694,7 +684,7 @@ class ShopCog(commands.Cog):
             or not puuid
             or not bundle_id
             or source not in {"command", "shop"}
-            or bundle_id not in self._selection_values(interaction, custom_id)
+            or bundle_id not in selected_values(interaction, custom_id)
         ):
             await interaction.response.send_message(
                 translated(interaction, "shop-bundle-selection-invalid"),
@@ -728,153 +718,28 @@ class ShopCog(commands.Cog):
             return
         await interaction.edit_original_response(embeds=embeds, view=controls)
 
-    @staticmethod
-    def _video_options(
-        skin: Skin, translator: BotFraggTranslator, locale: discord.Locale
-    ) -> list[discord.SelectOption]:
-        """List playable levels and chromas within Discord's select-menu limit."""
-        options: list[discord.SelectOption] = []
-        seen: set[str] = set()
-        for kind, items in (
-            (translator.text(locale, "shop-level"), skin.levels),
-            (translator.text(locale, "shop-chroma"), skin.chromas),
-        ):
-            for item in items:
-                uuid = str(item.get("uuid") or "")
-                video = item.get("streamedVideo")
-                if (
-                    not uuid
-                    or uuid in seen
-                    or not isinstance(video, str)
-                    or not video.startswith("https://")
-                ):
-                    continue
-                name = (
-                    localized_text(item.get("displayName"), locale)
-                    or skin.name_for(locale)
-                    or translator.text(locale, "common-unknown")
-                )
-                options.append(
-                    discord.SelectOption(label=f"{kind}: {name}"[:100], value=uuid)
-                )
-                seen.add(uuid)
-                if len(options) == 25:
-                    return options
-        return options
-
     async def shop_skin(self, interaction: discord.Interaction, payload: str) -> None:
         """Open a private level/chroma menu for a skin offered in this message."""
-        expiry, separator, skin_uuid = payload.rpartition("|")
-        try:
-            expires = int(expiry)
-        except ValueError:
-            expires = 0
-        skin_menu_id = select_custom_id("shop_skin", interaction.user.id, expiry)
-        if (
-            not separator
-            or expires <= time.time()
-            or not skin_uuid
-            or skin_uuid not in self._selection_values(interaction, skin_menu_id)
-        ):
-            await interaction.response.send_message(
-                translated(interaction, "shop-skin-selection-invalid"),
-                ephemeral=True,
-            )
-            return
-        skin = self.bot.catalog.get_skin(skin_uuid)
-        if skin is None:
-            await interaction.response.send_message(
-                translated(interaction, "shop-skin-unavailable"),
-                ephemeral=True,
-            )
-            return
-        options = self._video_options(skin, self.bot.translator, interaction.locale)
-        if not options:
-            await interaction.response.send_message(
-                translated(interaction, "shop-no-variants"),
-                ephemeral=True,
-            )
-            return
-        controls = view(
-            OwnedSelect(
-                "shop_variant",
-                interaction.user.id,
-                f"{expires}|{skin.uuid}",
-                placeholder=translated(interaction, "shop-variant-select-placeholder"),
-                options=options,
-                empty_option_label=translated(interaction, "common-unavailable"),
-            )
-        )
-        skin_name = self.bot.emoji_service.skin_name(
-            skin.name_for(interaction.locale)
-            or self.bot.translator.text(interaction.locale, "common-unknown"),
-            skin.tier_uuid,
-        )
-        await interaction.response.send_message(
-            translated(interaction, "shop-variant-prompt", skin=skin_name),
-            view=controls,
-            ephemeral=True,
+        await open_video_menu(
+            interaction,
+            payload,
+            SHOP_VIDEO_MENU,
+            self.bot.catalog,
+            self.bot.emoji_service,
+            self.bot.translator,
         )
 
     async def shop_variant(
         self, interaction: discord.Interaction, payload: str
     ) -> None:
         """Privately return a selected video only when it belongs to that skin."""
-        skin_context, separator, variant_uuid = payload.rpartition("|")
-        expiry, skin_separator, skin_uuid = skin_context.partition("|")
-        try:
-            expires = int(expiry)
-        except ValueError:
-            expires = 0
-        variant_menu_id = select_custom_id(
-            "shop_variant", interaction.user.id, f"{expiry}|{skin_uuid}"
-        )
-        if (
-            not separator
-            or not skin_separator
-            or expires <= time.time()
-            or not skin_uuid
-            or not variant_uuid
-            or variant_uuid not in self._selection_values(interaction, variant_menu_id)
-        ):
-            await interaction.response.send_message(
-                translated(interaction, "shop-video-selection-invalid"),
-                ephemeral=True,
-            )
-            return
-        skin = self.bot.catalog.get_skin(skin_uuid)
-        selected = next(
-            (
-                (kind, item)
-                for kind, items in (
-                    ("level", skin.levels if skin else []),
-                    ("chroma", skin.chromas if skin else []),
-                )
-                for item in items
-                if str(item.get("uuid") or "") == variant_uuid
-            ),
-            None,
-        )
-        if (
-            skin is None
-            or not selected
-            or not isinstance(selected[1].get("streamedVideo"), str)
-            or not selected[1]["streamedVideo"].startswith("https://")
-        ):
-            await interaction.response.send_message(
-                translated(interaction, "shop-video-unavailable"), ephemeral=True
-            )
-            return
-        kind, item = selected
-        display_name = (
-            skin.name_for(interaction.locale)
-            if kind == "level"
-            else localized_text(item.get("displayName"), interaction.locale)
-            or skin.name_for(interaction.locale)
-        ) or self.bot.translator.text(interaction.locale, "common-unknown")
-        linked_name = self.bot.emoji_service.skin_name(display_name, skin.tier_uuid)
-        await interaction.response.send_message(
-            f"[{linked_name}]({item['streamedVideo']})", ephemeral=True
+        await send_video(
+            interaction,
+            payload,
+            SHOP_VIDEO_MENU,
+            self.bot.catalog,
+            self.bot.emoji_service,
+            self.bot.translator,
         )
 
     async def shop_account(

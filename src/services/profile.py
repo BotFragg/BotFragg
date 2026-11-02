@@ -27,6 +27,16 @@ class ProfileUnavailable(RuntimeError):
 
 
 @dataclass(frozen=True, slots=True)
+class EquippedSkin:
+    """One weapon slot's equipped skin, chroma, and gun buddy."""
+
+    weapon_id: str
+    skin_id: str
+    chroma_id: str | None = None
+    charm_id: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class PlayerProfile:
     """Identity, rank, and level data for one linked account."""
 
@@ -39,6 +49,7 @@ class PlayerProfile:
     wins: int | None
     games: int | None
     peak_tier: int | None
+    guns: tuple[EquippedSkin, ...] = ()
 
     @property
     def xp_target(self) -> int | None:
@@ -146,7 +157,29 @@ class ProfileService:
             wins=nonnegative(entry.get("NumberOfWins")),
             games=nonnegative(entry.get("NumberOfGames")),
             peak_tier=_peak_tier(seasonal),
+            guns=_equipped_skins(loadout),
         )
+
+
+def _equipped_skins(loadout: dict[str, Any]) -> tuple[EquippedSkin, ...]:
+    """Return the loadout's equipped weapons, skipping malformed entries."""
+    guns: list[EquippedSkin] = []
+    for raw in loadout.get("Guns") or []:
+        if not isinstance(raw, dict):
+            continue
+        weapon_id = identifier(raw.get("ID"))
+        skin_id = identifier(raw.get("SkinID"))
+        if not weapon_id or not skin_id:
+            continue
+        guns.append(
+            EquippedSkin(
+                weapon_id=weapon_id,
+                skin_id=skin_id,
+                chroma_id=identifier(raw.get("ChromaID")),
+                charm_id=identifier(raw.get("CharmID")),
+            )
+        )
+    return tuple(guns)
 
 
 def _profile_request(http: HTTPClient, url: str) -> Any:

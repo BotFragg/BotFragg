@@ -20,7 +20,12 @@ ACT = "act-1"
 
 
 def loadout(
-    *, card: str = "card-1", title: str | None = None, level: int = 214, hidden=False
+    *,
+    card: str = "card-1",
+    title: str | None = None,
+    level: int = 214,
+    hidden=False,
+    guns=None,
 ):
     """Build one player-loadout payload."""
     return {
@@ -29,7 +34,24 @@ def loadout(
             "PlayerTitleID": title or "00000000-0000-0000-0000-000000000000",
             "AccountLevel": level,
             "HideAccountLevel": hidden,
-        }
+        },
+        "Guns": (
+            [
+                {
+                    "ID": "weapon-1",
+                    "SkinID": "skin-1",
+                    "ChromaID": "chroma-1",
+                    "CharmID": "charm-1",
+                },
+                {
+                    "ID": "weapon-2",
+                    "SkinID": "skin-2",
+                    "ChromaID": "00000000-0000-0000-0000-000000000000",
+                },
+            ]
+            if guns is None
+            else guns
+        ),
     }
 
 
@@ -277,3 +299,30 @@ async def test_a_failed_profile_is_not_retried_immediately():
         await instance.profile(ACCOUNT)
 
     assert http.request.await_count == calls
+
+
+async def test_profile_carries_the_equipped_guns():
+    """The loadout must expose each weapon's skin, chroma, and buddy."""
+    instance, _http, _catalog = service()
+
+    data = await instance.profile(ACCOUNT)
+
+    assert [
+        (gun.weapon_id, gun.skin_id, gun.chroma_id, gun.charm_id) for gun in data.guns
+    ] == [
+        ("weapon-1", "skin-1", "chroma-1", "charm-1"),
+        ("weapon-2", "skin-2", None, None),
+    ]
+
+
+async def test_malformed_gun_entries_are_skipped():
+    """A broken gun row must not hide the rest of the loadout."""
+    instance, _http, _catalog = service(
+        loadout_payload=loadout(
+            guns=[None, {"ID": "weapon"}, {"ID": "w", "SkinID": "s"}]
+        )
+    )
+
+    data = await instance.profile(ACCOUNT)
+
+    assert [(gun.weapon_id, gun.skin_id) for gun in data.guns] == [("w", "s")]

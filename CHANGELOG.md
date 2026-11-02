@@ -4,6 +4,10 @@
 
 ### Added
 
+- `/loadout` shows the selected account's equipped themed skins, grouped by
+  weapon type, with the equipped variant and gun buddy on each line. A select
+  menu opens the skin's level and chroma inspect videos privately, using the
+  same flow as the shop. The equipped player card is the card thumbnail.
 - `/profile [user]` can show another user's profile when they enable the new
   profile-sharing setting; it is off by default. The target's hide-name
   setting is applied to the card, and third-party views share a 30-second

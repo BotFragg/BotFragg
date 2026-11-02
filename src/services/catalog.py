@@ -32,7 +32,7 @@ GAME_METADATA_DOCUMENTS = (
     ("maps", "maps"),
     ("seasons", "seasons"),
 )
-CATALOG_FORMAT_VERSION = 4
+CATALOG_FORMAT_VERSION = 5
 BUDDY_ITEM_TYPE_ID = "dd3bf334-87f3-40bd-b043-682a57a8dc3a"
 PLAYER_CARD_ITEM_TYPE_ID = "3f296c07-64c3-494c-923b-fe692a4fa1bd"
 PLAYER_TITLE_ITEM_TYPE_ID = "de7caa6b-adf7-4588-bbd1-143831e786c6"
@@ -151,6 +151,51 @@ class Skin:
 
     def name_for(self, locale: object | None = None) -> str:
         """Return this skin's localized or English name, or empty when missing."""
+        return localized_text(self.names, locale) or (
+            "" if self.name == self.uuid else self.name
+        )
+
+    def chroma_label(
+        self, chroma_uuid: str | None, locale: object | None = None
+    ) -> str | None:
+        """Return the equipped variant's localized label, when it has one."""
+        if not chroma_uuid:
+            return None
+        chroma = next(
+            (
+                item
+                for item in self.chromas
+                if str(item.get("uuid") or "") == chroma_uuid
+            ),
+            None,
+        )
+        if chroma is None:
+            return None
+        name = localized_text(chroma.get("displayName"), locale)
+        if not name or name == self.name_for(locale):
+            return None
+        # Variant labels sit on their own line, sometimes in full-width brackets.
+        label = name.splitlines()[-1].strip()
+        for opening, closing in (("(", ")"), (chr(0xFF08), chr(0xFF09))):
+            if label.startswith(opening) and label.endswith(closing):
+                label = label[1:-1].strip()
+                break
+        return label or None
+
+
+@dataclass(slots=True)
+class Weapon:
+    """Hold normalized identity and display data for one weapon."""
+
+    uuid: str
+    name: str
+    icon: str | None = None
+    category: str | None = None
+    default_skin_uuid: str | None = None
+    names: dict[str, str] = field(default_factory=dict)
+
+    def name_for(self, locale: object | None = None) -> str:
+        """Return this weapon's localized or English name, or empty when missing."""
         return localized_text(self.names, locale) or (
             "" if self.name == self.uuid else self.name
         )
@@ -285,6 +330,23 @@ def _bundle_from_snapshot(item: dict[str, Any]) -> Bundle:
     )
 
 
+def _weapon_from_snapshot(item: dict[str, Any]) -> Weapon:
+    """Build a weapon from a cached row, tolerating legacy single-name rows."""
+    names = _localized_values(item.get("names") or item.get("name"))
+    category = item.get("category")
+    default_skin = item.get("default_skin_uuid")
+    return Weapon(
+        uuid=item["uuid"],
+        name=str(
+            item.get("name") or localized_text(names, ENGLISH_LOCALE) or item["uuid"]
+        ),
+        icon=item.get("icon"),
+        category=category if isinstance(category, str) else None,
+        default_skin_uuid=default_skin if isinstance(default_skin, str) else None,
+        names=names,
+    )
+
+
 class CatalogService:
     """Load, refresh, search, and cache VALORANT catalog data."""
 
@@ -312,6 +374,7 @@ class CatalogService:
         self._game_documents: dict[str, tuple[float, Any]] = {}
         self._game_document_retry_at: dict[str, float] = {}
         self._game_metadata_generation = 0
+        self.weapons: dict[str, Weapon] = {}
         self._game_document_locks: WeakValueDictionary[str, asyncio.Lock] = (
             WeakValueDictionary()
         )
@@ -387,6 +450,7 @@ class CatalogService:
                 self.skins,
                 self._skin_choices,
                 self.bundles,
+                self.weapons,
                 self.skin_aliases,
                 self.version,
                 self._cache_format,
@@ -418,7 +482,7 @@ class CatalogService:
                         and not write.cancelled()
                         and write.exception() is None
                     )
-                    if saved and current_version != previous[4]:
+                    if saved and current_version != previous[5]:
                         self._accessory_generation += 1
                         self._accessories.clear()
                         self._accessory_retry_at.clear()
@@ -431,6 +495,7 @@ class CatalogService:
                         self.skins,
                         self._skin_choices,
                         self.bundles,
+                        self.weapons,
                         self.skin_aliases,
                         self.version,
                         self._cache_format,
@@ -730,7 +795,26 @@ class CatalogService:
     ) -> None:
         """Normalize weapon and bundle responses and rebuild lookup indexes."""
         skin_map: dict[str, Skin] = {}
+        weapon_map: dict[str, Weapon] = {}
         for weapon in _catalog_rows(weapons, "weapons"):
+            weapon_uuid = weapon.get("uuid")
+            if isinstance(weapon_uuid, str) and weapon_uuid:
+                names = _localized_values(weapon.get("displayName"))
+                shop_data = weapon.get("shopData")
+                category = (
+                    shop_data.get("category") if isinstance(shop_data, dict) else None
+                )
+                default_skin = weapon.get("defaultSkinUuid")
+                weapon_map[weapon_uuid] = Weapon(
+                    uuid=weapon_uuid,
+                    name=localized_text(names, ENGLISH_LOCALE) or weapon_uuid,
+                    icon=weapon.get("displayIcon"),
+                    category=category if isinstance(category, str) else None,
+                    default_skin_uuid=(
+                        default_skin if isinstance(default_skin, str) else None
+                    ),
+                    names=names,
+                )
             for raw in _catalog_rows(weapon.get("skins"), "skins"):
                 if not raw.get("uuid"):
                     raise HTTPFailure("Missing catalog skin identifier")
@@ -776,6 +860,7 @@ class CatalogService:
             )
         self.skins = skin_map
         self.bundles = bundle_map
+        self.weapons = weapon_map
         self._reindex()
 
     def _reindex(self) -> None:
@@ -792,6 +877,10 @@ class CatalogService:
     def get_skin(self, uuid: str) -> Skin | None:
         """Resolve a skin from any indexed base, offer, or level identifier."""
         return self.skin_aliases.get(str(uuid))
+
+    def get_weapon(self, uuid: str) -> Weapon | None:
+        """Resolve a weapon by its Riot UUID."""
+        return self.weapons.get(str(uuid))
 
     def get_bundle(self, uuid: str) -> Bundle | None:
         """Resolve bundle metadata by its Riot UUID."""
@@ -978,6 +1067,7 @@ class CatalogService:
             "version": self.version,
             "skins": [asdict(skin) for skin in self.skins.values()],
             "bundles": [asdict(bundle) for bundle in self.bundles.values()],
+            "weapons": [asdict(weapon) for weapon in self.weapons.values()],
         }
         return json.dumps(payload, separators=(",", ":"))
 
@@ -999,6 +1089,7 @@ class CatalogService:
         for kind, identifiers in (
             ("skins", ("uuid", "offer_uuid")),
             ("bundles", ("uuid",)),
+            ("weapons", ("uuid",)),
         ):
             rows = raw.get(kind, [])
             if not isinstance(rows, list) or _invalid_snapshot_rows(rows, identifiers):
@@ -1010,6 +1101,9 @@ class CatalogService:
         }
         self.bundles = {
             row["uuid"]: _bundle_from_snapshot(row) for row in raw.get("bundles", [])
+        }
+        self.weapons = {
+            row["uuid"]: _weapon_from_snapshot(row) for row in raw.get("weapons", [])
         }
         self.version, self._cache_format = version, cache_format
         self._reindex()

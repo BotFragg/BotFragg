@@ -24,6 +24,7 @@ from src.cogs.valorant.accounts import AccountsCog
 from src.cogs.valorant.alerts import AlertsCog
 from src.cogs.valorant.battlepass import BattlepassCog
 from src.cogs.valorant.crosshair import CrosshairCog
+from src.cogs.valorant.loadout import LoadoutCog
 from src.cogs.valorant.login import LoginCog
 from src.cogs.valorant.logout import LogoutCog
 from src.cogs.valorant.penalties import PenaltiesCog
@@ -267,6 +268,7 @@ async def test_initial_release_command_contract(
         PenaltiesCog(bot),
         StatusCog(bot),
         ProfileCog(bot),
+        LoadoutCog(bot),
         ExtraCog(bot),
         SuggestionsCog(bot),
         StaffCog(bot),
@@ -292,6 +294,7 @@ async def test_initial_release_command_contract(
         "penalties",
         "status",
         "profile",
+        "loadout",
         "ping",
         "botinfo",
         "help",

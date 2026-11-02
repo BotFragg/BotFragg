@@ -15,7 +15,7 @@ from ...services.valorant_status import (
     StatusEntry,
     StatusUnavailable,
 )
-from ...views.ui import DARK, embed, error, timestamp, translated
+from ...views.ui import embed, error, timestamp, translated
 
 MAX_ENTRIES = 5
 PLATFORM_NAMES = {"windows": "Windows", "ps5": "PlayStation 5", "xbox": "Xbox"}
@@ -82,8 +82,7 @@ class StatusCog(commands.Cog):
             await error(interaction, "error-riot-services-unavailable")
             return
         card = embed(
-            title=translated(interaction, "status-title", region=data.region.upper()),
-            colour=DARK,
+            title=translated(interaction, "status-title", region=data.region.upper())
         )
         hidden = len(data.entries) - MAX_ENTRIES
         if not data.entries:

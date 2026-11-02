@@ -43,7 +43,7 @@ Riot credentials are encrypted at rest, and you can delete all of your stored da
 | Category  | Commands                                                                                                                |
 | --------- | ----------------------------------------------------------------------------------------------------------------------- |
 | Account   | `/login`, `/logout`, `/deletedata`, `/account`, `/accounts`                                                             |
-| VALORANT  | `/shop`, `/bundles`, `/nightmarket`, `/balance`, `/battlepass`, `/missions`, `/penalties`, `/crosshair view`, `/status`, `/profile [user]` |
+| VALORANT  | `/shop`, `/bundles`, `/nightmarket`, `/balance`, `/battlepass`, `/missions`, `/penalties`, `/crosshair view`, `/status`, `/profile [user]`, `/loadout` |
 | Alerts    | `/alert`, `/alerts`, `/testalerts`                                                                                      |
 | Settings  | `/settings view`, `/settings set`                                                                                       |
 | Community | `/help`, `/ping`, `/botinfo`, `/links`, `/suggest`, `/suggestion`                                                       |

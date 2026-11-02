@@ -5,6 +5,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
+import discord
 import pytest
 
 from src.cogs.valorant import profile as profile_cog
@@ -17,6 +18,7 @@ from src.services.catalog import (
 )
 from src.services.matches import MatchesUnavailable, MatchSummary, PlayerStats
 from src.services.profile import LEVEL_XP_TARGET, PlayerProfile, ProfileUnavailable
+from src.views.ui import RED
 from tests.helpers import (
     TEST_LOCALE,
     TEST_TRANSLATOR,
@@ -211,6 +213,7 @@ async def test_profile_card_shows_rank_level_and_matches(monkeypatch):
     followup = await run(monkeypatch, bot)
 
     card = followup.sent[0]["embed"]
+    assert card.colour == discord.Colour(RED)
     assert card.title is None
     assert card.description.startswith("**KumKaShree#Shree**\n\n<rank19>")
     assert "<rank19> **Diamond 2** · 47 RR · 58% WR" in card.description

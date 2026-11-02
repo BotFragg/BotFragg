@@ -1266,7 +1266,7 @@ async def test_bundle_click_acknowledges_before_the_database_lookup(monkeypatch)
 
     monkeypatch.setattr(shop_module, "account_for_user", account_for_user)
     monkeypatch.setattr(
-        ShopCog, "_selection_values", lambda *_args, **_kwargs: {"bundle-id"}
+        shop_module, "selected_values", lambda *_args, **_kwargs: {"bundle-id"}
     )
     bot = _localized_bot(
         shop=NS(storefront=AsyncMock()), register_component=lambda *_args: None

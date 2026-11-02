@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last updated:** November 1, 2026
+**Last updated:** November 2, 2026
 
 This policy describes data handled by BotFragg when you use its Discord bot
 features. BotFragg is an independent project and is not affiliated with Riot
@@ -44,8 +44,8 @@ encrypted with the operator's Fernet `TOKEN_ENCRYPTION_KEY`.
 
 BotFragg sends the necessary Riot session credentials and account identifiers
 to Riot authentication and VALORANT endpoints to retrieve your store, wallet,
-mission, battlepass, crosshair, rank, account level, and recent match
-information. Crosshair profiles are decoded in memory, cached for up to five
+mission, battlepass, crosshair, rank, account level, recent match information,
+and equipped cosmetics. Crosshair profiles are decoded in memory, cached for up to five
 minutes, and never written to BotFragg's database. Profile data is cached in
 memory for five minutes and finished match summaries, which include other
 players' combat statistics, for the lifetime of the process; neither is written
@@ -69,6 +69,10 @@ channel can see the post.
 `/profile` replies in the channel where it is used, so anyone who can read that
 channel can see the rank, level, equipped title, and recent-match summary it
 shows. The hide-name setting replaces your Riot ID with a generic label.
+
+`/loadout` also replies in the channel where it is used and shows your equipped
+skins, their variants, gun buddies, and player card to anyone who can read that
+channel.
 
 By default, others cannot view your profile. Enabling profile sharing in
 `/settings` lets anyone run `/profile` with your user and see the same card; it

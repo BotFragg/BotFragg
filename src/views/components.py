@@ -117,6 +117,20 @@ class OwnedActionButton(discord.ui.DynamicItem[discord.ui.Button], template=ACTI
         )
 
 
+def selected_values(interaction: discord.Interaction[Any], custom_id: str) -> set[str]:
+    """Read the values actually offered by this message's matching select menu."""
+    message = getattr(interaction, "message", None)
+    values: set[str] = set()
+    for row in getattr(message, "components", ()):
+        for component in getattr(row, "children", ()):
+            if getattr(component, "custom_id", None) == custom_id:
+                values.update(
+                    str(option.value) for option in getattr(component, "options", ())
+                )
+                return values
+    return values
+
+
 class OwnedSelect(discord.ui.DynamicItem[discord.ui.Select], template=SELECT_RE):
     """Create a persistent select menu whose action is restricted to its owner."""
 

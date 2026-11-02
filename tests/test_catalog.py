@@ -743,6 +743,7 @@ async def test_catalog_load_reads_file_off_event_loop(
                     "version": "test",
                     "skins": [{"uuid": "skin", "offer_uuid": "offer"}],
                     "bundles": [{"uuid": "bundle"}],
+                    "weapons": [{"uuid": "weapon"}],
                 }
             ),
             encoding="utf-8",
@@ -810,6 +811,8 @@ async def test_catalog_snapshot_round_trips_skin_chromas() -> None:
                     data={
                         "data": [
                             {
+                                "uuid": "weapon",
+                                "displayName": {"en-US": "Vandal"},
                                 "skins": [
                                     {
                                         "uuid": "skin",
@@ -839,7 +842,7 @@ async def test_catalog_snapshot_round_trips_skin_chromas() -> None:
                                             }
                                         ],
                                     }
-                                ]
+                                ],
                             }
                         ]
                     },
@@ -975,6 +978,7 @@ async def test_failed_catalog_upgrade_keeps_legacy_data_and_retries() -> None:
                             "asset_path": "old/path",
                         }
                     ],
+                    "weapons": [{"uuid": "weapon"}],
                 }
             ),
             encoding="utf-8",
@@ -1610,3 +1614,79 @@ async def test_a_failed_game_metadata_refresh_keeps_the_cached_document(tmp_path
     # The failure cooldown must keep serving the stale copy too.
     assert await service.maps() == maps
     assert calls == 2
+
+
+async def test_weapons_are_indexed_and_survive_a_restart(tmp_path):
+    """The weapon index keeps names, categories, and default skins across restarts."""
+
+    async def request(_method, url, **kwargs):
+        if url.endswith("/version"):
+            return NS(status=200, data={"data": {"manifestId": "manifest-1"}})
+        if "/weapons?" in url:
+            return NS(
+                status=200,
+                data={
+                    "data": [
+                        {
+                            "uuid": "weapon-1",
+                            "displayName": {"en-US": "Vandal"},
+                            "shopData": {"category": "Rifles"},
+                            "defaultSkinUuid": "default-1",
+                            "skins": [
+                                {"uuid": "skin-1", "levels": [{"uuid": "level-1"}]}
+                            ],
+                        }
+                    ]
+                },
+            )
+        return NS(status=200, data={"data": [{"uuid": "bundle"}]})
+
+    service = CatalogService(NS(request=AsyncMock(side_effect=request)))
+    service.path = tmp_path / "skins.json"
+    await service.refresh()
+
+    weapon = service.get_weapon("weapon-1")
+    assert weapon is not None
+    assert localized_text(weapon.names, "en-US") == "Vandal"
+    assert weapon.category == "Rifles"
+    assert weapon.default_skin_uuid == "default-1"
+
+    restarted = CatalogService(
+        NS(request=AsyncMock(side_effect=AssertionError("cached catalog")))
+    )
+    restarted.path = tmp_path / "skins.json"
+    await restarted.load()
+
+    weapon = restarted.get_weapon("weapon-1")
+    assert weapon is not None and weapon.category == "Rifles"
+
+
+def test_chroma_labels_are_extracted_from_localized_variant_names():
+    """Equipped variants render the localized label without their line breaks."""
+    skin = Skin(
+        uuid="skin",
+        offer_uuid="offer",
+        name="Prime//2.0 Vandal",
+        icon=None,
+        tier_uuid=None,
+        names={"en-US": "Prime//2.0 Vandal"},
+        chromas=[
+            {"uuid": "base", "displayName": {"en-US": "Prime//2.0 Vandal"}},
+            {
+                "uuid": "blue",
+                "displayName": {"en-US": "Prime//2.0 Vandal Level 5\n(Variant 2 Blue)"},
+            },
+            {
+                "uuid": "cjk",
+                "displayName": {
+                    "en-US": "Prime//2.0 Vandal\r\n\uff08\u70ab\u5f692 \u84dd\u8272\uff09"
+                },
+            },
+        ],
+    )
+
+    assert skin.chroma_label("base") is None
+    assert skin.chroma_label("blue") == "Variant 2 Blue"
+    assert skin.chroma_label("cjk") == "\u70ab\u5f692 \u84dd\u8272"
+    assert skin.chroma_label(None) is None
+    assert skin.chroma_label("missing") is None
