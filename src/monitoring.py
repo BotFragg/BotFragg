@@ -1,21 +1,11 @@
-"""Plain-text log formatting and privacy filters for logs and GlitchTip events."""
+"""Plain-text log formatting and privacy filters for console and Discord logs."""
 
 from __future__ import annotations
 
 import copy
 import logging
 import re
-from importlib.metadata import PackageNotFoundError, version
-from typing import TYPE_CHECKING, Any
-
-import sentry_sdk
-from sentry_sdk.integrations.logging import LoggingIntegration
-from sentry_sdk.utils import Dsn
-
-from .config import Settings
-
-if TYPE_CHECKING:
-    from sentry_sdk._types import Event, Log
+from typing import Any
 
 _SENSITIVE_KEY_PARTS = (
     "authorization",
@@ -118,114 +108,3 @@ def _scrub(value: Any) -> Any:
         value = _DISCORD_URL_ID.sub(r"\1[Filtered]", value)
         return _DISCORD_ID.sub("[Filtered]", value)
     return value
-
-
-def _breadcrumb(
-    breadcrumb: dict[str, Any], hint: dict[str, Any]
-) -> dict[str, Any] | None:
-    """Drop network and unrelated log breadcrumbs, then scrub retained data."""
-    category = str(breadcrumb.get("category") or "")
-    if category.startswith(("http", "aiohttp")):
-        return None
-    if breadcrumb.get("type") == "log" and not category.startswith(
-        ("src.", "discord.")
-    ):
-        return None
-    return _scrub(breadcrumb)
-
-
-def _scrub_event(event: Event) -> Event:
-    """Remove request data and sensitive values from an error event."""
-    event = _scrub(event)
-    event.pop("request", None)
-    logentry = event.get("logentry")
-    if isinstance(logentry, dict):
-        logentry.pop("params", None)
-    return event
-
-
-def _scrub_transaction(event: Event, hint: dict[str, Any]) -> Event:
-    """Remove request payloads and HTTP span details from a transaction."""
-    event = _scrub_event(event)
-    spans = event.get("spans", [])
-    for span in spans if isinstance(spans, list) else []:
-        span.pop("data", None)
-        if str(span.get("op") or "").startswith("http"):
-            span["description"] = "HTTP request"
-    return event
-
-
-def _scrub_log(log: Log, hint: dict[str, Any]) -> Log | None:
-    """Keep BotFragg logs and serious Discord errors after removing URL data."""
-    attributes = log.get("attributes", {})
-    logger_name = str(attributes.get("logger.name") or "")
-    severity = str(log.get("severity_text") or "")
-    if not logger_name.startswith("src.") and not (
-        logger_name.startswith("discord.") and severity in {"warn", "error", "fatal"}
-    ):
-        return None
-    if "://" in str(log.get("body") or ""):
-        log["body"] = "HTTP request"
-    log["attributes"] = {
-        key: value
-        for key, value in attributes.items()
-        if not key.startswith("sentry.message.parameter.")
-    }
-    return _scrub(log)
-
-
-def _release() -> str:
-    """Return the installed BotFragg release label or an unknown fallback."""
-    try:
-        return f"botfragg@{version('botfragg')}"
-    except PackageNotFoundError:
-        return "botfragg@unknown"
-
-
-def configure_monitoring(config: Settings) -> None:
-    """Enable privacy-filtered GlitchTip telemetry when a DSN is configured."""
-    if not config.glitchtip_dsn:
-        return
-    try:
-        Dsn(config.glitchtip_dsn)
-    except ValueError:
-        # Telemetry is optional: a malformed DSN must not stop the bot.
-        logging.getLogger(__name__).warning(
-            "GLITCHTIP_DSN is not a valid DSN; error reporting is disabled"
-        )
-        return
-    sentry_sdk.init(
-        dsn=config.glitchtip_dsn,
-        environment=config.app_env,
-        release=_release(),
-        send_default_pii=False,
-        include_local_variables=False,
-        traces_sample_rate=config.glitchtip_traces_sample_rate,
-        profiles_sample_rate=config.glitchtip_profiles_sample_rate,
-        enable_logs=config.glitchtip_logs_enabled,
-        auto_session_tracking=False,
-        trace_propagation_targets=[],
-        integrations=[
-            LoggingIntegration(
-                level=logging.WARNING,
-                event_level=logging.ERROR,
-                sentry_logs_level=logging.INFO,
-            )
-        ],
-        before_send=lambda event, hint: _scrub_event(event),
-        before_send_transaction=_scrub_transaction,
-        before_send_log=_scrub_log,
-        before_breadcrumb=_breadcrumb,
-    )
-    sentry_sdk.start_session()
-
-
-def transaction(name: str, op: str):
-    """Start a GlitchTip transaction with the supplied name and operation."""
-    return sentry_sdk.start_transaction(name=name, op=op)
-
-
-def flush_monitoring() -> None:
-    """End the current monitoring session and flush queued telemetry."""
-    sentry_sdk.end_session()
-    sentry_sdk.flush(timeout=2.0)

@@ -13,7 +13,6 @@ from discord.ext import commands
 from .config import Settings
 from .database import close_database, connect_database
 from .localization import BotFraggTranslator
-from .monitoring import flush_monitoring, transaction
 from .services.analytics import command_analytics, record_command_invocation
 from .services.auth import AuthService
 from .services.catalog import CatalogService
@@ -56,15 +55,12 @@ class BotFraggCommandTree(app_commands.CommandTree["BotFraggBot"]):
         )
 
     async def _call(self, interaction: discord.Interaction[BotFraggBot]) -> None:
-        """Record command executions while leaving autocomplete requests untraced."""
+        """Record command executions while leaving autocomplete requests untracked."""
         if interaction.type is discord.InteractionType.autocomplete:
             await super()._call(interaction)
             return
-        data: Mapping[str, object] = interaction.data or {}
-        command_name = self._command_name(data)
         async with command_analytics(interaction.user.id) as cancelled:
-            with transaction(f"discord.command.{command_name}", "discord.command"):
-                await super()._call(interaction)
+            await super()._call(interaction)
             command = interaction.command
             if (
                 interaction.command_failed
@@ -267,9 +263,8 @@ class BotFraggBot(commands.AutoShardedBot):
         )
 
     async def close(self) -> None:
-        """Close Discord, Riot HTTP, database, and monitoring resources in order."""
+        """Close Discord, Riot HTTP, and database resources in order."""
         async with AsyncExitStack() as stack:
-            stack.callback(flush_monitoring)
             stack.push_async_callback(close_database)
             stack.push_async_callback(self.riot_http.close)
             await super().close()

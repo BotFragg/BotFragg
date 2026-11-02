@@ -15,7 +15,7 @@ from ..bot import BotFraggBot
 from ..database import TRANSIENT_DATABASE_ERRORS, ping_database
 from ..health import HEALTH_PATH, JobHealth, write_health
 from ..models import Account, Alert, User
-from ..monitoring import LOG_FORMAT, PlainFormatter, transaction
+from ..monitoring import LOG_FORMAT, PlainFormatter
 from ..services.alerts import retry_lookup, run_daily_alerts
 from ..services.http import DISCORD_HTTP_ERRORS, HTTPFailure
 from ..services.shop import Offer, ShopData
@@ -106,11 +106,8 @@ class TasksCog(commands.Cog):
 
     @tasks.loop(time=time(0, 0, 10, tzinfo=UTC))
     async def daily_alerts(self) -> None:
-        """Run the daily shop and skin-alert job inside a monitoring transaction."""
-        with (
-            self.job_health["daily_alerts"].track("daily_alerts"),
-            transaction("botfragg.job.daily_alerts", "botfragg.job"),
-        ):
+        """Run the daily shop and skin-alert job."""
+        with self.job_health["daily_alerts"].track("daily_alerts"):
             try:
                 summary = await self.run_alerts()
                 if summary["shop_failures"] or summary["delivery_failures"]:
@@ -295,10 +292,7 @@ class TasksCog(commands.Cog):
     @tasks.loop(minutes=15)
     async def version_refresh(self) -> None:
         """Refresh the Riot client version, the catalog, and the game metadata."""
-        with (
-            self.job_health["version_refresh"].track("version_refresh"),
-            transaction("botfragg.job.version_refresh", "botfragg.job"),
-        ):
+        with self.job_health["version_refresh"].track("version_refresh"):
             # One upstream fetch feeds both the request headers and the catalog check.
             failure: HTTPFailure | None = None
             try:

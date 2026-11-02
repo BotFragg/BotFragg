@@ -38,14 +38,6 @@ def _int(name: str, default: int, minimum: int = 0) -> int:
     return value
 
 
-def _sample_rate(name: str, default: float) -> float:
-    """Parse a telemetry sample rate constrained to the inclusive range 0 to 1."""
-    value = float(os.getenv(name, str(default)))
-    if not 0 <= value <= 1:
-        raise ValueError(f"{name} must be between 0 and 1")
-    return value
-
-
 def _optional_int(name: str, *, maximum: int | None = None) -> int | None:
     """Return a bounded optional positive integer setting, or ``None`` when blank."""
     value = os.getenv(name, "").strip()
@@ -137,10 +129,6 @@ class Settings:
     support_url: str | None
     vote_url: str | None
     website_url: str | None
-    glitchtip_dsn: str | None
-    glitchtip_traces_sample_rate: float
-    glitchtip_profiles_sample_rate: float
-    glitchtip_logs_enabled: bool
     log_urls: bool
     link_item_image: bool
     use_shop_cache: bool
@@ -211,14 +199,6 @@ class Settings:
             support_url=_optional_url("SUPPORT_URL"),
             vote_url=_optional_url("VOTE_URL"),
             website_url=_optional_url("WEBSITE_URL"),
-            glitchtip_dsn=os.getenv("GLITCHTIP_DSN", "").strip() or None,
-            glitchtip_traces_sample_rate=_sample_rate(
-                "GLITCHTIP_TRACES_SAMPLE_RATE", 0.1
-            ),
-            glitchtip_profiles_sample_rate=_sample_rate(
-                "GLITCHTIP_PROFILES_SAMPLE_RATE", 0.1
-            ),
-            glitchtip_logs_enabled=_bool("GLITCHTIP_LOGS_ENABLED", True),
             log_urls=_bool("LOG_URLS", False),
             link_item_image=_bool("LINK_ITEM_IMAGE", True),
             use_shop_cache=_bool("USE_SHOP_CACHE", True),

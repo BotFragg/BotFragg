@@ -190,8 +190,8 @@ async def test_links_invite_preserves_zero_permissions() -> None:
     assert query["permissions"] == ["0"]
 
 
-def test_glitchtip_groups_subcommands_separately() -> None:
-    """Verify that GlitchTip groups subcommands separately."""
+def test_command_name_includes_the_subcommand_path() -> None:
+    """Verify that logged command names include subcommands."""
     assert (
         BotFraggCommandTree._command_name(
             {"name": "suggestion", "options": [{"type": 1, "name": "track"}]}
@@ -238,12 +238,11 @@ async def test_bot_stops_extensions_before_closing_shared_resources(
         events.append("extensions")
 
     monkeypatch.setattr("src.bot.close_database", close_database)
-    monkeypatch.setattr("src.bot.flush_monitoring", lambda: events.append("monitoring"))
     monkeypatch.setattr(commands.AutoShardedBot, "close", close_discord)
 
     await bot.close()
 
-    assert events == ["extensions", "http", "database", "monitoring"]
+    assert events == ["extensions", "http", "database"]
 
 
 async def test_initial_release_command_contract(

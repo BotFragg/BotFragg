@@ -6,11 +6,11 @@ import logging
 
 from .bot import BotFraggBot
 from .config import Settings
-from .monitoring import LOG_FORMAT, PlainFormatter, configure_monitoring
+from .monitoring import LOG_FORMAT, PlainFormatter
 
 
 def main() -> None:
-    """Load settings, configure observability, and run the Discord client."""
+    """Load settings, configure logging, and run the Discord client."""
     config = Settings.from_env()
     handler = logging.StreamHandler()
     handler.setFormatter(PlainFormatter(LOG_FORMAT))
@@ -18,7 +18,6 @@ def main() -> None:
         level=logging.INFO,
         handlers=[handler],
     )
-    configure_monitoring(config)
     bot = BotFraggBot(config)
     bot.run(config.discord_token, log_handler=None)
 

@@ -7,7 +7,6 @@ from typing import Any
 
 import discord
 
-from ..monitoring import transaction
 from .ui import unexpected_error
 
 ACTION_RE = re.compile(
@@ -39,7 +38,7 @@ async def _reject_other_owner(
 async def _dispatch(
     interaction: discord.Interaction[Any], action: str, payload: str, key: str
 ) -> None:
-    """Run the handler registered for an owned control inside a trace."""
+    """Run the handler registered for an owned control."""
     handler = getattr(interaction.client, "component_handlers", {}).get(action)
     if handler is None:
         await interaction.response.send_message(
@@ -50,8 +49,7 @@ async def _dispatch(
         )
         return
     try:
-        with transaction(f"discord.component.{action}", "discord.component"):
-            await handler(interaction, payload)
+        await handler(interaction, payload)
     except Exception as exc:
         await unexpected_error(interaction, exc)
 

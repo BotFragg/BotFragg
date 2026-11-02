@@ -18,7 +18,7 @@ Discord client construction, command handling, service wiring, and shutdown.
 
 **Scope:** `src/bot.py` · `module`
 
-[Source](../src/bot.py#L35)
+[Source](../src/bot.py#L34)
 
 Build the generic, user-safe response shown after an unhandled command error.
 
@@ -26,7 +26,7 @@ Build the generic, user-safe response shown after an unhandled command error.
 
 **Scope:** `src/bot.py` · `module`
 
-[Source](../src/bot.py#L45)
+[Source](../src/bot.py#L44)
 
 Application-command tree with shared context rules and error reporting.
 
@@ -34,7 +34,7 @@ Application-command tree with shared context rules and error reporting.
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L48)
+[Source](../src/bot.py#L47)
 
 Allow commands in servers and private contexts for guild and user installs.
 
@@ -42,15 +42,15 @@ Allow commands in servers and private contexts for guild and user installs.
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L58)
+[Source](../src/bot.py#L57)
 
-Record command executions while leaving autocomplete requests untraced.
+Record command executions while leaving autocomplete requests untracked.
 
 ### `def _command_name(data: Mapping[str, object]) -> str`
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L87)
+[Source](../src/bot.py#L83)
 
 Return the dotted parent and subcommand path from Discord's payload.
 
@@ -58,7 +58,7 @@ Return the dotted parent and subcommand path from Discord's payload.
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L106)
+[Source](../src/bot.py#L102)
 
 Log unhandled app-command errors and send a private generic response.
 
@@ -66,7 +66,7 @@ Log unhandled app-command errors and send a private generic response.
 
 **Scope:** `src/bot.py` · `module`
 
-[Source](../src/bot.py#L135)
+[Source](../src/bot.py#L131)
 
 Own Discord lifecycle and the shared Riot, database, and presentation services.
 
@@ -74,7 +74,7 @@ Own Discord lifecycle and the shared Riot, database, and presentation services.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L138)
+[Source](../src/bot.py#L134)
 
 Configure the bot's intents and application services.
 
@@ -82,7 +82,7 @@ Configure the bot's intents and application services.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L168)
+[Source](../src/bot.py#L164)
 
 Register a persistent component action, rejecting duplicate action names.
 
@@ -90,7 +90,7 @@ Register a persistent component action, rejecting duplicate action names.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L174)
+[Source](../src/bot.py#L170)
 
 Discard only the handlers bound to the given cog instance.
 
@@ -98,7 +98,7 @@ Discard only the handlers bound to the given cog instance.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L182)
+[Source](../src/bot.py#L178)
 
 Discard a failed cog's component handlers so loading it can be retried.
 
@@ -106,7 +106,7 @@ Discard a failed cog's component handlers so loading it can be retried.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L202)
+[Source](../src/bot.py#L198)
 
 Remove a cog's component handlers along with its commands and listeners.
 
@@ -114,7 +114,7 @@ Remove a cog's component handlers along with its commands and listeners.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L216)
+[Source](../src/bot.py#L212)
 
 Initialize shared resources, load extensions, and optionally sync commands.
 
@@ -122,7 +122,7 @@ Initialize shared resources, load extensions, and optionally sync commands.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L256)
+[Source](../src/bot.py#L252)
 
 Set the online activity and log the connected shard and guild counts.
 
@@ -130,9 +130,9 @@ Set the online activity and log the connected shard and guild counts.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L269)
+[Source](../src/bot.py#L265)
 
-Close Discord, Riot HTTP, database, and monitoring resources in order.
+Close Discord, Riot HTTP, and database resources in order.
 
 ## `src/cogs/__init__.py`
 
@@ -596,13 +596,13 @@ Cancel and await all active loops, then detach the root log handler.
 
 [Source](../src/cogs/tasks.py#L108)
 
-Run the daily shop and skin-alert job inside a monitoring transaction.
+Run the daily shop and skin-alert job.
 
 ### `async def run_alerts(self) -> dict[str, int]`
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L123)
+[Source](../src/cogs/tasks.py#L120)
 
 Process eligible users' shops and return counts for the completed run.
 
@@ -610,7 +610,7 @@ Process eligible users' shops and return counts for the completed run.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L136)
+[Source](../src/cogs/tasks.py#L133)
 
 Deliver matching alerts and the optional daily shop; count failed DMs.
 
@@ -618,7 +618,7 @@ Deliver matching alerts and the optional daily shop; count failed DMs.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L177)
+[Source](../src/cogs/tasks.py#L174)
 
 DM an owner-scoped skin alert and report whether delivery succeeded.
 
@@ -626,7 +626,7 @@ DM an owner-scoped skin alert and report whether delivery succeeded.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L217)
+[Source](../src/cogs/tasks.py#L214)
 
 DM the selected account's daily shop and report delivery success.
 
@@ -634,7 +634,7 @@ DM the selected account's daily shop and report delivery success.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L278)
+[Source](../src/cogs/tasks.py#L275)
 
 Notify a user that credentials expired and return the delivery failure count.
 
@@ -642,7 +642,7 @@ Notify a user that credentials expired and return the delivery failure count.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L296)
+[Source](../src/cogs/tasks.py#L293)
 
 Refresh the Riot client version, the catalog, and the game metadata.
 
@@ -650,7 +650,7 @@ Refresh the Riot client version, the catalog, and the game metadata.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L319)
+[Source](../src/cogs/tasks.py#L313)
 
 Measure log delivery, preserving the queue after Discord failures.
 
@@ -658,7 +658,7 @@ Measure log delivery, preserving the queue after Discord failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L324)
+[Source](../src/cogs/tasks.py#L318)
 
 Send buffered log lines to Discord and requeue them after delivery failures.
 
@@ -666,7 +666,7 @@ Send buffered log lines to Discord and requeue them after delivery failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L372)
+[Source](../src/cogs/tasks.py#L366)
 
 Publish Discord, database, and scheduled-job health for Docker and operators.
 
@@ -674,7 +674,7 @@ Publish Discord, database, and scheduled-job health for Docker and operators.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L427)
+[Source](../src/cogs/tasks.py#L421)
 
 Wait for Discord readiness before starting any background job.
 
@@ -682,7 +682,7 @@ Wait for Discord readiness before starting any background job.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L432)
+[Source](../src/cogs/tasks.py#L426)
 
 Register the background-task cog with the bot.
 
@@ -1806,19 +1806,11 @@ Parse a named environment variable as a strict boolean or use its default.
 
 Parse an integer setting and reject values below its configured minimum.
 
-### `def _sample_rate(name: str, default: float) -> float`
-
-**Scope:** `src/config.py` · `module`
-
-[Source](../src/config.py#L41)
-
-Parse a telemetry sample rate constrained to the inclusive range 0 to 1.
-
 ### `def _optional_int(name: str, *, maximum: int | None = None) -> int | None`
 
 **Scope:** `src/config.py` · `module`
 
-[Source](../src/config.py#L49)
+[Source](../src/config.py#L41)
 
 Return a bounded optional positive integer setting, or ``None`` when blank.
 
@@ -1826,7 +1818,7 @@ Return a bounded optional positive integer setting, or ``None`` when blank.
 
 **Scope:** `src/config.py` · `module`
 
-[Source](../src/config.py#L63)
+[Source](../src/config.py#L55)
 
 Validate and return an optional absolute HTTP(S) URL without userinfo.
 
@@ -1834,7 +1826,7 @@ Validate and return an optional absolute HTTP(S) URL without userinfo.
 
 **Scope:** `src/config.py` · `module`
 
-[Source](../src/config.py#L89)
+[Source](../src/config.py#L81)
 
 Validate an optional HTTPS Discord webhook URL and reject other hosts.
 
@@ -1842,7 +1834,7 @@ Validate an optional HTTPS Discord webhook URL and reject other hosts.
 
 **Scope:** `src/config.py` · `module`
 
-[Source](../src/config.py#L110)
+[Source](../src/config.py#L102)
 
 Parse an HH:MM or HH:MM:SS setting as a UTC wall-clock time.
 
@@ -1850,7 +1842,7 @@ Parse an HH:MM or HH:MM:SS setting as a UTC wall-clock time.
 
 **Scope:** `src/config.py` · `module`
 
-[Source](../src/config.py#L122)
+[Source](../src/config.py#L114)
 
 Immutable runtime configuration populated from environment variables.
 
@@ -1858,7 +1850,7 @@ Immutable runtime configuration populated from environment variables.
 
 **Scope:** `src/config.py` · `Settings`
 
-[Source](../src/config.py#L162)
+[Source](../src/config.py#L150)
 
 Load settings, validate URLs and limits, and optionally require secrets.
 
@@ -2040,7 +2032,7 @@ Executable entry point that configures logging and starts BotFragg.
 
 [Source](../src/main.py#L12)
 
-Load settings, configure observability, and run the Discord client.
+Load settings, configure logging, and run the Discord client.
 
 ## `src/migrations/0001_initial.py`
 
@@ -2296,13 +2288,13 @@ Map each configured Discord channel to its persistent status message.
 
 ## `src/monitoring.py`
 
-Plain-text log formatting and privacy filters for logs and GlitchTip events.
+Plain-text log formatting and privacy filters for console and Discord logs.
 
 ### `class PlainFormatter(logging.Formatter)`
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L69)
+[Source](../src/monitoring.py#L59)
 
 Render a scrubbed log record as plain text for console output.
 
@@ -2310,7 +2302,7 @@ Render a scrubbed log record as plain text for console output.
 
 **Scope:** `src/monitoring.py` · `PlainFormatter`
 
-[Source](../src/monitoring.py#L72)
+[Source](../src/monitoring.py#L62)
 
 Scrub the message, structured fields, and traceback, then render a line.
 
@@ -2318,73 +2310,9 @@ Scrub the message, structured fields, and traceback, then render a line.
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L93)
+[Source](../src/monitoring.py#L83)
 
 Filter credentials and personal identifiers from nested event data.
-
-### `def _breadcrumb(breadcrumb: dict[str, Any], hint: dict[str, Any]) -> dict[str, Any] | None`
-
-**Scope:** `src/monitoring.py` · `module`
-
-[Source](../src/monitoring.py#L123)
-
-Drop network and unrelated log breadcrumbs, then scrub retained data.
-
-### `def _scrub_event(event: Event) -> Event`
-
-**Scope:** `src/monitoring.py` · `module`
-
-[Source](../src/monitoring.py#L137)
-
-Remove request data and sensitive values from an error event.
-
-### `def _scrub_transaction(event: Event, hint: dict[str, Any]) -> Event`
-
-**Scope:** `src/monitoring.py` · `module`
-
-[Source](../src/monitoring.py#L147)
-
-Remove request payloads and HTTP span details from a transaction.
-
-### `def _scrub_log(log: Log, hint: dict[str, Any]) -> Log | None`
-
-**Scope:** `src/monitoring.py` · `module`
-
-[Source](../src/monitoring.py#L158)
-
-Keep BotFragg logs and serious Discord errors after removing URL data.
-
-### `def _release() -> str`
-
-**Scope:** `src/monitoring.py` · `module`
-
-[Source](../src/monitoring.py#L177)
-
-Return the installed BotFragg release label or an unknown fallback.
-
-### `def configure_monitoring(config: Settings) -> None`
-
-**Scope:** `src/monitoring.py` · `module`
-
-[Source](../src/monitoring.py#L185)
-
-Enable privacy-filtered GlitchTip telemetry when a DSN is configured.
-
-### `def transaction(name: str, op: str)`
-
-**Scope:** `src/monitoring.py` · `module`
-
-[Source](../src/monitoring.py#L223)
-
-Start a GlitchTip transaction with the supplied name and operation.
-
-### `def flush_monitoring() -> None`
-
-**Scope:** `src/monitoring.py` · `module`
-
-[Source](../src/monitoring.py#L228)
-
-End the current monitoring session and flush queued telemetry.
 
 ## `src/services/__init__.py`
 
@@ -4623,7 +4551,7 @@ Persistent interactive controls scoped to the Discord user who created them.
 
 **Scope:** `src/views/components.py` · `module`
 
-[Source](../src/views/components.py#L21)
+[Source](../src/views/components.py#L20)
 
 Build the persistent select custom ID shared by menus and their handlers.
 
@@ -4631,7 +4559,7 @@ Build the persistent select custom ID shared by menus and their handlers.
 
 **Scope:** `src/views/components.py` · `module`
 
-[Source](../src/views/components.py#L26)
+[Source](../src/views/components.py#L25)
 
 Allow the recorded owner and refuse the control to everybody else.
 
@@ -4639,15 +4567,15 @@ Allow the recorded owner and refuse the control to everybody else.
 
 **Scope:** `src/views/components.py` · `module`
 
-[Source](../src/views/components.py#L39)
+[Source](../src/views/components.py#L38)
 
-Run the handler registered for an owned control inside a trace.
+Run the handler registered for an owned control.
 
 ### `class OwnedActionButton(discord.ui.DynamicItem[discord.ui.Button])`
 
 **Scope:** `src/views/components.py` · `module`
 
-[Source](../src/views/components.py#L59)
+[Source](../src/views/components.py#L57)
 
 Create a persistent button whose action can only be used by its owner.
 
@@ -4655,7 +4583,7 @@ Create a persistent button whose action can only be used by its owner.
 
 **Scope:** `src/views/components.py` · `OwnedActionButton`
 
-[Source](../src/views/components.py#L62)
+[Source](../src/views/components.py#L60)
 
 Build a stable custom ID containing the action, owner, and payload.
 
@@ -4663,7 +4591,7 @@ Build a stable custom ID containing the action, owner, and payload.
 
 **Scope:** `src/views/components.py` · `OwnedActionButton`
 
-[Source](../src/views/components.py#L88)
+[Source](../src/views/components.py#L86)
 
 Reconstruct a persistent button from its custom ID and visible style.
 
@@ -4671,7 +4599,7 @@ Reconstruct a persistent button from its custom ID and visible style.
 
 **Scope:** `src/views/components.py` · `OwnedActionButton`
 
-[Source](../src/views/components.py#L107)
+[Source](../src/views/components.py#L105)
 
 Reject interactions from users other than the button's recorded owner.
 
@@ -4679,7 +4607,7 @@ Reject interactions from users other than the button's recorded owner.
 
 **Scope:** `src/views/components.py` · `OwnedActionButton`
 
-[Source](../src/views/components.py#L113)
+[Source](../src/views/components.py#L111)
 
 Dispatch the button action to its registered handler inside a trace.
 
@@ -4687,7 +4615,7 @@ Dispatch the button action to its registered handler inside a trace.
 
 **Scope:** `src/views/components.py` · `module`
 
-[Source](../src/views/components.py#L120)
+[Source](../src/views/components.py#L118)
 
 Read the values actually offered by this message's matching select menu.
 
@@ -4695,7 +4623,7 @@ Read the values actually offered by this message's matching select menu.
 
 **Scope:** `src/views/components.py` · `module`
 
-[Source](../src/views/components.py#L134)
+[Source](../src/views/components.py#L132)
 
 Create a persistent select menu whose action is restricted to its owner.
 
@@ -4703,7 +4631,7 @@ Create a persistent select menu whose action is restricted to its owner.
 
 **Scope:** `src/views/components.py` · `OwnedSelect`
 
-[Source](../src/views/components.py#L137)
+[Source](../src/views/components.py#L135)
 
 Build a stable custom ID and a translated placeholder when options are empty.
 
@@ -4711,7 +4639,7 @@ Build a stable custom ID and a translated placeholder when options are empty.
 
 **Scope:** `src/views/components.py` · `OwnedSelect`
 
-[Source](../src/views/components.py#L169)
+[Source](../src/views/components.py#L167)
 
 Reconstruct a persistent select menu from its ID and current options.
 
@@ -4719,7 +4647,7 @@ Reconstruct a persistent select menu from its ID and current options.
 
 **Scope:** `src/views/components.py` · `OwnedSelect`
 
-[Source](../src/views/components.py#L188)
+[Source](../src/views/components.py#L186)
 
 Reject interactions from users other than the menu's recorded owner.
 
@@ -4727,7 +4655,7 @@ Reject interactions from users other than the menu's recorded owner.
 
 **Scope:** `src/views/components.py` · `OwnedSelect`
 
-[Source](../src/views/components.py#L194)
+[Source](../src/views/components.py#L192)
 
 Dispatch the selected value with the menu payload to its registered handler.
 
@@ -4735,7 +4663,7 @@ Dispatch the selected value with the menu payload to its registered handler.
 
 **Scope:** `src/views/components.py` · `module`
 
-[Source](../src/views/components.py#L205)
+[Source](../src/views/components.py#L203)
 
 Build a compact red embed for an invalid or unavailable component action.
 

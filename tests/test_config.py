@@ -167,17 +167,6 @@ def test_settings_reject_invalid_webhook_urls_without_echoing_token(
     assert value not in str(raised.value)
 
 
-def test_settings_load_glitchtip_tracking(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Verify that settings load GlitchTip tracking."""
-    monkeypatch.setenv("GLITCHTIP_DSN", "http://key@localhost:8080/1")
-    monkeypatch.setenv("GLITCHTIP_TRACES_SAMPLE_RATE", "0.5")
-    config = Settings.from_env(require_secrets=False)
-    assert (config.glitchtip_dsn, config.glitchtip_traces_sample_rate) == (
-        "http://key@localhost:8080/1",
-        0.5,
-    )
-
-
 def test_production_requires_database_url(monkeypatch: pytest.MonkeyPatch) -> None:
     """Verify that production requires database URL."""
     monkeypatch.setenv("APP_ENV", "production")

@@ -7,90 +7,15 @@ import logging
 import sys
 from collections import deque
 from datetime import time as daytime
-from types import SimpleNamespace
 from types import SimpleNamespace as NS
-from unittest.mock import Mock
 
 import aiohttp
 import discord
 import pytest
-import sentry_sdk
-from sentry_sdk.integrations.logging import LoggingIntegration
-from sentry_sdk.transport import Transport
 
 from src import main as entrypoint
-from src import monitoring
 from src.cogs.tasks import DiscordLogHandler, TasksCog
 from src.monitoring import PlainFormatter, _scrub
-
-
-@pytest.mark.parametrize(
-    ("logger_name", "message", "sensitive"),
-    [
-        (
-            "discord.state",
-            "Timed out waiting for guild ID %s after %.2fs.",
-            123456789012345678,
-        ),
-        (
-            "src.services.auth",
-            "Auth request failed token=%s after %.2fs.",
-            "AUDIT_SYNTHETIC_SECRET",
-        ),
-    ],
-)
-def test_sdk_telemetry_discards_raw_logging_parameters(logger_name, message, sensitive):
-    class OfflineTransport(Transport):
-        def __init__(self):
-            super().__init__()
-            self.envelopes = []
-
-        def capture_envelope(self, envelope):
-            self.envelopes.append(envelope)
-
-    transport = OfflineTransport()
-    integration = LoggingIntegration(sentry_logs_level=logging.INFO)
-    client = sentry_sdk.Client(
-        dsn="https://synthetic@monitoring.example/1",
-        transport=transport,
-        default_integrations=False,
-        auto_enabling_integrations=False,
-        integrations=[integration],
-        enable_logs=True,
-        send_default_pii=False,
-        include_local_variables=False,
-        before_send=lambda event, hint: monitoring._scrub_event(event),
-        before_send_log=monitoring._scrub_log,
-    )
-    try:
-        with sentry_sdk.isolation_scope() as scope:
-            scope.set_client(client)
-            record = logging.LogRecord(
-                logger_name,
-                logging.ERROR,
-                "synthetic.py",
-                1,
-                message,
-                (sensitive, 1.25),
-                None,
-            )
-            record.job = "audit"
-            integration._handle_record(record)
-            integration._handle_sentry_logs_record(record)
-            client.flush(timeout=2)
-        payloads = {
-            item.type: json.loads(item.get_bytes())
-            for envelope in transport.envelopes
-            for item in envelope.items
-        }
-        assert {"event", "log"} <= payloads.keys()
-        for kind in ("event", "log"):
-            encoded = json.dumps(payloads[kind])
-            assert str(sensitive) not in encoded
-            assert "[Filtered]" in encoded
-            assert "1.25" in encoded and "audit" in encoded
-    finally:
-        client.close(timeout=2)
 
 
 @pytest.mark.parametrize(
@@ -149,7 +74,6 @@ def test_dependency_payloads_stay_out_of_logs(monkeypatch, capsys):
         monkeypatch.setattr(logging.getLogger(name), "level", logging.NOTSET)
     config = NS(discord_token=None)
     monkeypatch.setattr(entrypoint.Settings, "from_env", lambda: config)
-    monkeypatch.setattr(entrypoint, "configure_monitoring", lambda _: None)
 
     def run(*args, **kwargs):
         logging.getLogger("src.bot").debug("Application diagnostic")
@@ -343,8 +267,8 @@ async def test_split_log_retries_preserve_content_and_order(failure, stage):
         assert loop._before_loop is TasksCog.before_jobs
 
 
-def test_error_tracking_scrubs_riot_credentials() -> None:
-    """Verify that error tracking scrubs Riot credentials."""
+def test_scrub_removes_riot_credentials() -> None:
+    """Verify that the log scrubber removes Riot credentials."""
     event = _scrub(
         {"extra": {"authorization": "Bearer secret", "profile": {"token": "abc"}}}
     )
@@ -353,8 +277,8 @@ def test_error_tracking_scrubs_riot_credentials() -> None:
     }
 
 
-def test_error_tracking_scrubs_compact_auth_fields_and_raw_tokens() -> None:
-    """Verify that error tracking scrubs compact auth fields and raw tokens."""
+def test_scrub_removes_compact_auth_fields_and_raw_tokens() -> None:
+    """Verify that the log scrubber removes compact auth fields and raw tokens."""
     event = _scrub(
         {
             "extra": {
@@ -389,8 +313,8 @@ def test_error_tracking_scrubs_compact_auth_fields_and_raw_tokens() -> None:
     )
 
 
-def test_error_tracking_scrubs_riot_puuids() -> None:
-    """Verify that error tracking scrubs Riot PUUIDs."""
+def test_scrub_removes_riot_puuids() -> None:
+    """Verify that the log scrubber removes Riot PUUIDs."""
     puuid = "123e4567-e89b-12d3-a456-426614174000"
     event = _scrub({"extra": {"puuid": puuid}, "message": f"failed for {puuid}"})
 
@@ -497,123 +421,6 @@ def test_discord_log_handler_uses_the_scrubbed_plain_formatter() -> None:
     assert "123456789012345678" not in line
 
 
-def test_error_tracking_ignores_http_breadcrumbs_and_handles_null_category() -> None:
-    """Verify that error tracking ignores HTTP breadcrumbs and handles null category."""
-    assert monitoring._breadcrumb({"category": "aiohttp"}, {}) is None
-    assert monitoring._breadcrumb({"category": None, "token": "secret"}, {}) == {
-        "category": None,
-        "token": "[Filtered]",
-    }
-
-
-def test_glitchtip_logs_keep_botfragg_events_and_drop_unrelated_or_url_data() -> None:
-    """Verify that GlitchTip logs keep BotFragg events and drop unrelated or URL data."""
-    assert monitoring._scrub_log(
-        {
-            "body": "Completed",
-            "severity_text": "info",
-            "attributes": {"logger.name": "src.cogs.events"},
-        },
-        {},
-    ) == {
-        "body": "Completed",
-        "severity_text": "info",
-        "attributes": {"logger.name": "src.cogs.events"},
-    }
-    assert (
-        monitoring._scrub_log(
-            {
-                "body": "Noise",
-                "severity_text": "info",
-                "attributes": {"logger.name": "asyncio"},
-            },
-            {},
-        )
-        is None
-    )
-    assert (
-        monitoring._scrub_log(
-            {
-                "body": "GET https://private.example",
-                "severity_text": "info",
-                "attributes": {"logger.name": "src.services.http"},
-            },
-            {},
-        )["body"]
-        == "HTTP request"
-    )
-
-
-def test_glitchtip_enables_supported_telemetry(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Verify that GlitchTip enables supported telemetry."""
-    captured: dict[str, object] = {}
-    monkeypatch.setattr(
-        monitoring.sentry_sdk, "init", lambda **kwargs: captured.update(kwargs)
-    )
-    monkeypatch.setattr(
-        monitoring.sentry_sdk,
-        "start_session",
-        lambda: captured.setdefault("session", True),
-    )
-    monitoring.configure_monitoring(
-        SimpleNamespace(
-            glitchtip_dsn="http://key@localhost:8080/1",
-            app_env="test",
-            glitchtip_traces_sample_rate=1.0,
-            glitchtip_profiles_sample_rate=1.0,
-            glitchtip_logs_enabled=True,
-        )
-    )
-    assert captured["dsn"] == "http://key@localhost:8080/1"
-    assert captured["traces_sample_rate"] == captured["profiles_sample_rate"] == 1.0
-    assert captured["auto_session_tracking"] is False
-    assert captured["enable_logs"] is captured["session"] is True
-
-
-def test_transaction_tracking_removes_request_data() -> None:
-    """Verify that transaction tracking removes request data."""
-    event = monitoring._scrub_transaction(
-        {
-            "request": {"url": "private"},
-            "spans": [{"op": "http.client", "data": {"url": "private"}}],
-        },
-        {},
-    )
-    assert event == {"spans": [{"op": "http.client", "description": "HTTP request"}]}
-
-
-def test_error_tracking_removes_request_data() -> None:
-    """Verify that error tracking removes request data."""
-    event = monitoring._scrub_event(
-        {
-            "request": {
-                "url": "https://auth.riotgames.com/callback?code=secret&state=secret",
-                "data": {"authorization": "Bearer secret"},
-            },
-            "message": "OAuth callback failed",
-        }
-    )
-
-    assert event == {"message": "OAuth callback failed"}
-
-
-def test_error_tracking_flushes_on_shutdown(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Verify that error tracking flushes on shutdown."""
-    captured: dict[str, float | bool] = {}
-    monkeypatch.setattr(
-        monitoring.sentry_sdk,
-        "end_session",
-        lambda: captured.setdefault("session", True),
-    )
-    monkeypatch.setattr(
-        monitoring.sentry_sdk,
-        "flush",
-        lambda *, timeout: captured.setdefault("timeout", timeout),
-    )
-    monitoring.flush_monitoring()
-    assert captured == {"session": True, "timeout": 2.0}
-
-
 @pytest.mark.asyncio
 async def test_log_flush_failure_restores_a_partial_batch():
     """A failed send must restore every line when the buffer still had room."""
@@ -633,21 +440,3 @@ async def test_log_flush_failure_restores_a_partial_batch():
     await TasksCog.log_flush.coro(cog)
 
     assert len(cog.discord_log_handler.messages) == 600
-
-
-@pytest.mark.parametrize(
-    "dsn",
-    [
-        "https://app.glitchtip.com/settings/x",
-        "https://key@glitchtip.example:notaport/1",
-        "https://key@glitchtip.example:99999/1",
-    ],
-)
-def test_malformed_glitchtip_dsn_disables_reporting(monkeypatch, dsn):
-    """A malformed optional DSN must warn instead of stopping the bot."""
-    init = Mock()
-    monkeypatch.setattr("src.monitoring.sentry_sdk.init", init)
-
-    monitoring.configure_monitoring(NS(glitchtip_dsn=dsn))
-
-    init.assert_not_called()
