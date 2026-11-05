@@ -1,49 +1,5 @@
 # Changelog
 
-## [Unreleased]
-
-### Added
-
-- `/loadout` shows the selected account's equipped themed skins, grouped by
-  weapon type, with the equipped variant and gun buddy on each line. A select
-  menu opens the skin's level and chroma inspect videos privately, using the
-  same flow as the shop. The equipped player card is the card thumbnail.
-- `/profile [user]` can show another user's profile when they enable the new
-  profile-sharing setting; it is off by default. The target's hide-name
-  setting is applied to the card, and third-party views share a 30-second
-  per-invoker cooldown that is refunded when no card is produced, while your
-  own profile is never rate limited.
-- `/profile` shows the selected account's rank, peak rank, act win rate, level,
-  equipped title and player card, and the four most recent competitive matches
-  with map, score, RR change, K/D/A, headshot rate and combat score. Profile
-  data is cached for five minutes, finished matches by match ID, and repeated
-  failures cool down for thirty seconds. Ranks, maps and seasons are saved to
-  `data/game_metadata.json` and refreshed with the catalog, so a restart, a
-  patch, or a profile view never waits for them.
-- `/status` shows Riot's public VALORANT incidents and maintenance for a region,
-  defaulting to the caller's account region. Content follows the user's locale when
-  Riot publishes a translation.
-- `/crosshair view` shows the caller's saved crosshair profiles, their export codes,
-  and a locally rendered preview, with a menu to switch profiles. A Refresh button
-  re-fetches the profiles from Riot and updates the cache. A Share button posts the
-  selected profile publicly after a private confirmation. The command and its messages
-  are available in all 25 supported locales; publicly shared cards use English labels so
-  they read the same in every server.
-
-### Fixed
-
-- Clicking a crosshair share button twice in quick succession no longer posts the
-  card twice; the share cooldown is claimed before posting and returned if the
-  post fails.
-- The Discord log channel now receives the same plain-text log lines as the
-  console instead of JSON objects.
-
-### Removed
-
-- GlitchTip/Sentry telemetry, the `sentry-sdk` dependency, and the
-  `GLITCHTIP_*` settings are removed. Console and Discord log-channel output
-  keep the same plain-text formatting and privacy filtering.
-
 ## [1.3.0] - 2026-10-31
 
 ### Changed
