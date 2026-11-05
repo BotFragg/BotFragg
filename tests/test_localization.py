@@ -152,6 +152,65 @@ def test_locale_checker_rejects_metadata_discord_would_refuse(tmp_path):
     assert "command-shop-description" in errors[0]
 
 
+@pytest.mark.parametrize(
+    ("locale", "name"),
+    [
+        ("th", "ร้านค้า"),
+        ("hi", "दुकान"),
+    ],
+)
+def test_locale_checker_accepts_thai_and_devanagari_command_names(
+    tmp_path, locale, name
+):
+    """Discord allows Thai and Devanagari combining marks in command names."""
+    from tools.check_locales import catalog_limit_errors
+
+    path = tmp_path / locale / "messages.ftl"
+    path.parent.mkdir()
+    path.write_text(
+        f"command-shop-name = {name}\ncommand-shop-description = shop\n",
+        encoding="utf-8",
+    )
+
+    assert (
+        catalog_limit_errors(path, ["command-shop-name", "command-shop-description"])
+        == []
+    )
+
+
+@pytest.mark.parametrize("name", ["Shop", " Shop"])
+def test_locale_checker_rejects_invalid_command_names(tmp_path, name):
+    """Command names must be lowercase and have no surrounding whitespace."""
+    from tools.check_locales import catalog_limit_errors
+
+    path = tmp_path / "de" / "messages.ftl"
+    path.parent.mkdir()
+    path.write_text(
+        f"command-shop-name = {name}\ncommand-shop-description = shop\n",
+        encoding="utf-8",
+    )
+
+    errors = catalog_limit_errors(
+        path, ["command-shop-name", "command-shop-description"]
+    )
+
+    assert len(errors) == 1
+    assert "command-shop-name" in errors[0]
+
+
+def test_locale_checker_rejects_missing_catalogs(tmp_path):
+    """Every supported Discord locale must have a catalog file."""
+    from tools.check_locales import missing_locale_codes
+
+    (tmp_path / "en-US").mkdir()
+    (tmp_path / "en-US" / "messages.ftl").write_text("", encoding="utf-8")
+
+    catalogs = list(tmp_path.glob("*/messages.ftl"))
+
+    assert missing_locale_codes(catalogs, {"en-US"}) == []
+    assert missing_locale_codes(catalogs, {"en-US", "hi"}) == ["hi"]
+
+
 def test_localization_diagnostics_keep_their_message_key():
     """The privacy filter must not redact a message key in log text."""
     from src.monitoring import _scrub

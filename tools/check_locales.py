@@ -271,8 +271,13 @@ def command_name_errors(
 
 
 # Discord rejects command names outside this rule, and over-long descriptions,
-# with a 400 at sync time.
-DISCORD_NAME = re.compile(r"^[-_\w]{1,32}$", re.UNICODE)
+# with a 400 at sync time. The extra ranges are Thai and Devanagari combining
+# marks, which Discord allows but Python's \w does not match.
+DISCORD_NAME = re.compile(
+    r"^[-_\w\u0e31-\u0e3a\u0e47-\u0e4e"
+    r"\u0900-\u0903\u093a\u093b\u093c\u093e\u093f\u0940-\u094f"
+    r"\u0955\u0956\u0957\u0962\u0963]{1,32}$"
+)
 
 
 def catalog_limit_errors(path: Path, message_ids) -> list[str]:
@@ -287,8 +292,9 @@ def catalog_limit_errors(path: Path, message_ids) -> list[str]:
         if suffix not in {"name", "description"} or not bundle.has_message(message_id):
             continue
         message = bundle.get_message(message_id)
-        text = bundle.format_pattern(message.value)[0].strip() if message.value else ""
-        if suffix == "name" and not DISCORD_NAME.fullmatch(text):
+        raw = bundle.format_pattern(message.value)[0] if message.value else ""
+        text = raw.strip()
+        if suffix == "name" and (raw != raw.lower() or not DISCORD_NAME.fullmatch(raw)):
             errors.append(
                 f"{path.parent.name}:{message_id} is not a valid command name"
             )
@@ -297,6 +303,11 @@ def catalog_limit_errors(path: Path, message_ids) -> list[str]:
                 f"{path.parent.name}:{message_id} exceeds the description limit"
             )
     return errors
+
+
+def missing_locale_codes(catalogs: list[Path], supported: set[str]) -> list[str]:
+    """Return supported Discord locale codes that have no catalog file."""
+    return sorted(supported - {path.parent.name for path in catalogs})
 
 
 def main() -> int:
@@ -340,6 +351,10 @@ def main() -> int:
             print(f"Missing catalog file in locale directory: {directory.name}")
             return 1
     catalogs = list(LOCALES.glob("*/messages.ftl"))
+    missing_locales = missing_locale_codes(catalogs, supported)
+    if missing_locales:
+        print(f"Missing catalogs for: {', '.join(missing_locales)}")
+        return 1
     command_scopes = source_command_names()
     for path in catalogs:
         locale = path.parent.name
