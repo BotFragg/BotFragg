@@ -1,0 +1,21 @@
+{
+  "release-type": "python",
+  "include-component-in-tag": false,
+  "packages": {
+    ".": {
+      "changelog-path": "CHANGELOG.md"
+    }
+  },
+  "changelog-sections": [
+    { "type": "feat", "section": "Added" },
+    { "type": "fix", "section": "Fixed" },
+    { "type": "perf", "section": "Performance" },
+    { "type": "refactor", "section": "Changed" },
+    { "type": "docs", "section": "Documentation", "hidden": true },
+    { "type": "chore", "hidden": true },
+    { "type": "ci", "hidden": true },
+    { "type": "test", "hidden": true },
+    { "type": "style", "hidden": true },
+    { "type": "build", "hidden": true }
+  ]
+}

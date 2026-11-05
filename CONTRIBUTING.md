@@ -61,6 +61,27 @@ regenerate the browsable API reference:
 uv run --frozen python tools/generate_api_reference.py
 ```
 
+## Releasing
+
+Releases are prepared by
+[release-please](https://github.com/googleapis/release-please) from Conventional
+Commits. Pushing to `main` opens or updates a release pull request that bumps
+`pyproject.toml`, updates `CHANGELOG.md`, and creates the `vX.Y.Z` tag when
+merged. The tag triggers the Docker publish workflow.
+
+1. Review the release pull request and edit its `CHANGELOG.md` entry if the
+   generated summary needs more context.
+2. Run `uv lock` on the release branch and commit the updated `uv.lock`; the
+   version bump leaves the lockfile out of date.
+3. Merge once CI passes.
+
+Only `feat`, `fix`, `perf`, and `refactor` appear in the generated changelog;
+`docs`, `chore`, `ci`, `test`, `style`, and `build` commits are hidden.
+
+The first release needs a one-time reconciliation: the existing
+`## [Unreleased]` section predates release-please. Merge its prose into the
+generated section and remove it in the release pull request.
+
 ## Adding a translation
 
 English (`locales/en-US/messages.ftl`) is the source catalog. To add a language,

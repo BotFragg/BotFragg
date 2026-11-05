@@ -52,6 +52,8 @@ uv run --frozen python -m compileall -q src tests
   docstring or `tools/generate_api_reference.py` raises. Regenerate after
   changing signatures or docstrings:
   `uv run --frozen python tools/generate_api_reference.py`
+- `CHANGELOG.md` and the `version` in `pyproject.toml` are managed by
+  release-please; only edit the changelog inside a release pull request.
 - Models live in `src/models/entities.py`. Create migrations with
   `uv run --frozen tortoise -c src.database.TORTOISE_CONFIG makemigrations`;
   apply them with `... migrate`.
