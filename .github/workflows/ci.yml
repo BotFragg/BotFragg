@@ -3,6 +3,8 @@ name: CI
 on:
   pull_request:
   push:
+    branches-ignore: ["release-please--branches--**"]
+    tags: ["v*"]
 
 permissions:
   contents: read
@@ -41,6 +43,9 @@ jobs:
       - run: uv run --frozen python tools/generate_api_reference.py --check
       - run: uv run --frozen pytest -q
       - run: uv run --frozen python -m compileall -q src tests
+      # Keep in sync with the actionlint rev in .pre-commit-config.yaml.
+      - name: Lint workflows
+        uses: docker://rhysd/actionlint:1.7.12
 
   build-image:
     name: Build Docker image

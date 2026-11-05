@@ -11,6 +11,9 @@ Use Python 3.14 and [uv](https://docs.astral.sh/uv/).
    pre-commit install
    ```
 
+   Linting workflow files uses the actionlint Docker image, so Docker must be
+   available when changing files under `.github/workflows/`.
+
 4. Before opening a pull request, run the same checks as CI:
 
    ```sh
@@ -18,8 +21,9 @@ Use Python 3.14 and [uv](https://docs.astral.sh/uv/).
    ```
 
    The hook runs Ruff, Mypy, the locale check, API-reference freshness,
-   pytest, and `compileall`. PostgreSQL-backed tests still skip locally unless
-   `BOTFRAGG_TEST_POSTGRES_URL` is set, as described below.
+   pytest, `compileall`, and actionlint for workflow files. PostgreSQL-backed
+   tests still skip locally unless `BOTFRAGG_TEST_POSTGRES_URL` is set, as
+   described below.
 
 Mypy checks every application module, including bodies of unannotated functions.
 
@@ -69,11 +73,18 @@ Commits. Pushing to `main` opens or updates a release pull request that bumps
 `pyproject.toml`, updates `CHANGELOG.md`, and creates the `vX.Y.Z` tag when
 merged. The tag triggers the Docker publish workflow.
 
+The `RELEASE_PLEASE_TOKEN` secret needs Contents, Issues, and Pull requests
+write access. release-please labels its pull request `autorelease: pending`
+and finds it by that label, so the Issues permission is required.
+
 1. Review the release pull request and edit its `CHANGELOG.md` entry if the
    generated summary needs more context.
-2. Run `uv lock` on the release branch and commit the updated `uv.lock`; the
-   version bump leaves the lockfile out of date.
-3. Merge once CI passes.
+2. Merge once CI passes. The release workflow refreshes `uv.lock` on the
+   release branch automatically, so the lockfile stays in sync.
+
+If another commit lands on `main` while the release pull request is open,
+release-please rewrites the branch and regenerates the changelog. Re-apply any
+hand-written changelog edits before merging.
 
 Only `feat`, `fix`, `perf`, and `refactor` appear in the generated changelog;
 `docs`, `chore`, `ci`, `test`, `style`, and `build` commits are hidden.

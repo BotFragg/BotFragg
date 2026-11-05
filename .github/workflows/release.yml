@@ -4,13 +4,20 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: release-please
+  cancel-in-progress: false
+
 permissions:
   contents: write
+  issues: write
   pull-requests: write
 
 jobs:
   release-please:
+    if: github.repository == 'BotFragg/BotFragg'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: googleapis/release-please-action@v4
         id: release
@@ -18,3 +25,30 @@ jobs:
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+      - name: Check out the release branch
+        if: steps.release.outputs.prs_created == 'true'
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ fromJSON(steps.release.outputs.prs)[0].headBranchName }}
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+
+      - name: Install uv
+        if: steps.release.outputs.prs_created == 'true'
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.14"
+
+      - name: Refresh uv.lock
+        if: steps.release.outputs.prs_created == 'true'
+        run: |
+          uv lock
+          if git diff --quiet uv.lock; then
+            echo "uv.lock is already up to date"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add uv.lock
+          git commit -m "chore: refresh uv.lock for the release"
+          git push
