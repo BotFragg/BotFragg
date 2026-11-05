@@ -1,5 +1,36 @@
 # Changelog
 
+## [2.0.0](https://github.com/BotFragg/BotFragg/compare/v1.3.0...v2.0.0) (2026-11-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* /suggest and /suggestion are removed, and migration 0009 drops the suggestion and suggestionfollower tables. Operators must back up or export those tables before upgrading; see the upgrade notes in docs/operations.md.
+
+### Added
+
+* add /crosshair view with local rendering ([75355ca](https://github.com/BotFragg/BotFragg/commit/75355ca8a3c4f2ffe437cf542e8b8953afce67ba))
+* add a crosshair refresh button and fix share races ([bddaee4](https://github.com/BotFragg/BotFragg/commit/bddaee407243eb2ae65a1a9b439fd98ebbf8efe6))
+* add the /loadout command ([79efdce](https://github.com/BotFragg/BotFragg/commit/79efdce7bf10e7f1ab144efcb3e5f341d3f9a1f5))
+* add the /profile command ([589eddf](https://github.com/BotFragg/BotFragg/commit/589eddf808847a6f543c843fdf7174fac93fdb09))
+* add the /status command ([6a46da7](https://github.com/BotFragg/BotFragg/commit/6a46da7c18bfeb27f37fa40fcfb31cef69805f79))
+* expire command analytics after a retention window ([63049b3](https://github.com/BotFragg/BotFragg/commit/63049b37c36500d4f98e867e6e91fef74dbe7529))
+* **i18n:** add seven new Discord locale catalogs ([9de5978](https://github.com/BotFragg/BotFragg/commit/9de59780a24fac41f32fc06f5b4f706fc6487f20))
+* share crosshairs publicly after confirmation ([dc63ce0](https://github.com/BotFragg/BotFragg/commit/dc63ce0b316c574fc040990e5763da009de8fa58))
+
+
+### Fixed
+
+* keep shared crosshair cards in English ([c6fa43f](https://github.com/BotFragg/BotFragg/commit/c6fa43f4bb215cc80ca48098d65623c2ef645540))
+* send plain-text logs to the Discord log channel ([f5fd4b0](https://github.com/BotFragg/BotFragg/commit/f5fd4b0b513710d2effbc7d2d332816728b9fd0a))
+
+
+### Changed
+
+* remove GlitchTip and Sentry telemetry ([bdf22c0](https://github.com/BotFragg/BotFragg/commit/bdf22c0815b1e903c66c1201b87a59e28b0da94e))
+* remove the suggestion commands ([8bc4ed7](https://github.com/BotFragg/BotFragg/commit/8bc4ed74e91ccfcaa1befe78bd1a0367f6664159))
+* render plain-text log lines with categories ([4809014](https://github.com/BotFragg/BotFragg/commit/4809014a1c832e650401f1e5006ae476bf67424c))
+
 ## [1.3.0] - 2026-10-31
 
 ### Changed
