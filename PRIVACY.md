@@ -77,7 +77,6 @@ Operators may enable additional destinations:
 - **Guild join and leave logs** can include the server name and ID, owner ID,
   creation time, member count, text and voice channel counts, server icon, and
   BotFragg's current server count.
-- **Shard webhooks** include the shard ID, connection state, and shard count.
 - **Application log channels** receive plain-text log lines after BotFragg
   filters credential fields and common Riot or Discord identifiers.
 

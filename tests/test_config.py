@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import discord
 import pytest
 from cryptography.fernet import Fernet
 
@@ -12,7 +11,6 @@ _OPTIONAL_URLS = (
     "SUPPORT_URL",
     "VOTE_URL",
     "WEBSITE_URL",
-    "SHARD_LOG_WEBHOOK_URL",
 )
 
 
@@ -76,12 +74,11 @@ def test_settings_treat_blank_optional_urls_as_none(
 
     config = Settings.from_env(require_secrets=False)
 
-    assert (
-        config.support_url,
-        config.vote_url,
-        config.website_url,
-        config.shard_log_webhook_url,
-    ) == (None, None, None, None)
+    assert (config.support_url, config.vote_url, config.website_url) == (
+        None,
+        None,
+        None,
+    )
 
 
 @pytest.mark.parametrize("name", ["SUPPORT_URL", "VOTE_URL", "WEBSITE_URL"])
@@ -118,50 +115,6 @@ def test_settings_reject_invalid_http_links_without_echoing_value(
     monkeypatch.setenv(name, value)
 
     with pytest.raises(ValueError, match=name) as raised:
-        Settings.from_env(require_secrets=False)
-
-    assert value not in str(raised.value)
-
-
-@pytest.mark.parametrize("host", ["discord.com", "discordapp.com"])
-def test_settings_accept_webhook_urls_supported_by_discord_py(
-    monkeypatch: pytest.MonkeyPatch, host: str
-) -> None:
-    """Verify that settings accept webhook URLs supported by discord.py."""
-    _clear_optional_urls(monkeypatch)
-    webhook_id = "123456789012345678"
-    token = "a" * 60
-    value = f"https://{host}/api/webhooks/{webhook_id}/{token}"
-    monkeypatch.setenv("SHARD_LOG_WEBHOOK_URL", value)
-
-    config = Settings.from_env(require_secrets=False)
-    parsed = discord.Webhook.from_url(value, session=object())
-
-    assert config.shard_log_webhook_url == value
-    assert parsed.id == int(webhook_id)
-
-
-@pytest.mark.parametrize(
-    "value",
-    [
-        "http://discord.com/api/webhooks/123456789012345678/" + "a" * 60,
-        "https://evil.discord.com/api/webhooks/123456789012345678/" + "a" * 60,
-        "https://discord.com:443/api/webhooks/123456789012345678/" + "a" * 60,
-        "https://discord.com/api/webhooks/1234567890123456/" + "a" * 60,
-        "https://discord.com/api/webhooks/123456789012345678/" + "a" * 59,
-        "https://discord.com/api/webhooks/123456789012345678/" + "a" * 60 + "/extra",
-        "https://user@discord.com/api/webhooks/123456789012345678/" + "a" * 60,
-        "https://discord.com/api/webhooks/not-a-webhook",
-    ],
-)
-def test_settings_reject_invalid_webhook_urls_without_echoing_token(
-    monkeypatch: pytest.MonkeyPatch, value: str
-) -> None:
-    """Verify that settings reject invalid webhook urls without echoing token."""
-    _clear_optional_urls(monkeypatch)
-    monkeypatch.setenv("SHARD_LOG_WEBHOOK_URL", value)
-
-    with pytest.raises(ValueError, match="SHARD_LOG_WEBHOOK_URL") as raised:
         Settings.from_env(require_secrets=False)
 
     assert value not in str(raised.value)

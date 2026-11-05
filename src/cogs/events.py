@@ -1,4 +1,4 @@
-"""Discord event listeners for analytics, guild notifications, and shard logs."""
+"""Discord event listeners for analytics and guild notifications."""
 
 from __future__ import annotations
 
@@ -93,36 +93,6 @@ class EventsCog(commands.Cog):
             )
         except DISCORD_HTTP_ERRORS:
             log.warning("Could not deliver guild event log", exc_info=True)
-
-    @commands.Cog.listener()
-    async def on_shard_ready(self, shard_id: int) -> None:
-        """Report that a Discord shard connected and became ready."""
-        await self._log_shard_event(shard_id, "connected")
-
-    @commands.Cog.listener()
-    async def on_shard_disconnect(self, shard_id: int) -> None:
-        """Report that a Discord shard disconnected."""
-        await self._log_shard_event(shard_id, "disconnected")
-
-    @commands.Cog.listener()
-    async def on_shard_resumed(self, shard_id: int) -> None:
-        """Report that a disconnected Discord shard resumed its session."""
-        await self._log_shard_event(shard_id, "resumed")
-
-    async def _log_shard_event(self, shard_id: int, state: str) -> None:
-        """Post a shard state update to the optional logging webhook."""
-        url = self.bot.config.shard_log_webhook_url
-        session = self.bot.riot_http.session
-        if not url or not session:
-            return
-        hook = discord.Webhook.from_url(url, session=session)
-        try:
-            await hook.send(
-                content=f"Shard {shard_id} {state}. Total shards: {self.bot.shard_count}.",
-                username="BotFragg Shard Manager",
-            )
-        except DISCORD_HTTP_ERRORS:
-            log.warning("Could not deliver shard %s event", shard_id, exc_info=True)
 
 
 async def setup(bot: BotFraggBot) -> None:

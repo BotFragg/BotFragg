@@ -77,7 +77,7 @@ docstring. Regenerate it after application documentation changes with
 | [src/main.py](../src/main.py) | Configures process logging before starting the Discord client. |
 | [src/monitoring.py](../src/monitoring.py) | Formats plain-text log lines and strips sensitive data from console and Discord logs. |
 | [src/cogs/__init__.py](../src/cogs/__init__.py) | Defines the Discord cog package. |
-| [src/cogs/events.py](../src/cogs/events.py) | Records command analytics and reports guild and shard lifecycle events. |
+| [src/cogs/events.py](../src/cogs/events.py) | Records command analytics and reports guild lifecycle events. |
 | [src/cogs/extra.py](../src/cogs/extra.py) | Implements utility commands and persistent shard status. |
 | [src/cogs/staff.py](../src/cogs/staff.py) | Implements owner-only user, server, and command-usage diagnostics. |
 | [src/cogs/tasks.py](../src/cogs/tasks.py) | Runs scheduled alerts and refreshes and optionally forwards filtered logs to Discord. |

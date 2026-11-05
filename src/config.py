@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import os
-import re
 from dataclasses import dataclass, field
 from datetime import UTC, time
 from pathlib import Path
@@ -74,31 +73,6 @@ def _optional_url(name: str) -> str | None:
     return value
 
 
-_DISCORD_WEBHOOK_HOSTS = {"discord.com", "discordapp.com"}
-_DISCORD_WEBHOOK_PATH = re.compile(r"/api/webhooks/[0-9]{17,20}/[A-Za-z0-9._-]{60,}")
-
-
-def _optional_webhook_url(name: str) -> str | None:
-    """Validate an optional HTTPS Discord webhook URL and reject other hosts."""
-    value = os.getenv(name, "").strip()
-    if not value:
-        return None
-    try:
-        parsed = urlsplit(value)
-        port = parsed.port
-    except ValueError:
-        raise ValueError(f"{name} must be a valid HTTPS Discord webhook URL") from None
-    if (
-        any(character.isspace() for character in value)
-        or parsed.scheme != "https"
-        or parsed.netloc not in _DISCORD_WEBHOOK_HOSTS
-        or port is not None
-        or _DISCORD_WEBHOOK_PATH.fullmatch(parsed.path) is None
-    ):
-        raise ValueError(f"{name} must be a valid HTTPS Discord webhook URL")
-    return value
-
-
 def _time(name: str, default: str) -> time:
     """Parse an HH:MM or HH:MM:SS setting as a UTC wall-clock time."""
     raw = os.getenv(name, default)
@@ -123,7 +97,6 @@ class Settings:
     log_channel_id: int | None
     guild_join_log_channel_id: int | None
     guild_leave_log_channel_id: int | None
-    shard_log_webhook_url: str | None
     shard_status_channel_id: int | None
     support_url: str | None
     vote_url: str | None
@@ -192,7 +165,6 @@ class Settings:
             log_channel_id=_optional_int("LOG_CHANNEL_ID"),
             guild_join_log_channel_id=_optional_int("GUILD_JOIN_LOG_CHANNEL_ID"),
             guild_leave_log_channel_id=_optional_int("GUILD_LEAVE_LOG_CHANNEL_ID"),
-            shard_log_webhook_url=_optional_webhook_url("SHARD_LOG_WEBHOOK_URL"),
             shard_status_channel_id=_optional_int("SHARD_STATUS_CHANNEL_ID"),
             support_url=_optional_url("SUPPORT_URL"),
             vote_url=_optional_url("VOTE_URL"),

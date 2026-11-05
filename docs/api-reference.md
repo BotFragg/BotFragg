@@ -140,7 +140,7 @@ Discord command cogs.
 
 ## `src/cogs/events.py`
 
-Discord event listeners for analytics, guild notifications, and shard logs.
+Discord event listeners for analytics and guild notifications.
 
 ### `class EventsCog(commands.Cog)`
 
@@ -190,43 +190,11 @@ Send a summary to the channel configured for guild departures.
 
 Resolve a configured messageable channel and send a guild summary.
 
-### `async def on_shard_ready(self, shard_id: int) -> None`
-
-**Scope:** `src/cogs/events.py` · `EventsCog`
-
-[Source](../src/cogs/events.py#L98)
-
-Report that a Discord shard connected and became ready.
-
-### `async def on_shard_disconnect(self, shard_id: int) -> None`
-
-**Scope:** `src/cogs/events.py` · `EventsCog`
-
-[Source](../src/cogs/events.py#L103)
-
-Report that a Discord shard disconnected.
-
-### `async def on_shard_resumed(self, shard_id: int) -> None`
-
-**Scope:** `src/cogs/events.py` · `EventsCog`
-
-[Source](../src/cogs/events.py#L108)
-
-Report that a disconnected Discord shard resumed its session.
-
-### `async def _log_shard_event(self, shard_id: int, state: str) -> None`
-
-**Scope:** `src/cogs/events.py` · `EventsCog`
-
-[Source](../src/cogs/events.py#L112)
-
-Post a shard state update to the optional logging webhook.
-
 ### `async def setup(bot: BotFraggBot) -> None`
 
 **Scope:** `src/cogs/events.py` · `module`
 
-[Source](../src/cogs/events.py#L128)
+[Source](../src/cogs/events.py#L98)
 
 Register the Discord event-listener cog with the bot.
 
@@ -1678,7 +1646,7 @@ Environment-backed settings, validation helpers, and repository paths.
 
 **Scope:** `src/config.py` · `module`
 
-[Source](../src/config.py#L20)
+[Source](../src/config.py#L19)
 
 Parse a named environment variable as a strict boolean or use its default.
 
@@ -1686,7 +1654,7 @@ Parse a named environment variable as a strict boolean or use its default.
 
 **Scope:** `src/config.py` · `module`
 
-[Source](../src/config.py#L33)
+[Source](../src/config.py#L32)
 
 Parse an integer setting and reject values below its configured minimum.
 
@@ -1694,7 +1662,7 @@ Parse an integer setting and reject values below its configured minimum.
 
 **Scope:** `src/config.py` · `module`
 
-[Source](../src/config.py#L41)
+[Source](../src/config.py#L40)
 
 Return a bounded optional positive integer setting, or ``None`` when blank.
 
@@ -1702,23 +1670,15 @@ Return a bounded optional positive integer setting, or ``None`` when blank.
 
 **Scope:** `src/config.py` · `module`
 
-[Source](../src/config.py#L55)
+[Source](../src/config.py#L54)
 
 Validate and return an optional absolute HTTP(S) URL without userinfo.
-
-### `def _optional_webhook_url(name: str) -> str | None`
-
-**Scope:** `src/config.py` · `module`
-
-[Source](../src/config.py#L81)
-
-Validate an optional HTTPS Discord webhook URL and reject other hosts.
 
 ### `def _time(name: str, default: str) -> time`
 
 **Scope:** `src/config.py` · `module`
 
-[Source](../src/config.py#L102)
+[Source](../src/config.py#L76)
 
 Parse an HH:MM or HH:MM:SS setting as a UTC wall-clock time.
 
@@ -1726,7 +1686,7 @@ Parse an HH:MM or HH:MM:SS setting as a UTC wall-clock time.
 
 **Scope:** `src/config.py` · `module`
 
-[Source](../src/config.py#L114)
+[Source](../src/config.py#L88)
 
 Immutable runtime configuration populated from environment variables.
 
@@ -1734,7 +1694,7 @@ Immutable runtime configuration populated from environment variables.
 
 **Scope:** `src/config.py` · `Settings`
 
-[Source](../src/config.py#L149)
+[Source](../src/config.py#L122)
 
 Load settings, validate URLs and limits, and optionally require secrets.
 
