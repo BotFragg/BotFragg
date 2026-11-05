@@ -390,7 +390,7 @@ Background loops for daily alerts, upstream refresh, and Discord log delivery.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L30)
+[Source](../src/cogs/tasks.py#L31)
 
 Buffer privacy-filtered plain log lines for periodic Discord delivery.
 
@@ -398,7 +398,7 @@ Buffer privacy-filtered plain log lines for periodic Discord delivery.
 
 **Scope:** `src/cogs/tasks.py` · `DiscordLogHandler`
 
-[Source](../src/cogs/tasks.py#L33)
+[Source](../src/cogs/tasks.py#L34)
 
 Create a bounded log buffer using BotFragg's privacy-aware formatter.
 
@@ -406,7 +406,7 @@ Create a bounded log buffer using BotFragg's privacy-aware formatter.
 
 **Scope:** `src/cogs/tasks.py` · `DiscordLogHandler`
 
-[Source](../src/cogs/tasks.py#L39)
+[Source](../src/cogs/tasks.py#L40)
 
 Format a log record into the buffer or delegate failures to logging.
 
@@ -414,7 +414,7 @@ Format a log record into the buffer or delegate failures to logging.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L47)
+[Source](../src/cogs/tasks.py#L48)
 
 Own periodic application jobs and stop them cleanly when unloaded.
 
@@ -422,7 +422,7 @@ Own periodic application jobs and stop them cleanly when unloaded.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L50)
+[Source](../src/cogs/tasks.py#L51)
 
 Set job intervals from settings and prepare the optional log handler.
 
@@ -430,7 +430,7 @@ Set job intervals from settings and prepare the optional log handler.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L76)
+[Source](../src/cogs/tasks.py#L86)
 
 Start background loops and attach the log handler when configured.
 
@@ -438,7 +438,7 @@ Start background loops and attach the log handler when configured.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L86)
+[Source](../src/cogs/tasks.py#L97)
 
 Cancel and await all active loops, then detach the root log handler.
 
@@ -446,7 +446,7 @@ Cancel and await all active loops, then detach the root log handler.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L108)
+[Source](../src/cogs/tasks.py#L120)
 
 Run the daily shop and skin-alert job.
 
@@ -454,15 +454,23 @@ Run the daily shop and skin-alert job.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L120)
+[Source](../src/cogs/tasks.py#L132)
 
 Process eligible users' shops and return counts for the completed run.
+
+### `async def analytics_retention(self) -> None`
+
+**Scope:** `src/cogs/tasks.py` · `TasksCog`
+
+[Source](../src/cogs/tasks.py#L153)
+
+Delete command analytics older than the configured retention window.
 
 ### `async def _deliver_daily_alert_result(self, user_id: int, user: User | None, account: Account, shop: ShopData, matches: list[tuple[Alert, Offer]], send_daily_shop: bool) -> int`
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L140)
+[Source](../src/cogs/tasks.py#L161)
 
 Deliver matching alerts and the optional daily shop; count failed DMs.
 
@@ -470,7 +478,7 @@ Deliver matching alerts and the optional daily shop; count failed DMs.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L181)
+[Source](../src/cogs/tasks.py#L202)
 
 DM an owner-scoped skin alert and report whether delivery succeeded.
 
@@ -478,7 +486,7 @@ DM an owner-scoped skin alert and report whether delivery succeeded.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L221)
+[Source](../src/cogs/tasks.py#L242)
 
 DM the selected account's daily shop and report delivery success.
 
@@ -486,7 +494,7 @@ DM the selected account's daily shop and report delivery success.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L282)
+[Source](../src/cogs/tasks.py#L303)
 
 Notify a user that credentials expired and return the delivery failure count.
 
@@ -494,7 +502,7 @@ Notify a user that credentials expired and return the delivery failure count.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L300)
+[Source](../src/cogs/tasks.py#L321)
 
 Refresh the Riot client version, the catalog, and the game metadata.
 
@@ -502,7 +510,7 @@ Refresh the Riot client version, the catalog, and the game metadata.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L320)
+[Source](../src/cogs/tasks.py#L341)
 
 Measure log delivery, preserving the queue after Discord failures.
 
@@ -510,7 +518,7 @@ Measure log delivery, preserving the queue after Discord failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L325)
+[Source](../src/cogs/tasks.py#L346)
 
 Send buffered log lines to Discord and requeue them after delivery failures.
 
@@ -518,7 +526,7 @@ Send buffered log lines to Discord and requeue them after delivery failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L373)
+[Source](../src/cogs/tasks.py#L394)
 
 Publish Discord, database, and scheduled-job health for Docker and operators.
 
@@ -526,7 +534,7 @@ Publish Discord, database, and scheduled-job health for Docker and operators.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L427)
+[Source](../src/cogs/tasks.py#L449)
 
 Wait for Discord readiness before starting any background job.
 
@@ -534,7 +542,7 @@ Wait for Discord readiness before starting any background job.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L432)
+[Source](../src/cogs/tasks.py#L454)
 
 Register the background-task cog with the bot.
 
@@ -1694,7 +1702,7 @@ Immutable runtime configuration populated from environment variables.
 
 **Scope:** `src/config.py` · `Settings`
 
-[Source](../src/config.py#L122)
+[Source](../src/config.py#L123)
 
 Load settings, validate URLs and limits, and optionally require secrets.
 
@@ -2034,6 +2042,34 @@ Remove the suggestion and suggestion-follower tables.
 
 Drop suggestion records now that suggestions are handled in Discord forums.
 
+## `src/migrations/0010_index_analytics_created_at.py`
+
+Index command analytics creation time for retention.
+
+### `async def _create_index(apps, schema_editor) -> None`
+
+**Scope:** `src/migrations/0010_index_analytics_created_at.py` · `module`
+
+[Source](../src/migrations/0010_index_analytics_created_at.py#L9)
+
+Create the retention index unless a development schema already made it.
+
+### `async def _drop_index(apps, schema_editor) -> None`
+
+**Scope:** `src/migrations/0010_index_analytics_created_at.py` · `module`
+
+[Source](../src/migrations/0010_index_analytics_created_at.py#L19)
+
+Remove the retention index, tolerating a schema that never had it.
+
+### `class Migration(migrations.Migration)`
+
+**Scope:** `src/migrations/0010_index_analytics_created_at.py` · `module`
+
+[Source](../src/migrations/0010_index_analytics_created_at.py#L30)
+
+Speed up deletion of analytics older than the retention window.
+
 ## `src/migrations/__init__.py`
 
 Tortoise migration package for the BotFragg database schema.
@@ -2110,11 +2146,19 @@ Prevent duplicate alerts for the same account and skin.
 
 Store a completed command and its optional guild and channel context.
 
+### `class Meta`
+
+**Scope:** `src/models/entities.py` · `CommandInvocation`
+
+[Source](../src/models/entities.py#L92)
+
+Index creation time so retention can prune old analytics efficiently.
+
 ### `class ShardStatusMessage(Model)`
 
 **Scope:** `src/models/entities.py` · `module`
 
-[Source](../src/models/entities.py#L93)
+[Source](../src/models/entities.py#L98)
 
 Map each configured Discord channel to its persistent status message.
 
@@ -2376,7 +2420,7 @@ Persistence and orchestration for analytics.
 
 **Scope:** `src/services/analytics.py` · `module`
 
-[Source](../src/services/analytics.py#L26)
+[Source](../src/services/analytics.py#L27)
 
 Track a command so deletion can cancel its late personal-data writes.
 
@@ -2384,7 +2428,7 @@ Track a command so deletion can cancel its late personal-data writes.
 
 **Scope:** `src/services/analytics.py` · `module`
 
-[Source](../src/services/analytics.py#L42)
+[Source](../src/services/analytics.py#L43)
 
 Serialize deletion with personal-data writes and cancel active commands.
 
@@ -2392,7 +2436,7 @@ Serialize deletion with personal-data writes and cancel active commands.
 
 **Scope:** `src/services/analytics.py` · `module`
 
-[Source](../src/services/analytics.py#L51)
+[Source](../src/services/analytics.py#L52)
 
 Hold deletion off during a write, rejecting a command cancelled by deletion.
 
@@ -2400,7 +2444,7 @@ Hold deletion off during a write, rejecting a command cancelled by deletion.
 
 **Scope:** `src/services/analytics.py` · `module`
 
-[Source](../src/services/analytics.py#L58)
+[Source](../src/services/analytics.py#L59)
 
 Persist a successful command invocation with its optional Discord scope.
 
@@ -2408,12 +2452,20 @@ Persist a successful command invocation with its optional Discord scope.
 
 **Scope:** `src/services/analytics.py` · `module`
 
-[Source](../src/services/analytics.py#L78)
+[Source](../src/services/analytics.py#L79)
 
 Return a scoped command-use count and the most-used command.
 
 Exactly one of ``user_id`` or ``guild_id`` is required. Ties for the most-used
 command are resolved alphabetically for stable results.
+
+### `async def prune_command_analytics(cutoff: datetime, *, batch_size: int = 5000) -> int`
+
+**Scope:** `src/services/analytics.py` · `module`
+
+[Source](../src/services/analytics.py#L108)
+
+Delete old command analytics in bounded batches and return the total.
 
 ## `src/services/auth.py`
 

@@ -108,6 +108,7 @@ class Settings:
     max_accounts_per_user: int
     alerts_per_page: int
     alert_concurrency: int
+    analytics_retention_days: int
     daily_alert_health_grace_seconds: int
     delay_between_alerts_seconds: int
     token_refresh_buffer_minutes: int
@@ -176,6 +177,7 @@ class Settings:
             max_accounts_per_user=_int("MAX_ACCOUNTS_PER_USER", 10, 1),
             alerts_per_page=_int("ALERTS_PER_PAGE", 10, 1),
             alert_concurrency=_int("ALERT_CONCURRENCY", 1, 1),
+            analytics_retention_days=_int("ANALYTICS_RETENTION_DAYS", 90, 1),
             daily_alert_health_grace_seconds=_int(
                 "DAILY_ALERT_HEALTH_GRACE_SECONDS", 7200, 60
             ),

@@ -17,6 +17,7 @@ from ..health import HEALTH_PATH, JobHealth, write_health
 from ..models import Account, Alert, User
 from ..monitoring import PlainFormatter
 from ..services.alerts import retry_lookup, run_daily_alerts
+from ..services.analytics import prune_command_analytics
 from ..services.http import DISCORD_HTTP_ERRORS, HTTPFailure
 from ..services.shop import Offer, ShopData
 from ..views import OwnedActionButton, timestamp
@@ -54,6 +55,7 @@ class TasksCog(commands.Cog):
             minutes=bot.config.user_agent_interval_minutes
         )
         self.version_refresh.add_exception_type(HTTPFailure)
+        self.analytics_retention.add_exception_type(*TRANSIENT_DATABASE_ERRORS)
         self.daily_alerts.change_interval(time=bot.config.alert_time_utc)
         self.discord_log_handler = DiscordLogHandler()
         self.log_flush.change_interval(seconds=bot.config.log_flush_interval_seconds)
@@ -61,7 +63,11 @@ class TasksCog(commands.Cog):
         first_alert = datetime.combine(now.date(), bot.config.alert_time_utc, UTC)
         if first_alert <= now:
             first_alert += timedelta(days=1)
+        first_retention = datetime.combine(now.date(), time(0, 15, tzinfo=UTC))
+        if first_retention <= now:
+            first_retention += timedelta(days=1)
         alert_grace = getattr(bot.config, "daily_alert_health_grace_seconds", 7200)
+        retention_grace = 1800
         self.job_health = {
             "daily_alerts": JobHealth(
                 86400 + alert_grace, first_alert.timestamp() + alert_grace
@@ -70,6 +76,10 @@ class TasksCog(commands.Cog):
                 bot.config.user_agent_interval_minutes * 60 + 300
             ),
             "log_flush": JobHealth(bot.config.log_flush_interval_seconds + 300),
+            "analytics_retention": JobHealth(
+                86400 + retention_grace,
+                first_retention.timestamp() + retention_grace,
+            ),
         }
         self._health_problems: list[str] | None = None
 
@@ -78,6 +88,7 @@ class TasksCog(commands.Cog):
         HEALTH_PATH.unlink(missing_ok=True)
         self.daily_alerts.start()
         self.version_refresh.start()
+        self.analytics_retention.start()
         if self.bot.config.log_channel_id:
             logging.getLogger().addHandler(self.discord_log_handler)
             self.log_flush.start()
@@ -88,6 +99,7 @@ class TasksCog(commands.Cog):
         loops = (
             self.daily_alerts,
             self.version_refresh,
+            self.analytics_retention,
             self.log_flush,
             self.health_watch,
         )
@@ -136,6 +148,15 @@ class TasksCog(commands.Cog):
             f"delivery {summary['delivery_failures']})"
         )
         return summary
+
+    @tasks.loop(time=time(0, 15, tzinfo=UTC))
+    async def analytics_retention(self) -> None:
+        """Delete command analytics older than the configured retention window."""
+        with self.job_health["analytics_retention"].track("analytics_retention"):
+            days = getattr(self.bot.config, "analytics_retention_days", 90)
+            cutoff = datetime.now(UTC) - timedelta(days=days)
+            removed = await prune_command_analytics(cutoff)
+            log.info(f"removed {removed} analytics rows older than {days} days")
 
     async def _deliver_daily_alert_result(
         self,
@@ -422,6 +443,7 @@ class TasksCog(commands.Cog):
 
     @daily_alerts.before_loop
     @version_refresh.before_loop
+    @analytics_retention.before_loop
     @log_flush.before_loop
     @health_watch.before_loop
     async def before_jobs(self) -> None:

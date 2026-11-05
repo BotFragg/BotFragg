@@ -21,7 +21,7 @@ from tortoise.exceptions import DBConnectionError
 from src.cogs import extra as extra_module
 from src.cogs.extra import ExtraCog
 from src.cogs.tasks import TasksCog
-from src.models import Account, Alert, User
+from src.models import Account, Alert, CommandInvocation, User
 from src.services import alerts as alert_service
 from src.services.accounts import delete_user_data
 from src.services.auth import AuthenticationRequired
@@ -804,19 +804,20 @@ async def test_tasks_cog_awaits_cancelled_background_loops(
             self.task.cancel()
 
     monkeypatch.setattr("src.cogs.tasks.HEALTH_PATH", tmp_path / "health.json")
-    loops = [Loop(asyncio.create_task(worker())) for _ in range(4)]
+    loops = [Loop(asyncio.create_task(worker())) for _ in range(5)]
     await asyncio.sleep(0)
     cog = SimpleNamespace(
         daily_alerts=loops[0],
         version_refresh=loops[1],
-        log_flush=loops[2],
-        health_watch=loops[3],
+        analytics_retention=loops[2],
+        log_flush=loops[3],
+        health_watch=loops[4],
         discord_log_handler=logging.NullHandler(),
     )
 
     await TasksCog.cog_unload(cog)
 
-    assert finished == 4
+    assert finished == 5
     assert all(loop.get_task().done() for loop in loops)
 
 
@@ -947,3 +948,29 @@ async def test_daily_delivery_resolves_the_recipient_once():
     assert result == 0
     assert fetched == [owner.id]
     assert target.send.await_count == 3
+
+
+@pytest.mark.usefixtures("database")
+async def test_analytics_retention_job_deletes_only_expired_rows() -> None:
+    """Verify the scheduled retention job removes old analytics and records success."""
+    old = await CommandInvocation.create(command="shop", user_id=101)
+    recent = await CommandInvocation.create(command="profile", user_id=101)
+    await CommandInvocation.filter(id=old.id).update(
+        created_at=datetime.now(UTC) - timedelta(days=91)
+    )
+    cog = TasksCog(
+        SimpleNamespace(
+            config=SimpleNamespace(
+                user_agent_interval_minutes=15,
+                alert_time_utc=utc_time(0, 0),
+                log_flush_interval_seconds=10,
+                analytics_retention_days=90,
+            )
+        )
+    )
+
+    await TasksCog.analytics_retention.coro(cog)
+
+    assert not await CommandInvocation.exists(id=old.id)
+    assert await CommandInvocation.exists(id=recent.id)
+    assert cog.job_health["analytics_retention"].last_success is not None

@@ -193,6 +193,15 @@ decrypted the restored credentials; another key was rejected. The read-only
 verification tool passed against that restored database. The rehearsal's
 databases and dump were removed afterward.
 
+## Data retention
+
+Command analytics older than `ANALYTICS_RETENTION_DAYS` (default 90) are
+deleted by a daily job at 00:15 UTC. The job deletes in batches and logs how
+many rows it removed; failures appear in job health. The first run after
+upgrading removes the entire pre-existing backlog older than the window, so
+allow up to 30 minutes for it. This does not purge operator backups, so a
+restored backup can reintroduce analytics older than the live retention window.
+
 ## Performance baseline
 
 Run the synthetic benchmark against an explicitly configured disposable

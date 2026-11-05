@@ -6,6 +6,7 @@ import asyncio
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from contextvars import ContextVar
+from datetime import datetime
 from weakref import WeakValueDictionary
 
 from tortoise.functions import Count
@@ -102,3 +103,20 @@ async def command_stats(
         "command"
     ]
     return count, favorite
+
+
+async def prune_command_analytics(cutoff: datetime, *, batch_size: int = 5000) -> int:
+    """Delete old command analytics in bounded batches and return the total."""
+    removed = 0
+    while True:
+        ids = list(
+            await CommandInvocation.filter(created_at__lt=cutoff)
+            .limit(batch_size)
+            .values_list("id", flat=True)
+        )
+        if not ids:
+            return removed
+        deleted = await CommandInvocation.filter(id__in=ids).delete()
+        removed += deleted
+        if not deleted:
+            return removed

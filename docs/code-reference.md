@@ -104,12 +104,13 @@ docstring. Regenerate it after application documentation changes with
 | [src/migrations/0007_record_model_options.py](../src/migrations/0007_record_model_options.py) | Records model options that earlier migrations left out of migration state. |
 | [src/migrations/0008_add_profile_sharing.py](../src/migrations/0008_add_profile_sharing.py) | Adds the opt-in profile-sharing preference. |
 | [src/migrations/0009_remove_suggestions.py](../src/migrations/0009_remove_suggestions.py) | Drops the suggestion and suggestion-follower tables. |
+| [src/migrations/0010_index_analytics_created_at.py](../src/migrations/0010_index_analytics_created_at.py) | Indexes analytics creation time for retention. |
 | [src/models/__init__.py](../src/models/__init__.py) | Re-exports model classes for application code. |
 | [src/models/entities.py](../src/models/entities.py) | Defines ORM records and uniqueness constraints. |
 | [src/services/__init__.py](../src/services/__init__.py) | Defines the service package. |
 | [src/services/accounts.py](../src/services/accounts.py) | Owns user preferences, account selection, and transactional personal-data deletion. |
 | [src/services/alerts.py](../src/services/alerts.py) | Owns alert persistence, pagination, matching, and bounded daily-alert orchestration. |
-| [src/services/analytics.py](../src/services/analytics.py) | Records successful command use and computes scoped aggregate statistics. |
+| [src/services/analytics.py](../src/services/analytics.py) | Records successful command use, computes scoped aggregate statistics, and prunes expired analytics. |
 | [src/services/auth.py](../src/services/auth.py) | Owns Riot OAuth, credential refresh, entitlement repair, and account linking. |
 | [src/services/catalog.py](../src/services/catalog.py) | Loads, searches, refreshes, and caches skin, weapon, bundle, accessory, mission, and game metadata (maps, ranks, seasons). |
 | [src/services/crosshair.py](../src/services/crosshair.py) | Fetches, decodes, encodes, and caches a user's crosshair profiles. |
@@ -140,7 +141,7 @@ docstring. Regenerate it after application documentation changes with
 | [tests/test_alert_commands.py](../tests/test_alert_commands.py) | Owner-restricted alert commands and selectors. |
 | [tests/test_alert_pagination.py](../tests/test_alert_pagination.py) | Alert ordering, page wrapping, and records removed during pagination. |
 | [tests/test_alerts_service.py](../tests/test_alerts_service.py) | Alert ownership, bounded queries, batching, delivery order, and failure handling. |
-| [tests/test_analytics.py](../tests/test_analytics.py) | Command analytics scope, DM context, tie-breaking, and empty results. |
+| [tests/test_analytics.py](../tests/test_analytics.py) | Command analytics scope, DM context, tie-breaking, empty results, and retention. |
 | [tests/test_auth.py](../tests/test_auth.py) | Nonce-bound login, refresh races, token validation, and PostgreSQL row-lock protection. |
 | [tests/test_bot.py](../tests/test_bot.py) | Bot lifecycle, resources, and the complete registered-command contract. |
 | [tests/test_cache_expiry.py](../tests/test_cache_expiry.py) | Expiry and release of idle login, storefront, and accessory state. |

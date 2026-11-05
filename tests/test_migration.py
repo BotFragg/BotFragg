@@ -144,6 +144,28 @@ async def test_index_migration_tolerates_a_preexisting_index(message, raises) ->
 
 
 @pytest.mark.parametrize(
+    ("message", "raises"),
+    [
+        ("index idx_commandinvocation_created_at already exists", False),
+        ("disk I/O error", True),
+    ],
+)
+async def test_retention_index_migration_tolerates_a_preexisting_index(
+    message, raises
+) -> None:
+    """A dev database may already have the index from schema generation."""
+    module = importlib.import_module("src.migrations.0010_index_analytics_created_at")
+    editor = SimpleNamespace(add_index=AsyncMock(side_effect=OperationalError(message)))
+    apps = SimpleNamespace(get_model=lambda *_args: SimpleNamespace())
+
+    if raises:
+        with pytest.raises(OperationalError):
+            await module._create_index(apps, editor)
+    else:
+        await module._create_index(apps, editor)
+
+
+@pytest.mark.parametrize(
     ("max_id", "sequence_value", "refused"),
     [
         (2**31, 1, True),
@@ -260,6 +282,16 @@ def test_native_initial_migration_matches_current_models() -> None:
         (type(operation).__name__, operation.name)
         for operation in removal_module.Migration.operations
     ] == [("DeleteModel", "SuggestionFollower"), ("DeleteModel", "Suggestion")]
+
+    retention_module = importlib.import_module(
+        "src.migrations.0010_index_analytics_created_at"
+    )
+    assert retention_module.Migration.dependencies == [
+        ("models", "0009_remove_suggestions")
+    ]
+    assert [
+        type(operation).__name__ for operation in retention_module.Migration.operations
+    ] == ["RunPython"]
 
 
 async def test_connect_database_uses_passed_settings(

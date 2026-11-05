@@ -20,8 +20,8 @@ BotFragg processes the following information to provide its features:
   in-game-name visibility setting, shop-sharing setting, and account timestamps.
 - **Alerts:** the skin identifier and creation time for each alert.
 - **Command analytics:** command name, Discord user ID, guild ID and channel
-  ID when available, and the time the command ran. Command option values are
-  not included in these analytics records.
+  ID when available, and the time the command ran. These records are retained
+  for 90 days by default. Command option values are not included.
 - **Operational records:** where configured, BotFragg stores the channel and
   message IDs of its shard-status message. Optional Discord logs may include
   guild or shard information described below.
@@ -86,8 +86,10 @@ policies and retention controls to information they receive.
 ## Storage, retention, and deletion
 
 The operator stores BotFragg records in the configured SQLite or PostgreSQL
-database. BotFragg does not automatically expire account, alert, or analytics
-records.
+database. Command analytics are deleted automatically after 90 days by default;
+the operator can configure `ANALYTICS_RETENTION_DAYS` to a different window.
+Account, alert, and preference records are kept until you remove them or the
+operator's retention policy removes them.
 
 - `/logout` removes stored Riot credentials for an account. It keeps the linked
   account record, alerts, and preferences.

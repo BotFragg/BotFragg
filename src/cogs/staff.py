@@ -59,7 +59,7 @@ class StaffCog(commands.Cog):
                 f"**Avatar URL:** [Click here]({user.display_avatar.url})",
                 f"**Shared servers (cached; may be incomplete):** {shared_guilds}",
                 f"**Owned servers:** {owned_guilds}",
-                f"**Commands used:** {command_count}",
+                f"**Commands used (retained):** {command_count}",
                 f"**Most used command:** {favorite or 'None'}",
             )
         )
@@ -111,7 +111,7 @@ class StaffCog(commands.Cog):
             value="\n".join(
                 (
                     f"**Created:** {timestamp(server.created_at)}",
-                    f"**Commands used:** {command_count}",
+                    f"**Commands used (retained):** {command_count}",
                     f"**Most used command:** {favorite or 'None'}",
                     f"**Channels / roles:** {len(server.channels)} / {len(server.roles)}",
                 )

@@ -81,13 +81,18 @@ class Alert(Model):
 class CommandInvocation(Model):
     """Store a completed command and its optional guild and channel context."""
 
-    # BigIntField because this table is never pruned and its ids must not overflow.
+    # BigIntField keeps ids from overflowing even if retention is delayed.
     id = fields.BigIntField(primary_key=True)
     command = fields.CharField(max_length=256)
     user_id = fields.BigIntField()
     guild_id = fields.BigIntField(null=True)
     channel_id = fields.BigIntField(null=True)
     created_at = fields.DatetimeField(auto_now_add=True)
+
+    class Meta:
+        """Index creation time so retention can prune old analytics efficiently."""
+
+        indexes = (Index(fields=["created_at"]),)
 
 
 class ShardStatusMessage(Model):

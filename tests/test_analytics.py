@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
@@ -11,6 +12,7 @@ from src.services.accounts import delete_user_data
 from src.services.analytics import (
     command_analytics,
     command_stats,
+    prune_command_analytics,
     record_command_invocation,
 )
 
@@ -137,3 +139,36 @@ async def test_command_stats_returns_empty_result_and_requires_one_scope() -> No
         await command_stats()
     with pytest.raises(ValueError, match="exactly one"):
         await command_stats(user_id=123, guild_id=456)
+
+
+@pytest.mark.usefixtures("database")
+async def test_retention_deletes_only_analytics_older_than_the_cutoff() -> None:
+    """Verify that batched retention removes old analytics and keeps recent ones."""
+    old = [
+        await CommandInvocation.create(command="shop", user_id=101) for _ in range(3)
+    ]
+    recent = await CommandInvocation.create(command="profile", user_id=101)
+    cutoff = datetime.now(UTC) - timedelta(days=90)
+    old_ids = [row.id for row in old]
+    await CommandInvocation.filter(id__in=old_ids).update(
+        created_at=cutoff - timedelta(seconds=1)
+    )
+
+    assert await prune_command_analytics(cutoff, batch_size=1) == 3
+    assert not await CommandInvocation.filter(id__in=old_ids).exists()
+    assert await CommandInvocation.exists(id=recent.id)
+
+
+@pytest.mark.usefixtures("database")
+async def test_retention_uses_the_default_batch_size() -> None:
+    """Verify that retention works without an explicit batch size."""
+    old = await CommandInvocation.create(command="shop", user_id=101)
+    recent = await CommandInvocation.create(command="profile", user_id=101)
+    cutoff = datetime.now(UTC) - timedelta(days=90)
+    await CommandInvocation.filter(id=old.id).update(
+        created_at=cutoff - timedelta(seconds=1)
+    )
+
+    assert await prune_command_analytics(cutoff) == 1
+    assert not await CommandInvocation.exists(id=old.id)
+    assert await CommandInvocation.exists(id=recent.id)
