@@ -350,6 +350,7 @@ profile-last-matches = Son dereceli maçlar
 profile-no-matches = Son maç yok
 profile-hs = { $percent }% HS
 profile-acs = { $acs } ACS
+profile-queue-competitive = Dereceli
 
 option-profile-user-name = kullanıcı
 option-profile-user-description = Profilini görüntülemek istediğin kullanıcı

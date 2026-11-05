@@ -362,6 +362,7 @@ profile-last-matches = Paskutinės konkurencinės rungtynės
 profile-no-matches = Nėra paskutinių rungtynių
 profile-hs = { $percent }% HS
 profile-acs = { $acs } ACS
+profile-queue-competitive = Konkurencinis
 
 option-profile-user-name = naudotojas
 option-profile-user-description = Naudotojas, kurio profilį nori peržiūrėti

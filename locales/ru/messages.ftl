@@ -362,6 +362,7 @@ profile-last-matches = Последние рейтинговые матчи
 profile-no-matches = Нет последних матчей
 profile-hs = { $percent }% HS
 profile-acs = { $acs } ACS
+profile-queue-competitive = Рейтинговый
 
 option-profile-user-name = пользователь
 option-profile-user-description = Пользователь, чей профиль вы хотите посмотреть

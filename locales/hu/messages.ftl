@@ -354,6 +354,7 @@ profile-last-matches = Legutóbbi rangsorolt mérkőzések
 profile-no-matches = Nincsenek legutóbbi mérkőzések
 profile-hs = { $percent }% HS
 profile-acs = { $acs } ACS
+profile-queue-competitive = Rangsorolt
 
 option-profile-user-name = felhasznalo
 option-profile-user-description = A felhasználó, akinek a profilját meg szeretnéd nézni

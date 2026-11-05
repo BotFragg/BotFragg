@@ -354,6 +354,7 @@ profile-last-matches = Siste competitive-kamper
 profile-no-matches = Ingen siste kamper
 profile-hs = { $percent }% HS
 profile-acs = { $acs } ACS
+profile-queue-competitive = Competitive
 
 option-profile-user-name = bruker
 option-profile-user-description = Brukeren du vil se profilen til

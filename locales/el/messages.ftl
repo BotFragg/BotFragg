@@ -354,6 +354,7 @@ profile-last-matches = Πρόσφατοι ανταγωνιστικοί αγών�
 profile-no-matches = Δεν υπάρχουν πρόσφατοι αγώνες
 profile-hs = { $percent }% HS
 profile-acs = { $acs } ACS
+profile-queue-competitive = Ανταγωνιστικό
 
 option-profile-user-name = χρήστης
 option-profile-user-description = Ο χρήστης του οποίου θέλετε να δείτε το προφίλ

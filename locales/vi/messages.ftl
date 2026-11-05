@@ -350,6 +350,7 @@ profile-last-matches = Các trận xếp hạng gần đây
 profile-no-matches = Không có trận đấu gần đây
 profile-hs = { $percent }% HS
 profile-acs = { $acs } ACS
+profile-queue-competitive = Đấu hạng
 
 option-profile-user-name = người-dùng
 option-profile-user-description = Người dùng có hồ sơ bạn muốn xem

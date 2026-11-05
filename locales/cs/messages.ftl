@@ -362,6 +362,7 @@ profile-last-matches = Poslední soutěžní zápasy
 profile-no-matches = Žádné poslední zápasy
 profile-hs = { $percent }% HS
 profile-acs = { $acs } ACS
+profile-queue-competitive = Soutěžní
 
 option-profile-user-name = uživatel
 option-profile-user-description = Uživatel, jehož profil chcete zobrazit

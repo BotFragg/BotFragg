@@ -354,6 +354,7 @@ profile-last-matches = Viimeisimmät kilpailulliset ottelut
 profile-no-matches = Ei viimeisimpiä otteluita
 profile-hs = { $percent }% HS
 profile-acs = { $acs } ACS
+profile-queue-competitive = Kilpailullinen
 
 option-profile-user-name = käyttäjä
 option-profile-user-description = Käyttäjä, jonka profiilia haluat tarkastella

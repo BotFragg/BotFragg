@@ -353,6 +353,7 @@ profile-last-matches = Pertandingan competitive terbaru
 profile-no-matches = Tidak ada pertandingan terbaru
 profile-hs = { $percent }% HS
 profile-acs = { $acs } ACS
+profile-queue-competitive = Competitive
 
 option-profile-user-name = pengguna
 option-profile-user-description = Pengguna yang profilnya ingin Anda lihat

@@ -358,6 +358,7 @@ profile-last-matches = Nedavne kompetitivne partije
 profile-no-matches = Nema nedavnih mečeva
 profile-hs = { $percent }% HS
 profile-acs = { $acs } ACS
+profile-queue-competitive = Kompetitivno
 
 option-profile-user-name = korisnik
 option-profile-user-description = Korisnik čiji profil želiš pregledati

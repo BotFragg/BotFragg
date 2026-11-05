@@ -354,6 +354,7 @@ profile-last-matches = Recente competitieve wedstrijden
 profile-no-matches = Geen recente wedstrijden
 profile-hs = { $percent }% HS
 profile-acs = { $acs } ACS
+profile-queue-competitive = Competitief
 
 option-profile-user-name = gebruiker
 option-profile-user-description = Gebruiker wiens profiel je wilt bekijken

@@ -354,6 +354,7 @@ profile-last-matches = Senaste competitive-matcher
 profile-no-matches = Inga senaste matcher
 profile-hs = { $percent }% HS
 profile-acs = { $acs } ACS
+profile-queue-competitive = Competitive
 
 option-profile-user-name = användare
 option-profile-user-description = Användaren du vill se profilen för
