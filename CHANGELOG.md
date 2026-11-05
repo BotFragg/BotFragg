@@ -32,6 +32,9 @@
 
 ### Fixed
 
+- Clicking a crosshair share button twice in quick succession no longer posts the
+  card twice; the share cooldown is claimed before posting and returned if the
+  post fails.
 - The Discord log channel now receives the same plain-text log lines as the
   console instead of JSON objects.
 
