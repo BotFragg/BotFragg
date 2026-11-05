@@ -15,7 +15,24 @@ import pytest
 
 from src import main as entrypoint
 from src.cogs.tasks import DiscordLogHandler, TasksCog
-from src.monitoring import PlainFormatter, _scrub
+from src.monitoring import PlainFormatter, _category, _scrub
+
+
+@pytest.mark.parametrize(
+    ("logger_name", "category"),
+    [
+        ("src.cogs.events", "command"),
+        ("src.cogs.events.guild", "guild"),
+        ("src.health", "jobs"),
+        ("src.services.valorant_status", "status"),
+        ("src.services.crosshair_render", "crosshair"),
+        ("discord.gateway", "discord"),
+        ("tortoise.db_client", "database"),
+    ],
+)
+def test_log_categories_use_operator_names(logger_name, category):
+    """Verify that log categories shorten internal module paths."""
+    assert _category(logger_name) == category
 
 
 @pytest.mark.parametrize(
@@ -60,10 +77,10 @@ def test_rate_limit_warnings_scrub_discord_url_identifiers(path, expected):
         (url,),
         None,
     )
-    formatted = PlainFormatter("%(message)s").format(record)
+    formatted = PlainFormatter().format(record)
     filtered_url = f"https://discord.com/api/v10/{expected}"
     assert filtered_url in formatted
-    assert _scrub({"exception": {"url": url}}) == {"exception": {"url": filtered_url}}
+    assert _scrub(url) == filtered_url
 
 
 def test_dependency_payloads_stay_out_of_logs(monkeypatch, capsys):
@@ -107,7 +124,7 @@ def test_formatter_removes_webhook_and_interaction_tokens():
         ),
         None,
     )
-    assert synthetic_token not in PlainFormatter("%(message)s").format(record)
+    assert synthetic_token not in PlainFormatter().format(record)
 
 
 def test_formatter_removes_oauth_code_from_gateway_payload():
@@ -128,7 +145,7 @@ def test_formatter_removes_oauth_code_from_gateway_payload():
         ),
         None,
     )
-    assert "AUDIT_SYNTHETIC_CODE" not in PlainFormatter("%(message)s").format(record)
+    assert "AUDIT_SYNTHETIC_CODE" not in PlainFormatter().format(record)
 
 
 @pytest.mark.asyncio
@@ -254,43 +271,18 @@ async def test_split_log_retries_preserve_content_and_order(failure, stage):
         assert loop._before_loop is TasksCog.before_jobs
 
 
-def test_scrub_removes_riot_credentials() -> None:
-    """Verify that the log scrubber removes Riot credentials."""
-    event = _scrub(
-        {"extra": {"authorization": "Bearer secret", "profile": {"token": "abc"}}}
-    )
-    assert event == {
-        "extra": {"authorization": "[Filtered]", "profile": {"token": "[Filtered]"}}
-    }
-
-
 def test_scrub_removes_compact_auth_fields_and_raw_tokens() -> None:
     """Verify that the log scrubber removes compact auth fields and raw tokens."""
-    event = _scrub(
-        {
-            "extra": {
-                "rso": "rso-secret",
-                "idt": "id-token-secret",
-                "ent": "entitlement-secret",
-                "auth_blob": "encrypted-secret",
-                "user_id": 123456789012345678,
-            },
-            "message": (
-                "Bearer bearer-secret, refresh_token=refresh-secret, "
-                "headerpayload.claimspayload.signaturepayload, "
-                "notification failed for user 123456789012345678 <@123456789012345678>"
-            ),
-        }
+    message = (
+        "Bearer bearer-secret, refresh_token=refresh-secret, "
+        "headerpayload.claimspayload.signaturepayload, "
+        "notification failed for user 123456789012345678 <@123456789012345678>"
     )
-    assert event["extra"] == {
-        "rso": "[Filtered]",
-        "idt": "[Filtered]",
-        "ent": "[Filtered]",
-        "auth_blob": "[Filtered]",
-        "user_id": "[Filtered]",
-    }
+
+    scrubbed = _scrub(message)
+
     assert all(
-        secret not in event["message"]
+        secret not in scrubbed
         for secret in (
             "bearer-secret",
             "refresh-secret",
@@ -303,16 +295,12 @@ def test_scrub_removes_compact_auth_fields_and_raw_tokens() -> None:
 def test_scrub_removes_riot_puuids() -> None:
     """Verify that the log scrubber removes Riot PUUIDs."""
     puuid = "123e4567-e89b-12d3-a456-426614174000"
-    event = _scrub({"extra": {"puuid": puuid}, "message": f"failed for {puuid}"})
 
-    assert event == {
-        "extra": {"puuid": "[Filtered]"},
-        "message": "failed for [Filtered]",
-    }
+    assert _scrub(f"failed for {puuid}") == "failed for [Filtered]"
 
 
-def test_plain_logs_include_safe_extra_fields() -> None:
-    """Verify that safe extra fields are scrubbed and rendered with the message."""
+def test_plain_logs_scrub_message_values_and_ignore_extras() -> None:
+    """Verify that message values are scrubbed and extra fields are not rendered."""
     puuid = "123e4567-e89b-12d3-a456-426614174000"
     record = logging.LogRecord(
         "src.services.shop",
@@ -325,15 +313,15 @@ def test_plain_logs_include_safe_extra_fields() -> None:
     )
     record.user_id = 123456789012345678
 
-    formatted = PlainFormatter("%(message)s").format(record)
+    formatted = PlainFormatter().format(record)
 
-    assert "Loaded account [Filtered]" in formatted
-    assert "user_id=[Filtered]" in formatted
+    assert " UTC  INFO   [shop] Loaded account [Filtered]" in formatted
+    assert "user_id" not in formatted
     assert "123456789012345678" not in formatted
 
 
-def test_plain_logs_include_structured_fields_and_a_scrubbed_traceback() -> None:
-    """Verify that plain console logs name the job, shards, and failure reason."""
+def test_plain_logs_render_timestamp_level_category_and_traceback() -> None:
+    """Verify the operator line format and that tracebacks are scrubbed."""
     try:
         raise RuntimeError("delivery failed token=Bearer eyJhbGciOi.SECRET.SIG")
     except RuntimeError:
@@ -342,27 +330,21 @@ def test_plain_logs_include_structured_fields_and_a_scrubbed_traceback() -> None
             logging.INFO,
             "shop.py",
             12,
-            "Background job completed",
+            "version refresh finished in 0.0s",
             (),
             sys.exc_info(),
         )
-    record.job = "version_refresh"
-    record.duration_seconds = 0.04
-    record.problems = ["database"]
 
-    formatted = PlainFormatter("%(asctime)s %(levelname)s %(message)s").format(record)
+    formatted = PlainFormatter().format(record)
 
-    assert "Background job completed" in formatted
-    assert "job=version_refresh" in formatted
-    assert "duration_seconds=0.04" in formatted
-    assert "problems=['database']" in formatted
+    assert " UTC  INFO   [jobs] version refresh finished in 0.0s" in formatted
     assert "SECRET" not in formatted
     assert "Traceback (most recent call last):" in formatted
     assert "delivery failed" in formatted
 
 
-def test_plain_formatter_restores_the_record_for_later_handlers() -> None:
-    """Verify that one plain handler does not consume a shared record's traceback."""
+def test_plain_formatter_does_not_mutate_the_record() -> None:
+    """Verify that repeated formatting keeps the traceback for later handlers."""
     try:
         raise RuntimeError("private database detail")
     except RuntimeError:
@@ -375,12 +357,12 @@ def test_plain_formatter_restores_the_record_for_later_handlers() -> None:
             (),
             sys.exc_info(),
         )
-    record.job = "daily_alerts"
 
-    first = PlainFormatter("%(message)s").format(record)
-    second = PlainFormatter("%(message)s").format(record)
+    first = PlainFormatter().format(record)
+    second = PlainFormatter().format(record)
 
-    assert "job=daily_alerts" in first
+    assert first == second
+    assert " UTC  WARN   [jobs] Could not deliver daily shop notification" in second
     assert "private database detail" in second
     assert "Traceback (most recent call last):" in second
 
@@ -403,8 +385,8 @@ def test_discord_log_handler_uses_the_scrubbed_plain_formatter() -> None:
     handler.emit(record)
     line = handler.messages[0]
 
-    assert "src.services.shop Failed for [Filtered]" in line
-    assert "user_id=[Filtered]" in line
+    assert " UTC  INFO   [shop] Failed for [Filtered]" in line
+    assert "user_id" not in line
     assert "123456789012345678" not in line
 
 

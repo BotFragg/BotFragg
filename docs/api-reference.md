@@ -66,7 +66,7 @@ Log unhandled app-command errors and send a private generic response.
 
 **Scope:** `src/bot.py` · `module`
 
-[Source](../src/bot.py#L149)
+[Source](../src/bot.py#L146)
 
 Own Discord lifecycle and the shared Riot, database, and presentation services.
 
@@ -74,7 +74,7 @@ Own Discord lifecycle and the shared Riot, database, and presentation services.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L152)
+[Source](../src/bot.py#L149)
 
 Configure the bot's intents and application services.
 
@@ -82,7 +82,7 @@ Configure the bot's intents and application services.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L182)
+[Source](../src/bot.py#L179)
 
 Register a persistent component action, rejecting duplicate action names.
 
@@ -90,7 +90,7 @@ Register a persistent component action, rejecting duplicate action names.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L188)
+[Source](../src/bot.py#L185)
 
 Discard only the handlers bound to the given cog instance.
 
@@ -98,7 +98,7 @@ Discard only the handlers bound to the given cog instance.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L196)
+[Source](../src/bot.py#L193)
 
 Discard a failed cog's component handlers so loading it can be retried.
 
@@ -106,7 +106,7 @@ Discard a failed cog's component handlers so loading it can be retried.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L216)
+[Source](../src/bot.py#L213)
 
 Remove a cog's component handlers along with its commands and listeners.
 
@@ -114,7 +114,7 @@ Remove a cog's component handlers along with its commands and listeners.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L230)
+[Source](../src/bot.py#L227)
 
 Initialize shared resources, load extensions, and optionally sync commands.
 
@@ -122,7 +122,7 @@ Initialize shared resources, load extensions, and optionally sync commands.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L252)
+[Source](../src/bot.py#L249)
 
 Set the online activity and log the connected shard and guild counts.
 
@@ -130,7 +130,7 @@ Set the online activity and log the connected shard and guild counts.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L265)
+[Source](../src/bot.py#L264)
 
 Close Discord, Riot HTTP, and database resources in order.
 
@@ -146,7 +146,7 @@ Discord event listeners for analytics and guild notifications.
 
 **Scope:** `src/cogs/events.py` · `module`
 
-[Source](../src/cogs/events.py#L19)
+[Source](../src/cogs/events.py#L20)
 
 Record successful commands and report configured Discord lifecycle events.
 
@@ -154,7 +154,7 @@ Record successful commands and report configured Discord lifecycle events.
 
 **Scope:** `src/cogs/events.py` · `EventsCog`
 
-[Source](../src/cogs/events.py#L22)
+[Source](../src/cogs/events.py#L23)
 
 Bind event handlers to the running bot instance.
 
@@ -162,7 +162,7 @@ Bind event handlers to the running bot instance.
 
 **Scope:** `src/cogs/events.py` · `EventsCog`
 
-[Source](../src/cogs/events.py#L27)
+[Source](../src/cogs/events.py#L28)
 
 Log completed commands; the command tree coordinates analytics with deletion.
 
@@ -170,7 +170,7 @@ Log completed commands; the command tree coordinates analytics with deletion.
 
 **Scope:** `src/cogs/events.py` · `EventsCog`
 
-[Source](../src/cogs/events.py#L42)
+[Source](../src/cogs/events.py#L38)
 
 Send a summary to the channel configured for guild joins.
 
@@ -178,7 +178,7 @@ Send a summary to the channel configured for guild joins.
 
 **Scope:** `src/cogs/events.py` · `EventsCog`
 
-[Source](../src/cogs/events.py#L49)
+[Source](../src/cogs/events.py#L45)
 
 Send a summary to the channel configured for guild departures.
 
@@ -186,7 +186,7 @@ Send a summary to the channel configured for guild departures.
 
 **Scope:** `src/cogs/events.py` · `EventsCog`
 
-[Source](../src/cogs/events.py#L55)
+[Source](../src/cogs/events.py#L51)
 
 Resolve a configured messageable channel and send a guild summary.
 
@@ -194,7 +194,7 @@ Resolve a configured messageable channel and send a guild summary.
 
 **Scope:** `src/cogs/events.py` · `module`
 
-[Source](../src/cogs/events.py#L98)
+[Source](../src/cogs/events.py#L96)
 
 Register the Discord event-listener cog with the bot.
 
@@ -462,7 +462,7 @@ Process eligible users' shops and return counts for the completed run.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L133)
+[Source](../src/cogs/tasks.py#L140)
 
 Deliver matching alerts and the optional daily shop; count failed DMs.
 
@@ -470,7 +470,7 @@ Deliver matching alerts and the optional daily shop; count failed DMs.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L174)
+[Source](../src/cogs/tasks.py#L181)
 
 DM an owner-scoped skin alert and report whether delivery succeeded.
 
@@ -478,7 +478,7 @@ DM an owner-scoped skin alert and report whether delivery succeeded.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L214)
+[Source](../src/cogs/tasks.py#L221)
 
 DM the selected account's daily shop and report delivery success.
 
@@ -486,7 +486,7 @@ DM the selected account's daily shop and report delivery success.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L275)
+[Source](../src/cogs/tasks.py#L282)
 
 Notify a user that credentials expired and return the delivery failure count.
 
@@ -494,7 +494,7 @@ Notify a user that credentials expired and return the delivery failure count.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L293)
+[Source](../src/cogs/tasks.py#L300)
 
 Refresh the Riot client version, the catalog, and the game metadata.
 
@@ -502,7 +502,7 @@ Refresh the Riot client version, the catalog, and the game metadata.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L313)
+[Source](../src/cogs/tasks.py#L320)
 
 Measure log delivery, preserving the queue after Discord failures.
 
@@ -510,7 +510,7 @@ Measure log delivery, preserving the queue after Discord failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L318)
+[Source](../src/cogs/tasks.py#L325)
 
 Send buffered log lines to Discord and requeue them after delivery failures.
 
@@ -518,7 +518,7 @@ Send buffered log lines to Discord and requeue them after delivery failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L366)
+[Source](../src/cogs/tasks.py#L373)
 
 Publish Discord, database, and scheduled-job health for Docker and operators.
 
@@ -526,7 +526,7 @@ Publish Discord, database, and scheduled-job health for Docker and operators.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L421)
+[Source](../src/cogs/tasks.py#L427)
 
 Wait for Discord readiness before starting any background job.
 
@@ -534,7 +534,7 @@ Wait for Discord readiness before starting any background job.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L426)
+[Source](../src/cogs/tasks.py#L432)
 
 Register the background-task cog with the bot.
 
@@ -1794,7 +1794,7 @@ Record a failure, including one handled inside a job's retry logic.
 
 **Scope:** `src/health.py` · `JobHealth`
 
-[Source](../src/health.py#L41)
+[Source](../src/health.py#L40)
 
 Measure one attempt; exceptions and cancellation never count as success.
 
@@ -1802,7 +1802,7 @@ Measure one attempt; exceptions and cancellation never count as success.
 
 **Scope:** `src/health.py` · `JobHealth`
 
-[Source](../src/health.py#L65)
+[Source](../src/health.py#L59)
 
 Report stopped, failed, or overdue work without exposing user data.
 
@@ -1810,7 +1810,7 @@ Report stopped, failed, or overdue work without exposing user data.
 
 **Scope:** `src/health.py` · `module`
 
-[Source](../src/health.py#L90)
+[Source](../src/health.py#L84)
 
 Replace the status file atomically so probes never read partial JSON.
 
@@ -1818,7 +1818,7 @@ Replace the status file atomically so probes never read partial JSON.
 
 **Scope:** `src/health.py` · `module`
 
-[Source](../src/health.py#L104)
+[Source](../src/health.py#L98)
 
 Require a fresh successful heartbeat; malformed or missing files fail closed.
 
@@ -1862,7 +1862,7 @@ Format a message, falling back to the English catalog when needed.
 
 **Scope:** `src/localization.py` · `BotFraggTranslator`
 
-[Source](../src/localization.py#L67)
+[Source](../src/localization.py#L61)
 
 Return a translated command string or defer to Discord's English source.
 
@@ -2122,29 +2122,37 @@ Map each configured Discord channel to its persistent status message.
 
 Plain-text log formatting and privacy filters for console and Discord logs.
 
+### `def _category(name: str) -> str`
+
+**Scope:** `src/monitoring.py` · `module`
+
+[Source](../src/monitoring.py#L57)
+
+Return a short operator-facing category for a logger name.
+
 ### `class PlainFormatter(logging.Formatter)`
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L59)
+[Source](../src/monitoring.py#L68)
 
-Render a scrubbed log record as plain text for console output.
+Render one scrubbed log record as a human-readable line.
 
 ### `def format(self, record: logging.LogRecord) -> str`
 
 **Scope:** `src/monitoring.py` · `PlainFormatter`
 
-[Source](../src/monitoring.py#L62)
+[Source](../src/monitoring.py#L71)
 
-Scrub the message, structured fields, and traceback, then render a line.
+Render timestamp, level, category, scrubbed message, and traceback.
 
-### `def _scrub(value: Any) -> Any`
+### `def _scrub(value: str) -> str`
 
 **Scope:** `src/monitoring.py` · `module`
 
-[Source](../src/monitoring.py#L83)
+[Source](../src/monitoring.py#L86)
 
-Filter credentials and personal identifiers from nested event data.
+Filter credentials and personal identifiers from log text.
 
 ## `src/services/__init__.py`
 

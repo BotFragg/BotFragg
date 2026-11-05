@@ -15,7 +15,7 @@ from ..bot import BotFraggBot
 from ..database import TRANSIENT_DATABASE_ERRORS, ping_database
 from ..health import HEALTH_PATH, JobHealth, write_health
 from ..models import Account, Alert, User
-from ..monitoring import LOG_FORMAT, PlainFormatter
+from ..monitoring import PlainFormatter
 from ..services.alerts import retry_lookup, run_daily_alerts
 from ..services.http import DISCORD_HTTP_ERRORS, HTTPFailure
 from ..services.shop import Offer, ShopData
@@ -34,7 +34,7 @@ class DiscordLogHandler(logging.Handler):
         """Create a bounded log buffer using BotFragg's privacy-aware formatter."""
         super().__init__()
         self.messages: deque[str] = deque(maxlen=1000)
-        self.setFormatter(PlainFormatter(LOG_FORMAT))
+        self.setFormatter(PlainFormatter())
 
     def emit(self, record: logging.LogRecord) -> None:
         """Format a log record into the buffer or delegate failures to logging."""
@@ -127,7 +127,14 @@ class TasksCog(commands.Cog):
             on_shop=self._deliver_daily_alert_result,
             on_credentials_expired=self._credentials_expired,
         )
-        log.info("Daily alert run completed", extra=summary)
+        log.info(
+            "daily run finished: "
+            f"{summary['users']} users, {summary['shops']} shops, "
+            f"{summary['alerts']} alerts, {summary['failures']} failures "
+            f"(expired logins {summary['expired_logins']}, "
+            f"shop {summary['shop_failures']}, "
+            f"delivery {summary['delivery_failures']})"
+        )
         return summary
 
     async def _deliver_daily_alert_result(
@@ -399,11 +406,10 @@ class TasksCog(commands.Cog):
             log.warning("Database health probe failed", exc_info=True)
             problems.append("database")
         if problems != self._health_problems:
-            log.log(
-                logging.ERROR if problems else logging.INFO,
-                "Bot health changed",
-                extra={"problems": problems},
-            )
+            if problems:
+                log.error(f"health problems: {', '.join(problems)}")
+            else:
+                log.info("healthy again")
             self._health_problems = problems
         write_health(
             {

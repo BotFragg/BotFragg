@@ -153,7 +153,8 @@ def test_locale_checker_rejects_metadata_discord_would_refuse(tmp_path):
 
 
 def test_localization_diagnostics_keep_their_message_key():
-    """The privacy filter must not redact the field naming a broken message."""
+    """The privacy filter must not redact a message key in log text."""
     from src.monitoring import _scrub
 
-    assert _scrub({"message_key": "alerts-title"}) == {"message_key": "alerts-title"}
+    text = "could not format 'alerts-title' for de"
+    assert _scrub(text) == text

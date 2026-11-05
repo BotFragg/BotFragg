@@ -2,30 +2,10 @@
 
 from __future__ import annotations
 
-import copy
 import logging
 import re
-from typing import Any
+from datetime import UTC, datetime
 
-_SENSITIVE_KEY_PARTS = (
-    "authorization",
-    "cookie",
-    "credential",
-    "password",
-    "secret",
-    "token",
-    "discord_id",
-    "user_id",
-    "guild_id",
-    "channel_id",
-    "member_id",
-    "owner_id",
-    "author_id",
-    "message_id",
-    "interaction_id",
-    "puuid",
-)
-_COMPACT_AUTH_KEYS = {"auth_blob", "rso", "idt", "ent"}
 _BEARER_TOKEN = re.compile(r"(?i)\b(Bearer\s+)[A-Za-z0-9._~+/-]+=*")
 _DISCORD_ID = re.compile(
     r"(?i)\b(?:discord[ _-]?)?(?:user|guild|channel|member|owner|author|"
@@ -52,59 +32,70 @@ _WEBHOOK_SECRET = re.compile(
 _OAUTH_SECRET = re.compile(
     r"(?i)([?&#](?:code|state|nonce|access_token|refresh_token|id_token)=)[^&#\s\"'\\]+"
 )
-_STANDARD_LOG_FIELDS = frozenset(logging.makeLogRecord({}).__dict__)
-LOG_FORMAT = "%(asctime)s %(levelname)-8s %(name)s %(message)s"
+_LEVEL_NAMES = {"CRITICAL": "CRIT", "WARNING": "WARN"}
+_CATEGORY_OVERRIDES = {
+    "src.bot": "bot",
+    "src.health": "jobs",
+    "src.cogs.events": "command",
+    "src.cogs.extra": "bot",
+    "src.cogs.tasks": "jobs",
+    "src.database": "database",
+    "src.localization": "localization",
+    "src.monitoring": "logging",
+    "src.services.crosshair_render": "crosshair",
+    "src.services.valorant_status": "status",
+}
+_CATEGORY_PREFIXES = (
+    ("discord.", "discord"),
+    ("tortoise", "database"),
+    ("aiosqlite", "database"),
+    ("asyncpg", "database"),
+    ("aiohttp", "http"),
+)
+
+
+def _category(name: str) -> str:
+    """Return a short operator-facing category for a logger name."""
+    if name in _CATEGORY_OVERRIDES:
+        return _CATEGORY_OVERRIDES[name]
+    for prefix, category in _CATEGORY_PREFIXES:
+        if name.startswith(prefix):
+            return category
+    parts = name.split(".")
+    return parts[-1] if parts and parts[-1] else "app"
 
 
 class PlainFormatter(logging.Formatter):
-    """Render a scrubbed log record as plain text for console output."""
+    """Render one scrubbed log record as a human-readable line."""
 
     def format(self, record: logging.LogRecord) -> str:
-        """Scrub the message, structured fields, and traceback, then render a line."""
-        extras = {
-            key: value
-            for key, value in record.__dict__.items()
-            if key not in _STANDARD_LOG_FIELDS
-        }
-        rendered = _scrub(record.getMessage())
-        if extras:
-            rendered += "  " + " ".join(
-                f"{key}={value}" for key, value in _scrub(extras).items()
-            )
-        if record.exc_info:
-            rendered += "\n" + _scrub(self.formatException(record.exc_info))
-        # Handlers share one record, so render a copy: stdlib formatting leaves
-        # `message` and `asctime` behind, which would corrupt structured output.
-        clone = copy.copy(record)
-        clone.msg, clone.args, clone.exc_info = rendered, None, None
-        return super().format(clone)
-
-
-def _scrub(value: Any) -> Any:
-    """Filter credentials and personal identifiers from nested event data."""
-    if isinstance(value, dict):
-        return {
-            key: "[Filtered]"
-            if str(key).lower() in _COMPACT_AUTH_KEYS
-            or any(part in str(key).lower() for part in _SENSITIVE_KEY_PARTS)
-            else _scrub(item)
-            for key, item in value.items()
-        }
-    if isinstance(value, list):
-        return [_scrub(item) for item in value]
-    if isinstance(value, str):
-        value = _WEBHOOK_SECRET.sub(r"\1[Filtered]", value)
-        value = _OAUTH_SECRET.sub(r"\1[Filtered]", value)
-        value = _BEARER_TOKEN.sub(r"\1[Filtered]", value)
-        value = _LABELED_SECRET.sub(
-            lambda match: (
-                f"{match.group(1)}{match.group(2)}"
-                f"{match.group(3)}[Filtered]{match.group(3)}"
-            ),
-            value,
+        """Render timestamp, level, category, scrubbed message, and traceback."""
+        timestamp = datetime.fromtimestamp(record.created, UTC).strftime(
+            "%Y-%m-%d %H:%M:%S UTC"
         )
-        value = _JWT.sub("[Filtered]", value)
-        value = _UUID.sub("[Filtered]", value)
-        value = _DISCORD_URL_ID.sub(r"\1[Filtered]", value)
-        return _DISCORD_ID.sub("[Filtered]", value)
-    return value
+        level = _LEVEL_NAMES.get(record.levelname, record.levelname)
+        line = (
+            f"{timestamp}  {level:<5}  [{_category(record.name)}] "
+            f"{_scrub(record.getMessage())}"
+        )
+        if record.exc_info:
+            line += "\n" + _scrub(self.formatException(record.exc_info))
+        return line
+
+
+def _scrub(value: str) -> str:
+    """Filter credentials and personal identifiers from log text."""
+    value = _WEBHOOK_SECRET.sub(r"\1[Filtered]", value)
+    value = _OAUTH_SECRET.sub(r"\1[Filtered]", value)
+    value = _BEARER_TOKEN.sub(r"\1[Filtered]", value)
+    value = _LABELED_SECRET.sub(
+        lambda match: (
+            f"{match.group(1)}{match.group(2)}"
+            f"{match.group(3)}[Filtered]{match.group(3)}"
+        ),
+        value,
+    )
+    value = _JWT.sub("[Filtered]", value)
+    value = _UUID.sub("[Filtered]", value)
+    value = _DISCORD_URL_ID.sub(r"\1[Filtered]", value)
+    return _DISCORD_ID.sub("[Filtered]", value)

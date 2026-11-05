@@ -79,9 +79,10 @@ uv run --frozen python -m compileall -q src tests
   other locales fall back to English. Keep IDs and `$placeholders` consistent
   across catalogs and use `app_commands.locale_str(..., key=...)` for command
   metadata.
-- Never log Riot credentials, tokens, refresh codes, or callback URLs.
-  Monitoring scrubs known fields, so add any new sensitive field to that
-  filter. Preserve the per-interaction ownership checks on every control.
+- Never log Riot credentials, tokens, refresh codes, or callback URLs. Put log
+  values in the message; `extra=` fields are not rendered. Add any new sensitive
+  pattern to the message scrubber. Preserve the per-interaction ownership checks
+  on every control.
 - Ruff enforces 88 columns and bandit (`S`) rules, and Mypy checks `src` only.
   `assert` is allowed only in `tests/**` and `src/views/components.py` (`S101`).
 - Commit subjects follow Conventional Commits (`fix:`, `feat:`, `chore(deps):`).

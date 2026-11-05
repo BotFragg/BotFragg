@@ -513,9 +513,6 @@ async def test_daily_summary_separates_credentials_and_delivery_failures(dry_run
         "shop_failures": 0,
         "delivery_failures": 0 if dry_run else 3,
     }
-    from src.monitoring import _scrub
-
-    assert _scrub(summary) == summary
     if dry_run:
         delivery.assert_not_awaited()
         notice.assert_not_awaited()

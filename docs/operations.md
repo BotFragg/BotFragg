@@ -69,15 +69,20 @@ Command analytics and personal-data deletion coordinate within one bot process.
 Commands active during a successful deletion cannot recreate their analytics.
 Multiple bot processes require shared deletion coordination.
 
-The console renders plain, scrubbed log lines. Structured fields render inline
-as `key=value`, so a line names its background job, shard and guild counts,
-daily-run totals, and the reasons a delivery, database probe, or catalog lookup
-failed. Unexpected failures include the full traceback. Application log
-channels receive the same plain-text records. The privacy filter applies
-to both outputs. Frequent log/shard
-completion messages are omitted to avoid feeding log delivery its own logs;
-their evidence remains in the heartbeat. Job history is process-local and
-resets on restart.
+The console renders plain, scrubbed log lines in this form:
+
+```text
+2026-11-05 12:34:56 UTC  INFO   [jobs] daily alerts finished in 12.3s
+```
+
+The timestamp is UTC, the level is one word, and the bracketed category names
+the subsystem (`command`, `jobs`, `alerts`, `shop`, `catalog`, `discord`,
+`database`, and so on). Messages are sentences with counts and job names rather
+than key/value pairs. Unexpected failures include the full traceback. Application
+log channels receive the same lines. The privacy filter applies to both outputs.
+Frequent log/shard completion messages are omitted to avoid feeding log delivery
+its own logs; their evidence remains in the heartbeat. Job history is
+process-local and resets on restart.
 
 Failed application emoji creation uses text fallbacks and waits 30 seconds before
 retrying the same emoji. Other emoji names can still be created during that cooldown.

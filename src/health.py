@@ -33,9 +33,8 @@ class JobHealth:
         """Record a failure, including one handled inside a job's retry logic."""
         self.last_failure = time.time()
         self.failures += 1
-        log.warning(
-            "Background job failed", extra={"job": name, "failures": self.failures}
-        )
+        label = name.replace("_", " ")
+        log.warning(f"{label} failed ({self.failures} failures)")
 
     @contextmanager
     def track(self, name: str) -> Iterator[None]:
@@ -52,13 +51,8 @@ class JobHealth:
                 self.last_success = time.time()
                 # Avoid feeding the log-delivery job its own completion message.
                 if name not in {"log_flush", "shard_status"}:
-                    log.info(
-                        "Background job completed",
-                        extra={
-                            "job": name,
-                            "duration_seconds": time.monotonic() - started,
-                        },
-                    )
+                    label = name.replace("_", " ")
+                    log.info(f"{label} finished in {time.monotonic() - started:.1f}s")
         finally:
             self.duration_seconds = time.monotonic() - started
 

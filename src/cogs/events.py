@@ -14,6 +14,7 @@ from ..views import timestamp
 from ..views.ui import embed
 
 log = logging.getLogger(__name__)
+guild_log = logging.getLogger(f"{__name__}.guild")
 
 
 class EventsCog(commands.Cog):
@@ -30,13 +31,8 @@ class EventsCog(commands.Cog):
         command: app_commands.Command | app_commands.ContextMenu,
     ) -> None:
         """Log completed commands; the command tree coordinates analytics with deletion."""
-        log.info(
-            "Application command completed",
-            extra={
-                "command": command.qualified_name,
-                "context": "guild" if interaction.guild_id else "dm",
-            },
-        )
+        surface = "a guild" if interaction.guild_id else "a DM"
+        log.info(f"/{command.qualified_name} completed in {surface}")
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild) -> None:
@@ -63,10 +59,12 @@ class EventsCog(commands.Cog):
             try:
                 channel = await self.bot.fetch_channel(channel_id)
             except DISCORD_HTTP_ERRORS:
-                log.warning("Could not resolve guild event log channel", exc_info=True)
+                guild_log.warning(
+                    "Could not resolve guild event log channel", exc_info=True
+                )
                 return
         if not isinstance(channel, discord.abc.Messageable):
-            log.warning("Guild event log channel is not messageable")
+            guild_log.warning("Guild event log channel is not messageable")
             return
         owner = (
             f"<@{guild.owner_id}> ({guild.owner_id})" if guild.owner_id else "Unknown"
@@ -92,7 +90,7 @@ class EventsCog(commands.Cog):
                 embed=card, allowed_mentions=discord.AllowedMentions.none()
             )
         except DISCORD_HTTP_ERRORS:
-            log.warning("Could not deliver guild event log", exc_info=True)
+            guild_log.warning("Could not deliver guild event log", exc_info=True)
 
 
 async def setup(bot: BotFraggBot) -> None:

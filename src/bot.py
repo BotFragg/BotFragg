@@ -127,15 +127,12 @@ class BotFraggCommandTree(app_commands.CommandTree["BotFraggBot"]):
         command = interaction.command
         if command is not None and command._has_any_error_handlers():
             return
-        log.error(
-            "Application command failed",
-            exc_info=error,
-            extra={
-                "command": command.qualified_name
-                if command is not None
-                else self._command_name(interaction.data or {}),
-            },
+        command_name = (
+            command.qualified_name
+            if command is not None
+            else self._command_name(interaction.data or {})
         )
+        log.error(f"/{command_name} failed", exc_info=error)
         try:
             card = _command_error_embed(self.client.translator, interaction.locale)
             if interaction.response.is_done():
@@ -257,9 +254,11 @@ class BotFraggBot(commands.AutoShardedBot):
                 type=discord.ActivityType.playing, name="VALORANT"
             ),
         )
+        shards = self.shard_count or 1
+        guilds = len(self.guilds)
         log.info(
-            "BotFragg is ready",
-            extra={"shards": self.shard_count, "guilds": len(self.guilds)},
+            f"connected with {shards} shard{'s' if shards != 1 else ''} and "
+            f"{guilds} guild{'s' if guilds != 1 else ''}"
         )
 
     async def close(self) -> None:
