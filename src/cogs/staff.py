@@ -8,7 +8,6 @@ from discord.ext import commands
 
 from ..bot import BotFraggBot
 from ..services.analytics import command_stats
-from ..services.suggestions import count_suggestions_by_author
 from ..views import timestamp
 from ..views.ui import embed, error
 
@@ -41,7 +40,6 @@ class StaffCog(commands.Cog):
             return
         await interaction.response.defer(thinking=True, ephemeral=True)
         command_count, favorite = await command_stats(user_id=user.id)
-        suggestion_count = await count_suggestions_by_author(user.id)
         shared_guilds = 0
         owned_guilds = 0
         for guild in self.bot.guilds:
@@ -62,7 +60,6 @@ class StaffCog(commands.Cog):
                 f"**Shared servers (cached; may be incomplete):** {shared_guilds}",
                 f"**Owned servers:** {owned_guilds}",
                 f"**Commands used:** {command_count}",
-                f"**Suggestions submitted:** {suggestion_count}",
                 f"**Most used command:** {favorite or 'None'}",
             )
         )

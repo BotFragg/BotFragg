@@ -11,8 +11,6 @@ from tortoise.transactions import in_transaction
 from ..models import (
     Account,
     CommandInvocation,
-    Suggestion,
-    SuggestionFollower,
     User,
 )
 from .analytics import deleting_analytics
@@ -196,10 +194,6 @@ async def delete_user_data(discord_id: int) -> bool:
                     removed = await CommandInvocation.filter(
                         user_id=discord_id
                     ).delete()
-                    removed += await SuggestionFollower.filter(
-                        user_id=discord_id
-                    ).delete()
-                    removed += await Suggestion.filter(author_id=discord_id).delete()
                     removed += await User.filter(id=discord_id).delete()
                 return bool(removed)
             except DeadlockDetectedError:

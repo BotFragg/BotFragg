@@ -14,7 +14,7 @@ docstring. Regenerate it after application documentation changes with
    warms the catalog and application emojis, registers persistent controls,
    and loads the Discord cogs.
 3. Cogs translate Discord commands and events into calls to `src.services`.
-   Services own Riot requests, account and suggestion operations, and catalog
+   Services own Riot requests, account operations, and catalog
    normalization, including static bundle metadata and account-scoped featured
    offers; `src.models.entities` defines the persisted records.
 4. Background task cogs schedule daily alerts and periodic refreshes. Monitoring
@@ -79,7 +79,6 @@ docstring. Regenerate it after application documentation changes with
 | [src/cogs/__init__.py](../src/cogs/__init__.py) | Defines the Discord cog package. |
 | [src/cogs/events.py](../src/cogs/events.py) | Records command analytics and reports guild and shard lifecycle events. |
 | [src/cogs/extra.py](../src/cogs/extra.py) | Implements utility commands and persistent shard status. |
-| [src/cogs/suggestions.py](../src/cogs/suggestions.py) | Implements suggestion submission, following, and owner-only review. |
 | [src/cogs/staff.py](../src/cogs/staff.py) | Implements owner-only user, server, and command-usage diagnostics. |
 | [src/cogs/tasks.py](../src/cogs/tasks.py) | Runs scheduled alerts and refreshes and optionally forwards filtered logs to Discord. |
 | [src/cogs/valorant/__init__.py](../src/cogs/valorant/__init__.py) | Defines the VALORANT cog package. |
@@ -104,13 +103,13 @@ docstring. Regenerate it after application documentation changes with
 | [src/migrations/0006_index_owners_and_widen_analytics.py](../src/migrations/0006_index_owners_and_widen_analytics.py) | Indexes account ownership and widens command analytics ids. |
 | [src/migrations/0007_record_model_options.py](../src/migrations/0007_record_model_options.py) | Records model options that earlier migrations left out of migration state. |
 | [src/migrations/0008_add_profile_sharing.py](../src/migrations/0008_add_profile_sharing.py) | Adds the opt-in profile-sharing preference. |
+| [src/migrations/0009_remove_suggestions.py](../src/migrations/0009_remove_suggestions.py) | Drops the suggestion and suggestion-follower tables. |
 | [src/models/__init__.py](../src/models/__init__.py) | Re-exports model classes for application code. |
 | [src/models/entities.py](../src/models/entities.py) | Defines ORM records and uniqueness constraints. |
 | [src/services/__init__.py](../src/services/__init__.py) | Defines the service package. |
 | [src/services/accounts.py](../src/services/accounts.py) | Owns user preferences, account selection, and transactional personal-data deletion. |
 | [src/services/alerts.py](../src/services/alerts.py) | Owns alert persistence, pagination, matching, and bounded daily-alert orchestration. |
 | [src/services/analytics.py](../src/services/analytics.py) | Records successful command use and computes scoped aggregate statistics. |
-| [src/services/suggestions.py](../src/services/suggestions.py) | Owns suggestion persistence, following, and atomic review outcomes. |
 | [src/services/auth.py](../src/services/auth.py) | Owns Riot OAuth, credential refresh, entitlement repair, and account linking. |
 | [src/services/catalog.py](../src/services/catalog.py) | Loads, searches, refreshes, and caches skin, weapon, bundle, accessory, mission, and game metadata (maps, ranks, seasons). |
 | [src/services/crosshair.py](../src/services/crosshair.py) | Fetches, decodes, encodes, and caches a user's crosshair profiles. |
@@ -172,7 +171,6 @@ docstring. Regenerate it after application documentation changes with
 | [tests/test_shop_commands.py](../tests/test_shop_commands.py) | Daily/accessory/featured/Night Market rendering, selectors, and private errors. |
 | [tests/test_shop_service.py](../tests/test_shop_service.py) | Storefront and wallet validation, caching, expiry, and concurrent requests. |
 | [tests/test_recovery.py](../tests/test_recovery.py) | PostgreSQL read-only restore verification, key rejection, and migration-history checks. |
-| [tests/test_suggestions_service.py](../tests/test_suggestions_service.py) | Suggestion delivery, follower uniqueness, and review outcomes. |
 | [tests/test_staff.py](../tests/test_staff.py) | Owner-only user and server diagnostics with incomplete member caches. |
 | [tests/test_status_commands.py](../tests/test_status_commands.py) | Region selection, rendering, and error handling for `/status`. |
 | [tests/test_valorant_status.py](../tests/test_valorant_status.py) | Status feed parsing, cache expiry, and failure handling. |

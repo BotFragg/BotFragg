@@ -366,7 +366,6 @@ class ExtraCog(commands.Cog):
         category = {
             "extra": "help-category-misc",
             "valorant": "help-category-valorant",
-            "suggestions": "help-category-misc",
         }.get(component, component.replace("_", " ").title() or "Other")
         category_name = (
             translator.text(locale, category)

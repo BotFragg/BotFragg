@@ -20,8 +20,6 @@ from src.models import (
     Alert,
     CommandInvocation,
     ShardStatusMessage,
-    Suggestion,
-    SuggestionFollower,
     User,
 )
 from src.services.accounts import delete_user_data
@@ -63,8 +61,6 @@ async def test_migrations_apply_write_delete_and_rollback(migration_url):
             id=2**31, user_id=user.id, command="synthetic-large"
         )
         assert large.id == 2**31
-        suggestion = await Suggestion.create(author_id=user.id, content="Synthetic")
-        await SuggestionFollower.create(suggestion=suggestion, user_id=user.id)
         await ShardStatusMessage.create(channel_id=101, message_id=201)
         assert await account.persisted_row().exists()
         assert await delete_user_data(user.id)
@@ -73,8 +69,6 @@ async def test_migrations_apply_write_delete_and_rollback(migration_url):
             Account,
             Alert,
             CommandInvocation,
-            Suggestion,
-            SuggestionFollower,
         ):
             assert not await model.exists()
         await executor.migrate([MigrationTarget("models", "0003_add_suggestions")])
@@ -257,6 +251,15 @@ def test_native_initial_migration_matches_current_models() -> None:
     assert [
         type(operation).__name__ for operation in profile_module.Migration.operations
     ] == ["AddField"]
+
+    removal_module = importlib.import_module("src.migrations.0009_remove_suggestions")
+    assert removal_module.Migration.dependencies == [
+        ("models", "0008_add_profile_sharing")
+    ]
+    assert [
+        (type(operation).__name__, operation.name)
+        for operation in removal_module.Migration.operations
+    ] == [("DeleteModel", "SuggestionFollower"), ("DeleteModel", "Suggestion")]
 
 
 async def test_connect_database_uses_passed_settings(

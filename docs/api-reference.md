@@ -18,7 +18,7 @@ Discord client construction, command handling, service wiring, and shutdown.
 
 **Scope:** `src/bot.py` · `module`
 
-[Source](../src/bot.py#L34)
+[Source](../src/bot.py#L52)
 
 Build the generic, user-safe response shown after an unhandled command error.
 
@@ -26,7 +26,7 @@ Build the generic, user-safe response shown after an unhandled command error.
 
 **Scope:** `src/bot.py` · `module`
 
-[Source](../src/bot.py#L44)
+[Source](../src/bot.py#L62)
 
 Application-command tree with shared context rules and error reporting.
 
@@ -34,7 +34,7 @@ Application-command tree with shared context rules and error reporting.
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L47)
+[Source](../src/bot.py#L65)
 
 Allow commands in servers and private contexts for guild and user installs.
 
@@ -42,7 +42,7 @@ Allow commands in servers and private contexts for guild and user installs.
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L57)
+[Source](../src/bot.py#L75)
 
 Record command executions while leaving autocomplete requests untracked.
 
@@ -50,7 +50,7 @@ Record command executions while leaving autocomplete requests untracked.
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L83)
+[Source](../src/bot.py#L101)
 
 Return the dotted parent and subcommand path from Discord's payload.
 
@@ -58,7 +58,7 @@ Return the dotted parent and subcommand path from Discord's payload.
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L102)
+[Source](../src/bot.py#L120)
 
 Log unhandled app-command errors and send a private generic response.
 
@@ -66,7 +66,7 @@ Log unhandled app-command errors and send a private generic response.
 
 **Scope:** `src/bot.py` · `module`
 
-[Source](../src/bot.py#L131)
+[Source](../src/bot.py#L149)
 
 Own Discord lifecycle and the shared Riot, database, and presentation services.
 
@@ -74,7 +74,7 @@ Own Discord lifecycle and the shared Riot, database, and presentation services.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L134)
+[Source](../src/bot.py#L152)
 
 Configure the bot's intents and application services.
 
@@ -82,7 +82,7 @@ Configure the bot's intents and application services.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L164)
+[Source](../src/bot.py#L182)
 
 Register a persistent component action, rejecting duplicate action names.
 
@@ -90,7 +90,7 @@ Register a persistent component action, rejecting duplicate action names.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L170)
+[Source](../src/bot.py#L188)
 
 Discard only the handlers bound to the given cog instance.
 
@@ -98,7 +98,7 @@ Discard only the handlers bound to the given cog instance.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L178)
+[Source](../src/bot.py#L196)
 
 Discard a failed cog's component handlers so loading it can be retried.
 
@@ -106,7 +106,7 @@ Discard a failed cog's component handlers so loading it can be retried.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L198)
+[Source](../src/bot.py#L216)
 
 Remove a cog's component handlers along with its commands and listeners.
 
@@ -114,7 +114,7 @@ Remove a cog's component handlers along with its commands and listeners.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L212)
+[Source](../src/bot.py#L230)
 
 Initialize shared resources, load extensions, and optionally sync commands.
 
@@ -310,7 +310,7 @@ Use each command's cog module to place it in a help category.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L379)
+[Source](../src/cogs/extra.py#L378)
 
 Return Discord-formatted mentions for all synced commands and subcommands.
 
@@ -318,7 +318,7 @@ Return Discord-formatted mentions for all synced commands and subcommands.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L406)
+[Source](../src/cogs/extra.py#L405)
 
 List registered slash commands by category in the embed description.
 
@@ -326,7 +326,7 @@ List registered slash commands by category in the embed description.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L477)
+[Source](../src/cogs/extra.py#L476)
 
 Show an invite link and any configured support, vote, and website links.
 
@@ -334,7 +334,7 @@ Show an invite link and any configured support, vote, and website links.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L493)
+[Source](../src/cogs/extra.py#L492)
 
 Measure the shard-status job and preserve its existing retry behavior.
 
@@ -342,7 +342,7 @@ Measure the shard-status job and preserve its existing retry behavior.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L498)
+[Source](../src/cogs/extra.py#L497)
 
 Update or recreate the persistent embed containing per-shard health.
 
@@ -350,7 +350,7 @@ Update or recreate the persistent embed containing per-shard health.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L546)
+[Source](../src/cogs/extra.py#L545)
 
 Wait for Discord readiness before the first shard-status update.
 
@@ -358,7 +358,7 @@ Wait for Discord readiness before the first shard-status update.
 
 **Scope:** `src/cogs/extra.py` · `module`
 
-[Source](../src/cogs/extra.py#L551)
+[Source](../src/cogs/extra.py#L550)
 
 Register the general utility cog with the bot.
 
@@ -370,7 +370,7 @@ Owner-only Discord diagnostics for users, servers, and command analytics.
 
 **Scope:** `src/cogs/staff.py` · `module`
 
-[Source](../src/cogs/staff.py#L16)
+[Source](../src/cogs/staff.py#L15)
 
 Owner-only operational diagnostics.
 
@@ -378,7 +378,7 @@ Owner-only operational diagnostics.
 
 **Scope:** `src/cogs/staff.py` · `StaffCog`
 
-[Source](../src/cogs/staff.py#L19)
+[Source](../src/cogs/staff.py#L18)
 
 Bind the staff diagnostics to the running bot.
 
@@ -386,7 +386,7 @@ Bind the staff diagnostics to the running bot.
 
 **Scope:** `src/cogs/staff.py` · `StaffCog`
 
-[Source](../src/cogs/staff.py#L23)
+[Source](../src/cogs/staff.py#L22)
 
 Authorize the bot owner and privately reject all other callers.
 
@@ -394,7 +394,7 @@ Authorize the bot owner and privately reject all other callers.
 
 **Scope:** `src/cogs/staff.py` · `StaffCog`
 
-[Source](../src/cogs/staff.py#L36)
+[Source](../src/cogs/staff.py#L35)
 
 Show the owner's stored account statistics and shared-server details.
 
@@ -402,7 +402,7 @@ Show the owner's stored account statistics and shared-server details.
 
 **Scope:** `src/cogs/staff.py` · `StaffCog`
 
-[Source](../src/cogs/staff.py#L78)
+[Source](../src/cogs/staff.py#L75)
 
 Show analytics and Discord's cached membership count for a server.
 
@@ -410,125 +410,9 @@ Show analytics and Discord's cached membership count for a server.
 
 **Scope:** `src/cogs/staff.py` · `module`
 
-[Source](../src/cogs/staff.py#L129)
+[Source](../src/cogs/staff.py#L126)
 
 Register the owner-only diagnostics cog with the bot.
-
-## `src/cogs/suggestions.py`
-
-Discord suggestion submission, following, and owner-only review commands.
-
-### `class SuggestionsCog(commands.Cog)`
-
-**Scope:** `src/cogs/suggestions.py` · `module`
-
-[Source](../src/cogs/suggestions.py#L31)
-
-Own the public suggestion workflow and its review notifications.
-
-### `def __init__(self, bot: BotFraggBot) -> None`
-
-**Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
-
-[Source](../src/cogs/suggestions.py#L42)
-
-Bind suggestion commands to the running bot.
-
-### `async def cog_unload(self) -> None`
-
-**Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
-
-[Source](../src/cogs/suggestions.py#L48)
-
-Cancel and await pending delivery retries during extension shutdown.
-
-### `async def _record_delivery(self, suggestion: Suggestion, message_id: int) -> None`
-
-**Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
-
-[Source](../src/cogs/suggestions.py#L55)
-
-Save a posted message ID, retaining it for retry during database outages.
-
-### `async def delivery_retry(self) -> None`
-
-**Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
-
-[Source](../src/cogs/suggestions.py#L70)
-
-Retry posted message links without reposting or recreating deleted records.
-
-### `async def suggest(self, interaction: discord.Interaction, suggestion: app_commands.Range[str, 1, 1000]) -> None`
-
-**Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
-
-[Source](../src/cogs/suggestions.py#L95)
-
-Persist a feature suggestion and publish it to the configured log channel.
-
-### `async def track(self, interaction: discord.Interaction, id: app_commands.Range[int, 1, 2147483647]) -> None`
-
-**Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
-
-[Source](../src/cogs/suggestions.py#L169)
-
-Follow a pending suggestion or privately show its existing review.
-
-### `async def untrack(self, interaction: discord.Interaction, id: app_commands.Range[int, 1, 2147483647]) -> None`
-
-**Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
-
-[Source](../src/cogs/suggestions.py#L213)
-
-Remove the caller's follow from another user's suggestion.
-
-### `async def approve(self, interaction: discord.Interaction, id: app_commands.Range[int, 1, 2147483647], reason: app_commands.Range[str, 1, 1000]) -> None`
-
-**Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
-
-[Source](../src/cogs/suggestions.py#L246)
-
-Submit an owner-only approval review for the selected suggestion.
-
-### `async def deny(self, interaction: discord.Interaction, id: app_commands.Range[int, 1, 2147483647], reason: app_commands.Range[str, 1, 1000]) -> None`
-
-**Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
-
-[Source](../src/cogs/suggestions.py#L261)
-
-Submit an owner-only denial review for the selected suggestion.
-
-### `async def _review_suggestion(self, interaction: discord.Interaction, id: int, reason: str, status: Literal['approved', 'denied']) -> None`
-
-**Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
-
-[Source](../src/cogs/suggestions.py#L270)
-
-Authorize a review, update its record, and notify its followers.
-
-### `def _review_card(self, suggestion: Suggestion, locale: discord.Locale) -> discord.Embed`
-
-**Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
-
-[Source](../src/cogs/suggestions.py#L320)
-
-Render the localized review shared by follower DMs and completed tracking.
-
-### `async def _update_suggestion_log(self, suggestion: Suggestion) -> None`
-
-**Scope:** `src/cogs/suggestions.py` · `SuggestionsCog`
-
-[Source](../src/cogs/suggestions.py#L338)
-
-Edit the original suggestion post with the final status and review reason.
-
-### `async def setup(bot: BotFraggBot) -> None`
-
-**Scope:** `src/cogs/suggestions.py` · `module`
-
-[Source](../src/cogs/suggestions.py#L365)
-
-Register suggestion commands and review handlers.
 
 ## `src/cogs/tasks.py`
 
@@ -1850,7 +1734,7 @@ Immutable runtime configuration populated from environment variables.
 
 **Scope:** `src/config.py` · `Settings`
 
-[Source](../src/config.py#L150)
+[Source](../src/config.py#L149)
 
 Load settings, validate URLs and limits, and optionally require secrets.
 
@@ -2178,6 +2062,18 @@ Add opt-in profile sharing for /profile.
 
 Let users opt in before others can view their profile.
 
+## `src/migrations/0009_remove_suggestions.py`
+
+Remove the suggestion and suggestion-follower tables.
+
+### `class Migration(migrations.Migration)`
+
+**Scope:** `src/migrations/0009_remove_suggestions.py` · `module`
+
+[Source](../src/migrations/0009_remove_suggestions.py#L7)
+
+Drop suggestion records now that suggestions are handled in Discord forums.
+
 ## `src/migrations/__init__.py`
 
 Tortoise migration package for the BotFragg database schema.
@@ -2254,35 +2150,11 @@ Prevent duplicate alerts for the same account and skin.
 
 Store a completed command and its optional guild and channel context.
 
-### `class Suggestion(Model)`
-
-**Scope:** `src/models/entities.py` · `module`
-
-[Source](../src/models/entities.py#L93)
-
-Store a user's submitted idea and its review and delivery state.
-
-### `class SuggestionFollower(Model)`
-
-**Scope:** `src/models/entities.py` · `module`
-
-[Source](../src/models/entities.py#L108)
-
-Link a Discord user to a suggestion whose review they want to follow.
-
-### `class Meta`
-
-**Scope:** `src/models/entities.py` · `SuggestionFollower`
-
-[Source](../src/models/entities.py#L117)
-
-Allow each user to follow a suggestion at most once.
-
 ### `class ShardStatusMessage(Model)`
 
 **Scope:** `src/models/entities.py` · `module`
 
-[Source](../src/models/entities.py#L123)
+[Source](../src/models/entities.py#L93)
 
 Map each configured Discord channel to its persistent status message.
 
@@ -2326,7 +2198,7 @@ Persistence operations for user preferences, Riot accounts, and personal-data de
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L30)
+[Source](../src/services/accounts.py#L28)
 
 Return the stored BotFragg user for a Discord ID, if one exists.
 
@@ -2334,7 +2206,7 @@ Return the stored BotFragg user for a Discord ID, if one exists.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L35)
+[Source](../src/services/accounts.py#L33)
 
 Count users with a stored BotFragg profile.
 
@@ -2342,7 +2214,7 @@ Count users with a stored BotFragg profile.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L40)
+[Source](../src/services/accounts.py#L38)
 
 Return Discord IDs whose saved preference enables daily shop DMs.
 
@@ -2350,7 +2222,7 @@ Return Discord IDs whose saved preference enables daily shop DMs.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L46)
+[Source](../src/services/accounts.py#L44)
 
 Return a Riot account only when it belongs to the requested Discord user.
 
@@ -2358,7 +2230,7 @@ Return a Riot account only when it belongs to the requested Discord user.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L51)
+[Source](../src/services/accounts.py#L49)
 
 Update one allowlisted Boolean preference and refresh the user's timestamp.
 
@@ -2366,7 +2238,7 @@ Update one allowlisted Boolean preference and refresh the user's timestamp.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L61)
+[Source](../src/services/accounts.py#L59)
 
 Return the active account, choosing the oldest account when none is selected.
 
@@ -2378,7 +2250,7 @@ conditional so a concurrent selection is not overwritten.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L131)
+[Source](../src/services/accounts.py#L129)
 
 Return a user's Riot accounts in creation order.
 
@@ -2386,7 +2258,7 @@ Return a user's Riot accounts in creation order.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L136)
+[Source](../src/services/accounts.py#L134)
 
 Resolve an account by PUUID, case-insensitive name, or one-based position.
 
@@ -2394,7 +2266,7 @@ Resolve an account by PUUID, case-insensitive name, or one-based position.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L163)
+[Source](../src/services/accounts.py#L161)
 
 Set a user's active account after verifying that the account is theirs.
 
@@ -2402,7 +2274,7 @@ Set a user's active account after verifying that the account is theirs.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L189)
+[Source](../src/services/accounts.py#L187)
 
 Delete the user's stored BotFragg records and all linked Riot accounts.
 
@@ -4340,80 +4212,6 @@ Keep only mapping entries from an optional Riot list.
 [Source](../src/services/shop.py#L448)
 
 Return a price only when the source entry explicitly uses VALORANT Points.
-
-## `src/services/suggestions.py`
-
-Persistence and orchestration for suggestions.
-
-### `async def create_suggestion(author_id: int, content: str, log_channel_id: int | None) -> Suggestion | None`
-
-**Scope:** `src/services/suggestions.py` · `module`
-
-[Source](../src/services/suggestions.py#L20)
-
-Create a suggestion and author follow, or reject a command cancelled by deletion.
-
-### `async def record_suggestion_delivery(suggestion: Suggestion, message_id: int) -> Suggestion | None`
-
-**Scope:** `src/services/suggestions.py` · `module`
-
-[Source](../src/services/suggestions.py#L34)
-
-Record the posted message and return its current review, or None if deleted.
-
-### `async def delete_suggestion(suggestion_id: int) -> None`
-
-**Scope:** `src/services/suggestions.py` · `module`
-
-[Source](../src/services/suggestions.py#L43)
-
-Delete a suggestion record by its database ID.
-
-### `async def follow_suggestion(suggestion_id: int, user_id: int) -> bool | Suggestion | None`
-
-**Scope:** `src/services/suggestions.py` · `module`
-
-[Source](../src/services/suggestions.py#L48)
-
-Follow a pending suggestion or return its completed review; missing returns None.
-
-Lock the suggestion until the follow commits so a concurrent review includes
-this follower, or returns its final result without creating a late follow.
-
-### `async def unfollow_suggestion(suggestion_id: int, user_id: int) -> UnfollowResult`
-
-**Scope:** `src/services/suggestions.py` · `module`
-
-[Source](../src/services/suggestions.py#L75)
-
-Remove a follow and report missing, own, removed, or absent-follow status.
-
-### `async def review_suggestion(suggestion_id: int, status: ReviewStatus, reason: str) -> tuple[Suggestion, set[int]] | None`
-
-**Scope:** `src/services/suggestions.py` · `module`
-
-[Source](../src/services/suggestions.py#L88)
-
-Atomically review a pending suggestion and return its followers once.
-
-A suggestion that is missing or already reviewed returns ``None``; a successful
-review returns the updated record and the distinct follower IDs to notify.
-
-### `async def current_followers(suggestion_id: int, candidate_ids: set[int]) -> set[int]`
-
-**Scope:** `src/services/suggestions.py` · `module`
-
-[Source](../src/services/suggestions.py#L113)
-
-Return the candidate follower IDs that still follow the suggestion.
-
-### `async def count_suggestions_by_author(author_id: int) -> int`
-
-**Scope:** `src/services/suggestions.py` · `module`
-
-[Source](../src/services/suggestions.py#L124)
-
-Count suggestions submitted by a Discord user.
 
 ## `src/services/valorant_status.py`
 

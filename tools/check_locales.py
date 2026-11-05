@@ -48,8 +48,6 @@ PREFIXES = {
     "shop",
     "skin",
     "staff",
-    "suggestion",
-    "suggestions",
     "status",
     "test",
 }
@@ -64,8 +62,6 @@ DYNAMIC_MESSAGE_IDS = {
     "login-failed",
     "login-nonce-mismatch",
     "login-token-no-account",
-    "suggestion-status-approved",
-    "suggestion-status-denied",
     "penalties-effect-delayed-penalty",
     "penalties-effect-game-ban",
     "penalties-effect-queue-delay",

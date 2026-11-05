@@ -19,7 +19,6 @@ from src.bot import BotFraggBot, BotFraggCommandTree
 from src.cogs.events import EventsCog
 from src.cogs.extra import ExtraCog
 from src.cogs.staff import StaffCog
-from src.cogs.suggestions import SuggestionsCog
 from src.cogs.valorant.accounts import AccountsCog
 from src.cogs.valorant.alerts import AlertsCog
 from src.cogs.valorant.battlepass import BattlepassCog
@@ -194,9 +193,9 @@ def test_command_name_includes_the_subcommand_path() -> None:
     """Verify that logged command names include subcommands."""
     assert (
         BotFraggCommandTree._command_name(
-            {"name": "suggestion", "options": [{"type": 1, "name": "track"}]}
+            {"name": "settings", "options": [{"type": 1, "name": "view"}]}
         )
-        == "suggestion.track"
+        == "settings.view"
     )
 
 
@@ -269,7 +268,6 @@ async def test_initial_release_command_contract(
         ProfileCog(bot),
         LoadoutCog(bot),
         ExtraCog(bot),
-        SuggestionsCog(bot),
         StaffCog(bot),
     ):
         await bot.add_cog(cog)
@@ -298,8 +296,6 @@ async def test_initial_release_command_contract(
         "botinfo",
         "help",
         "links",
-        "suggest",
-        "suggestion",
         "userinfo",
         "serverinfo",
     }

@@ -22,14 +22,6 @@ def token(**claims):
     return f"synthetic.{payload}.signature"
 
 
-@pytest.mark.parametrize("locale", ["el", "hu", "vi"])
-def test_localized_suggestion_commands_have_distinct_names(locale):
-    translator = BotFraggTranslator()
-    assert translator.text(locale, "command-suggest-name") != translator.text(
-        locale, "group-suggestion-name"
-    )
-
-
 def test_locale_checker_rejects_sibling_command_name_collisions(tmp_path):
     """The normal locale checker must catch the audited registration collision."""
     from pathlib import Path
@@ -42,11 +34,11 @@ def test_locale_checker_rejects_sibling_command_name_collisions(tmp_path):
     path.write_text(original, encoding="utf-8")
     scopes = source_command_names()
     assert command_name_errors(path, scopes) == []
-    name = BotFraggTranslator().text("el", "command-suggest-name")
+    name = BotFraggTranslator().text("el", "command-alert-name")
     original = original.replace(
-        "group-suggestion-name = "
-        + BotFraggTranslator().text("el", "group-suggestion-name"),
-        "group-suggestion-name = " + name,
+        "command-alerts-name = "
+        + BotFraggTranslator().text("el", "command-alerts-name"),
+        "command-alerts-name = " + name,
     )
     path.write_text(original, encoding="utf-8")
     assert len(command_name_errors(path, scopes)) == 1

@@ -8,7 +8,7 @@ import aiohttp
 import discord
 import pytest
 
-from src.bot import BotFraggBot
+from src.bot import EXTENSIONS, BotFraggBot
 from src.services.emojis import PROFILE_EMOJI_ASSETS, ApplicationEmojiService
 from tests.helpers import _localized_bot
 
@@ -43,7 +43,7 @@ async def test_emoji_transport_failure_does_not_stop_startup(
 
     await BotFraggBot.setup_hook(bot)
 
-    assert bot.load_extension.await_count == 17
+    assert bot.load_extension.await_count == len(EXTENSIONS)
     assert await service.currency("vp") == ""
     assert await service.battlepass_bars() == ("", "")
     assert service.skin_name("Synthetic skin", None) == "Synthetic skin"

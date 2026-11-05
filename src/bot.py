@@ -29,6 +29,24 @@ from .views import OwnedActionButton, OwnedSelect
 
 log = logging.getLogger(__name__)
 ComponentHandler = Callable[[discord.Interaction, str], Awaitable[None]]
+EXTENSIONS = (
+    "src.cogs.valorant.login",
+    "src.cogs.valorant.logout",
+    "src.cogs.valorant.accounts",
+    "src.cogs.valorant.settings",
+    "src.cogs.valorant.shop",
+    "src.cogs.valorant.crosshair",
+    "src.cogs.valorant.alerts",
+    "src.cogs.valorant.battlepass",
+    "src.cogs.valorant.penalties",
+    "src.cogs.valorant.status",
+    "src.cogs.valorant.profile",
+    "src.cogs.valorant.loadout",
+    "src.cogs.events",
+    "src.cogs.extra",
+    "src.cogs.staff",
+    "src.cogs.tasks",
+)
 
 
 def _command_error_embed(
@@ -225,25 +243,7 @@ class BotFraggBot(commands.AutoShardedBot):
             log.exception("Could not initialize the VALORANT catalog")
         await self.emoji_service.warm()
         self.add_dynamic_items(OwnedActionButton, OwnedSelect)
-        for extension in (
-            "src.cogs.valorant.login",
-            "src.cogs.valorant.logout",
-            "src.cogs.valorant.accounts",
-            "src.cogs.valorant.settings",
-            "src.cogs.valorant.shop",
-            "src.cogs.valorant.crosshair",
-            "src.cogs.valorant.alerts",
-            "src.cogs.valorant.battlepass",
-            "src.cogs.valorant.penalties",
-            "src.cogs.valorant.status",
-            "src.cogs.valorant.profile",
-            "src.cogs.valorant.loadout",
-            "src.cogs.events",
-            "src.cogs.extra",
-            "src.cogs.suggestions",
-            "src.cogs.staff",
-            "src.cogs.tasks",
-        ):
+        for extension in EXTENSIONS:
             await self.load_extension(extension)
         await self.tree.set_translator(self.translator)
         if self.config.auto_sync_commands:

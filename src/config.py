@@ -125,7 +125,6 @@ class Settings:
     guild_leave_log_channel_id: int | None
     shard_log_webhook_url: str | None
     shard_status_channel_id: int | None
-    suggestion_log_channel_id: int | None
     support_url: str | None
     vote_url: str | None
     website_url: str | None
@@ -195,7 +194,6 @@ class Settings:
             guild_leave_log_channel_id=_optional_int("GUILD_LEAVE_LOG_CHANNEL_ID"),
             shard_log_webhook_url=_optional_webhook_url("SHARD_LOG_WEBHOOK_URL"),
             shard_status_channel_id=_optional_int("SHARD_STATUS_CHANNEL_ID"),
-            suggestion_log_channel_id=_optional_int("SUGGESTION_LOG_CHANNEL_ID"),
             support_url=_optional_url("SUPPORT_URL"),
             vote_url=_optional_url("VOTE_URL"),
             website_url=_optional_url("WEBSITE_URL"),

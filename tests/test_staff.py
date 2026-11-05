@@ -17,9 +17,7 @@ from tests.helpers import _localized_bot, _localized_interaction
 @pytest.mark.parametrize("command", ["userinfo", "serverinfo"])
 async def test_non_owner_staff_commands_reject_before_querying(command, monkeypatch):
     stats = AsyncMock()
-    suggestions = AsyncMock()
     monkeypatch.setattr("src.cogs.staff.command_stats", stats)
-    monkeypatch.setattr("src.cogs.staff.count_suggestions_by_author", suggestions)
     bot = _localized_bot(is_owner=AsyncMock(return_value=False), get_guild=Mock())
     interaction = _localized_interaction(
         user=SimpleNamespace(id=202),
@@ -31,7 +29,6 @@ async def test_non_owner_staff_commands_reject_before_querying(command, monkeypa
     await getattr(StaffCog, command).callback(StaffCog(bot), interaction, target)
 
     stats.assert_not_awaited()
-    suggestions.assert_not_awaited()
     bot.get_guild.assert_not_called()
     interaction.response.defer.assert_not_awaited()
     sent = interaction.response.send_message.call_args.kwargs
@@ -115,12 +112,7 @@ async def test_userinfo_uses_cached_guild_membership(monkeypatch) -> None:
         """Return stable command analytics."""
         return 5, "/shop"
 
-    async def suggestion_count(_author_id: int) -> int:
-        """Return stable suggestion analytics."""
-        return 2
-
     monkeypatch.setattr("src.cogs.staff.command_stats", command_stats)
-    monkeypatch.setattr("src.cogs.staff.count_suggestions_by_author", suggestion_count)
     bot = SimpleNamespace(
         is_owner=is_owner, guilds=[owned_guild, shared_guild, other_guild]
     )

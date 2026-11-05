@@ -6,13 +6,10 @@ from types import SimpleNamespace as NS
 from unittest.mock import AsyncMock
 
 import pytest
-from tortoise.exceptions import IntegrityError
 
 from src.models import (
     CommandInvocation,
     ShardStatusMessage,
-    Suggestion,
-    SuggestionFollower,
     User,
 )
 from src.services.auth import AuthService
@@ -64,15 +61,6 @@ async def test_command_analytics_keeps_dm_context_nullable() -> None:
         None,
         None,
     )
-
-
-@pytest.mark.usefixtures("database")
-async def test_suggestion_followers_are_unique_per_user() -> None:
-    """Verify that suggestion followers are unique per user."""
-    suggestion = await Suggestion.create(author_id=789, content="Add a feature")
-    await SuggestionFollower.create(suggestion=suggestion, user_id=456)
-    with pytest.raises(IntegrityError):
-        await SuggestionFollower.create(suggestion=suggestion, user_id=456)
 
 
 @pytest.mark.usefixtures("database")

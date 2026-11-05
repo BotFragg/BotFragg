@@ -110,19 +110,6 @@ def test_formatter_removes_webhook_and_interaction_tokens():
     assert synthetic_token not in PlainFormatter("%(message)s").format(record)
 
 
-def test_formatter_scrubs_suggestion_follower_ids():
-    record = logging.LogRecord(
-        "src.cogs.suggestions",
-        logging.WARNING,
-        "suggestions.py",
-        1,
-        "Could not notify suggestion follower %s of the review",
-        (123456789012345678,),
-        None,
-    )
-    assert "123456789012345678" not in PlainFormatter("%(message)s").format(record)
-
-
 def test_formatter_removes_oauth_code_from_gateway_payload():
     record = logging.LogRecord(
         "discord.gateway",

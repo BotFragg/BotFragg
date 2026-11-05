@@ -15,7 +15,6 @@ import discord
 import pytest
 from asyncpg.exceptions import DeadlockDetectedError
 from cryptography.fernet import Fernet
-from tortoise import Tortoise
 from tortoise.queryset import DeleteQuery
 
 from src.bot import BotFraggCommandTree
@@ -29,8 +28,6 @@ from src.models import (
     Account,
     Alert,
     CommandInvocation,
-    Suggestion,
-    SuggestionFollower,
     User,
 )
 from src.services.accounts import delete_user_data
@@ -38,7 +35,6 @@ from src.services.analytics import command_analytics
 from src.services.auth import AuthService
 from src.services.catalog import Skin
 from src.services.crypto import AuthVault
-from src.services.suggestions import create_suggestion, follow_suggestion
 from tests.helpers import (
     _localized_bot,
     _localized_interaction,
@@ -194,64 +190,16 @@ async def test_manual_alert_rechecks_original_alert_and_current_account_name(cha
         assert interaction.followup.send.await_args.kwargs["ephemeral"]
 
 
-async def test_crossed_suggestion_deletions_recover_from_real_deadlock(
-    postgres_url, monkeypatch
-):
-    await Tortoise.init(
-        db_url=postgres_url, modules={"models": ["src.models.entities"]}
-    )
-    await Tortoise.generate_schemas()
-    for user_id in (101, 202):
-        await User.create(id=user_id)
-        await CommandInvocation.create(command="suggest", user_id=user_id)
-    first = await create_suggestion(101, "First synthetic suggestion", None)
-    second = await create_suggestion(202, "Second synthetic suggestion", None)
-    await follow_suggestion(first.id, 202)
-    await follow_suggestion(second.id, 101)
-    both = asyncio.Event()
-    arrived = deadlocks = 0
-    original = DeleteQuery._execute
-
-    async def synchronized_delete(query):
-        nonlocal arrived, deadlocks
-        try:
-            result = await original(query)
-        except DeadlockDetectedError:
-            deadlocks += 1
-            raise
-        if query.model is SuggestionFollower and arrived < 2:
-            arrived += 1
-            if arrived == 2:
-                both.set()
-            await asyncio.wait_for(both.wait(), 5)
-        return result
-
-    monkeypatch.setattr(DeleteQuery, "_execute", synchronized_delete)
-    async with (
-        command_analytics(101) as cancelled_first,
-        command_analytics(202) as cancelled_second,
-    ):
-        results = await asyncio.wait_for(
-            asyncio.gather(
-                delete_user_data(101), delete_user_data(202), return_exceptions=True
-            ),
-            10,
-        )
-        assert results == [True, True]
-        assert cancelled_first.is_set() and cancelled_second.is_set()
-    assert deadlocks == 1
-    for model in (User, CommandInvocation, Suggestion, SuggestionFollower):
-        assert not await model.exists()
-
-
+# SuggestionFollower was the only cross-user table. With it removed, a real
+# Postgres deadlock cannot be produced through delete_user_data alone, so the
+# bounded retry path is covered by injecting the exception.
 @pytest.mark.usefixtures("backend_database")
 @pytest.mark.parametrize("failure", [DeadlockDetectedError, ValueError])
 async def test_failed_deletion_retries_only_deadlocks_and_preserves_all_data(
     monkeypatch, failure
 ):
     owner = await User.create(id=101)
-    await CommandInvocation.create(command="suggest", user_id=owner.id)
-    await create_suggestion(owner.id, "Synthetic suggestion", None)
+    await CommandInvocation.create(command="shop", user_id=owner.id)
     original = DeleteQuery._execute
     attempts = 0
 
@@ -267,7 +215,7 @@ async def test_failed_deletion_retries_only_deadlocks_and_preserves_all_data(
         with pytest.raises(failure):
             await delete_user_data(owner.id)
         assert not cancelled.is_set()
-        for model in (User, CommandInvocation, Suggestion, SuggestionFollower):
+        for model in (User, CommandInvocation):
             assert await model.exists()
         assert attempts == (3 if failure is DeadlockDetectedError else 1)
         monkeypatch.setattr(DeleteQuery, "_execute", original)
@@ -277,13 +225,9 @@ async def test_failed_deletion_retries_only_deadlocks_and_preserves_all_data(
 
 @pytest.mark.usefixtures("database")
 async def test_delete_data_without_riot_profile():
-    suggestion = await Suggestion.create(author_id=101, content="Synthetic idea")
-    await SuggestionFollower.create(suggestion=suggestion, user_id=101)
-    await CommandInvocation.create(command="suggest", user_id=101)
+    await CommandInvocation.create(command="shop", user_id=101)
     assert await delete_user_data(101)
     assert not await CommandInvocation.exists(user_id=101)
-    assert not await Suggestion.exists(author_id=101)
-    assert not await SuggestionFollower.exists(user_id=101)
     assert not await delete_user_data(101)
 
 
@@ -473,16 +417,12 @@ async def test_delete_user_data_removes_personal_records() -> None:
         account=account, skin_uuid=UUID("11111111-1111-1111-1111-111111111111")
     )
     await CommandInvocation.create(command="shop", user_id=user.id)
-    suggestion = await Suggestion.create(author_id=user.id, content="Remove me")
-    await SuggestionFollower.create(suggestion=suggestion, user_id=user.id)
 
     assert await delete_user_data(user.id)
     assert not await User.exists(id=user.id)
     assert not await Account.exists(puuid=account.puuid)
     assert not await Alert.exists(account_id=account.puuid)
     assert not await CommandInvocation.exists(user_id=user.id)
-    assert not await Suggestion.exists(author_id=user.id)
-    assert not await SuggestionFollower.exists(user_id=user.id)
 
 
 async def test_deletedata_clears_cached_shops_after_database_delete(

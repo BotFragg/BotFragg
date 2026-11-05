@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last updated:** November 2, 2026
+**Last updated:** November 5, 2026
 
 This policy describes data handled by BotFragg when you use its Discord bot
 features. BotFragg is an independent project and is not affiliated with Riot
@@ -22,17 +22,13 @@ BotFragg processes the following information to provide its features:
 - **Command analytics:** command name, Discord user ID, guild ID and channel
   ID when available, and the time the command ran. Command option values are
   not included in these analytics records.
-- **Suggestions:** submitted text, author ID, review status and reason, delivery
-  channel and message IDs, and IDs of users following the suggestion.
 - **Operational records:** where configured, BotFragg stores the channel and
   message IDs of its shard-status message. Optional Discord logs may include
   guild or shard information described below.
 
 BotFragg processes slash-command interactions and the values you submit to
 those commands, including in DMs. It does not request Discord's privileged
-Message Content intent or process ordinary message text. A suggestion is an
-exception by design: its text is stored and posted to the configured
-suggestion channel.
+Message Content intent or process ordinary message text.
 
 ## Riot sign-in and VALORANT data
 
@@ -55,11 +51,7 @@ handle requests under their own terms and privacy practices.
 
 ## Discord messages and optional integrations
 
-BotFragg sends command responses and alert DMs through Discord. If suggestion
-delivery is configured, a suggestion is posted to the configured channel with
-the submitting Discord user's display name and avatar, the suggestion text,
-and the server name. BotFragg may edit that message when the suggestion is
-reviewed. People who can access the channel can see its messages.
+BotFragg sends command responses and alert DMs through Discord.
 
 `/crosshair view` replies privately. If you choose Share and confirm, BotFragg
 posts the selected crosshair's profile name, export code, and rendered image to
@@ -95,19 +87,19 @@ policies and retention controls to information they receive.
 ## Storage, retention, and deletion
 
 The operator stores BotFragg records in the configured SQLite or PostgreSQL
-database. BotFragg does not automatically expire account, alert, analytics,
-or suggestion records.
+database. BotFragg does not automatically expire account, alert, or analytics
+records.
 
 - `/logout` removes stored Riot credentials for an account. It keeps the linked
   account record, alerts, and preferences.
 - `/deletedata confirm:True` deletes your linked accounts and encrypted
-  credentials, alerts, preferences, command analytics, suggestions, and
-  suggestion follows from BotFragg's database.
+  credentials, alerts, preferences, and command analytics from BotFragg's
+  database.
 
-Deleting data from BotFragg does not delete suggestion messages already sent
-to Discord, crosshair cards you shared to a channel, messages in configured
-logging channels, or telemetry already received by Discord. Those copies follow
-the relevant service's retention and deletion controls.
+Deleting data from BotFragg does not delete crosshair cards you shared to a
+channel, messages in configured logging channels, or telemetry already received
+by Discord. Those copies follow the relevant service's retention and deletion
+controls.
 Operator-managed backups may also retain records until those backups expire.
 
 ## Your choices and privacy requests
