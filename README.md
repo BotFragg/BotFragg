@@ -46,7 +46,7 @@ Riot credentials are encrypted at rest, and you can delete all of your stored da
 | VALORANT  | `/shop`, `/bundles`, `/nightmarket`, `/balance`, `/battlepass`, `/missions`, `/penalties`, `/crosshair view`, `/status`, `/profile [user]`, `/loadout` |
 | Alerts    | `/alert`, `/alerts`, `/testalerts`                                                                                      |
 | Settings  | `/settings view`, `/settings set`                                                                                       |
-| Community | `/help`, `/ping`, `/botinfo`, `/links`, `/suggest`, `/suggestion`                                                       |
+| Community | `/help`, `/ping`, `/botinfo`, `/links`                                                                                  |
 
 > `/userinfo` and `/serverinfo` are owner-only operational commands.
 
@@ -109,6 +109,9 @@ Administrator permission is not required.
    ```
 
 When `DATABASE_URL` is unset in development, BotFragg uses SQLite.
+
+Before upgrading an existing deployment, back up the database as described in
+the [upgrade notes](docs/operations.md#upgrade-notes).
 
 ### 3. Deploy with Docker Compose
 

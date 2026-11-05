@@ -60,18 +60,14 @@ count as shop failures and are not cached as complete daily shops.
 Returned refresh credentials stay encrypted in memory until their database save
 succeeds; a later lookup retries that save before exchanging the refresh token
 again. Shard-status updates similarly retain a posted message ID until it is saved.
-Suggestion posts retain their message IDs and retry failed database saves every
-30 seconds without reposting. Deleted suggestions are discarded, and reviews
-completed during an outage are applied to the post when its link is saved.
 Restarting loses pending state; unloading a notification cog also loses its
-pending IDs. This can require a new login, leave a duplicate status message, or
-leave an unlinked suggestion post. Incomplete Night Market catalogs
-leave the daily shop usable, report Night Market as unavailable, and are not cached.
+pending IDs. This can require a new login or leave a duplicate status message.
+Incomplete Night Market catalogs leave the daily shop usable, report Night Market
+as unavailable, and are not cached.
 
-Command analytics, suggestion writes, and personal-data deletion coordinate
-within one bot process. Commands active during a successful deletion cannot
-recreate their analytics, suggestions, or follows. Multiple bot processes require
-shared deletion coordination.
+Command analytics and personal-data deletion coordinate within one bot process.
+Commands active during a successful deletion cannot recreate their analytics.
+Multiple bot processes require shared deletion coordination.
 
 The console renders plain, scrubbed log lines. Structured fields render inline
 as `key=value`, so a line names its background job, shard and guild counts,
@@ -100,6 +96,40 @@ retrying the same emoji. Other emoji names can still be created during that cool
 4. If a release introduced the problem, use the preceding known-good image with
    a compatible schema. If schema compatibility is uncertain, recover into a
    separate database first. Keep the original database and backup intact.
+
+## Upgrade notes
+
+The Compose service applies migrations before starting the bot, so a migration
+that drops tables runs as soon as the new image starts. Back up the database
+before upgrading an existing deployment.
+
+Migration `0009_remove_suggestions` drops the `suggestion` and
+`suggestionfollower` tables. If you want to keep suggestion history, export
+those tables or take a full database backup before starting the new version.
+A full backup must also include the matching `TOKEN_ENCRYPTION_KEY`; see
+[Backup and restore](#backup-and-restore).
+
+PostgreSQL, using the `botfragg-backup` libpq service profile described in
+[Backup and restore](#backup-and-restore):
+
+```sh
+pg_dump --dbname="service=botfragg-backup" --format=custom --file=botfragg-before-0009.dump
+# Or export only the affected tables as SQL.
+pg_dump --dbname="service=botfragg-backup" --table=suggestion \
+  --table=suggestionfollower --format=plain --file=suggestions-before-0009.sql
+```
+
+SQLite, using the database file from your `DATABASE_URL`:
+
+```sh
+sqlite3 /path/to/botfragg.db ".backup '/path/to/botfragg-before-0009.db'"
+# Or export only the affected tables.
+sqlite3 /path/to/botfragg.db ".mode insert" \
+  ".output '/path/to/suggestions-before-0009.sql'" \
+  "SELECT * FROM suggestion;" "SELECT * FROM suggestionfollower;"
+```
+
+Restoring a full backup is covered in [Backup and restore](#backup-and-restore).
 
 ## Backup and restore
 
