@@ -158,6 +158,7 @@ test-alerts-dm-failed = The test alert could not be delivered. Ensure your direc
 test-alerts-sent = Test alert sent.
 
 alert-notification = **{ $skin }** is in **{ $username }**'s daily shop and will be available until { $timestamp }.
+alert-notification-night-market = **{ $skin }** is in **{ $username }**'s Night Market and will be available until { $timestamp }.
 
 login-modal-title = Complete Riot login
 login-modal-label = Login URL
@@ -251,6 +252,7 @@ settings-updated = **{ $setting }** has been set to **{ $value }**.
 settings-unknown-setting = Unknown setting.
 setting-daily-shop = Send my shop by DM every day
 setting-hide-ign = Hide my in-game name
+setting-night-market-alerts = Alert me when a skin is in the Night Market
 setting-share-shop = Allow others to use /shop with my account
 
 shop-user-not-sharing = This user is not registered or has not shared their shop.

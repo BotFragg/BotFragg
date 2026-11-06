@@ -63,7 +63,14 @@ again. Shard-status updates similarly retain a posted message ID until it is sav
 Restarting loses pending state; unloading a notification cog also loses its
 pending IDs. This can require a new login or leave a duplicate status message.
 Incomplete Night Market catalogs leave the daily shop usable, report Night Market
-as unavailable, and are not cached.
+as unavailable, and are not cached. Skin alerts match both the daily shop and
+the Night Market; when the same skin is in both, the cheaper offer is reported.
+`AlertNotification` records the offer expiry each successful DM covered, so an
+alert is not repeated while that offer is still live. The marker is keyed by
+account and skin, survives alert removal, and is only written after delivery
+succeeds. Users can opt out of Night Market matching with
+`/settings set night_market_alerts_enabled`; matches are skipped when Riot omits
+the Night Market duration.
 
 Command analytics and personal-data deletion coordinate within one bot process.
 Commands active during a successful deletion cannot recreate their analytics.
@@ -229,7 +236,10 @@ PostgreSQL 17 on local Docker, Python 3.14 on Windows, 2026-10-07:
 
 The alert run peaked at 3.21 MiB of traced Python allocations. Analytics plans
 used sequential scans; server execution took about 4.1–4.5 ms with warm buffers.
-Repeat at expected deployment scale before adding indexes or changing batching.
+These alert numbers predate Night Market matching, which adds one notification
+lookup per alerted account (about 2,000 queries at this scale); re-measure before
+treating them as current. Repeat at expected deployment scale before adding
+indexes or changing batching.
 Eligible accounts are currently materialized and ownership is rechecked per
 account. Page users if measured memory becomes a problem; add scope indexes if
 analytics latency becomes a problem. Preserve those ownership rechecks when

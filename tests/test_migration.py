@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib
+from datetime import UTC, datetime
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 from uuid import UUID
@@ -18,6 +19,7 @@ from src.database import TORTOISE_CONFIG
 from src.models import (
     Account,
     Alert,
+    AlertNotification,
     CommandInvocation,
     ShardStatusMessage,
     User,
@@ -56,6 +58,9 @@ async def test_migrations_apply_write_delete_and_rollback(migration_url):
         await Alert.create(account=account, skin_uuid=skin)
         with pytest.raises(IntegrityError):
             await Alert.create(account=account, skin_uuid=skin)
+        await AlertNotification.create(
+            account=account, skin_uuid=skin, expires=datetime(2026, 1, 1, tzinfo=UTC)
+        )
         await CommandInvocation.create(user_id=user.id, command="synthetic")
         large = await CommandInvocation.create(
             id=2**31, user_id=user.id, command="synthetic-large"
@@ -68,6 +73,7 @@ async def test_migrations_apply_write_delete_and_rollback(migration_url):
             User,
             Account,
             Alert,
+            AlertNotification,
             CommandInvocation,
         ):
             assert not await model.exists()
@@ -117,6 +123,40 @@ async def test_shop_sharing_migration_backfills_existing_users(migration_url):
             'SELECT others_can_view_shop FROM "user" WHERE id = 101'
         )
         assert bool(rows[0]["others_can_view_shop"]) is False
+    finally:
+        await Tortoise.close_connections()
+
+
+async def test_night_market_alerts_are_enabled_for_existing_users(migration_url):
+    """Upgrading turns Night Market alerts on without a NULL or missing column."""
+    apps = TORTOISE_CONFIG["apps"]
+    await Tortoise.init(
+        config={
+            "connections": {"default": migration_url},
+            "apps": apps,
+            "use_tz": True,
+            "timezone": "UTC",
+        }
+    )
+    try:
+        executor = MigrationExecutor(connections.get("default"), apps)
+        await executor.migrate(
+            [MigrationTarget("models", "0010_index_analytics_created_at")]
+        )
+        client = connections.get("default")
+        # Write through SQL: the live model has columns this schema predates.
+        await client.execute_script(
+            'INSERT INTO "user" '
+            "(id, daily_shop_enabled, hide_ign, others_can_view_shop, "
+            "created_at, updated_at) VALUES "
+            "(101, FALSE, FALSE, TRUE, '2026-01-01 00:00:00+00', "
+            "'2026-01-01 00:00:00+00')"
+        )
+        await executor.migrate()
+        rows = await client.execute_query_dict(
+            'SELECT night_market_alerts_enabled FROM "user" WHERE id = 101'
+        )
+        assert bool(rows[0]["night_market_alerts_enabled"]) is True
     finally:
         await Tortoise.close_connections()
 
@@ -292,6 +332,20 @@ def test_native_initial_migration_matches_current_models() -> None:
     assert [
         type(operation).__name__ for operation in retention_module.Migration.operations
     ] == ["RunPython"]
+
+    notification_module = importlib.import_module(
+        "src.migrations.0011_add_alert_notifications"
+    )
+    assert notification_module.Migration.dependencies == [
+        ("models", "0010_index_analytics_created_at")
+    ]
+    assert [
+        (type(operation).__name__, operation.name)
+        for operation in notification_module.Migration.operations
+    ] == [
+        ("CreateModel", "AlertNotification"),
+        ("AddField", "night_market_alerts_enabled"),
+    ]
 
 
 async def test_connect_database_uses_passed_settings(

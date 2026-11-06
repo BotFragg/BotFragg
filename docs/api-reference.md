@@ -390,7 +390,7 @@ Background loops for daily alerts, upstream refresh, and Discord log delivery.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L31)
+[Source](../src/cogs/tasks.py#L32)
 
 Buffer privacy-filtered plain log lines for periodic Discord delivery.
 
@@ -398,7 +398,7 @@ Buffer privacy-filtered plain log lines for periodic Discord delivery.
 
 **Scope:** `src/cogs/tasks.py` · `DiscordLogHandler`
 
-[Source](../src/cogs/tasks.py#L34)
+[Source](../src/cogs/tasks.py#L35)
 
 Create a bounded log buffer using BotFragg's privacy-aware formatter.
 
@@ -406,7 +406,7 @@ Create a bounded log buffer using BotFragg's privacy-aware formatter.
 
 **Scope:** `src/cogs/tasks.py` · `DiscordLogHandler`
 
-[Source](../src/cogs/tasks.py#L40)
+[Source](../src/cogs/tasks.py#L41)
 
 Format a log record into the buffer or delegate failures to logging.
 
@@ -414,7 +414,7 @@ Format a log record into the buffer or delegate failures to logging.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L48)
+[Source](../src/cogs/tasks.py#L49)
 
 Own periodic application jobs and stop them cleanly when unloaded.
 
@@ -422,7 +422,7 @@ Own periodic application jobs and stop them cleanly when unloaded.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L51)
+[Source](../src/cogs/tasks.py#L52)
 
 Set job intervals from settings and prepare the optional log handler.
 
@@ -430,7 +430,7 @@ Set job intervals from settings and prepare the optional log handler.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L86)
+[Source](../src/cogs/tasks.py#L87)
 
 Start background loops and attach the log handler when configured.
 
@@ -438,7 +438,7 @@ Start background loops and attach the log handler when configured.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L97)
+[Source](../src/cogs/tasks.py#L98)
 
 Cancel and await all active loops, then detach the root log handler.
 
@@ -446,7 +446,7 @@ Cancel and await all active loops, then detach the root log handler.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L120)
+[Source](../src/cogs/tasks.py#L121)
 
 Run the daily shop and skin-alert job.
 
@@ -454,7 +454,7 @@ Run the daily shop and skin-alert job.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L132)
+[Source](../src/cogs/tasks.py#L133)
 
 Process eligible users' shops and return counts for the completed run.
 
@@ -462,7 +462,7 @@ Process eligible users' shops and return counts for the completed run.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L153)
+[Source](../src/cogs/tasks.py#L154)
 
 Delete command analytics older than the configured retention window.
 
@@ -470,7 +470,7 @@ Delete command analytics older than the configured retention window.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L161)
+[Source](../src/cogs/tasks.py#L162)
 
 Deliver matching alerts and the optional daily shop; count failed DMs.
 
@@ -478,7 +478,7 @@ Deliver matching alerts and the optional daily shop; count failed DMs.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L202)
+[Source](../src/cogs/tasks.py#L208)
 
 DM an owner-scoped skin alert and report whether delivery succeeded.
 
@@ -486,7 +486,7 @@ DM an owner-scoped skin alert and report whether delivery succeeded.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L242)
+[Source](../src/cogs/tasks.py#L266)
 
 DM the selected account's daily shop and report delivery success.
 
@@ -494,7 +494,7 @@ DM the selected account's daily shop and report delivery success.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L303)
+[Source](../src/cogs/tasks.py#L327)
 
 Notify a user that credentials expired and return the delivery failure count.
 
@@ -502,7 +502,7 @@ Notify a user that credentials expired and return the delivery failure count.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L321)
+[Source](../src/cogs/tasks.py#L345)
 
 Refresh the Riot client version, the catalog, and the game metadata.
 
@@ -510,7 +510,7 @@ Refresh the Riot client version, the catalog, and the game metadata.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L341)
+[Source](../src/cogs/tasks.py#L365)
 
 Measure log delivery, preserving the queue after Discord failures.
 
@@ -518,7 +518,7 @@ Measure log delivery, preserving the queue after Discord failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L346)
+[Source](../src/cogs/tasks.py#L370)
 
 Send buffered log lines to Discord and requeue them after delivery failures.
 
@@ -526,7 +526,7 @@ Send buffered log lines to Discord and requeue them after delivery failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L394)
+[Source](../src/cogs/tasks.py#L418)
 
 Publish Discord, database, and scheduled-job health for Docker and operators.
 
@@ -534,7 +534,7 @@ Publish Discord, database, and scheduled-job health for Docker and operators.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L449)
+[Source](../src/cogs/tasks.py#L473)
 
 Wait for Discord readiness before starting any background job.
 
@@ -542,7 +542,7 @@ Wait for Discord readiness before starting any background job.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L454)
+[Source](../src/cogs/tasks.py#L478)
 
 Register the background-task cog with the bot.
 
@@ -1378,7 +1378,7 @@ Private commands for viewing and changing user display and shop preferences.
 
 **Scope:** `src/cogs/valorant/settings.py` · `module`
 
-[Source](../src/cogs/valorant/settings.py#L28)
+[Source](../src/cogs/valorant/settings.py#L32)
 
 Present user preferences and handle their owner-scoped select menu.
 
@@ -1386,7 +1386,7 @@ Present user preferences and handle their owner-scoped select menu.
 
 **Scope:** `src/cogs/valorant/settings.py` · `SettingsCog`
 
-[Source](../src/cogs/valorant/settings.py#L39)
+[Source](../src/cogs/valorant/settings.py#L43)
 
 Bind the bot and register the persistent preference-selection action.
 
@@ -1394,7 +1394,7 @@ Bind the bot and register the persistent preference-selection action.
 
 **Scope:** `src/cogs/valorant/settings.py` · `SettingsCog`
 
-[Source](../src/cogs/valorant/settings.py#L50)
+[Source](../src/cogs/valorant/settings.py#L54)
 
 Show the caller's saved preferences in an ephemeral response.
 
@@ -1402,7 +1402,7 @@ Show the caller's saved preferences in an ephemeral response.
 
 **Scope:** `src/cogs/valorant/settings.py` · `SettingsCog`
 
-[Source](../src/cogs/valorant/settings.py#L98)
+[Source](../src/cogs/valorant/settings.py#L102)
 
 Present Yes/No options for the caller's selected preference.
 
@@ -1410,7 +1410,7 @@ Present Yes/No options for the caller's selected preference.
 
 **Scope:** `src/cogs/valorant/settings.py` · `SettingsCog`
 
-[Source](../src/cogs/valorant/settings.py#L133)
+[Source](../src/cogs/valorant/settings.py#L137)
 
 Validate and persist a setting selection, then update its confirmation.
 
@@ -1418,7 +1418,7 @@ Validate and persist a setting selection, then update its confirmation.
 
 **Scope:** `src/cogs/valorant/settings.py` · `module`
 
-[Source](../src/cogs/valorant/settings.py#L161)
+[Source](../src/cogs/valorant/settings.py#L165)
 
 Register the user preference commands and selection handler.
 
@@ -2070,6 +2070,18 @@ Remove the retention index, tolerating a schema that never had it.
 
 Speed up deletion of analytics older than the retention window.
 
+## `src/migrations/0011_add_alert_notifications.py`
+
+Track alert notifications and the Night Market alert preference.
+
+### `class Migration(migrations.Migration)`
+
+**Scope:** `src/migrations/0011_add_alert_notifications.py` · `module`
+
+[Source](../src/migrations/0011_add_alert_notifications.py#L8)
+
+Add per-account notification markers and the Night Market toggle.
+
 ## `src/migrations/__init__.py`
 
 Tortoise migration package for the BotFragg database schema.
@@ -2094,7 +2106,7 @@ Store Discord preferences and the selected linked VALORANT account.
 
 **Scope:** `src/models/entities.py` · `module`
 
-[Source](../src/models/entities.py#L26)
+[Source](../src/models/entities.py#L27)
 
 Store a user's Riot identity and encrypted authentication payload.
 
@@ -2102,7 +2114,7 @@ Store a user's Riot identity and encrypted authentication payload.
 
 **Scope:** `src/models/entities.py` · `Account`
 
-[Source](../src/models/entities.py#L29)
+[Source](../src/models/entities.py#L30)
 
 Scope access to this account's original owner and creation time.
 
@@ -2110,7 +2122,7 @@ Scope access to this account's original owner and creation time.
 
 **Scope:** `src/models/entities.py` · `Account`
 
-[Source](../src/models/entities.py#L49)
+[Source](../src/models/entities.py#L50)
 
 Index the owner column used by every account lookup.
 
@@ -2118,7 +2130,7 @@ Index the owner column used by every account lookup.
 
 **Scope:** `src/models/entities.py` · `module`
 
-[Source](../src/models/entities.py#L55)
+[Source](../src/models/entities.py#L56)
 
 Store a skin alert belonging to one linked Riot account.
 
@@ -2126,7 +2138,7 @@ Store a skin alert belonging to one linked Riot account.
 
 **Scope:** `src/models/entities.py` · `Alert`
 
-[Source](../src/models/entities.py#L58)
+[Source](../src/models/entities.py#L59)
 
 Scope access to this alert and its account's original identity.
 
@@ -2134,15 +2146,34 @@ Scope access to this alert and its account's original identity.
 
 **Scope:** `src/models/entities.py` · `Alert`
 
-[Source](../src/models/entities.py#L75)
+[Source](../src/models/entities.py#L76)
 
 Prevent duplicate alerts for the same account and skin.
+
+### `class AlertNotification(Model)`
+
+**Scope:** `src/models/entities.py` · `module`
+
+[Source](../src/models/entities.py#L82)
+
+Record the live offer window an account was already alerted about.
+
+Keyed by account and skin rather than by alert so removing and re-adding an
+alert within the same offer window does not repeat the notification.
+
+### `class Meta`
+
+**Scope:** `src/models/entities.py` · `AlertNotification`
+
+[Source](../src/models/entities.py#L96)
+
+Keep one live offer marker per account and skin.
 
 ### `class CommandInvocation(Model)`
 
 **Scope:** `src/models/entities.py` · `module`
 
-[Source](../src/models/entities.py#L81)
+[Source](../src/models/entities.py#L102)
 
 Store a completed command and its optional guild and channel context.
 
@@ -2150,7 +2181,7 @@ Store a completed command and its optional guild and channel context.
 
 **Scope:** `src/models/entities.py` · `CommandInvocation`
 
-[Source](../src/models/entities.py#L92)
+[Source](../src/models/entities.py#L113)
 
 Index creation time so retention can prune old analytics efficiently.
 
@@ -2158,7 +2189,7 @@ Index creation time so retention can prune old analytics efficiently.
 
 **Scope:** `src/models/entities.py` · `module`
 
-[Source](../src/models/entities.py#L98)
+[Source](../src/models/entities.py#L119)
 
 Map each configured Discord channel to its persistent status message.
 
@@ -2210,7 +2241,7 @@ Persistence operations for user preferences, Riot accounts, and personal-data de
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L28)
+[Source](../src/services/accounts.py#L29)
 
 Return the stored BotFragg user for a Discord ID, if one exists.
 
@@ -2218,7 +2249,7 @@ Return the stored BotFragg user for a Discord ID, if one exists.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L33)
+[Source](../src/services/accounts.py#L34)
 
 Count users with a stored BotFragg profile.
 
@@ -2226,7 +2257,7 @@ Count users with a stored BotFragg profile.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L38)
+[Source](../src/services/accounts.py#L39)
 
 Return Discord IDs whose saved preference enables daily shop DMs.
 
@@ -2234,7 +2265,7 @@ Return Discord IDs whose saved preference enables daily shop DMs.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L44)
+[Source](../src/services/accounts.py#L45)
 
 Return a Riot account only when it belongs to the requested Discord user.
 
@@ -2242,7 +2273,7 @@ Return a Riot account only when it belongs to the requested Discord user.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L49)
+[Source](../src/services/accounts.py#L50)
 
 Update one allowlisted Boolean preference and refresh the user's timestamp.
 
@@ -2250,7 +2281,7 @@ Update one allowlisted Boolean preference and refresh the user's timestamp.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L59)
+[Source](../src/services/accounts.py#L60)
 
 Return the active account, choosing the oldest account when none is selected.
 
@@ -2262,7 +2293,7 @@ conditional so a concurrent selection is not overwritten.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L129)
+[Source](../src/services/accounts.py#L130)
 
 Return a user's Riot accounts in creation order.
 
@@ -2270,7 +2301,7 @@ Return a user's Riot accounts in creation order.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L134)
+[Source](../src/services/accounts.py#L135)
 
 Resolve an account by PUUID, case-insensitive name, or one-based position.
 
@@ -2278,7 +2309,7 @@ Resolve an account by PUUID, case-insensitive name, or one-based position.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L161)
+[Source](../src/services/accounts.py#L162)
 
 Set a user's active account after verifying that the account is theirs.
 
@@ -2286,7 +2317,7 @@ Set a user's active account after verifying that the account is theirs.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L187)
+[Source](../src/services/accounts.py#L188)
 
 Delete the user's stored BotFragg records and all linked Riot accounts.
 
@@ -2298,15 +2329,31 @@ Persistence and orchestration for alerts.
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L32)
+[Source](../src/services/alerts.py#L34)
 
 Split IDs so a single query cannot exceed the bind-argument limit.
+
+### `def _final_price(offer: Offer) -> int`
+
+**Scope:** `src/services/alerts.py` · `module`
+
+[Source](../src/services/alerts.py#L40)
+
+Return the price a purchase actually charges.
+
+### `def _alert_offers(storefront: ShopData, *, include_night_market: bool) -> dict[str, Offer]`
+
+**Scope:** `src/services/alerts.py` · `module`
+
+[Source](../src/services/alerts.py#L45)
+
+Return the cheapest offer per skin across the daily shop and Night Market.
 
 ### `class AlertPage`
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L39)
+[Source](../src/services/alerts.py#L64)
 
 Hold one bounded page of alerts and its normalized pagination metadata.
 
@@ -2314,7 +2361,7 @@ Hold one bounded page of alerts and its normalized pagination metadata.
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L50)
+[Source](../src/services/alerts.py#L75)
 
 Create an account-scoped skin alert or return the existing duplicate.
 
@@ -2322,7 +2369,7 @@ Create an account-scoped skin alert or return the existing duplicate.
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L70)
+[Source](../src/services/alerts.py#L95)
 
 Return the page that starts at, after, or before one alert ID.
 
@@ -2330,7 +2377,7 @@ Return the page that starts at, after, or before one alert ID.
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L94)
+[Source](../src/services/alerts.py#L119)
 
 Fetch an owner-scoped alert page, wrapping page indexes and bounding size.
 
@@ -2344,7 +2391,7 @@ same window after one of its rows is removed.
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L150)
+[Source](../src/services/alerts.py#L175)
 
 Delete and return an alert only when it belongs to the requesting user.
 
@@ -2352,7 +2399,7 @@ Delete and return an alert only when it belongs to the requesting user.
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L158)
+[Source](../src/services/alerts.py#L183)
 
 Return a user's first alert with its linked account loaded.
 
@@ -2360,7 +2407,7 @@ Return a user's first alert with its linked account loaded.
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L165)
+[Source](../src/services/alerts.py#L190)
 
 Return distinct Discord IDs that own at least one alert.
 
@@ -2368,7 +2415,7 @@ Return distinct Discord IDs that own at least one alert.
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L171)
+[Source](../src/services/alerts.py#L196)
 
 Return the accounts of one bounded user batch in creation order.
 
@@ -2376,7 +2423,7 @@ Return the accounts of one bounded user batch in creation order.
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L180)
+[Source](../src/services/alerts.py#L205)
 
 Return only the supplied account IDs that currently have alerts.
 
@@ -2384,15 +2431,23 @@ Return only the supplied account IDs that currently have alerts.
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L192)
+[Source](../src/services/alerts.py#L217)
 
-Fetch alerts matching one account and a bounded set of shop skin IDs.
+Fetch alerts for live offers this account has not already been told about.
+
+### `async def mark_alert_notified(account: Account, alert: Alert, expires: int) -> None`
+
+**Scope:** `src/services/alerts.py` · `module`
+
+[Source](../src/services/alerts.py#L241)
+
+Record the live offer window an alert notification covered.
 
 ### `async def retry_lookup(operation: Callable[[], Awaitable[T]]) -> T`
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L214)
+[Source](../src/services/alerts.py#L268)
 
 Retry transient lookups up to three times without replaying deliveries.
 
@@ -2403,7 +2458,7 @@ and report the affected accounts as failures.
 
 **Scope:** `src/services/alerts.py` · `module`
 
-[Source](../src/services/alerts.py#L235)
+[Source](../src/services/alerts.py#L289)
 
 Check eligible accounts with bounded concurrency and report run totals.
 

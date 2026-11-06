@@ -105,6 +105,7 @@ docstring. Regenerate it after application documentation changes with
 | [src/migrations/0008_add_profile_sharing.py](../src/migrations/0008_add_profile_sharing.py) | Adds the opt-in profile-sharing preference. |
 | [src/migrations/0009_remove_suggestions.py](../src/migrations/0009_remove_suggestions.py) | Drops the suggestion and suggestion-follower tables. |
 | [src/migrations/0010_index_analytics_created_at.py](../src/migrations/0010_index_analytics_created_at.py) | Indexes analytics creation time for retention. |
+| [src/migrations/0011_add_alert_notifications.py](../src/migrations/0011_add_alert_notifications.py) | Adds alert notification markers and the Night Market alert preference. |
 | [src/models/__init__.py](../src/models/__init__.py) | Re-exports model classes for application code. |
 | [src/models/entities.py](../src/models/entities.py) | Defines ORM records and uniqueness constraints. |
 | [src/services/__init__.py](../src/services/__init__.py) | Defines the service package. |

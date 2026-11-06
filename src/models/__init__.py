@@ -3,6 +3,7 @@
 from .entities import (
     Account,
     Alert,
+    AlertNotification,
     CommandInvocation,
     ShardStatusMessage,
     User,
@@ -11,6 +12,7 @@ from .entities import (
 __all__ = [
     "Account",
     "Alert",
+    "AlertNotification",
     "CommandInvocation",
     "ShardStatusMessage",
     "User",

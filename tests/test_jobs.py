@@ -21,7 +21,7 @@ from tortoise.exceptions import DBConnectionError
 from src.cogs import extra as extra_module
 from src.cogs.extra import ExtraCog
 from src.cogs.tasks import TasksCog
-from src.models import Account, Alert, CommandInvocation, User
+from src.models import Account, Alert, AlertNotification, CommandInvocation, User
 from src.services import alerts as alert_service
 from src.services.accounts import delete_user_data
 from src.services.auth import AuthenticationRequired
@@ -126,7 +126,11 @@ async def test_daily_delivery_transport_failure_does_not_stop_or_replay_runs(
     )
     await loop._loop(cog)
     assert slots == [today, tomorrow]
-    assert sorted(delivered) == [(0, 102), (0, 103), (1, 101), (1, 102), (1, 103)]
+    expected = [(0, 102), (0, 103), (1, 101), (1, 102), (1, 103)]
+    if mode == "skin":
+        # A delivered alert records its live offer, so the next run skips it.
+        expected = [(0, 102), (0, 103), (1, 101)]
+    assert sorted(delivered) == expected
     assert not loop.failed()
     assert [summary["delivery_failures"] for summary in summaries] == [1, 0]
     assert all(summary["shop_failures"] == 0 for summary in summaries)
@@ -928,6 +932,7 @@ async def test_daily_delivery_resolves_the_recipient_once():
         get_user=lambda _user_id: None,
         fetch_user=fetch_user,
         emoji_service=NS(
+            currency=AsyncMock(return_value="VP"),
             skin_name=lambda name, _tier_uuid: name,
             skin_emoji=lambda _tier_uuid: "",
         ),
@@ -948,6 +953,58 @@ async def test_daily_delivery_resolves_the_recipient_once():
     assert result == 0
     assert fetched == [owner.id]
     assert target.send.await_count == 3
+
+
+@pytest.mark.usefixtures("database")
+async def test_night_market_alert_is_delivered_once_per_live_offer() -> None:
+    """Two daily runs over the same Night Market send one priced DM."""
+    owner = await User.create(id=101)
+    account = await Account.create(
+        puuid="synthetic", user=owner, username="Synthetic#TEST"
+    )
+    skin = Skin(str(UUID(int=1)), "offer", "Skin", None, None)
+    alert = await Alert.create(account=account, skin_uuid=skin.uuid)
+    night = Offer(skin, 1775, 4_000_000_000, 1000, 44)
+    target = NS(send=AsyncMock())
+    cog = TasksCog(
+        _localized_bot(
+            config=NS(
+                user_agent_interval_minutes=15,
+                alert_time_utc=utc_time(0, 0),
+                log_flush_interval_seconds=10,
+                alert_concurrency=1,
+                delay_between_alerts_seconds=0,
+                link_item_image=False,
+            ),
+            wait_until_ready=AsyncMock(),
+            get_user=lambda _: target,
+            emoji_service=NS(
+                currency=AsyncMock(return_value="VP"),
+                skin_name=lambda name, _tier_uuid: name,
+                skin_emoji=lambda _tier_uuid: "",
+            ),
+            shop=NS(
+                storefront=AsyncMock(
+                    return_value=ShopData([], [], [night], 4_000_000_000, night.expires)
+                )
+            ),
+        )
+    )
+
+    first = await cog.run_alerts()
+    second = await cog.run_alerts()
+
+    assert first["alerts"] == 1 and second["alerts"] == 0
+    target.send.assert_awaited_once()
+    description = target.send.await_args.kwargs["embed"].description
+    assert "Night Market" in description
+    assert "1,000" in description and "1,775" in description
+    marker = await AlertNotification.get(
+        account_id=account.puuid, skin_uuid=alert.skin_uuid
+    )
+    assert marker.expires.replace(tzinfo=UTC) == datetime.fromtimestamp(
+        night.expires, UTC
+    )
 
 
 @pytest.mark.usefixtures("database")

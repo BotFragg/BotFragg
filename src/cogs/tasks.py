@@ -6,6 +6,7 @@ import asyncio
 import logging
 from collections import deque
 from datetime import UTC, datetime, time, timedelta
+from functools import partial
 from time import time as unix_time
 
 import discord
@@ -16,12 +17,12 @@ from ..database import TRANSIENT_DATABASE_ERRORS, ping_database
 from ..health import HEALTH_PATH, JobHealth, write_health
 from ..models import Account, Alert, User
 from ..monitoring import PlainFormatter
-from ..services.alerts import retry_lookup, run_daily_alerts
+from ..services.alerts import mark_alert_notified, retry_lookup, run_daily_alerts
 from ..services.analytics import prune_command_analytics
 from ..services.http import DISCORD_HTTP_ERRORS, HTTPFailure
 from ..services.shop import Offer, ShopData
 from ..views import OwnedActionButton, timestamp
-from ..views.shop import add_skin_selector, offer_cards
+from ..views.shop import _price_line, add_skin_selector, offer_cards
 from ..views.ui import embed, view
 from .extra import ExtraCog
 
@@ -194,7 +195,12 @@ class TasksCog(commands.Cog):
             current = surviving.get(alert.id)
             if current is None:
                 continue
-            failures += not await self._send_alert(target, current, offer)
+            if await self._send_alert(target, current, offer):
+                await retry_lookup(
+                    partial(mark_alert_notified, account, current, offer.expires)
+                )
+            else:
+                failures += 1
         if send_daily_shop and user:
             failures += not await self._send_daily_shop(target, user, account, shop)
         return failures
@@ -213,13 +219,31 @@ class TasksCog(commands.Cog):
                 or self.bot.translator.text(locale, "alert-unknown-skin"),
                 offer.skin.tier_uuid,
             )
+            # Only Night Market offers carry a discount in the shop service.
+            message = (
+                "alert-notification-night-market"
+                if offer.discount_price is not None
+                else "alert-notification"
+            )
+            currency = await self.bot.emoji_service.currency("vp") or "VP"
             card = embed(
                 self.bot.translator.text(
                     locale,
-                    "alert-notification",
+                    message,
                     skin=skin_name,
                     username=alert.account.username,
                     timestamp=timestamp(offer.expires),
+                )
+                + "\n"
+                + _price_line(
+                    currency,
+                    offer.discount_price
+                    if offer.discount_price is not None
+                    else offer.price,
+                    offer.price,
+                    offer.discount_percent,
+                    translator=self.bot.translator,
+                    locale=locale,
                 )
             )
             if offer.skin.icon:

@@ -14,6 +14,7 @@ class User(Model):
     id = fields.BigIntField(primary_key=True)
     current_account_id = fields.CharField(max_length=64, null=True)
     daily_shop_enabled = fields.BooleanField(default=False)
+    night_market_alerts_enabled = fields.BooleanField(default=True)
     hide_ign = fields.BooleanField(default=False)
     others_can_view_shop = fields.BooleanField(default=False)
     others_can_view_profile = fields.BooleanField(default=False)
@@ -74,6 +75,26 @@ class Alert(Model):
 
     class Meta:
         """Prevent duplicate alerts for the same account and skin."""
+
+        unique_together = (("account", "skin_uuid"),)
+
+
+class AlertNotification(Model):
+    """Record the live offer window an account was already alerted about.
+
+    Keyed by account and skin rather than by alert so removing and re-adding an
+    alert within the same offer window does not repeat the notification.
+    """
+
+    id = fields.IntField(primary_key=True)
+    account: fields.ForeignKeyRelation[Account] = fields.ForeignKeyField(
+        "models.Account", related_name="alert_notifications", on_delete=fields.CASCADE
+    )
+    skin_uuid = fields.UUIDField()
+    expires = fields.DatetimeField()
+
+    class Meta:
+        """Keep one live offer marker per account and skin."""
 
         unique_together = (("account", "skin_uuid"),)
 

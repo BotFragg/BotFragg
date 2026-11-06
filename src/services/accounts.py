@@ -19,6 +19,7 @@ _USER_PREFERENCE_FIELDS = frozenset(
     {
         "daily_shop_enabled",
         "hide_ign",
+        "night_market_alerts_enabled",
         "others_can_view_profile",
         "others_can_view_shop",
     }

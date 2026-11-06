@@ -6,6 +6,7 @@ import asyncio
 from collections import defaultdict
 from collections.abc import Awaitable, Callable, Iterator
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from functools import partial
 from uuid import UUID
 
@@ -15,6 +16,7 @@ from ..database import TRANSIENT_DATABASE_ERRORS
 from ..models import (
     Account,
     Alert,
+    AlertNotification,
     User,
 )
 from .accounts import daily_shop_user_ids, selected_account
@@ -33,6 +35,29 @@ def _batched[T](values: list[T]) -> Iterator[list[T]]:
     """Split IDs so a single query cannot exceed the bind-argument limit."""
     for start in range(0, len(values), BULK_QUERY_SIZE):
         yield values[start : start + BULK_QUERY_SIZE]
+
+
+def _final_price(offer: Offer) -> int:
+    """Return the price a purchase actually charges."""
+    return offer.discount_price if offer.discount_price is not None else offer.price
+
+
+def _alert_offers(
+    storefront: ShopData, *, include_night_market: bool
+) -> dict[str, Offer]:
+    """Return the cheapest offer per skin across the daily shop and Night Market."""
+    offers: dict[str, Offer] = {}
+    if include_night_market and storefront.night_market_expires is not None:
+        for offer in storefront.night_market:
+            offers[offer.skin.uuid] = offer
+    for offer in storefront.offers:
+        current = offers.get(offer.skin.uuid)
+        # A missing catalog price parses as zero; never let it displace a discount.
+        if current is None or (
+            offer.price > 0 and _final_price(offer) < _final_price(current)
+        ):
+            offers[offer.skin.uuid] = offer
+    return offers
 
 
 @dataclass(slots=True)
@@ -192,15 +217,44 @@ async def account_ids_with_alerts(account_ids: list[str]) -> set[str]:
 async def matching_alerts_for_skins(
     account: Account, skin_uuids: list[str]
 ) -> list[Alert]:
-    """Fetch alerts matching one account and a bounded set of shop skin IDs."""
+    """Fetch alerts for live offers this account has not already been told about."""
     if not skin_uuids:
         return []
-    return await Alert.filter(
+    alerts = await Alert.filter(
         account_id=account.puuid,
         account__user_id=account.user_id,
         account__created_at=account.created_at,
         skin_uuid__in=skin_uuids,
     ).select_related("account")
+    if not alerts:
+        return []
+    notified = set(
+        await AlertNotification.filter(
+            account_id=account.puuid,
+            skin_uuid__in=skin_uuids,
+            expires__gt=datetime.now(UTC),
+        ).values_list("skin_uuid", flat=True)
+    )
+    return [alert for alert in alerts if alert.skin_uuid not in notified]
+
+
+async def mark_alert_notified(account: Account, alert: Alert, expires: int) -> None:
+    """Record the live offer window an alert notification covered."""
+    async with in_transaction() as connection:
+        current = (
+            await account.persisted_row()
+            .using_db(connection)
+            .select_for_update()
+            .get_or_none()
+        )
+        if current is None:
+            return
+        await AlertNotification.update_or_create(
+            account=current,
+            skin_uuid=alert.skin_uuid,
+            defaults={"expires": datetime.fromtimestamp(expires, UTC)},
+            using_db=connection,
+        )
 
 
 ShopOutcomeHandler = Callable[
@@ -324,15 +378,22 @@ async def run_daily_alerts(
                 and current_account.user.daily_shop_enabled
                 and current_account.user.current_account_id == account.puuid
             )
-            offers_by_uuid = {offer.skin.uuid: offer for offer in storefront.offers}
-            matches = (
-                await retry_lookup(
+            offers_by_uuid: dict[str, Offer] = {}
+            matches: list[tuple[Alert, Offer]] = []
+            if has_alerts:
+                offers_by_uuid = _alert_offers(
+                    storefront,
+                    include_night_market=(
+                        current_account.user.night_market_alerts_enabled
+                    ),
+                )
+                found = await retry_lookup(
                     partial(matching_alerts_for_skins, account, list(offers_by_uuid))
                 )
-                if has_alerts
-                else []
-            )
-            summary["alerts"] += len(matches)
+                matches = [
+                    (alert, offers_by_uuid[str(alert.skin_uuid)]) for alert in found
+                ]
+                summary["alerts"] += len(matches)
 
             if not dry_run and (matches or send_daily_shop):
                 # Await into a local: `+= await f()` races with other workers.
@@ -341,10 +402,7 @@ async def run_daily_alerts(
                     current_account.user,
                     current_account,
                     storefront,
-                    [
-                        (alert, offers_by_uuid[str(alert.skin_uuid)])
-                        for alert in matches
-                    ],
+                    matches,
                     send_daily_shop,
                 )
                 summary["delivery_failures"] += failed
