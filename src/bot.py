@@ -10,6 +10,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from .api import PublicAPI
 from .config import Settings
 from .database import close_database, connect_database
 from .localization import BotFraggTranslator
@@ -175,6 +176,7 @@ class BotFraggBot(commands.AutoShardedBot):
         self.valorant_status = StatusService(self.riot_http)
         self.profiles = ProfileService(self.riot_http, self.auth, self.catalog)
         self.matches = MatchesService(self.riot_http, self.auth)
+        self.api: PublicAPI | None = None
 
     def register_component(self, action: str, handler: ComponentHandler) -> None:
         """Register a persistent component action, rejecting duplicate action names."""
@@ -245,6 +247,16 @@ class BotFraggBot(commands.AutoShardedBot):
         await self.tree.set_translator(self.translator)
         if self.config.auto_sync_commands:
             await self.tree.sync()
+        if self.config.public_api_enabled:
+            api = PublicAPI(self, self.config)
+            try:
+                await api.start()
+            except Exception:
+                log.exception("Could not start the public API")
+            else:
+                self.api = api
+        else:
+            log.info("public API disabled")
 
     async def on_ready(self) -> None:
         """Set the online activity and log the connected shard and guild counts."""
@@ -264,6 +276,12 @@ class BotFraggBot(commands.AutoShardedBot):
     async def close(self) -> None:
         """Close Discord, Riot HTTP, and database resources in order."""
         async with AsyncExitStack() as stack:
-            stack.push_async_callback(close_database)
-            stack.push_async_callback(self.riot_http.close)
+            self._push_shutdown_callbacks(stack)
             await super().close()
+
+    def _push_shutdown_callbacks(self, stack: AsyncExitStack) -> None:
+        """Register the resources closed after Discord disconnects, in LIFO order."""
+        stack.push_async_callback(close_database)
+        stack.push_async_callback(self.riot_http.close)
+        if self.api is not None:
+            stack.push_async_callback(self.api.stop)

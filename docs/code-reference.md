@@ -19,6 +19,8 @@ docstring. Regenerate it after application documentation changes with
    offers; `src.models.entities` defines the persisted records.
 4. Background task cogs schedule daily alerts and periodic refreshes. Monitoring
    helpers remove sensitive fields before logs and events leave the process.
+5. When `PUBLIC_API_ENABLED` is true, `src/api.py` serves cached `/v1` payloads
+   built by `src/services/public_api.py`; otherwise it is never constructed.
 
 ## Repository and development files
 
@@ -36,6 +38,7 @@ docstring. Regenerate it after application documentation changes with
 | [docs/api-reference.md](api-reference.md) | Lists application modules, classes, and callables with their signatures, source links, and docstrings. |
 | [docs/code-reference.md](code-reference.md) | Maps tracked files and summarizes how runtime components work together. |
 | [docs/operations.md](operations.md) | Documents health evidence, outage response, backup/restore verification, and measured database workloads. |
+| [docs/public-api.md](public-api.md) | Documents the opt-in read-only HTTP API, its contracts, and its TLS/CORS exposure model. |
 | [Dockerfile](../Dockerfile) | Builds the Python 3.14 BotFragg image and runs it as an unprivileged user. |
 | [LICENSE](../LICENSE) | Contains the GNU GPLv3 license text. |
 | [PRIVACY.md](../PRIVACY.md) | Describes BotFragg's data processing, retention, and user controls. |
@@ -69,6 +72,7 @@ docstring. Regenerate it after application documentation changes with
 | File | Responsibility |
 | --- | --- |
 | [src/__init__.py](../src/__init__.py) | Defines the application package. |
+| [src/api.py](../src/api.py) | Serves the opt-in read-only public HTTP API, its CORS allowlist, and cached payload refresh. |
 | [src/bot.py](../src/bot.py) | Constructs the sharded Discord client, wires services, loads extensions, and handles command errors. |
 | [src/config.py](../src/config.py) | Loads environment-backed settings and validates secrets, URLs, IDs, times, and numeric limits. |
 | [src/database.py](../src/database.py) | Configures Tortoise ORM and provides database health and shard-status persistence helpers. |
@@ -121,6 +125,7 @@ docstring. Regenerate it after application documentation changes with
 | [src/services/gameplay.py](../src/services/gameplay.py) | Normalizes VALORANT battlepass, mission, and matchmaking-penalty data. |
 | [src/services/matches.py](../src/services/matches.py) | Fetches recent match identifiers, reduces finished matches, and caches them by match ID. |
 | [src/services/profile.py](../src/services/profile.py) | Fetches and caches a linked account's identity, rank, win rate, and level. |
+| [src/services/public_api.py](../src/services/public_api.py) | Builds the public API's stats, metadata, and command-manifest payloads from in-memory state. |
 | [src/services/http.py](../src/services/http.py) | Provides shared Riot HTTP requests, URL redaction, and rate-limit handling. |
 | [src/services/riot_values.py](../src/services/riot_values.py) | Shares numeric and identifier parsing for Riot and VALORANT-API values. |
 | [src/services/shop.py](../src/services/shop.py) | Retrieves and normalizes account-scoped skin, bundle, accessory, Night Market, and wallet data. |
@@ -168,6 +173,7 @@ docstring. Regenerate it after application documentation changes with
 | [tests/test_profile_service.py](../tests/test_profile_service.py) | Profile parsing, caching, and service errors. |
 | [tests/test_monitoring.py](../tests/test_monitoring.py) | Privacy filtering and bounded/retryable Discord log delivery. |
 | [tests/test_penalties.py](../tests/test_penalties.py) | Private matchmaking-penalties command output, privacy, pagination, and account ownership. |
+| [tests/test_public_api.py](../tests/test_public_api.py) | Public API payload builders, ETag/304 handling, CORS and `Vary`, first-refresh and cache-window behaviour, degraded refresh, enabled/disabled startup wiring, and setting validation. |
 | [tests/test_public_account_responses.py](../tests/test_public_account_responses.py) | Public account replies use the current privacy state after every preparation wait. |
 | [tests/test_shard_status_service.py](../tests/test_shard_status_service.py) | Reuse and replacement of saved shard-status messages. |
 | [tests/test_shop_commands.py](../tests/test_shop_commands.py) | Daily/accessory/featured/Night Market rendering, selectors, and private errors. |
