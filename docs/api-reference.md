@@ -10,6 +10,132 @@ Support the repository's ``python main.py`` startup command.
 
 BotFragg bot package.
 
+## `src/api.py`
+
+Read-only HTTP API served by the bot process for the public website.
+
+The listener is opt-in: with ``PUBLIC_API_ENABLED=false`` nothing is built and
+no socket is opened. Payloads are rendered from in-memory Discord state by
+:mod:`src.services.public_api` and refreshed by one background task, so request
+handling never touches the database.
+
+### `class _Payload`
+
+**Scope:** `src/api.py` · `module`
+
+[Source](../src/api.py#L49)
+
+Hold one serialized response document and its conditional headers.
+
+### `def _cors_middleware(origins: frozenset[str]) -> Middleware`
+
+**Scope:** `src/api.py` · `module`
+
+[Source](../src/api.py#L58)
+
+Build a middleware that answers preflights and echoes allowed origins.
+
+### `def _fingerprint(document: dict[str, Any]) -> str`
+
+**Scope:** `src/api.py` · `module`
+
+[Source](../src/api.py#L82)
+
+Hash a payload while ignoring its volatile ``generatedAt`` timestamp.
+
+### `class PublicAPI`
+
+**Scope:** `src/api.py` · `module`
+
+[Source](../src/api.py#L89)
+
+Serve the three read-only endpoints and keep their payloads fresh.
+
+### `def __init__(self, bot: BotFraggBot, config: Settings) -> None`
+
+**Scope:** `src/api.py` · `PublicAPI`
+
+[Source](../src/api.py#L92)
+
+Bind the bot, its settings, and an empty payload cache.
+
+### `async def start(self) -> None`
+
+**Scope:** `src/api.py` · `PublicAPI`
+
+[Source](../src/api.py#L110)
+
+Bind the listener and start the refresh task; safe to call twice.
+
+### `def build_app(self) -> web.Application`
+
+**Scope:** `src/api.py` · `PublicAPI`
+
+[Source](../src/api.py#L133)
+
+Build the aiohttp application with routes and the CORS middleware.
+
+### `async def stop(self) -> None`
+
+**Scope:** `src/api.py` · `PublicAPI`
+
+[Source](../src/api.py#L140)
+
+Cancel the refresh task and release the listener; idempotent.
+
+### `async def refresh_once(self, *, force: bool = False) -> None`
+
+**Scope:** `src/api.py` · `PublicAPI`
+
+[Source](../src/api.py#L150)
+
+Rebuild every payload whose cache window has elapsed.
+
+A failed builder keeps the previous document and is retried on the next
+pass, so an upstream outage never publishes zeros. ``generatedAt`` marks
+when the document last changed, so a refresh producing identical content
+keeps the previous body and ETag and clients keep getting 304.
+
+### `async def _refresh_loop(self) -> None`
+
+**Scope:** `src/api.py` · `PublicAPI`
+
+[Source](../src/api.py#L186)
+
+Refresh payloads once the bot is ready, then every minute.
+
+### `def _handler(self, path: str) -> _Handler`
+
+**Scope:** `src/api.py` · `PublicAPI`
+
+[Source](../src/api.py#L193)
+
+Build the route handler serving one cached payload.
+
+### `def _build_stats(self) -> dict[str, Any]`
+
+**Scope:** `src/api.py` · `PublicAPI`
+
+[Source](../src/api.py#L215)
+
+Render reach counters from cached Discord guild state.
+
+### `def _build_meta(self) -> dict[str, Any]`
+
+**Scope:** `src/api.py` · `PublicAPI`
+
+[Source](../src/api.py#L224)
+
+Render build, locale, and catalog freshness metadata.
+
+### `def _build_commands(self) -> dict[str, Any]`
+
+**Scope:** `src/api.py` · `PublicAPI`
+
+[Source](../src/api.py#L233)
+
+Render the command manifest from the registered command tree.
+
 ## `src/bot.py`
 
 Discord client construction, command handling, service wiring, and shutdown.
@@ -18,7 +144,7 @@ Discord client construction, command handling, service wiring, and shutdown.
 
 **Scope:** `src/bot.py` · `module`
 
-[Source](../src/bot.py#L52)
+[Source](../src/bot.py#L53)
 
 Build the generic, user-safe response shown after an unhandled command error.
 
@@ -26,7 +152,7 @@ Build the generic, user-safe response shown after an unhandled command error.
 
 **Scope:** `src/bot.py` · `module`
 
-[Source](../src/bot.py#L62)
+[Source](../src/bot.py#L63)
 
 Application-command tree with shared context rules and error reporting.
 
@@ -34,7 +160,7 @@ Application-command tree with shared context rules and error reporting.
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L65)
+[Source](../src/bot.py#L66)
 
 Allow commands in servers and private contexts for guild and user installs.
 
@@ -42,7 +168,7 @@ Allow commands in servers and private contexts for guild and user installs.
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L75)
+[Source](../src/bot.py#L76)
 
 Record command executions while leaving autocomplete requests untracked.
 
@@ -50,7 +176,7 @@ Record command executions while leaving autocomplete requests untracked.
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L101)
+[Source](../src/bot.py#L102)
 
 Return the dotted parent and subcommand path from Discord's payload.
 
@@ -58,7 +184,7 @@ Return the dotted parent and subcommand path from Discord's payload.
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L120)
+[Source](../src/bot.py#L121)
 
 Log unhandled app-command errors and send a private generic response.
 
@@ -66,7 +192,7 @@ Log unhandled app-command errors and send a private generic response.
 
 **Scope:** `src/bot.py` · `module`
 
-[Source](../src/bot.py#L146)
+[Source](../src/bot.py#L147)
 
 Own Discord lifecycle and the shared Riot, database, and presentation services.
 
@@ -74,7 +200,7 @@ Own Discord lifecycle and the shared Riot, database, and presentation services.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L149)
+[Source](../src/bot.py#L150)
 
 Configure the bot's intents and application services.
 
@@ -82,7 +208,7 @@ Configure the bot's intents and application services.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L179)
+[Source](../src/bot.py#L181)
 
 Register a persistent component action, rejecting duplicate action names.
 
@@ -90,7 +216,7 @@ Register a persistent component action, rejecting duplicate action names.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L185)
+[Source](../src/bot.py#L187)
 
 Discard only the handlers bound to the given cog instance.
 
@@ -98,7 +224,7 @@ Discard only the handlers bound to the given cog instance.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L193)
+[Source](../src/bot.py#L195)
 
 Discard a failed cog's component handlers so loading it can be retried.
 
@@ -106,7 +232,7 @@ Discard a failed cog's component handlers so loading it can be retried.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L213)
+[Source](../src/bot.py#L215)
 
 Remove a cog's component handlers along with its commands and listeners.
 
@@ -114,7 +240,7 @@ Remove a cog's component handlers along with its commands and listeners.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L227)
+[Source](../src/bot.py#L229)
 
 Initialize shared resources, load extensions, and optionally sync commands.
 
@@ -122,7 +248,7 @@ Initialize shared resources, load extensions, and optionally sync commands.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L249)
+[Source](../src/bot.py#L261)
 
 Set the online activity and log the connected shard and guild counts.
 
@@ -130,9 +256,17 @@ Set the online activity and log the connected shard and guild counts.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L264)
+[Source](../src/bot.py#L276)
 
 Close Discord, Riot HTTP, and database resources in order.
+
+### `def _push_shutdown_callbacks(self, stack: AsyncExitStack) -> None`
+
+**Scope:** `src/bot.py` · `BotFraggBot`
+
+[Source](../src/bot.py#L282)
+
+Register the resources closed after Discord disconnects, in LIFO order.
 
 ## `src/cogs/__init__.py`
 
@@ -1658,11 +1792,19 @@ Environment-backed settings, validation helpers, and repository paths.
 
 Parse a named environment variable as a strict boolean or use its default.
 
-### `def _int(name: str, default: int, minimum: int = 0) -> int`
+### `def _flag(name: str, default: bool) -> bool`
 
 **Scope:** `src/config.py` · `module`
 
 [Source](../src/config.py#L32)
+
+Parse a boolean that falls back to its default when the value is blank.
+
+### `def _int(name: str, default: int, minimum: int = 0) -> int`
+
+**Scope:** `src/config.py` · `module`
+
+[Source](../src/config.py#L38)
 
 Parse an integer setting and reject values below its configured minimum.
 
@@ -1670,7 +1812,7 @@ Parse an integer setting and reject values below its configured minimum.
 
 **Scope:** `src/config.py` · `module`
 
-[Source](../src/config.py#L40)
+[Source](../src/config.py#L46)
 
 Return a bounded optional positive integer setting, or ``None`` when blank.
 
@@ -1678,7 +1820,7 @@ Return a bounded optional positive integer setting, or ``None`` when blank.
 
 **Scope:** `src/config.py` · `module`
 
-[Source](../src/config.py#L54)
+[Source](../src/config.py#L60)
 
 Validate and return an optional absolute HTTP(S) URL without userinfo.
 
@@ -1686,15 +1828,34 @@ Validate and return an optional absolute HTTP(S) URL without userinfo.
 
 **Scope:** `src/config.py` · `module`
 
-[Source](../src/config.py#L76)
+[Source](../src/config.py#L82)
 
 Parse an HH:MM or HH:MM:SS setting as a UTC wall-clock time.
+
+### `def _host(name: str, default: str) -> str`
+
+**Scope:** `src/config.py` · `module`
+
+[Source](../src/config.py#L93)
+
+Parse a bind host that is a bare hostname or IP without a scheme or path.
+
+### `def _origins(name: str) -> tuple[str, ...]`
+
+**Scope:** `src/config.py` · `module`
+
+[Source](../src/config.py#L101)
+
+Parse comma-separated absolute browser origins into a deduplicated tuple.
+
+Origins are normalized the way browsers serialize the ``Origin`` header:
+lowercase host, and the scheme's default port removed.
 
 ### `class Settings`
 
 **Scope:** `src/config.py` · `module`
 
-[Source](../src/config.py#L88)
+[Source](../src/config.py#L136)
 
 Immutable runtime configuration populated from environment variables.
 
@@ -1702,7 +1863,7 @@ Immutable runtime configuration populated from environment variables.
 
 **Scope:** `src/config.py` · `Settings`
 
-[Source](../src/config.py#L123)
+[Source](../src/config.py#L175)
 
 Load settings, validate URLs and limits, and optionally require secrets.
 
@@ -3005,7 +3166,7 @@ Prepare in-memory indexes and the repository catalog snapshot.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L389)
+[Source](../src/services/catalog.py#L390)
 
 Load the saved catalog off the event loop or fetch a fresh snapshot.
 
@@ -3013,7 +3174,7 @@ Load the saved catalog off the event loop or fetch a fresh snapshot.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L408)
+[Source](../src/services/catalog.py#L410)
 
 Return the upstream catalog version used to detect a game patch.
 
@@ -3021,7 +3182,7 @@ Return the upstream catalog version used to detect a game patch.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L427)
+[Source](../src/services/catalog.py#L429)
 
 Fetch the current weapon and bundle catalogs and save their snapshot.
 
@@ -3035,7 +3196,7 @@ A failed save restores the previous catalog even during cancellation.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L505)
+[Source](../src/services/catalog.py#L508)
 
 Fetch one catalog endpoint and return its validated data rows.
 
@@ -3043,7 +3204,7 @@ Fetch one catalog endpoint and return its validated data rows.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L517)
+[Source](../src/services/catalog.py#L520)
 
 Cache mission definitions for 30 minutes and failed refreshes for 30 seconds.
 
@@ -3051,7 +3212,7 @@ Cache mission definitions for 30 minutes and failed refreshes for 30 seconds.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L574)
+[Source](../src/services/catalog.py#L577)
 
 Return one game-metadata document, refetching it when stale or forced.
 
@@ -3059,7 +3220,7 @@ Return one game-metadata document, refetching it when stale or forced.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L619)
+[Source](../src/services/catalog.py#L622)
 
 Prefill the game-metadata cache from the saved snapshot.
 
@@ -3067,7 +3228,7 @@ Prefill the game-metadata cache from the saved snapshot.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L657)
+[Source](../src/services/catalog.py#L660)
 
 Persist one game-metadata document unless a patch dropped it meanwhile.
 
@@ -3075,7 +3236,7 @@ Persist one game-metadata document unless a patch dropped it meanwhile.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L676)
+[Source](../src/services/catalog.py#L679)
 
 Write the game-metadata snapshot through a temporary file replacement.
 
@@ -3083,7 +3244,7 @@ Write the game-metadata snapshot through a temporary file replacement.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L683)
+[Source](../src/services/catalog.py#L686)
 
 Remove the saved game-metadata snapshot when it is no longer valid.
 
@@ -3091,7 +3252,7 @@ Remove the saved game-metadata snapshot when it is no longer valid.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L687)
+[Source](../src/services/catalog.py#L690)
 
 Forget game metadata so a game patch refreshes it on next use.
 
@@ -3099,7 +3260,7 @@ Forget game metadata so a game patch refreshes it on next use.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L699)
+[Source](../src/services/catalog.py#L702)
 
 Refetch every game-metadata document for the version refresh.
 
@@ -3107,7 +3268,7 @@ Refetch every game-metadata document for the version refresh.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L708)
+[Source](../src/services/catalog.py#L711)
 
 Return competitive tier numbers mapped to their localized names.
 
@@ -3115,7 +3276,7 @@ Return competitive tier numbers mapped to their localized names.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L735)
+[Source](../src/services/catalog.py#L738)
 
 Return map asset paths and identifiers mapped to localized names.
 
@@ -3123,7 +3284,7 @@ Return map asset paths and identifiers mapped to localized names.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L752)
+[Source](../src/services/catalog.py#L755)
 
 Return the running act's identifier and localized names, if known.
 
@@ -3131,7 +3292,7 @@ Return the running act's identifier and localized names, if known.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L791)
+[Source](../src/services/catalog.py#L794)
 
 Normalize weapon and bundle responses and rebuild lookup indexes.
 
@@ -3139,7 +3300,7 @@ Normalize weapon and bundle responses and rebuild lookup indexes.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L866)
+[Source](../src/services/catalog.py#L869)
 
 Index skins by their UUID, offer UUID, and level UUID aliases.
 
@@ -3147,7 +3308,7 @@ Index skins by their UUID, offer UUID, and level UUID aliases.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L877)
+[Source](../src/services/catalog.py#L880)
 
 Resolve a skin from any indexed base, offer, or level identifier.
 
@@ -3155,7 +3316,7 @@ Resolve a skin from any indexed base, offer, or level identifier.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L881)
+[Source](../src/services/catalog.py#L884)
 
 Resolve a weapon by its Riot UUID.
 
@@ -3163,7 +3324,7 @@ Resolve a weapon by its Riot UUID.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L885)
+[Source](../src/services/catalog.py#L888)
 
 Resolve bundle metadata by its Riot UUID.
 
@@ -3171,7 +3332,7 @@ Resolve bundle metadata by its Riot UUID.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L890)
+[Source](../src/services/catalog.py#L893)
 
 Fetch and cache a supported accessory using its Riot item type ID.
 
@@ -3179,7 +3340,7 @@ Fetch and cache a supported accessory using its Riot item type ID.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L937)
+[Source](../src/services/catalog.py#L940)
 
 Resolve a Riot bundle buddy by its buddy or level UUID.
 
@@ -3187,7 +3348,7 @@ Resolve a Riot bundle buddy by its buddy or level UUID.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L994)
+[Source](../src/services/catalog.py#L997)
 
 Convert endpoint-specific Riot accessory data into a common display shape.
 
@@ -3195,7 +3356,7 @@ Convert endpoint-specific Riot accessory data into a common display shape.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L1021)
+[Source](../src/services/catalog.py#L1024)
 
 Search localized names first, retaining English-name fallback matches.
 
@@ -3206,7 +3367,7 @@ fuzzy-match score accepted, and an exactly matching name scores 100.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L1056)
+[Source](../src/services/catalog.py#L1059)
 
 Apply current store prices to catalog skins matched by offer identifier.
 
@@ -3214,7 +3375,7 @@ Apply current store prices to catalog skins matched by offer identifier.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L1063)
+[Source](../src/services/catalog.py#L1066)
 
 Encode the current version, skins, and bundles as compact JSON.
 
@@ -3222,7 +3383,7 @@ Encode the current version, skins, and bundles as compact JSON.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L1074)
+[Source](../src/services/catalog.py#L1077)
 
 Write a complete catalog snapshot through a temporary file replacement.
 
@@ -3230,7 +3391,7 @@ Write a complete catalog snapshot through a temporary file replacement.
 
 **Scope:** `src/services/catalog.py` · `CatalogService`
 
-[Source](../src/services/catalog.py#L1081)
+[Source](../src/services/catalog.py#L1084)
 
 Restore catalog records from a snapshot and rebuild lookup indexes.
 
@@ -4071,6 +4232,90 @@ Return the competitive queue block of an MMR payload.
 [Source](../src/services/profile.py#L203)
 
 Return the highest competitive tier recorded across every act.
+
+## `src/services/public_api.py`
+
+Pure payload builders for the public read-only HTTP API.
+
+The builders convert in-memory Discord and catalog state into the JSON documents
+served by :mod:`src.api`. They never touch the database and never read command
+usage, so the public API cannot leak analytics or per-guild data.
+
+### `class PublicParam`
+
+**Scope:** `src/services/public_api.py` · `module`
+
+[Source](../src/services/public_api.py#L22)
+
+Describe one application-command parameter for the public manifest.
+
+### `class PublicCommand`
+
+**Scope:** `src/services/public_api.py` · `module`
+
+[Source](../src/services/public_api.py#L30)
+
+Describe one application command or command group for the manifest.
+
+### `def iso_timestamp(value: datetime | None = None) -> str`
+
+**Scope:** `src/services/public_api.py` · `module`
+
+[Source](../src/services/public_api.py#L40)
+
+Format a moment as an ISO-8601 UTC string with a trailing ``Z``.
+
+### `def installed_version() -> str`
+
+**Scope:** `src/services/public_api.py` · `module`
+
+[Source](../src/services/public_api.py#L46)
+
+Return the installed distribution version, or ``unknown`` when absent.
+
+### `def discover_locales(root: Path) -> list[str]`
+
+**Scope:** `src/services/public_api.py` · `module`
+
+[Source](../src/services/public_api.py#L54)
+
+Return the sorted locale directory names shipped under ``root``.
+
+### `def describe_commands(items: Iterable[Any]) -> list[PublicCommand]`
+
+**Scope:** `src/services/public_api.py` · `module`
+
+[Source](../src/services/public_api.py#L63)
+
+Flatten command-tree items into sorted public manifest entries.
+
+Commands marked ``extras["owner_only"]`` are excluded, matching the filter
+``/help`` uses. Both a group and its subcommands appear as separate rows
+keyed by their qualified name.
+
+### `def render_stats(*, servers: int, members: int, version: str, generated_at: datetime | None = None) -> dict[str, Any]`
+
+**Scope:** `src/services/public_api.py` · `module`
+
+[Source](../src/services/public_api.py#L91)
+
+Build the ``/v1/stats`` document from cached reach values only.
+
+### `def render_meta(*, version: str, locales: list[str], client_version: str | None, catalog_refreshed_at: datetime | None, generated_at: datetime | None = None) -> dict[str, Any]`
+
+**Scope:** `src/services/public_api.py` · `module`
+
+[Source](../src/services/public_api.py#L107)
+
+Build the ``/v1/meta`` document describing build and catalog freshness.
+
+### `def render_commands(commands: list[PublicCommand], *, generated_at: datetime | None = None) -> dict[str, Any]`
+
+**Scope:** `src/services/public_api.py` · `module`
+
+[Source](../src/services/public_api.py#L132)
+
+Build the ``/v1/commands`` manifest from already-described commands.
 
 ## `src/services/riot_values.py`
 

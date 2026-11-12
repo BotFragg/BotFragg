@@ -383,6 +383,7 @@ class CatalogService:
         self._game_metadata_loaded = False
         self._game_metadata_lock = asyncio.Lock()
         self.version = ""
+        self.loaded_at: datetime | None = None
         self._cache_format = 0
         self._lock = asyncio.Lock()
 
@@ -392,6 +393,7 @@ class CatalogService:
             contents = await asyncio.to_thread(self.path.read_text, "utf-8")
             raw = json.loads(contents)
             self._deserialize(raw)
+            self.loaded_at = datetime.now(UTC)
         except FileNotFoundError:
             await self.refresh()
             return
@@ -463,6 +465,7 @@ class CatalogService:
                 if not self.skins or not self.bundles:
                     raise HTTPFailure("VALORANT catalog contained no skins or bundles")
                 self.version = current_version
+                self.loaded_at = datetime.now(UTC)
                 self._cache_format = CATALOG_FORMAT_VERSION
                 snapshot = await asyncio.to_thread(self._serialize)
                 write = asyncio.create_task(asyncio.to_thread(self._save, snapshot))
