@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/BotFragg/BotFragg/compare/v2.0.0...v2.1.0) (2026-11-13)
+
+
+### Added
+
+* alert on Night Market skins with deduplication ([5876ba5](https://github.com/BotFragg/BotFragg/commit/5876ba5a1b24beee241ac84c551e0c2184c1218c))
+
 ## [2.0.0](https://github.com/BotFragg/BotFragg/compare/v1.3.0...v2.0.0) (2026-11-05)
 
 
