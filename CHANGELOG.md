@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.1.0](https://github.com/BotFragg/BotFragg/compare/v2.0.0...v2.1.0) (2026-11-16)
+
+
+### Added
+
+* add donate command ([3cf3e50](https://github.com/BotFragg/BotFragg/commit/3cf3e509c461af821ccabf6cfd0b5f5633cb9f94))
+* alert on Night Market skins with deduplication ([5876ba5](https://github.com/BotFragg/BotFragg/commit/5876ba5a1b24beee241ac84c551e0c2184c1218c))
+* rotate bot presence through shuffled status texts ([55592a2](https://github.com/BotFragg/BotFragg/commit/55592a2ec6eb0d58483a932b1d55accd96ece951))
+
 ## [2.0.0](https://github.com/BotFragg/BotFragg/compare/v1.3.0...v2.0.0) (2026-11-05)
 
 
