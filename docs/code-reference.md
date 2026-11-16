@@ -159,7 +159,7 @@ docstring. Regenerate it after application documentation changes with
 | [tests/test_gameplay_commands.py](../tests/test_gameplay_commands.py) | Gameplay response rendering and progress bars. |
 | [tests/test_health.py](../tests/test_health.py) | Freshness, failed/stopped/overdue jobs, cancellation, and dependency-health recovery. |
 | [tests/test_http.py](../tests/test_http.py) | Cooldowns, concurrent rate limits, Retry-After parsing, decoding failures, and URL privacy. |
-| [tests/test_jobs.py](../tests/test_jobs.py) | Background retry behavior, delivery ordering, and awaited shutdown. |
+| [tests/test_jobs.py](../tests/test_jobs.py) | Background retry behavior, delivery ordering, presence rotation, and awaited shutdown. |
 | [tests/test_localization.py](../tests/test_localization.py) | Translated command/response contracts and catalog validation. |
 | [tests/test_migration.py](../tests/test_migration.py) | Migration/model parity and database initialization behavior. |
 | [tests/test_models.py](../tests/test_models.py) | ORM cascade and uniqueness constraints. |

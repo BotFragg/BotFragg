@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import random
 from collections import deque
 from datetime import UTC, datetime, time, timedelta
 from functools import partial
 from time import time as unix_time
 
 import discord
+from discord.errors import ConnectionClosed
 from discord.ext import commands, tasks
 
 from ..bot import BotFraggBot
@@ -27,6 +29,39 @@ from ..views.ui import embed, view
 from .extra import ExtraCog
 
 log = logging.getLogger(__name__)
+
+PRESENCE_TEXTS: tuple[tuple[discord.ActivityType, str], ...] = (
+    (discord.ActivityType.playing, "ranked at 3 AM"),
+    (discord.ActivityType.playing, "hide and seek on Ascent"),
+    (discord.ActivityType.playing, "eco simulator"),
+    (discord.ActivityType.playing, "musical chairs with the spike"),
+    (discord.ActivityType.playing, "yoga in A main"),
+    (discord.ActivityType.playing, "1v1 against my ping"),
+    (discord.ActivityType.playing, "the 0 RR comeback arc"),
+    (discord.ActivityType.playing, "sheriff-only challenge"),
+    (discord.ActivityType.playing, "one more game"),
+    (discord.ActivityType.playing, "duo queue roulette"),
+    (discord.ActivityType.watching, "the Night Market timer"),
+    (discord.ActivityType.watching, "my RR graph"),
+    (discord.ActivityType.watching, "your shop refresh"),
+    (discord.ActivityType.watching, "the bundle trailer on loop"),
+    (discord.ActivityType.watching, "my rank drop in real time"),
+    (discord.ActivityType.watching, "the queue timer"),
+    (discord.ActivityType.watching, "the defeat screen again"),
+    (discord.ActivityType.watching, "the surrender vote fail"),
+    (discord.ActivityType.watching, "that 9-3 lead slip away"),
+    (discord.ActivityType.watching, "my teammates' minimap"),
+    (discord.ActivityType.listening, "the last-second defuse beep"),
+    (discord.ActivityType.listening, "the spike ticking on B"),
+    (discord.ActivityType.listening, "my teammates' callouts"),
+    (discord.ActivityType.listening, "my own bad calls"),
+    (discord.ActivityType.listening, "the 0-5 Jett complaining"),
+    (discord.ActivityType.listening, "the lobby trash talk"),
+    (discord.ActivityType.listening, "the reload behind the wall"),
+    (discord.ActivityType.listening, "the ambient rage of ranked"),
+    (discord.ActivityType.listening, "my duo's excuses"),
+    (discord.ActivityType.listening, "the queue pop that never comes"),
+)
 
 
 class DiscordLogHandler(logging.Handler):
@@ -52,6 +87,10 @@ class TasksCog(commands.Cog):
     def __init__(self, bot: BotFraggBot) -> None:
         """Set job intervals from settings and prepare the optional log handler."""
         self.bot = bot
+        self._presence_queues: dict[discord.ActivityType, list[str]] = {}
+        self._presence_order: list[discord.ActivityType] = []
+        self._presence_turn = 0
+        self._last_presence_kind: discord.ActivityType | None = None
         self.version_refresh.change_interval(
             minutes=bot.config.user_agent_interval_minutes
         )
@@ -90,6 +129,7 @@ class TasksCog(commands.Cog):
         self.daily_alerts.start()
         self.version_refresh.start()
         self.analytics_retention.start()
+        self.rotate_presence.start()
         if self.bot.config.log_channel_id:
             logging.getLogger().addHandler(self.discord_log_handler)
             self.log_flush.start()
@@ -101,6 +141,7 @@ class TasksCog(commands.Cog):
             self.daily_alerts,
             self.version_refresh,
             self.analytics_retention,
+            self.rotate_presence,
             self.log_flush,
             self.health_watch,
         )
@@ -465,6 +506,45 @@ class TasksCog(commands.Cog):
             }
         )
 
+    @tasks.loop(minutes=2)
+    async def rotate_presence(self) -> None:
+        """Rotate the bot's presence through the shuffled status texts."""
+        kind, text = self._next_presence()
+        activity = discord.Activity(type=kind, name=text)
+        self.bot.activity = activity
+        try:
+            await self.bot.change_presence(activity=activity)
+        except ConnectionClosed, discord.HTTPException:
+            log.debug("Presence rotation skipped while the gateway reconnects")
+
+    def _next_presence(self) -> tuple[discord.ActivityType, str]:
+        """Return the next text, cycling activity types so each stays balanced."""
+        if not any(self._presence_queues.values()):
+            self._refill_presence_queues()
+        for _ in self._presence_order:
+            kind = self._presence_order[self._presence_turn]
+            self._presence_turn = (self._presence_turn + 1) % len(self._presence_order)
+            if self._presence_queues[kind]:
+                self._last_presence_kind = kind
+                return kind, self._presence_queues[kind].pop()
+        raise RuntimeError("presence rotation queue is empty")
+
+    def _refill_presence_queues(self) -> None:
+        """Shuffle each type's texts and choose a fresh rotating type order."""
+        queues: dict[discord.ActivityType, list[str]] = {}
+        for kind, text in PRESENCE_TEXTS:
+            queues.setdefault(kind, []).append(text)
+        for texts in queues.values():
+            random.shuffle(texts)
+        order = list(queues)
+        random.shuffle(order)
+        if len(order) > 1 and order[0] == self._last_presence_kind:
+            order.append(order.pop(0))
+        self._presence_queues = queues
+        self._presence_order = order
+        self._presence_turn = 0
+
+    @rotate_presence.before_loop
     @daily_alerts.before_loop
     @version_refresh.before_loop
     @analytics_retention.before_loop

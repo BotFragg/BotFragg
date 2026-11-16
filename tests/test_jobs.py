@@ -15,12 +15,13 @@ import aiohttp
 import asyncpg
 import discord
 import pytest
+from discord.errors import ConnectionClosed
 from tortoise import connections
 from tortoise.exceptions import DBConnectionError
 
 from src.cogs import extra as extra_module
 from src.cogs.extra import ExtraCog
-from src.cogs.tasks import TasksCog
+from src.cogs.tasks import PRESENCE_TEXTS, TasksCog
 from src.models import Account, Alert, AlertNotification, CommandInvocation, User
 from src.services import alerts as alert_service
 from src.services.accounts import delete_user_data
@@ -808,20 +809,21 @@ async def test_tasks_cog_awaits_cancelled_background_loops(
             self.task.cancel()
 
     monkeypatch.setattr("src.cogs.tasks.HEALTH_PATH", tmp_path / "health.json")
-    loops = [Loop(asyncio.create_task(worker())) for _ in range(5)]
+    loops = [Loop(asyncio.create_task(worker())) for _ in range(6)]
     await asyncio.sleep(0)
     cog = SimpleNamespace(
         daily_alerts=loops[0],
         version_refresh=loops[1],
         analytics_retention=loops[2],
-        log_flush=loops[3],
-        health_watch=loops[4],
+        rotate_presence=loops[3],
+        log_flush=loops[4],
+        health_watch=loops[5],
         discord_log_handler=logging.NullHandler(),
     )
 
     await TasksCog.cog_unload(cog)
 
-    assert finished == 5
+    assert finished == 6
     assert all(loop.get_task().done() for loop in loops)
 
 
@@ -1031,3 +1033,61 @@ async def test_analytics_retention_job_deletes_only_expired_rows() -> None:
     assert not await CommandInvocation.exists(id=old.id)
     assert await CommandInvocation.exists(id=recent.id)
     assert cog.job_health["analytics_retention"].last_success is not None
+
+
+def _presence_cog(change_presence: AsyncMock) -> tuple[TasksCog, SimpleNamespace]:
+    """Build a tasks cog whose only bot dependency is a presence call."""
+    bot = SimpleNamespace(
+        config=SimpleNamespace(
+            user_agent_interval_minutes=15,
+            alert_time_utc=utc_time(0, 0, 10, tzinfo=UTC),
+            log_flush_interval_seconds=10,
+        ),
+        change_presence=change_presence,
+    )
+    return TasksCog(bot), bot
+
+
+async def test_presence_rotation_shows_every_text_before_repeating() -> None:
+    """One cycle must cover the whole list without an immediate repeat."""
+    cog, bot = _presence_cog(AsyncMock())
+
+    shown = []
+    for _ in range(len(PRESENCE_TEXTS)):
+        await TasksCog.rotate_presence.coro(cog)
+        shown.append(bot.activity.name)
+    await TasksCog.rotate_presence.coro(cog)
+
+    assert len(set(shown)) == len(PRESENCE_TEXTS)
+    assert bot.activity.name != shown[-1]
+
+
+async def test_presence_rotation_survives_a_closed_gateway() -> None:
+    """A reconnect must skip the tick instead of stopping the loop."""
+    cog, bot = _presence_cog(
+        AsyncMock(side_effect=ConnectionClosed(Mock(), shard_id=None))
+    )
+
+    await TasksCog.rotate_presence.coro(cog)
+
+    assert isinstance(bot.activity, discord.Activity)
+
+
+async def test_presence_rotation_balances_activity_types() -> None:
+    """Every three ticks cover all three activity types in equal totals."""
+    cog, bot = _presence_cog(AsyncMock())
+
+    kinds = []
+    for _ in range(len(PRESENCE_TEXTS)):
+        await TasksCog.rotate_presence.coro(cog)
+        kinds.append(bot.activity.type)
+
+    expected = (
+        discord.ActivityType.playing,
+        discord.ActivityType.watching,
+        discord.ActivityType.listening,
+    )
+    for kind in expected:
+        assert kinds.count(kind) == len(PRESENCE_TEXTS) // 3
+    for start in range(0, len(kinds), 3):
+        assert set(kinds[start : start + 3]) == set(expected)

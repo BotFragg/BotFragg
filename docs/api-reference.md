@@ -398,7 +398,7 @@ Background loops for daily alerts, upstream refresh, and Discord log delivery.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L32)
+[Source](../src/cogs/tasks.py#L67)
 
 Buffer privacy-filtered plain log lines for periodic Discord delivery.
 
@@ -406,7 +406,7 @@ Buffer privacy-filtered plain log lines for periodic Discord delivery.
 
 **Scope:** `src/cogs/tasks.py` · `DiscordLogHandler`
 
-[Source](../src/cogs/tasks.py#L35)
+[Source](../src/cogs/tasks.py#L70)
 
 Create a bounded log buffer using BotFragg's privacy-aware formatter.
 
@@ -414,7 +414,7 @@ Create a bounded log buffer using BotFragg's privacy-aware formatter.
 
 **Scope:** `src/cogs/tasks.py` · `DiscordLogHandler`
 
-[Source](../src/cogs/tasks.py#L41)
+[Source](../src/cogs/tasks.py#L76)
 
 Format a log record into the buffer or delegate failures to logging.
 
@@ -422,7 +422,7 @@ Format a log record into the buffer or delegate failures to logging.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L49)
+[Source](../src/cogs/tasks.py#L84)
 
 Own periodic application jobs and stop them cleanly when unloaded.
 
@@ -430,7 +430,7 @@ Own periodic application jobs and stop them cleanly when unloaded.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L52)
+[Source](../src/cogs/tasks.py#L87)
 
 Set job intervals from settings and prepare the optional log handler.
 
@@ -438,7 +438,7 @@ Set job intervals from settings and prepare the optional log handler.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L87)
+[Source](../src/cogs/tasks.py#L126)
 
 Start background loops and attach the log handler when configured.
 
@@ -446,7 +446,7 @@ Start background loops and attach the log handler when configured.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L98)
+[Source](../src/cogs/tasks.py#L138)
 
 Cancel and await all active loops, then detach the root log handler.
 
@@ -454,7 +454,7 @@ Cancel and await all active loops, then detach the root log handler.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L121)
+[Source](../src/cogs/tasks.py#L162)
 
 Run the daily shop and skin-alert job.
 
@@ -462,7 +462,7 @@ Run the daily shop and skin-alert job.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L133)
+[Source](../src/cogs/tasks.py#L174)
 
 Process eligible users' shops and return counts for the completed run.
 
@@ -470,7 +470,7 @@ Process eligible users' shops and return counts for the completed run.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L154)
+[Source](../src/cogs/tasks.py#L195)
 
 Delete command analytics older than the configured retention window.
 
@@ -478,7 +478,7 @@ Delete command analytics older than the configured retention window.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L162)
+[Source](../src/cogs/tasks.py#L203)
 
 Deliver matching alerts and the optional daily shop; count failed DMs.
 
@@ -486,7 +486,7 @@ Deliver matching alerts and the optional daily shop; count failed DMs.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L208)
+[Source](../src/cogs/tasks.py#L249)
 
 DM an owner-scoped skin alert and report whether delivery succeeded.
 
@@ -494,7 +494,7 @@ DM an owner-scoped skin alert and report whether delivery succeeded.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L266)
+[Source](../src/cogs/tasks.py#L307)
 
 DM the selected account's daily shop and report delivery success.
 
@@ -502,7 +502,7 @@ DM the selected account's daily shop and report delivery success.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L327)
+[Source](../src/cogs/tasks.py#L368)
 
 Notify a user that credentials expired and return the delivery failure count.
 
@@ -510,7 +510,7 @@ Notify a user that credentials expired and return the delivery failure count.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L345)
+[Source](../src/cogs/tasks.py#L386)
 
 Refresh the Riot client version, the catalog, and the game metadata.
 
@@ -518,7 +518,7 @@ Refresh the Riot client version, the catalog, and the game metadata.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L365)
+[Source](../src/cogs/tasks.py#L406)
 
 Measure log delivery, preserving the queue after Discord failures.
 
@@ -526,7 +526,7 @@ Measure log delivery, preserving the queue after Discord failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L370)
+[Source](../src/cogs/tasks.py#L411)
 
 Send buffered log lines to Discord and requeue them after delivery failures.
 
@@ -534,15 +534,39 @@ Send buffered log lines to Discord and requeue them after delivery failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L418)
+[Source](../src/cogs/tasks.py#L459)
 
 Publish Discord, database, and scheduled-job health for Docker and operators.
+
+### `async def rotate_presence(self) -> None`
+
+**Scope:** `src/cogs/tasks.py` · `TasksCog`
+
+[Source](../src/cogs/tasks.py#L510)
+
+Rotate the bot's presence through the shuffled status texts.
+
+### `def _next_presence(self) -> tuple[discord.ActivityType, str]`
+
+**Scope:** `src/cogs/tasks.py` · `TasksCog`
+
+[Source](../src/cogs/tasks.py#L520)
+
+Return the next text, cycling activity types so each stays balanced.
+
+### `def _refill_presence_queues(self) -> None`
+
+**Scope:** `src/cogs/tasks.py` · `TasksCog`
+
+[Source](../src/cogs/tasks.py#L532)
+
+Shuffle each type's texts and choose a fresh rotating type order.
 
 ### `async def before_jobs(self) -> None`
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L473)
+[Source](../src/cogs/tasks.py#L553)
 
 Wait for Discord readiness before starting any background job.
 
@@ -550,7 +574,7 @@ Wait for Discord readiness before starting any background job.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L478)
+[Source](../src/cogs/tasks.py#L558)
 
 Register the background-task cog with the bot.
 
