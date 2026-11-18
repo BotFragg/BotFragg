@@ -340,7 +340,7 @@ General BotFragg commands for status, links, help, and shard health.
 
 **Scope:** `src/cogs/extra.py` · `module`
 
-[Source](../src/cogs/extra.py#L45)
+[Source](../src/cogs/extra.py#L49)
 
 Provide public utility commands and the persistent shard-status message.
 
@@ -348,7 +348,7 @@ Provide public utility commands and the persistent shard-status message.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L48)
+[Source](../src/cogs/extra.py#L52)
 
 Store the bot and record when this cog started for the info command.
 
@@ -356,7 +356,7 @@ Store the bot and record when this cog started for the info command.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L69)
+[Source](../src/cogs/extra.py#L73)
 
 Start shard-status updates when their destination is configured.
 
@@ -364,7 +364,7 @@ Start shard-status updates when their destination is configured.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L74)
+[Source](../src/cogs/extra.py#L78)
 
 Cancel and await the shard-status task during extension shutdown.
 
@@ -372,7 +372,7 @@ Cancel and await the shard-status task during extension shutdown.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L88)
+[Source](../src/cogs/extra.py#L92)
 
 Report Discord gateway latency and a live database probe duration.
 
@@ -380,7 +380,7 @@ Report Discord gateway latency and a live database probe duration.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L125)
+[Source](../src/cogs/extra.py#L129)
 
 Show recent public updates and BotFragg runtime information.
 
@@ -388,7 +388,7 @@ Show recent public updates and BotFragg runtime information.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L242)
+[Source](../src/cogs/extra.py#L246)
 
 Fetch and cache five public commits, formatting them per request locale.
 
@@ -396,7 +396,7 @@ Fetch and cache five public commits, formatting them per request locale.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L327)
+[Source](../src/cogs/extra.py#L331)
 
 Build link buttons for the configured public URLs.
 
@@ -404,7 +404,7 @@ Build link buttons for the configured public URLs.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L358)
+[Source](../src/cogs/extra.py#L362)
 
 Use each command's cog module to place it in a help category.
 
@@ -412,7 +412,7 @@ Use each command's cog module to place it in a help category.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L378)
+[Source](../src/cogs/extra.py#L382)
 
 Return Discord-formatted mentions for all synced commands and subcommands.
 
@@ -420,7 +420,7 @@ Return Discord-formatted mentions for all synced commands and subcommands.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L405)
+[Source](../src/cogs/extra.py#L409)
 
 List registered slash commands by category in the embed description.
 
@@ -428,15 +428,23 @@ List registered slash commands by category in the embed description.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L476)
+[Source](../src/cogs/extra.py#L480)
 
 Show an invite link and any configured support, vote, and website links.
+
+### `async def donate(self, interaction: discord.Interaction) -> None`
+
+**Scope:** `src/cogs/extra.py` · `ExtraCog`
+
+[Source](../src/cogs/extra.py#L501)
+
+Show the project's Ko-fi and GitHub Sponsors links as buttons.
 
 ### `async def shard_status(self) -> None`
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L492)
+[Source](../src/cogs/extra.py#L525)
 
 Measure the shard-status job and preserve its existing retry behavior.
 
@@ -444,7 +452,7 @@ Measure the shard-status job and preserve its existing retry behavior.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L497)
+[Source](../src/cogs/extra.py#L530)
 
 Update or recreate the persistent embed containing per-shard health.
 
@@ -452,7 +460,7 @@ Update or recreate the persistent embed containing per-shard health.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L545)
+[Source](../src/cogs/extra.py#L578)
 
 Wait for Discord readiness before the first shard-status update.
 
@@ -460,7 +468,7 @@ Wait for Discord readiness before the first shard-status update.
 
 **Scope:** `src/cogs/extra.py` · `module`
 
-[Source](../src/cogs/extra.py#L550)
+[Source](../src/cogs/extra.py#L583)
 
 Register the general utility cog with the bot.
 
@@ -524,7 +532,7 @@ Background loops for daily alerts, upstream refresh, and Discord log delivery.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L32)
+[Source](../src/cogs/tasks.py#L67)
 
 Buffer privacy-filtered plain log lines for periodic Discord delivery.
 
@@ -532,7 +540,7 @@ Buffer privacy-filtered plain log lines for periodic Discord delivery.
 
 **Scope:** `src/cogs/tasks.py` · `DiscordLogHandler`
 
-[Source](../src/cogs/tasks.py#L35)
+[Source](../src/cogs/tasks.py#L70)
 
 Create a bounded log buffer using BotFragg's privacy-aware formatter.
 
@@ -540,7 +548,7 @@ Create a bounded log buffer using BotFragg's privacy-aware formatter.
 
 **Scope:** `src/cogs/tasks.py` · `DiscordLogHandler`
 
-[Source](../src/cogs/tasks.py#L41)
+[Source](../src/cogs/tasks.py#L76)
 
 Format a log record into the buffer or delegate failures to logging.
 
@@ -548,7 +556,7 @@ Format a log record into the buffer or delegate failures to logging.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L49)
+[Source](../src/cogs/tasks.py#L84)
 
 Own periodic application jobs and stop them cleanly when unloaded.
 
@@ -556,7 +564,7 @@ Own periodic application jobs and stop them cleanly when unloaded.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L52)
+[Source](../src/cogs/tasks.py#L87)
 
 Set job intervals from settings and prepare the optional log handler.
 
@@ -564,7 +572,7 @@ Set job intervals from settings and prepare the optional log handler.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L87)
+[Source](../src/cogs/tasks.py#L126)
 
 Start background loops and attach the log handler when configured.
 
@@ -572,7 +580,7 @@ Start background loops and attach the log handler when configured.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L98)
+[Source](../src/cogs/tasks.py#L138)
 
 Cancel and await all active loops, then detach the root log handler.
 
@@ -580,7 +588,7 @@ Cancel and await all active loops, then detach the root log handler.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L121)
+[Source](../src/cogs/tasks.py#L162)
 
 Run the daily shop and skin-alert job.
 
@@ -588,7 +596,7 @@ Run the daily shop and skin-alert job.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L133)
+[Source](../src/cogs/tasks.py#L174)
 
 Process eligible users' shops and return counts for the completed run.
 
@@ -596,7 +604,7 @@ Process eligible users' shops and return counts for the completed run.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L154)
+[Source](../src/cogs/tasks.py#L195)
 
 Delete command analytics older than the configured retention window.
 
@@ -604,7 +612,7 @@ Delete command analytics older than the configured retention window.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L162)
+[Source](../src/cogs/tasks.py#L203)
 
 Deliver matching alerts and the optional daily shop; count failed DMs.
 
@@ -612,7 +620,7 @@ Deliver matching alerts and the optional daily shop; count failed DMs.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L208)
+[Source](../src/cogs/tasks.py#L249)
 
 DM an owner-scoped skin alert and report whether delivery succeeded.
 
@@ -620,7 +628,7 @@ DM an owner-scoped skin alert and report whether delivery succeeded.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L266)
+[Source](../src/cogs/tasks.py#L307)
 
 DM the selected account's daily shop and report delivery success.
 
@@ -628,7 +636,7 @@ DM the selected account's daily shop and report delivery success.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L327)
+[Source](../src/cogs/tasks.py#L368)
 
 Notify a user that credentials expired and return the delivery failure count.
 
@@ -636,7 +644,7 @@ Notify a user that credentials expired and return the delivery failure count.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L345)
+[Source](../src/cogs/tasks.py#L386)
 
 Refresh the Riot client version, the catalog, and the game metadata.
 
@@ -644,7 +652,7 @@ Refresh the Riot client version, the catalog, and the game metadata.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L365)
+[Source](../src/cogs/tasks.py#L406)
 
 Measure log delivery, preserving the queue after Discord failures.
 
@@ -652,7 +660,7 @@ Measure log delivery, preserving the queue after Discord failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L370)
+[Source](../src/cogs/tasks.py#L411)
 
 Send buffered log lines to Discord and requeue them after delivery failures.
 
@@ -660,15 +668,39 @@ Send buffered log lines to Discord and requeue them after delivery failures.
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L418)
+[Source](../src/cogs/tasks.py#L459)
 
 Publish Discord, database, and scheduled-job health for Docker and operators.
+
+### `async def rotate_presence(self) -> None`
+
+**Scope:** `src/cogs/tasks.py` · `TasksCog`
+
+[Source](../src/cogs/tasks.py#L510)
+
+Rotate the bot's presence through the shuffled status texts.
+
+### `def _next_presence(self) -> tuple[discord.ActivityType, str]`
+
+**Scope:** `src/cogs/tasks.py` · `TasksCog`
+
+[Source](../src/cogs/tasks.py#L520)
+
+Return the next text, cycling activity types so each stays balanced.
+
+### `def _refill_presence_queues(self) -> None`
+
+**Scope:** `src/cogs/tasks.py` · `TasksCog`
+
+[Source](../src/cogs/tasks.py#L532)
+
+Shuffle each type's texts and choose a fresh rotating type order.
 
 ### `async def before_jobs(self) -> None`
 
 **Scope:** `src/cogs/tasks.py` · `TasksCog`
 
-[Source](../src/cogs/tasks.py#L473)
+[Source](../src/cogs/tasks.py#L553)
 
 Wait for Discord readiness before starting any background job.
 
@@ -676,7 +708,7 @@ Wait for Discord readiness before starting any background job.
 
 **Scope:** `src/cogs/tasks.py` · `module`
 
-[Source](../src/cogs/tasks.py#L478)
+[Source](../src/cogs/tasks.py#L558)
 
 Register the background-task cog with the bot.
 

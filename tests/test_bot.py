@@ -189,6 +189,45 @@ async def test_links_invite_preserves_zero_permissions() -> None:
     assert query["permissions"] == ["0"]
 
 
+async def test_donate_buttons_point_at_the_funding_pages() -> None:
+    """Verify that donate exposes Ko-fi and GitHub Sponsors as link buttons."""
+    sent: dict[str, object] = {}
+
+    class Response:
+        """Capture the deferred interaction response for the donate command."""
+
+        async def defer(self, *, thinking: bool) -> None:
+            """Record that the fake interaction response was deferred."""
+            assert thinking
+
+    class Followup:
+        """Capture the embed and view sent after the donate interaction."""
+
+        async def send(self, **kwargs: object) -> None:
+            """Record the follow-up message sent through the fake interaction."""
+            sent.update(kwargs)
+
+    user = SimpleNamespace(
+        id=123,
+        name="BotFragg",
+        display_avatar=SimpleNamespace(url="https://example.com/avatar.png"),
+    )
+    bot = _localized_bot(
+        user=user,
+        config=SimpleNamespace(support_url=None, vote_url=None, website_url=None),
+    )
+    interaction = _localized_interaction(response=Response(), followup=Followup())
+
+    await ExtraCog.donate.callback(ExtraCog(bot), interaction)
+
+    controls = sent["view"]
+    assert [button.url for button in controls.children] == [
+        "https://ko-fi.com/kumkashree",
+        "https://github.com/sponsors/KumKaShree",
+    ]
+    assert all(button.label for button in controls.children)
+
+
 def test_command_name_includes_the_subcommand_path() -> None:
     """Verify that logged command names include subcommands."""
     assert (
@@ -275,6 +314,7 @@ async def test_initial_release_command_contract(
         "login",
         "logout",
         "deletedata",
+        "donate",
         "account",
         "accounts",
         "settings",

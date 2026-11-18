@@ -34,6 +34,10 @@ log = logging.getLogger(__name__)
 GITHUB_COMMITS_URL = "https://api.github.com/repos/BotFragg/BotFragg/commits?per_page=5"
 GITHUB_REPOSITORY_URL = "https://github.com/BotFragg/BotFragg"
 GITHUB_COMMIT_URL = f"{GITHUB_REPOSITORY_URL}/commit/{{}}"
+DONATION_URLS = (
+    ("donate-kofi-button", "https://ko-fi.com/kumkashree"),
+    ("donate-github-button", "https://github.com/sponsors/KumKaShree"),
+)
 GITHUB_CACHE_SECONDS = 1800
 # A failed fetch is retried soon instead of being cached for the full window.
 GITHUB_RETRY_SECONDS = 60
@@ -486,6 +490,35 @@ class ExtraCog(commands.Cog):
             title=translated(interaction, "links-title"),
         )
         card.set_thumbnail(url=user.display_avatar.url)
+        await interaction.followup.send(embed=card, view=controls)
+
+    @app_commands.command(
+        name=app_commands.locale_str("donate", key="command-donate-name"),
+        description=app_commands.locale_str(
+            "Support BotFragg's development", key="command-donate-description"
+        ),
+    )
+    async def donate(self, interaction: discord.Interaction) -> None:
+        """Show the project's Ko-fi and GitHub Sponsors links as buttons."""
+        await interaction.response.defer(thinking=True)
+        user = self.bot.user
+        if user is None:
+            await error(interaction, "error-bot-starting")
+            return
+        card = embed(
+            translated(interaction, "donate-description"),
+            title=translated(interaction, "donate-title"),
+        )
+        card.set_thumbnail(url=user.display_avatar.url)
+        controls = view(
+            *(
+                discord.ui.Button(
+                    label=self.bot.translator.text(interaction.locale, key),
+                    url=url,
+                )
+                for key, url in DONATION_URLS
+            )
+        )
         await interaction.followup.send(embed=card, view=controls)
 
     @tasks.loop(seconds=30)

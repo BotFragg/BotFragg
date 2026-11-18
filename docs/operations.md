@@ -5,11 +5,12 @@
 The task cog writes a credential-free JSON heartbeat to
 `<system temporary directory>/botfragg-health.json` every 30 seconds. In the
 container this is `/tmp/botfragg-health.json`. It reports Discord readiness,
-a database `SELECT 1`, and every enabled background loop. Each job includes its
-last successful completion, last failure, cumulative failure count, elapsed
-seconds for its latest attempt, running state, and overdue state. Cancelled
-attempts do not count as successful. Disabled log delivery and shard-status
-jobs are omitted.
+a database `SELECT 1`, and every tracked health-relevant background loop. Each
+job includes its last successful completion, last failure, cumulative failure
+count, elapsed seconds for its latest attempt, running state, and overdue state.
+Cancelled attempts do not count as successful. Disabled log delivery and
+shard-status jobs are omitted, and the cosmetic presence rotation is not tracked
+because a missed tick has no user-visible impact.
 
 ```sh
 docker compose ps
