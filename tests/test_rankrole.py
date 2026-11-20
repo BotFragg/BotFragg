@@ -856,7 +856,7 @@ async def test_add_role_checks_configuration_before_calling_riot(
     await cog.add_role(interaction, "")
 
     assert called == []
-    assert interaction.followups[0]["embed"].description == TEST_TRANSLATOR.text(
+    assert interaction.followups[0]["content"] == TEST_TRANSLATOR.text(
         "en-US", "rankrole-not-configured"
     )
 
@@ -879,7 +879,7 @@ async def test_add_role_reports_a_missing_link(
 
     await cog.add_role(interaction, "")
 
-    assert interaction.followups[0]["embed"].description == TEST_TRANSLATOR.text(
+    assert interaction.followups[0]["content"] == TEST_TRANSLATOR.text(
         "en-US", "rankrole-needs-account"
     )
 
@@ -932,7 +932,7 @@ async def test_add_role_removes_the_role_when_unranked(
     await cog.add_role(interaction, "")
 
     assert member.written == [[]]
-    assert interaction.followups[0]["embed"].description == TEST_TRANSLATOR.text(
+    assert interaction.followups[0]["content"] == TEST_TRANSLATOR.text(
         "en-US", "rankrole-unranked"
     )
 
@@ -1173,10 +1173,11 @@ async def test_reset_picker_reports_a_blocked_panel_without_confirming() -> None
 
     await picker.callback(interaction)
 
-    assert interaction.edits == []
-    assert interaction.followups[0]["embed"].description == TEST_TRANSLATOR.text(
+    assert interaction.followups == []
+    assert interaction.edits[0]["content"] == TEST_TRANSLATOR.text(
         "en-US", "rankrole-panel-blocked"
     )
+    assert interaction.edits[0]["embeds"] == []
 
 
 async def test_public_button_round_trips_through_its_custom_id() -> None:

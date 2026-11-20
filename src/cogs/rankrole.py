@@ -106,6 +106,15 @@ def _one_item(item: discord.ui.Item[Any]) -> discord.ui.View:
     return built
 
 
+async def _notice(
+    interaction: discord.Interaction, key: str, **arguments: object
+) -> None:
+    """Reply with a plain localized line instead of an embed."""
+    await interaction.followup.send(
+        content=translated(interaction, key, **arguments), ephemeral=True
+    )
+
+
 async def _retry_write(
     operation: Callable[[], Awaitable[object]], failure: str
 ) -> bool:
@@ -451,9 +460,7 @@ class RankRoleCog(commands.Cog):
         self, interaction: discord.Interaction, mapped: dict[str, int]
     ) -> tuple[discord.Embed, discord.ui.View]:
         """Build the panel: every mapped rank, the role it awards, and how it works."""
-        top = max(mapped, key=TIER_GROUPS.index)
-        emoji = self.bot.emoji_service.rank_emoji(TIER_EMOJI_TIERS[top])
-        title = f"{emoji} {translated(interaction, 'rankrole-panel-title')}"
+        title = translated(interaction, "rankrole-panel-title")
         card = embed(
             translated(interaction, "rankrole-panel-description"),
             title=title.strip(),
@@ -622,32 +629,32 @@ class RankRoleCog(commands.Cog):
     async def add_role(self, interaction: discord.Interaction, payload: str) -> None:
         """Give the member the role for their current rank."""
         if self._throttled(interaction.user.id):
-            await error(interaction, "rankrole-cooldown")
+            await _notice(interaction, "rankrole-cooldown")
             return
         await interaction.response.defer(thinking=True, ephemeral=True)
         guild = interaction.guild
         if guild is None:
-            await error(interaction, "error-guild-only")
+            await _notice(interaction, "error-guild-only")
             return
         if not await RankRole.exists(guild_id=guild.id):
-            await error(interaction, "rankrole-not-configured")
+            await _notice(interaction, "rankrole-not-configured")
             return
         account = await selected_account(interaction.user.id)
         if account is None:
-            await error(interaction, "rankrole-needs-account")
+            await _notice(interaction, "rankrole-needs-account")
             return
         try:
             profile = await self.bot.profiles.profile(account)
         except AuthenticationRequired:
-            await error(interaction, "error-riot-login-expired")
+            await _notice(interaction, "error-riot-login-expired")
             return
         except ProfileUnavailable, HTTPFailure:
-            await error(interaction, "error-riot-services-unavailable")
+            await _notice(interaction, "error-riot-services-unavailable")
             return
         group = tier_group(profile.tier)
         member = interaction.user
         if not isinstance(member, discord.Member):
-            await error(interaction, "error-guild-only")
+            await _notice(interaction, "error-guild-only")
             return
         key = await self._sync_member(guild, member, group)
         if group is None and key == "rankrole-removed":
@@ -657,25 +664,21 @@ class RankRoleCog(commands.Cog):
             if group is not None
             else ""
         )
-        await interaction.followup.send(
-            embed=embed(translated(interaction, key, tier=name)), ephemeral=True
-        )
+        await _notice(interaction, key, tier=name)
 
     async def remove_role(self, interaction: discord.Interaction, payload: str) -> None:
         """Strip every mapped rank role from the member."""
         if self._throttled(interaction.user.id):
-            await error(interaction, "rankrole-cooldown")
+            await _notice(interaction, "rankrole-cooldown")
             return
         await interaction.response.defer(thinking=True, ephemeral=True)
         guild = interaction.guild
         member = interaction.user
         if guild is None or not isinstance(member, discord.Member):
-            await error(interaction, "error-guild-only")
+            await _notice(interaction, "error-guild-only")
             return
         key = await self._sync_member(guild, member, None)
-        await interaction.followup.send(
-            embed=embed(translated(interaction, key)), ephemeral=True
-        )
+        await _notice(interaction, key)
 
 
 class _ChannelPicker(discord.ui.ChannelSelect):
@@ -922,7 +925,7 @@ class _ResetButton(discord.ui.Button[discord.ui.View]):
         """Offer the reset scopes."""
         await interaction.response.defer()
         await interaction.followup.send(
-            embed=embed(translated(interaction, "rankrole-pick-reset")),
+            content=translated(interaction, "rankrole-pick-reset"),
             view=_one_item(_ResetPicker(self.cog, self.dashboard, self.guild)),
             ephemeral=True,
         )
@@ -964,11 +967,10 @@ class _ResetPicker(discord.ui.Select[discord.ui.View]):
         """Apply the chosen reset scope, then confirm what actually happened."""
         await interaction.response.defer()
         problem = await self.cog.reset_all(self.dashboard, self.guild, self.values[0])
-        if problem is not None:
-            await error(interaction, problem)
-            return
         await interaction.edit_original_response(
-            content=translated(interaction, "rankrole-reset-done"),
+            content=translated(
+                interaction, problem if problem is not None else "rankrole-reset-done"
+            ),
             embeds=[],
             view=None,
         )
@@ -994,11 +996,9 @@ class _PublishButton(discord.ui.Button[discord.ui.View]):
         await interaction.response.defer()
         problem = await self.cog.publish_panel(self.dashboard)
         if problem is not None:
-            await error(interaction, problem)
+            await _notice(interaction, problem)
             return
-        await interaction.followup.send(
-            embed=embed(translated(interaction, "rankrole-published")), ephemeral=True
-        )
+        await _notice(interaction, "rankrole-published")
         await self.cog._safe_dashboard(self.dashboard, self.guild)
 
 
