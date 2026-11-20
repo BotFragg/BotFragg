@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/BotFragg/BotFragg/security/policy
+    about: Report security issues privately. Never open a public issue for one.
+  - name: Setup help and general questions
+    url: https://discord.gg/VjZ5N8nT4K
+    about: Ask in the BotFragg support server instead of opening an issue.

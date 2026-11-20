@@ -1,0 +1,95 @@
+name: Bug report
+description: Something is broken or not behaving as it should.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug.
+
+        **Do not paste a Discord token, a Riot token, or a full login link.**
+        If reproducing the bug needs a credential, say so instead of including
+        it. Security issues belong in the [security policy](../security/policy),
+        not in a public issue.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened
+      description: Describe the bug, and quote the exact error text if you saw one.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Number each step, starting from a linked account where possible.
+      placeholder: |
+        1. Run /shop
+        2. Press the Bundles button
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+      description: What did you expect to happen instead?
+    validations:
+      required: true
+
+  - type: input
+    id: command
+    attributes:
+      label: Command involved
+      description: The slash command or button, if the bug happens through one.
+      placeholder: /shop, /alert create
+
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: Where are you running BotFragg?
+      options:
+        - The official BotFragg bot
+        - Self-hosted with Docker
+        - Self-hosted from source
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: BotFragg version
+      description: From `/botinfo`, or the image tag or commit you deployed.
+      placeholder: 2.1.0
+    validations:
+      required: true
+
+  - type: input
+    id: locale
+    attributes:
+      label: Interface language
+      description: Your Discord language, if the bug involves translated text.
+      placeholder: de, pt-BR, en-US
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Paste relevant log lines or drag in screenshots. Remove tokens, account IDs, and local paths first.
+      render: text
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and this is not a duplicate.
+          required: true
+        - label: I am running the latest release, or a build newer than it.
+          required: true
+        - label: This report contains no tokens, passwords, or login links.
+          required: true

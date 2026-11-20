@@ -1,0 +1,49 @@
+name: Feature request
+description: Suggest a new command, setting, or improvement.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A request is easiest to act on when it describes the problem rather than
+        only the solution. Say what you are trying to do and what gets in the
+        way.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: The situation where BotFragg does not do what you need, and how often it comes up.
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: What would you like it to do?
+      description: The command, setting, or behaviour you have in mind.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you have tried
+      description: Workarounds, another bot, or doing it by hand.
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Mockups, screenshots, links, or anything else that helps explain it.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and this is not already requested.
+          required: true
+        - label: I checked `/help` and the command does not already exist.
+          required: true
