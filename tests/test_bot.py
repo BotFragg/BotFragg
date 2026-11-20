@@ -223,7 +223,7 @@ async def test_donate_buttons_point_at_the_funding_pages() -> None:
     controls = sent["view"]
     assert [button.url for button in controls.children] == [
         "https://ko-fi.com/kumkashree",
-        "https://github.com/sponsors/KumKaShree",
+        "https://github.com/sponsors/BotFragg",
     ]
     assert all(button.label for button in controls.children)
 

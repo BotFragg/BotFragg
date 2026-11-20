@@ -36,7 +36,7 @@ GITHUB_REPOSITORY_URL = "https://github.com/BotFragg/BotFragg"
 GITHUB_COMMIT_URL = f"{GITHUB_REPOSITORY_URL}/commit/{{}}"
 DONATION_URLS = (
     ("donate-kofi-button", "https://ko-fi.com/kumkashree"),
-    ("donate-github-button", "https://github.com/sponsors/KumKaShree"),
+    ("donate-github-button", "https://github.com/sponsors/BotFragg"),
 )
 GITHUB_CACHE_SECONDS = 1800
 # A failed fetch is retried soon instead of being cached for the full window.
