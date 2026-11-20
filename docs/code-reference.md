@@ -28,6 +28,7 @@ docstring. Regenerate it after application documentation changes with
 | [.env.example](../.env.example) | Lists supported environment settings with safe example values. |
 | [CI workflow](../.github/workflows/ci.yml) | Requires PostgreSQL tests, Mypy, Ruff, locales, API-reference freshness, and Python compilation before image builds. |
 | [Issue templates](../.github/ISSUE_TEMPLATE/bug_report.yml) | Collects bug reports and feature requests as forms, and routes security reports and setup questions away from public issues. |
+| [Pull request template](../.github/pull_request_template.md) | Lists the CI gates, the generated files, and the wiring each change is expected to keep in step. |
 | [.gitignore](../.gitignore) | Excludes local configuration, data, build products, and test caches from Git. |
 | [Pre-commit configuration](../.pre-commit-config.yaml) | Runs the same Ruff and pytest checks before commits. |
 | [.python-version](../.python-version) | Selects the Python version used by uv and local tooling. |
