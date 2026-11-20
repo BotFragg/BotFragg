@@ -30,7 +30,9 @@ async def test_emoji_transport_failure_does_not_stop_startup(
         client.fetch_application_emojis.side_effect = failure("Synthetic failure")
     service = ApplicationEmojiService(client)
     bot = _localized_bot(
-        config=SimpleNamespace(app_env="test", auto_sync_commands=False),
+        config=SimpleNamespace(
+            app_env="test", auto_sync_commands=False, public_api_enabled=False
+        ),
         riot_http=SimpleNamespace(start=AsyncMock()),
         auth=SimpleNamespace(refresh_version=AsyncMock()),
         catalog=SimpleNamespace(load=AsyncMock()),

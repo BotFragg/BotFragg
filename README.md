@@ -147,6 +147,12 @@ All supported settings are documented in [`.env.example`](.env.example). A typic
 Optional settings:
 
 - `SUPPORT_URL` shows your support server in the `/links` command.
+- `PUBLIC_API_ENABLED` starts a small read-only HTTP API (`/v1/stats`,
+  `/v1/meta`, `/v1/commands`) for your own website. It is off by default and
+  publishes reach counters plus static build/command metadata — never usage,
+  per-guild, or per-user data. See
+  [docs/public-api.md](docs/public-api.md) for the contract and the TLS/CORS
+  exposure rules.
 
 Keep your `.env` file private and never commit it to version control.
 

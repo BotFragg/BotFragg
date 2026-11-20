@@ -29,6 +29,12 @@ def _bool(name: str, default: bool) -> bool:
     raise ValueError(f"{name} must be true or false")
 
 
+def _flag(name: str, default: bool) -> bool:
+    """Parse a boolean that falls back to its default when the value is blank."""
+    raw = os.getenv(name)
+    return _bool(name, default) if raw is not None and raw.strip() else default
+
+
 def _int(name: str, default: int, minimum: int = 0) -> int:
     """Parse an integer setting and reject values below its configured minimum."""
     value = int(os.getenv(name, str(default)))
@@ -84,6 +90,48 @@ def _time(name: str, default: str) -> time:
     return time(hour, minute, second, tzinfo=UTC)
 
 
+def _host(name: str, default: str) -> str:
+    """Parse a bind host that is a bare hostname or IP without a scheme or path."""
+    value = os.getenv(name, default).strip()
+    if not value or any(char.isspace() for char in value) or "/" in value:
+        raise ValueError(f"{name} must be a host or IP address without a path")
+    return value
+
+
+def _origins(name: str) -> tuple[str, ...]:
+    """Parse comma-separated absolute browser origins into a deduplicated tuple.
+
+    Origins are normalized the way browsers serialize the ``Origin`` header:
+    lowercase host, and the scheme's default port removed.
+    """
+    raw = os.getenv(name, "").strip()
+    if not raw:
+        return ()
+    origins: list[str] = []
+    for part in raw.split(","):
+        value = part.strip().rstrip("/")
+        try:
+            parsed = urlsplit(value)
+            port = parsed.port
+        except ValueError as exc:
+            raise ValueError(f"{name} must be comma-separated origins") from exc
+        if (
+            parsed.scheme not in {"http", "https"}
+            or not parsed.hostname
+            or parsed.username is not None
+            or parsed.password is not None
+            or parsed.path not in {"", "/"}
+        ):
+            raise ValueError(f"{name} must be comma-separated origins")
+        host = parsed.hostname
+        if ":" in host:
+            host = f"[{host}]"
+        default_port = 443 if parsed.scheme == "https" else 80
+        netloc = host if port in (None, default_port) else f"{host}:{port}"
+        origins.append(f"{parsed.scheme}://{netloc}")
+    return tuple(dict.fromkeys(origins))
+
+
 @dataclass(frozen=True, slots=True)
 class Settings:
     """Immutable runtime configuration populated from environment variables."""
@@ -118,6 +166,10 @@ class Settings:
     alert_time_utc: time
     user_agent_interval_minutes: int
     log_flush_interval_seconds: int
+    public_api_enabled: bool
+    public_api_host: str
+    public_api_port: int
+    public_api_allowed_origins: tuple[str, ...]
 
     @classmethod
     def from_env(cls, *, require_secrets: bool = True) -> Settings:
@@ -156,6 +208,15 @@ class Settings:
                     "TOKEN_ENCRYPTION_KEY must be a valid Fernet key"
                 ) from None
 
+        try:
+            public_api_port = _int("PUBLIC_API_PORT", 8081, 1)
+        except ValueError as exc:
+            raise ValueError(
+                "PUBLIC_API_PORT must be an integer from 1 to 65535"
+            ) from exc
+        if public_api_port > 65535:
+            raise ValueError("PUBLIC_API_PORT must be at most 65535")
+
         return cls(
             app_env=app_env,
             discord_token=token,
@@ -189,6 +250,10 @@ class Settings:
             alert_time_utc=_time("ALERT_TIME_UTC", "00:00:10"),
             user_agent_interval_minutes=_int("USER_AGENT_INTERVAL_MINUTES", 15, 1),
             log_flush_interval_seconds=_int("LOG_FLUSH_INTERVAL_SECONDS", 10, 1),
+            public_api_enabled=_flag("PUBLIC_API_ENABLED", False),
+            public_api_host=_host("PUBLIC_API_HOST", "0.0.0.0"),  # noqa: S104
+            public_api_port=public_api_port,
+            public_api_allowed_origins=_origins("PUBLIC_API_ALLOWED_ORIGINS"),
         )
 
 
