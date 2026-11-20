@@ -46,6 +46,7 @@ Riot credentials are encrypted at rest, and you can delete all of your stored da
 | VALORANT  | `/shop`, `/bundles`, `/nightmarket`, `/balance`, `/battlepass`, `/missions`, `/penalties`, `/crosshair view`, `/status`, `/profile [user]`, `/loadout` |
 | Alerts    | `/alert`, `/alerts`, `/testalerts`                                                                                      |
 | Settings  | `/settings view`, `/settings set`                                                                                       |
+| Server    | `/rankrole config`                                                                                                      |
 | Community | `/help`, `/ping`, `/botinfo`, `/links`, `/donate`                                                                        |
 
 > `/userinfo` and `/serverinfo` are owner-only operational commands.

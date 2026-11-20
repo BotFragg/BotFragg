@@ -18,7 +18,7 @@ Discord client construction, command handling, service wiring, and shutdown.
 
 **Scope:** `src/bot.py` · `module`
 
-[Source](../src/bot.py#L52)
+[Source](../src/bot.py#L53)
 
 Build the generic, user-safe response shown after an unhandled command error.
 
@@ -26,7 +26,7 @@ Build the generic, user-safe response shown after an unhandled command error.
 
 **Scope:** `src/bot.py` · `module`
 
-[Source](../src/bot.py#L62)
+[Source](../src/bot.py#L63)
 
 Application-command tree with shared context rules and error reporting.
 
@@ -34,7 +34,7 @@ Application-command tree with shared context rules and error reporting.
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L65)
+[Source](../src/bot.py#L66)
 
 Allow commands in servers and private contexts for guild and user installs.
 
@@ -42,7 +42,7 @@ Allow commands in servers and private contexts for guild and user installs.
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L75)
+[Source](../src/bot.py#L76)
 
 Record command executions while leaving autocomplete requests untracked.
 
@@ -50,7 +50,7 @@ Record command executions while leaving autocomplete requests untracked.
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L101)
+[Source](../src/bot.py#L102)
 
 Return the dotted parent and subcommand path from Discord's payload.
 
@@ -58,7 +58,7 @@ Return the dotted parent and subcommand path from Discord's payload.
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L120)
+[Source](../src/bot.py#L121)
 
 Log unhandled app-command errors and send a private generic response.
 
@@ -66,7 +66,7 @@ Log unhandled app-command errors and send a private generic response.
 
 **Scope:** `src/bot.py` · `module`
 
-[Source](../src/bot.py#L146)
+[Source](../src/bot.py#L147)
 
 Own Discord lifecycle and the shared Riot, database, and presentation services.
 
@@ -74,7 +74,7 @@ Own Discord lifecycle and the shared Riot, database, and presentation services.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L149)
+[Source](../src/bot.py#L150)
 
 Configure the bot's intents and application services.
 
@@ -82,7 +82,7 @@ Configure the bot's intents and application services.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L179)
+[Source](../src/bot.py#L180)
 
 Register a persistent component action, rejecting duplicate action names.
 
@@ -90,7 +90,7 @@ Register a persistent component action, rejecting duplicate action names.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L185)
+[Source](../src/bot.py#L186)
 
 Discard only the handlers bound to the given cog instance.
 
@@ -98,7 +98,7 @@ Discard only the handlers bound to the given cog instance.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L193)
+[Source](../src/bot.py#L194)
 
 Discard a failed cog's component handlers so loading it can be retried.
 
@@ -106,7 +106,7 @@ Discard a failed cog's component handlers so loading it can be retried.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L213)
+[Source](../src/bot.py#L214)
 
 Remove a cog's component handlers along with its commands and listeners.
 
@@ -114,7 +114,7 @@ Remove a cog's component handlers along with its commands and listeners.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L227)
+[Source](../src/bot.py#L228)
 
 Initialize shared resources, load extensions, and optionally sync commands.
 
@@ -122,7 +122,7 @@ Initialize shared resources, load extensions, and optionally sync commands.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L249)
+[Source](../src/bot.py#L250)
 
 Set the online activity and log the connected shard and guild counts.
 
@@ -130,7 +130,7 @@ Set the online activity and log the connected shard and guild counts.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L264)
+[Source](../src/bot.py#L265)
 
 Close Discord, Riot HTTP, and database resources in order.
 
@@ -146,7 +146,7 @@ Discord event listeners for analytics and guild notifications.
 
 **Scope:** `src/cogs/events.py` · `module`
 
-[Source](../src/cogs/events.py#L20)
+[Source](../src/cogs/events.py#L21)
 
 Record successful commands and report configured Discord lifecycle events.
 
@@ -154,7 +154,7 @@ Record successful commands and report configured Discord lifecycle events.
 
 **Scope:** `src/cogs/events.py` · `EventsCog`
 
-[Source](../src/cogs/events.py#L23)
+[Source](../src/cogs/events.py#L24)
 
 Bind event handlers to the running bot instance.
 
@@ -162,7 +162,7 @@ Bind event handlers to the running bot instance.
 
 **Scope:** `src/cogs/events.py` · `EventsCog`
 
-[Source](../src/cogs/events.py#L28)
+[Source](../src/cogs/events.py#L29)
 
 Log completed commands; the command tree coordinates analytics with deletion.
 
@@ -170,7 +170,7 @@ Log completed commands; the command tree coordinates analytics with deletion.
 
 **Scope:** `src/cogs/events.py` · `EventsCog`
 
-[Source](../src/cogs/events.py#L38)
+[Source](../src/cogs/events.py#L39)
 
 Send a summary to the channel configured for guild joins.
 
@@ -178,15 +178,23 @@ Send a summary to the channel configured for guild joins.
 
 **Scope:** `src/cogs/events.py` · `EventsCog`
 
-[Source](../src/cogs/events.py#L45)
+[Source](../src/cogs/events.py#L46)
 
-Send a summary to the channel configured for guild departures.
+Forget the guild's stored configuration, then log the departure.
+
+### `async def _forget_guild(self, guild: discord.Guild) -> None`
+
+**Scope:** `src/cogs/events.py` · `EventsCog`
+
+[Source](../src/cogs/events.py#L53)
+
+Delete configuration a guild can no longer reach or use.
 
 ### `async def _log_guild_event(self, guild: discord.Guild, channel_id: int | None, title: str) -> None`
 
 **Scope:** `src/cogs/events.py` · `EventsCog`
 
-[Source](../src/cogs/events.py#L51)
+[Source](../src/cogs/events.py#L61)
 
 Resolve a configured messageable channel and send a guild summary.
 
@@ -194,7 +202,7 @@ Resolve a configured messageable channel and send a guild summary.
 
 **Scope:** `src/cogs/events.py` · `module`
 
-[Source](../src/cogs/events.py#L96)
+[Source](../src/cogs/events.py#L106)
 
 Register the Discord event-listener cog with the bot.
 
@@ -337,6 +345,462 @@ Wait for Discord readiness before the first shard-status update.
 [Source](../src/cogs/extra.py#L583)
 
 Register the general utility cog with the bot.
+
+## `src/cogs/rankrole.py`
+
+Member self-service rank roles driven by a staff-configured panel.
+
+### `def tier_group(tier: int) -> str | None`
+
+**Scope:** `src/cogs/rankrole.py` · `module`
+
+[Source](../src/cogs/rankrole.py#L67)
+
+Map a competitive tier id to its rank group, or None when unranked.
+
+### `def _tier_key(group: str) -> str`
+
+**Scope:** `src/cogs/rankrole.py` · `module`
+
+[Source](../src/cogs/rankrole.py#L75)
+
+Return the locale key naming one rank group.
+
+### `def _select_emoji(emoji: str) -> discord.PartialEmoji | None`
+
+**Scope:** `src/cogs/rankrole.py` · `module`
+
+[Source](../src/cogs/rankrole.py#L83)
+
+Convert a cached rank emoji into a select option emoji when present.
+
+### `def plan_changes(held: set[int], by_role: dict[int, str], target: int | None) -> tuple[list[int], bool]`
+
+**Scope:** `src/cogs/rankrole.py` · `module`
+
+[Source](../src/cogs/rankrole.py#L88)
+
+Return the mapped roles to strip and whether the target must be added.
+
+Roles the bot does not map are never touched, and a member who already holds
+exactly the target role produces no Discord writes at all.
+
+### `def _one_item(item: discord.ui.Item[Any]) -> discord.ui.View`
+
+**Scope:** `src/cogs/rankrole.py` · `module`
+
+[Source](../src/cogs/rankrole.py#L102)
+
+Wrap a single component in a disposable view for an ephemeral step.
+
+### `async def _notice(interaction: discord.Interaction, key: str, **arguments: object) -> None`
+
+**Scope:** `src/cogs/rankrole.py` · `module`
+
+[Source](../src/cogs/rankrole.py#L109)
+
+Reply with a plain localized line instead of an embed.
+
+### `async def _retry_write(operation: Callable[[], Awaitable[object]], failure: str) -> bool`
+
+**Scope:** `src/cogs/rankrole.py` · `module`
+
+[Source](../src/cogs/rankrole.py#L118)
+
+Run one database write twice, reporting whether it eventually landed.
+
+### `class RankRoleCog(commands.Cog)`
+
+**Scope:** `src/cogs/rankrole.py` · `module`
+
+[Source](../src/cogs/rankrole.py#L134)
+
+Configure the rank role panel and serve its member controls.
+
+### `def __init__(self, bot: BotFraggBot) -> None`
+
+**Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
+
+[Source](../src/cogs/rankrole.py#L147)
+
+Bind the bot and register the member-facing panel actions.
+
+### `async def config(self, interaction: discord.Interaction) -> None`
+
+**Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
+
+[Source](../src/cogs/rankrole.py#L161)
+
+Open the staff dashboard for the panel and its mappings.
+
+### `async def _dashboard_embed(self, interaction: discord.Interaction, guild: discord.Guild) -> discord.Embed`
+
+**Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
+
+[Source](../src/cogs/rankrole.py#L173)
+
+Render the panel state, every mapping, and the gaps left to fill.
+
+### `def _dashboard_view(self, interaction: discord.Interaction, guild: discord.Guild) -> discord.ui.View`
+
+**Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
+
+[Source](../src/cogs/rankrole.py#L242)
+
+Build the ephemeral dashboard controls for one staff session.
+
+### `async def refresh_dashboard(self, interaction: discord.Interaction, guild: discord.Guild) -> None`
+
+**Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
+
+[Source](../src/cogs/rankrole.py#L253)
+
+Redraw the staff dashboard after a change.
+
+### `async def _safe_dashboard(self, interaction: discord.Interaction, guild: discord.Guild) -> None`
+
+**Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
+
+[Source](../src/cogs/rankrole.py#L262)
+
+Redraw the dashboard on a failure path without raising again.
+
+### `async def apply_mapping(self, guild: discord.Guild, group: str, role: discord.Role) -> str | None`
+
+**Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
+
+[Source](../src/cogs/rankrole.py#L271)
+
+Store one tier mapping, returning a locale key when it is refused.
+
+### `async def _panel_channel(guild: discord.Guild, channel_id: int) -> discord.TextChannel | None`
+
+**Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
+
+[Source](../src/cogs/rankrole.py#L285)
+
+Resolve the configured channel, returning None only when it is gone.
+
+Transient failures are left to propagate so callers never mistake a
+network error for a deleted channel.
+
+### `async def retire_panel(self, interaction: discord.Interaction, guild: discord.Guild) -> bool`
+
+**Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
+
+[Source](../src/cogs/rankrole.py#L303)
+
+Delete the posted panel, or disable it when deletion is refused.
+
+### `async def reset_all(self, dashboard: discord.Interaction, guild: discord.Guild, scope: str) -> str | None`
+
+**Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
+
+[Source](../src/cogs/rankrole.py#L343)
+
+Clear the panel, every mapping, or one tier, updating the panel safely.
+
+The live panel is always updated before stored data is discarded for
+good, so a refused edit leaves the database exactly as it was.
+
+### `async def publish_panel(self, interaction: discord.Interaction) -> str | None`
+
+**Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
+
+[Source](../src/cogs/rankrole.py#L401)
+
+Post or update the member panel, returning a locale key when blocked.
+
+### `async def _record_panel(panel: RankRolePanel, message: discord.Message) -> bool`
+
+**Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
+
+[Source](../src/cogs/rankrole.py#L451)
+
+Store the posted panel id, retrying once before giving up.
+
+### `def _panel_parts(self, interaction: discord.Interaction, mapped: dict[str, int]) -> tuple[discord.Embed, discord.ui.View]`
+
+**Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
+
+[Source](../src/cogs/rankrole.py#L459)
+
+Build the panel: every mapped rank, the role it awards, and how it works.
+
+### `async def refresh_panel(self, interaction: discord.Interaction) -> str | None`
+
+**Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
+
+[Source](../src/cogs/rankrole.py#L517)
+
+Update an already posted panel in place, never creating one.
+
+Returns a locale key describing why the update could not happen, so a
+deleted panel is reported as stale rather than as a permission problem.
+
+### `def _throttled(self, user_id: int) -> bool`
+
+**Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
+
+[Source](../src/cogs/rankrole.py#L560)
+
+Return True when the member acted within the debounce window.
+
+### `async def _mapped_roles(self, guild: discord.Guild) -> tuple[dict[str, int], dict[int, str]]`
+
+**Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
+
+[Source](../src/cogs/rankrole.py#L575)
+
+Return tier to role ids and its reverse for one guild.
+
+### `async def _sync_member(self, guild: discord.Guild, member: discord.Member, target: str | None) -> str`
+
+**Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
+
+[Source](../src/cogs/rankrole.py#L584)
+
+Move one member to the target tier role, returning a locale key.
+
+### `async def add_role(self, interaction: discord.Interaction, payload: str) -> None`
+
+**Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
+
+[Source](../src/cogs/rankrole.py#L629)
+
+Give the member the role for their current rank.
+
+### `async def remove_role(self, interaction: discord.Interaction, payload: str) -> None`
+
+**Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
+
+[Source](../src/cogs/rankrole.py#L669)
+
+Strip every mapped rank role from the member.
+
+### `class _ChannelPicker(discord.ui.ChannelSelect)`
+
+**Scope:** `src/cogs/rankrole.py` · `module`
+
+[Source](../src/cogs/rankrole.py#L684)
+
+Choose and store the channel that hosts the member panel.
+
+### `def __init__(self, cog: RankRoleCog, dashboard: discord.Interaction, guild: discord.Guild) -> None`
+
+**Scope:** `src/cogs/rankrole.py` · `_ChannelPicker`
+
+[Source](../src/cogs/rankrole.py#L687)
+
+Label the picker and remember the dashboard it belongs to.
+
+### `async def callback(self, interaction: discord.Interaction[Any]) -> None`
+
+**Scope:** `src/cogs/rankrole.py` · `_ChannelPicker`
+
+[Source](../src/cogs/rankrole.py#L707)
+
+Store the chosen channel, retiring the old panel first.
+
+### `class _MappingButton(discord.ui.Button[discord.ui.View])`
+
+**Scope:** `src/cogs/rankrole.py` · `module`
+
+[Source](../src/cogs/rankrole.py#L730)
+
+Start the two-step tier then role mapping flow.
+
+### `def __init__(self, cog: RankRoleCog, dashboard: discord.Interaction, guild: discord.Guild) -> None`
+
+**Scope:** `src/cogs/rankrole.py` · `_MappingButton`
+
+[Source](../src/cogs/rankrole.py#L733)
+
+Label the button and remember the dashboard it belongs to.
+
+### `async def callback(self, interaction: discord.Interaction[Any]) -> None`
+
+**Scope:** `src/cogs/rankrole.py` · `_MappingButton`
+
+[Source](../src/cogs/rankrole.py#L745)
+
+Offer a rank picker and a role picker in one step.
+
+### `class _MappingView(discord.ui.View)`
+
+**Scope:** `src/cogs/rankrole.py` · `module`
+
+[Source](../src/cogs/rankrole.py#L757)
+
+Pick a rank and its role together, then save both in one step.
+
+### `def __init__(self, cog: RankRoleCog, dashboard: discord.Interaction, guild: discord.Guild, mapped: dict[str, int]) -> None`
+
+**Scope:** `src/cogs/rankrole.py` · `_MappingView`
+
+[Source](../src/cogs/rankrole.py#L760)
+
+Build the rank picker, the role picker, and the save controls.
+
+### `class _RankSelect(discord.ui.Select[discord.ui.View])`
+
+**Scope:** `src/cogs/rankrole.py` · `module`
+
+[Source](../src/cogs/rankrole.py#L782)
+
+Choose the rank whose role is being configured.
+
+### `def __init__(self, cog: RankRoleCog, dashboard: discord.Interaction, guild: discord.Guild, owner: _MappingView, mapped: dict[str, int]) -> None`
+
+**Scope:** `src/cogs/rankrole.py` · `_RankSelect`
+
+[Source](../src/cogs/rankrole.py#L785)
+
+Build one option per rank, noting the role it currently awards.
+
+### `def _current(cog: RankRoleCog, dashboard: discord.Interaction, guild: discord.Guild, mapped: dict[str, int], group: str) -> str`
+
+**Scope:** `src/cogs/rankrole.py` · `_RankSelect`
+
+[Source](../src/cogs/rankrole.py#L812)
+
+Describe the role a rank currently awards, for the option subtitle.
+
+### `async def callback(self, interaction: discord.Interaction[Any]) -> None`
+
+**Scope:** `src/cogs/rankrole.py` · `_RankSelect`
+
+[Source](../src/cogs/rankrole.py#L828)
+
+Record the chosen rank without redrawing the step.
+
+### `class _RoleSelect(discord.ui.RoleSelect)`
+
+**Scope:** `src/cogs/rankrole.py` · `module`
+
+[Source](../src/cogs/rankrole.py#L834)
+
+Choose the role that will be awarded for the chosen rank.
+
+### `def __init__(self, cog: RankRoleCog, dashboard: discord.Interaction, owner: _MappingView) -> None`
+
+**Scope:** `src/cogs/rankrole.py` · `_RoleSelect`
+
+[Source](../src/cogs/rankrole.py#L837)
+
+Label the picker and remember the step it belongs to.
+
+### `async def callback(self, interaction: discord.Interaction[Any]) -> None`
+
+**Scope:** `src/cogs/rankrole.py` · `_RoleSelect`
+
+[Source](../src/cogs/rankrole.py#L850)
+
+Record the chosen role without redrawing the step.
+
+### `class _SaveButton(discord.ui.Button[discord.ui.View])`
+
+**Scope:** `src/cogs/rankrole.py` · `module`
+
+[Source](../src/cogs/rankrole.py#L860)
+
+Store the chosen rank and role pair.
+
+### `def __init__(self, cog: RankRoleCog, dashboard: discord.Interaction, owner: _MappingView) -> None`
+
+**Scope:** `src/cogs/rankrole.py` · `_SaveButton`
+
+[Source](../src/cogs/rankrole.py#L863)
+
+Label the button and let the step validate the pair on save.
+
+### `async def callback(self, interaction: discord.Interaction[Any]) -> None`
+
+**Scope:** `src/cogs/rankrole.py` · `_SaveButton`
+
+[Source](../src/cogs/rankrole.py#L876)
+
+Save the mapping, then refresh the panel and the dashboard.
+
+### `class _ResetButton(discord.ui.Button[discord.ui.View])`
+
+**Scope:** `src/cogs/rankrole.py` · `module`
+
+[Source](../src/cogs/rankrole.py#L911)
+
+Open the reset scope picker.
+
+### `def __init__(self, cog: RankRoleCog, dashboard: discord.Interaction, guild: discord.Guild) -> None`
+
+**Scope:** `src/cogs/rankrole.py` · `_ResetButton`
+
+[Source](../src/cogs/rankrole.py#L914)
+
+Label the button and remember the dashboard it belongs to.
+
+### `async def callback(self, interaction: discord.Interaction[Any]) -> None`
+
+**Scope:** `src/cogs/rankrole.py` · `_ResetButton`
+
+[Source](../src/cogs/rankrole.py#L924)
+
+Offer the reset scopes.
+
+### `class _ResetPicker(discord.ui.Select[discord.ui.View])`
+
+**Scope:** `src/cogs/rankrole.py` · `module`
+
+[Source](../src/cogs/rankrole.py#L934)
+
+Pick which stored rank role data to clear.
+
+### `def __init__(self, cog: RankRoleCog, dashboard: discord.Interaction, guild: discord.Guild) -> None`
+
+**Scope:** `src/cogs/rankrole.py` · `_ResetPicker`
+
+[Source](../src/cogs/rankrole.py#L937)
+
+Build the panel, all-mappings, and per-tier reset options.
+
+### `async def callback(self, interaction: discord.Interaction[Any]) -> None`
+
+**Scope:** `src/cogs/rankrole.py` · `_ResetPicker`
+
+[Source](../src/cogs/rankrole.py#L966)
+
+Apply the chosen reset scope, then confirm what actually happened.
+
+### `class _PublishButton(discord.ui.Button[discord.ui.View])`
+
+**Scope:** `src/cogs/rankrole.py` · `module`
+
+[Source](../src/cogs/rankrole.py#L979)
+
+Post or update the member-facing panel.
+
+### `def __init__(self, cog: RankRoleCog, dashboard: discord.Interaction, guild: discord.Guild) -> None`
+
+**Scope:** `src/cogs/rankrole.py` · `_PublishButton`
+
+[Source](../src/cogs/rankrole.py#L982)
+
+Label the button and remember the dashboard it belongs to.
+
+### `async def callback(self, interaction: discord.Interaction[Any]) -> None`
+
+**Scope:** `src/cogs/rankrole.py` · `_PublishButton`
+
+[Source](../src/cogs/rankrole.py#L994)
+
+Publish the panel and redraw the dashboard.
+
+### `async def setup(bot: BotFraggBot) -> None`
+
+**Scope:** `src/cogs/rankrole.py` · `module`
+
+[Source](../src/cogs/rankrole.py#L1005)
+
+Register the rank role command and its member controls.
 
 ## `src/cogs/staff.py`
 
@@ -2114,6 +2578,18 @@ Track alert notifications and the Night Market alert preference.
 
 Add per-account notification markers and the Night Market toggle.
 
+## `src/migrations/0012_rank_roles.py`
+
+Store rank role panel destinations and per-tier role mappings.
+
+### `class Migration(migrations.Migration)`
+
+**Scope:** `src/migrations/0012_rank_roles.py` · `module`
+
+[Source](../src/migrations/0012_rank_roles.py#L7)
+
+Create the rank role panel and mapping tables.
+
 ## `src/migrations/__init__.py`
 
 Tortoise migration package for the BotFragg database schema.
@@ -2224,6 +2700,30 @@ Index creation time so retention can prune old analytics efficiently.
 [Source](../src/models/entities.py#L119)
 
 Map each configured Discord channel to its persistent status message.
+
+### `class RankRolePanel(Model)`
+
+**Scope:** `src/models/entities.py` · `module`
+
+[Source](../src/models/entities.py#L126)
+
+Record where one guild hosts its rank role panel and which message is live.
+
+### `class RankRole(Model)`
+
+**Scope:** `src/models/entities.py` · `module`
+
+[Source](../src/models/entities.py#L135)
+
+Map one rank tier group to the role a guild awards for it.
+
+### `class Meta`
+
+**Scope:** `src/models/entities.py` · `RankRole`
+
+[Source](../src/models/entities.py#L142)
+
+Allow at most one role per tier group in each guild.
 
 ## `src/monitoring.py`
 
@@ -4446,25 +4946,33 @@ Fetch or reuse one region's validated status payload.
 
 ## `src/views/__init__.py`
 
-Public timestamp and owner-scoped Discord component exports.
+Public timestamp and persistent Discord component exports.
 
 ## `src/views/components.py`
 
-Persistent interactive controls scoped to the Discord user who created them.
+Persistent interactive controls, owner-scoped or public as each declares.
 
 ### `def select_custom_id(action: str, owner_id: int, payload: str) -> str`
 
 **Scope:** `src/views/components.py` · `module`
 
-[Source](../src/views/components.py#L20)
+[Source](../src/views/components.py#L21)
 
 Build the persistent select custom ID shared by menus and their handlers.
+
+### `def public_custom_id(action: str, payload: str = '') -> str`
+
+**Scope:** `src/views/components.py` · `module`
+
+[Source](../src/views/components.py#L26)
+
+Build the persistent custom ID for a control that any member may press.
 
 ### `async def _reject_other_owner(interaction: discord.Interaction[Any], owner_id: int, key: str) -> bool`
 
 **Scope:** `src/views/components.py` · `module`
 
-[Source](../src/views/components.py#L25)
+[Source](../src/views/components.py#L31)
 
 Allow the recorded owner and refuse the control to everybody else.
 
@@ -4472,7 +4980,7 @@ Allow the recorded owner and refuse the control to everybody else.
 
 **Scope:** `src/views/components.py` · `module`
 
-[Source](../src/views/components.py#L38)
+[Source](../src/views/components.py#L44)
 
 Run the handler registered for an owned control.
 
@@ -4480,7 +4988,7 @@ Run the handler registered for an owned control.
 
 **Scope:** `src/views/components.py` · `module`
 
-[Source](../src/views/components.py#L57)
+[Source](../src/views/components.py#L63)
 
 Create a persistent button whose action can only be used by its owner.
 
@@ -4488,7 +4996,7 @@ Create a persistent button whose action can only be used by its owner.
 
 **Scope:** `src/views/components.py` · `OwnedActionButton`
 
-[Source](../src/views/components.py#L60)
+[Source](../src/views/components.py#L66)
 
 Build a stable custom ID containing the action, owner, and payload.
 
@@ -4496,7 +5004,7 @@ Build a stable custom ID containing the action, owner, and payload.
 
 **Scope:** `src/views/components.py` · `OwnedActionButton`
 
-[Source](../src/views/components.py#L86)
+[Source](../src/views/components.py#L92)
 
 Reconstruct a persistent button from its custom ID and visible style.
 
@@ -4504,7 +5012,7 @@ Reconstruct a persistent button from its custom ID and visible style.
 
 **Scope:** `src/views/components.py` · `OwnedActionButton`
 
-[Source](../src/views/components.py#L105)
+[Source](../src/views/components.py#L111)
 
 Reject interactions from users other than the button's recorded owner.
 
@@ -4512,7 +5020,7 @@ Reject interactions from users other than the button's recorded owner.
 
 **Scope:** `src/views/components.py` · `OwnedActionButton`
 
-[Source](../src/views/components.py#L111)
+[Source](../src/views/components.py#L117)
 
 Dispatch the button action to its registered handler inside a trace.
 
@@ -4520,7 +5028,7 @@ Dispatch the button action to its registered handler inside a trace.
 
 **Scope:** `src/views/components.py` · `module`
 
-[Source](../src/views/components.py#L118)
+[Source](../src/views/components.py#L124)
 
 Read the values actually offered by this message's matching select menu.
 
@@ -4528,7 +5036,7 @@ Read the values actually offered by this message's matching select menu.
 
 **Scope:** `src/views/components.py` · `module`
 
-[Source](../src/views/components.py#L132)
+[Source](../src/views/components.py#L138)
 
 Create a persistent select menu whose action is restricted to its owner.
 
@@ -4536,7 +5044,7 @@ Create a persistent select menu whose action is restricted to its owner.
 
 **Scope:** `src/views/components.py` · `OwnedSelect`
 
-[Source](../src/views/components.py#L135)
+[Source](../src/views/components.py#L141)
 
 Build a stable custom ID and a translated placeholder when options are empty.
 
@@ -4544,7 +5052,7 @@ Build a stable custom ID and a translated placeholder when options are empty.
 
 **Scope:** `src/views/components.py` · `OwnedSelect`
 
-[Source](../src/views/components.py#L167)
+[Source](../src/views/components.py#L173)
 
 Reconstruct a persistent select menu from its ID and current options.
 
@@ -4552,7 +5060,7 @@ Reconstruct a persistent select menu from its ID and current options.
 
 **Scope:** `src/views/components.py` · `OwnedSelect`
 
-[Source](../src/views/components.py#L186)
+[Source](../src/views/components.py#L192)
 
 Reject interactions from users other than the menu's recorded owner.
 
@@ -4560,15 +5068,47 @@ Reject interactions from users other than the menu's recorded owner.
 
 **Scope:** `src/views/components.py` · `OwnedSelect`
 
-[Source](../src/views/components.py#L192)
+[Source](../src/views/components.py#L198)
 
 Dispatch the selected value with the menu payload to its registered handler.
+
+### `class PublicActionButton(discord.ui.DynamicItem[discord.ui.Button])`
+
+**Scope:** `src/views/components.py` · `module`
+
+[Source](../src/views/components.py#L209)
+
+Create a persistent button any member may press; its handler authorises.
+
+### `def __init__(self, action: str, payload: str = '', *, label: str | None = None, emoji: str | None = None, style: discord.ButtonStyle = discord.ButtonStyle.secondary, disabled: bool = False) -> None`
+
+**Scope:** `src/views/components.py` · `PublicActionButton`
+
+[Source](../src/views/components.py#L214)
+
+Build a stable custom ID carrying only the action and its marker.
+
+### `async def from_custom_id(cls, interaction: discord.Interaction[Any], item: discord.ui.Item[Any], match: re.Match[str]) -> PublicActionButton`
+
+**Scope:** `src/views/components.py` · `PublicActionButton`
+
+[Source](../src/views/components.py#L238)
+
+Reconstruct a member-facing button from its custom ID and visible style.
+
+### `async def callback(self, interaction: discord.Interaction[Any]) -> None`
+
+**Scope:** `src/views/components.py` · `PublicActionButton`
+
+[Source](../src/views/components.py#L255)
+
+Dispatch the action to its handler, which decides who may use it.
 
 ### `def _error_embed(message: str) -> discord.Embed`
 
 **Scope:** `src/views/components.py` · `module`
 
-[Source](../src/views/components.py#L203)
+[Source](../src/views/components.py#L262)
 
 Build a compact red embed for an invalid or unavailable component action.
 

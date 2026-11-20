@@ -1,4 +1,4 @@
-"""Persistent interactive controls scoped to the Discord user who created them."""
+"""Persistent interactive controls, owner-scoped or public as each declares."""
 
 from __future__ import annotations
 
@@ -15,11 +15,17 @@ ACTION_RE = re.compile(
 SELECT_RE = re.compile(
     r"botfragg_select:(?P<action>[a-z_]+):(?P<owner>\d+):(?P<payload>[^:]*)"
 )
+PUBLIC_ACTION_RE = re.compile(r"botfragg_public:(?P<action>[a-z_]+):(?P<payload>[^:]*)")
 
 
 def select_custom_id(action: str, owner_id: int, payload: str) -> str:
     """Build the persistent select custom ID shared by menus and their handlers."""
     return f"botfragg_select:{action}:{owner_id}:{payload}"
+
+
+def public_custom_id(action: str, payload: str = "") -> str:
+    """Build the persistent custom ID for a control that any member may press."""
+    return f"botfragg_public:{action}:{payload}"
 
 
 async def _reject_other_owner(
@@ -197,6 +203,59 @@ class OwnedSelect(discord.ui.DynamicItem[discord.ui.Select], template=SELECT_RE)
             self.action,
             f"{self.payload}|{selected}",
             "component-select-unavailable",
+        )
+
+
+class PublicActionButton(
+    discord.ui.DynamicItem[discord.ui.Button], template=PUBLIC_ACTION_RE
+):
+    """Create a persistent button any member may press; its handler authorises."""
+
+    def __init__(
+        self,
+        action: str,
+        payload: str = "",
+        *,
+        label: str | None = None,
+        emoji: str | None = None,
+        style: discord.ButtonStyle = discord.ButtonStyle.secondary,
+        disabled: bool = False,
+    ) -> None:
+        """Build a stable custom ID carrying only the action and its marker."""
+        self.action = action
+        self.payload = payload
+        super().__init__(
+            discord.ui.Button(
+                label=label,
+                emoji=emoji,
+                style=style,
+                disabled=disabled,
+                custom_id=public_custom_id(action, payload),
+            )
+        )
+
+    @classmethod
+    async def from_custom_id(
+        cls,
+        interaction: discord.Interaction[Any],
+        item: discord.ui.Item[Any],
+        match: re.Match[str],
+    ) -> PublicActionButton:
+        """Reconstruct a member-facing button from its custom ID and visible style."""
+        assert isinstance(item, discord.ui.Button)
+        return cls(
+            match["action"],
+            match["payload"],
+            label=item.label,
+            emoji=str(item.emoji) if item.emoji else None,
+            style=item.style,
+            disabled=item.disabled,
+        )
+
+    async def callback(self, interaction: discord.Interaction[Any]) -> None:
+        """Dispatch the action to its handler, which decides who may use it."""
+        await _dispatch(
+            interaction, self.action, self.payload, "component-button-unavailable"
         )
 
 
