@@ -34,6 +34,7 @@ docstring. Regenerate it after application documentation changes with
 | [.python-version](../.python-version) | Selects the Python version used by uv and local tooling. |
 | [AGENTS.md](../AGENTS.md) | Records the repository's setup, verification, and wiring rules for coding agents. |
 | [CHANGELOG.md](../CHANGELOG.md) | Records user-visible release changes. |
+| [CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md) | Adopts the Contributor Covenant and names the enforcement route for contributors. |
 | [CONTRIBUTING.md](../CONTRIBUTING.md) | Documents the development environment and required checks. |
 | [docs/api-reference.md](api-reference.md) | Lists application modules, classes, and callables with their signatures, source links, and docstrings. |
 | [docs/code-reference.md](code-reference.md) | Maps tracked files and summarizes how runtime components work together. |
