@@ -1100,11 +1100,19 @@ async def test_dashboard_lists_mapped_and_missing_tiers() -> None:
 
     card = await cog._dashboard_embed(_panel_interaction(), _dash_guild())
 
-    text = card.description
-    assert "1 of 9 tiers mapped" in text
-    assert TEST_TRANSLATOR.text("en-US", "rankrole-tier-gold") in text
-    assert "<@&10>" in text
-    assert "Iron" in text
+    fields = {field.name: field.value for field in card.fields}
+    coverage = fields[
+        TEST_TRANSLATOR.text("en-US", "rankrole-dashboard-coverage-field")
+    ]
+    ranks = fields[TEST_TRANSLATOR.text("en-US", "rankrole-dashboard-mapped-field")]
+    gaps = fields[TEST_TRANSLATOR.text("en-US", "rankrole-dashboard-unmapped-field")]
+    assert "1 of 9 ranks mapped" in coverage
+    assert TEST_TRANSLATOR.text("en-US", "rankrole-tier-gold") in ranks
+    assert "<@&10>" in ranks
+    assert "Iron" in gaps
+    assert card.footer.text == TEST_TRANSLATOR.text(
+        "en-US", "rankrole-dashboard-footer"
+    )
 
 
 def _dash_guild() -> SimpleNamespace:
@@ -1119,10 +1127,17 @@ async def test_dashboard_reports_an_empty_mapping_set() -> None:
 
     card = await cog._dashboard_embed(_panel_interaction(), _dash_guild())
 
-    assert TEST_TRANSLATOR.text("en-US", "rankrole-dashboard-empty-mapped") in (
-        card.description
-    )
-    assert "0 of 9 tiers mapped" in card.description
+    fields = {field.name: field.value for field in card.fields}
+    assert fields[
+        TEST_TRANSLATOR.text("en-US", "rankrole-dashboard-mapped-field")
+    ] == TEST_TRANSLATOR.text("en-US", "rankrole-dashboard-empty-mapped")
+    gaps = fields[TEST_TRANSLATOR.text("en-US", "rankrole-dashboard-unmapped-field")]
+    for _group, key in rankrole.TIER_ROLES:
+        assert TEST_TRANSLATOR.text("en-US", key) in gaps
+    coverage = fields[
+        TEST_TRANSLATOR.text("en-US", "rankrole-dashboard-coverage-field")
+    ]
+    assert "0 of 9 ranks mapped" in coverage
 
 
 @pytest.mark.usefixtures("backend_database")

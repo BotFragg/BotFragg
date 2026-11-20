@@ -164,7 +164,7 @@ class RankRoleCog(commands.Cog):
     async def _dashboard_embed(
         self, interaction: discord.Interaction, guild: discord.Guild
     ) -> discord.Embed:
-        """Render the panel state and every configured tier mapping."""
+        """Render the panel state, every mapping, and the gaps left to fill."""
         panel = await RankRolePanel.get_or_none(guild_id=guild.id)
         rows = await RankRole.filter(guild_id=guild.id)
         mapped = {row.tier_group: row.role_id for row in rows}
@@ -180,46 +180,55 @@ class RankRoleCog(commands.Cog):
             )
             posted = f"[{translated(interaction, 'rankrole-posted')}]({link})"
         else:
-            posted = translated(interaction, "rankrole-unset")
-        lines = [
-            translated(
+            posted = translated(interaction, "rankrole-not-posted")
+        card = embed(
+            translated(interaction, "rankrole-dashboard-purpose"),
+            title=translated(interaction, "rankrole-title"),
+        )
+        card.add_field(
+            name=translated(interaction, "rankrole-dashboard-panel-field"),
+            value=f"{channel}\n{posted}",
+            inline=True,
+        )
+        card.add_field(
+            name=translated(interaction, "rankrole-dashboard-coverage-field"),
+            value=translated(
                 interaction,
-                "rankrole-dashboard-status",
-                channel=channel,
-                panel=posted,
+                "rankrole-dashboard-coverage",
                 mapped=len(mapped),
                 total=len(TIER_GROUPS),
             ),
-            "",
-            f"**{translated(interaction, 'rankrole-dashboard-mapped')}**",
-        ]
-        if mapped:
-            for group, key in TIER_ROLES:
-                role_id = mapped.get(group)
-                if role_id is None:
-                    continue
-                role = guild.get_role(role_id)
-                target = role.mention if role is not None else f"<@&{role_id}>"
-                emoji = self.bot.emoji_service.rank_emoji(TIER_EMOJI_TIERS[group])
-                label = self.bot.translator.text(interaction.locale, key)
-                lines.append(f"{emoji} {label} → {target}".strip())
-        else:
-            lines.append(translated(interaction, "rankrole-dashboard-empty-mapped"))
+            inline=True,
+        )
+        ranks = []
+        for group, key in TIER_ROLES:
+            role_id = mapped.get(group)
+            if role_id is None:
+                continue
+            emoji = self.bot.emoji_service.rank_emoji(TIER_EMOJI_TIERS[group])
+            label = self.bot.translator.text(interaction.locale, key)
+            ranks.append(f"{emoji} {label} → <@&{role_id}>".strip())
+        card.add_field(
+            name=translated(interaction, "rankrole-dashboard-mapped-field"),
+            value="\n".join(ranks)
+            if ranks
+            else translated(interaction, "rankrole-dashboard-empty-mapped"),
+            inline=False,
+        )
         missing = [
             self.bot.translator.text(interaction.locale, key)
             for group, key in TIER_ROLES
             if group not in mapped
         ]
-        lines.extend(
-            [
-                "",
-                f"**{translated(interaction, 'rankrole-dashboard-unmapped')}**",
-                " · ".join(missing)
-                if missing
-                else translated(interaction, "rankrole-dashboard-empty-unmapped"),
-            ]
+        card.add_field(
+            name=translated(interaction, "rankrole-dashboard-unmapped-field"),
+            value=" · ".join(missing)
+            if missing
+            else translated(interaction, "rankrole-dashboard-empty-unmapped"),
+            inline=False,
         )
-        return embed("\n".join(lines), title=translated(interaction, "rankrole-title"))
+        card.set_footer(text=translated(interaction, "rankrole-dashboard-footer"))
+        return card
 
     def _dashboard_view(
         self, interaction: discord.Interaction, guild: discord.Guild
@@ -441,31 +450,47 @@ class RankRoleCog(commands.Cog):
     def _panel_parts(
         self, interaction: discord.Interaction, mapped: dict[str, int]
     ) -> tuple[discord.Embed, discord.ui.View]:
-        """Build the panel: every mapped rank and the role it awards."""
+        """Build the panel: every mapped rank, the role it awards, and how it works."""
         top = max(mapped, key=TIER_GROUPS.index)
         emoji = self.bot.emoji_service.rank_emoji(TIER_EMOJI_TIERS[top])
         title = f"{emoji} {translated(interaction, 'rankrole-panel-title')}"
-        lines = [translated(interaction, "rankrole-panel-description"), ""]
+        card = embed(
+            translated(interaction, "rankrole-panel-description"),
+            title=title.strip(),
+        )
+        ranks = []
         for group, key in TIER_ROLES:
             role_id = mapped.get(group)
             if role_id is None:
                 continue
             mark = self.bot.emoji_service.rank_emoji(TIER_EMOJI_TIERS[group])
             label = self.bot.translator.text(interaction.locale, key)
-            lines.append(f"{mark} {label} → <@&{role_id}>".strip())
-        lines.extend(
-            [
-                "",
-                "-# "
-                + translated(
-                    interaction,
-                    "rankrole-panel-coverage",
-                    mapped=len(mapped),
-                    total=len(TIER_GROUPS),
-                ),
-            ]
+            ranks.append(f"{mark} {label} → <@&{role_id}>".strip())
+        card.add_field(
+            name=translated(interaction, "rankrole-panel-roles-field"),
+            value="\n".join(ranks),
+            inline=False,
         )
-        card = embed("\n".join(lines), title=title.strip())
+        card.add_field(
+            name=translated(interaction, "rankrole-panel-how-field"),
+            value="\n".join(
+                translated(interaction, key)
+                for key in (
+                    "rankrole-panel-how-add",
+                    "rankrole-panel-how-swap",
+                    "rankrole-panel-how-remove",
+                )
+            ),
+            inline=False,
+        )
+        card.set_footer(
+            text=translated(
+                interaction,
+                "rankrole-panel-coverage",
+                mapped=len(mapped),
+                total=len(TIER_GROUPS),
+            )
+        )
         controls = discord.ui.View(timeout=None)
         controls.add_item(
             PublicActionButton(

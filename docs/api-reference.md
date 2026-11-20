@@ -431,13 +431,13 @@ Open the staff dashboard for the panel and its mappings.
 
 [Source](../src/cogs/rankrole.py#L164)
 
-Render the panel state and every configured tier mapping.
+Render the panel state, every mapping, and the gaps left to fill.
 
 ### `def _dashboard_view(self, interaction: discord.Interaction, guild: discord.Guild) -> discord.ui.View`
 
 **Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
 
-[Source](../src/cogs/rankrole.py#L224)
+[Source](../src/cogs/rankrole.py#L233)
 
 Build the ephemeral dashboard controls for one staff session.
 
@@ -445,7 +445,7 @@ Build the ephemeral dashboard controls for one staff session.
 
 **Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
 
-[Source](../src/cogs/rankrole.py#L235)
+[Source](../src/cogs/rankrole.py#L244)
 
 Redraw the staff dashboard after a change.
 
@@ -453,7 +453,7 @@ Redraw the staff dashboard after a change.
 
 **Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
 
-[Source](../src/cogs/rankrole.py#L244)
+[Source](../src/cogs/rankrole.py#L253)
 
 Redraw the dashboard on a failure path without raising again.
 
@@ -461,7 +461,7 @@ Redraw the dashboard on a failure path without raising again.
 
 **Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
 
-[Source](../src/cogs/rankrole.py#L253)
+[Source](../src/cogs/rankrole.py#L262)
 
 Store one tier mapping, returning a locale key when it is refused.
 
@@ -469,7 +469,7 @@ Store one tier mapping, returning a locale key when it is refused.
 
 **Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
 
-[Source](../src/cogs/rankrole.py#L267)
+[Source](../src/cogs/rankrole.py#L276)
 
 Resolve the configured channel, returning None only when it is gone.
 
@@ -480,7 +480,7 @@ network error for a deleted channel.
 
 **Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
 
-[Source](../src/cogs/rankrole.py#L285)
+[Source](../src/cogs/rankrole.py#L294)
 
 Delete the posted panel, or disable it when deletion is refused.
 
@@ -488,7 +488,7 @@ Delete the posted panel, or disable it when deletion is refused.
 
 **Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
 
-[Source](../src/cogs/rankrole.py#L325)
+[Source](../src/cogs/rankrole.py#L334)
 
 Clear the panel, every mapping, or one tier, updating the panel safely.
 
@@ -499,7 +499,7 @@ good, so a refused edit leaves the database exactly as it was.
 
 **Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
 
-[Source](../src/cogs/rankrole.py#L383)
+[Source](../src/cogs/rankrole.py#L392)
 
 Post or update the member panel, returning a locale key when blocked.
 
@@ -507,7 +507,7 @@ Post or update the member panel, returning a locale key when blocked.
 
 **Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
 
-[Source](../src/cogs/rankrole.py#L433)
+[Source](../src/cogs/rankrole.py#L442)
 
 Store the posted panel id, retrying once before giving up.
 
@@ -515,15 +515,15 @@ Store the posted panel id, retrying once before giving up.
 
 **Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
 
-[Source](../src/cogs/rankrole.py#L441)
+[Source](../src/cogs/rankrole.py#L450)
 
-Build the panel: every mapped rank and the role it awards.
+Build the panel: every mapped rank, the role it awards, and how it works.
 
 ### `async def refresh_panel(self, interaction: discord.Interaction) -> str | None`
 
 **Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
 
-[Source](../src/cogs/rankrole.py#L485)
+[Source](../src/cogs/rankrole.py#L510)
 
 Update an already posted panel in place, never creating one.
 
@@ -534,7 +534,7 @@ deleted panel is reported as stale rather than as a permission problem.
 
 **Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
 
-[Source](../src/cogs/rankrole.py#L528)
+[Source](../src/cogs/rankrole.py#L553)
 
 Return True when the member acted within the debounce window.
 
@@ -542,7 +542,7 @@ Return True when the member acted within the debounce window.
 
 **Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
 
-[Source](../src/cogs/rankrole.py#L543)
+[Source](../src/cogs/rankrole.py#L568)
 
 Return tier to role ids and its reverse for one guild.
 
@@ -550,7 +550,7 @@ Return tier to role ids and its reverse for one guild.
 
 **Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
 
-[Source](../src/cogs/rankrole.py#L552)
+[Source](../src/cogs/rankrole.py#L577)
 
 Move one member to the target tier role, returning a locale key.
 
@@ -558,7 +558,7 @@ Move one member to the target tier role, returning a locale key.
 
 **Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
 
-[Source](../src/cogs/rankrole.py#L597)
+[Source](../src/cogs/rankrole.py#L622)
 
 Give the member the role for their current rank.
 
@@ -566,7 +566,7 @@ Give the member the role for their current rank.
 
 **Scope:** `src/cogs/rankrole.py` · `RankRoleCog`
 
-[Source](../src/cogs/rankrole.py#L639)
+[Source](../src/cogs/rankrole.py#L664)
 
 Strip every mapped rank role from the member.
 
@@ -574,7 +574,7 @@ Strip every mapped rank role from the member.
 
 **Scope:** `src/cogs/rankrole.py` · `module`
 
-[Source](../src/cogs/rankrole.py#L656)
+[Source](../src/cogs/rankrole.py#L681)
 
 Choose and store the channel that hosts the member panel.
 
@@ -582,7 +582,7 @@ Choose and store the channel that hosts the member panel.
 
 **Scope:** `src/cogs/rankrole.py` · `_ChannelPicker`
 
-[Source](../src/cogs/rankrole.py#L659)
+[Source](../src/cogs/rankrole.py#L684)
 
 Label the picker and remember the dashboard it belongs to.
 
@@ -590,7 +590,7 @@ Label the picker and remember the dashboard it belongs to.
 
 **Scope:** `src/cogs/rankrole.py` · `_ChannelPicker`
 
-[Source](../src/cogs/rankrole.py#L679)
+[Source](../src/cogs/rankrole.py#L704)
 
 Store the chosen channel, retiring the old panel first.
 
@@ -598,7 +598,7 @@ Store the chosen channel, retiring the old panel first.
 
 **Scope:** `src/cogs/rankrole.py` · `module`
 
-[Source](../src/cogs/rankrole.py#L702)
+[Source](../src/cogs/rankrole.py#L727)
 
 Start the two-step tier then role mapping flow.
 
@@ -606,7 +606,7 @@ Start the two-step tier then role mapping flow.
 
 **Scope:** `src/cogs/rankrole.py` · `_MappingButton`
 
-[Source](../src/cogs/rankrole.py#L705)
+[Source](../src/cogs/rankrole.py#L730)
 
 Label the button and remember the dashboard it belongs to.
 
@@ -614,7 +614,7 @@ Label the button and remember the dashboard it belongs to.
 
 **Scope:** `src/cogs/rankrole.py` · `_MappingButton`
 
-[Source](../src/cogs/rankrole.py#L717)
+[Source](../src/cogs/rankrole.py#L742)
 
 Offer a rank picker and a role picker in one step.
 
@@ -622,7 +622,7 @@ Offer a rank picker and a role picker in one step.
 
 **Scope:** `src/cogs/rankrole.py` · `module`
 
-[Source](../src/cogs/rankrole.py#L729)
+[Source](../src/cogs/rankrole.py#L754)
 
 Pick a rank and its role together, then save both in one step.
 
@@ -630,7 +630,7 @@ Pick a rank and its role together, then save both in one step.
 
 **Scope:** `src/cogs/rankrole.py` · `_MappingView`
 
-[Source](../src/cogs/rankrole.py#L732)
+[Source](../src/cogs/rankrole.py#L757)
 
 Build the rank picker, the role picker, and the save controls.
 
@@ -638,7 +638,7 @@ Build the rank picker, the role picker, and the save controls.
 
 **Scope:** `src/cogs/rankrole.py` · `module`
 
-[Source](../src/cogs/rankrole.py#L754)
+[Source](../src/cogs/rankrole.py#L779)
 
 Choose the rank whose role is being configured.
 
@@ -646,7 +646,7 @@ Choose the rank whose role is being configured.
 
 **Scope:** `src/cogs/rankrole.py` · `_RankSelect`
 
-[Source](../src/cogs/rankrole.py#L757)
+[Source](../src/cogs/rankrole.py#L782)
 
 Build one option per rank, noting the role it currently awards.
 
@@ -654,7 +654,7 @@ Build one option per rank, noting the role it currently awards.
 
 **Scope:** `src/cogs/rankrole.py` · `_RankSelect`
 
-[Source](../src/cogs/rankrole.py#L784)
+[Source](../src/cogs/rankrole.py#L809)
 
 Describe the role a rank currently awards, for the option subtitle.
 
@@ -662,7 +662,7 @@ Describe the role a rank currently awards, for the option subtitle.
 
 **Scope:** `src/cogs/rankrole.py` · `_RankSelect`
 
-[Source](../src/cogs/rankrole.py#L800)
+[Source](../src/cogs/rankrole.py#L825)
 
 Record the chosen rank without redrawing the step.
 
@@ -670,7 +670,7 @@ Record the chosen rank without redrawing the step.
 
 **Scope:** `src/cogs/rankrole.py` · `module`
 
-[Source](../src/cogs/rankrole.py#L806)
+[Source](../src/cogs/rankrole.py#L831)
 
 Choose the role that will be awarded for the chosen rank.
 
@@ -678,7 +678,7 @@ Choose the role that will be awarded for the chosen rank.
 
 **Scope:** `src/cogs/rankrole.py` · `_RoleSelect`
 
-[Source](../src/cogs/rankrole.py#L809)
+[Source](../src/cogs/rankrole.py#L834)
 
 Label the picker and remember the step it belongs to.
 
@@ -686,7 +686,7 @@ Label the picker and remember the step it belongs to.
 
 **Scope:** `src/cogs/rankrole.py` · `_RoleSelect`
 
-[Source](../src/cogs/rankrole.py#L822)
+[Source](../src/cogs/rankrole.py#L847)
 
 Record the chosen role without redrawing the step.
 
@@ -694,7 +694,7 @@ Record the chosen role without redrawing the step.
 
 **Scope:** `src/cogs/rankrole.py` · `module`
 
-[Source](../src/cogs/rankrole.py#L832)
+[Source](../src/cogs/rankrole.py#L857)
 
 Store the chosen rank and role pair.
 
@@ -702,7 +702,7 @@ Store the chosen rank and role pair.
 
 **Scope:** `src/cogs/rankrole.py` · `_SaveButton`
 
-[Source](../src/cogs/rankrole.py#L835)
+[Source](../src/cogs/rankrole.py#L860)
 
 Label the button and let the step validate the pair on save.
 
@@ -710,7 +710,7 @@ Label the button and let the step validate the pair on save.
 
 **Scope:** `src/cogs/rankrole.py` · `_SaveButton`
 
-[Source](../src/cogs/rankrole.py#L848)
+[Source](../src/cogs/rankrole.py#L873)
 
 Save the mapping, then refresh the panel and the dashboard.
 
@@ -718,7 +718,7 @@ Save the mapping, then refresh the panel and the dashboard.
 
 **Scope:** `src/cogs/rankrole.py` · `module`
 
-[Source](../src/cogs/rankrole.py#L883)
+[Source](../src/cogs/rankrole.py#L908)
 
 Open the reset scope picker.
 
@@ -726,7 +726,7 @@ Open the reset scope picker.
 
 **Scope:** `src/cogs/rankrole.py` · `_ResetButton`
 
-[Source](../src/cogs/rankrole.py#L886)
+[Source](../src/cogs/rankrole.py#L911)
 
 Label the button and remember the dashboard it belongs to.
 
@@ -734,7 +734,7 @@ Label the button and remember the dashboard it belongs to.
 
 **Scope:** `src/cogs/rankrole.py` · `_ResetButton`
 
-[Source](../src/cogs/rankrole.py#L896)
+[Source](../src/cogs/rankrole.py#L921)
 
 Offer the reset scopes.
 
@@ -742,7 +742,7 @@ Offer the reset scopes.
 
 **Scope:** `src/cogs/rankrole.py` · `module`
 
-[Source](../src/cogs/rankrole.py#L906)
+[Source](../src/cogs/rankrole.py#L931)
 
 Pick which stored rank role data to clear.
 
@@ -750,7 +750,7 @@ Pick which stored rank role data to clear.
 
 **Scope:** `src/cogs/rankrole.py` · `_ResetPicker`
 
-[Source](../src/cogs/rankrole.py#L909)
+[Source](../src/cogs/rankrole.py#L934)
 
 Build the panel, all-mappings, and per-tier reset options.
 
@@ -758,7 +758,7 @@ Build the panel, all-mappings, and per-tier reset options.
 
 **Scope:** `src/cogs/rankrole.py` · `_ResetPicker`
 
-[Source](../src/cogs/rankrole.py#L938)
+[Source](../src/cogs/rankrole.py#L963)
 
 Apply the chosen reset scope, then confirm what actually happened.
 
@@ -766,7 +766,7 @@ Apply the chosen reset scope, then confirm what actually happened.
 
 **Scope:** `src/cogs/rankrole.py` · `module`
 
-[Source](../src/cogs/rankrole.py#L952)
+[Source](../src/cogs/rankrole.py#L977)
 
 Post or update the member-facing panel.
 
@@ -774,7 +774,7 @@ Post or update the member-facing panel.
 
 **Scope:** `src/cogs/rankrole.py` · `_PublishButton`
 
-[Source](../src/cogs/rankrole.py#L955)
+[Source](../src/cogs/rankrole.py#L980)
 
 Label the button and remember the dashboard it belongs to.
 
@@ -782,7 +782,7 @@ Label the button and remember the dashboard it belongs to.
 
 **Scope:** `src/cogs/rankrole.py` · `_PublishButton`
 
-[Source](../src/cogs/rankrole.py#L967)
+[Source](../src/cogs/rankrole.py#L992)
 
 Publish the panel and redraw the dashboard.
 
@@ -790,7 +790,7 @@ Publish the panel and redraw the dashboard.
 
 **Scope:** `src/cogs/rankrole.py` · `module`
 
-[Source](../src/cogs/rankrole.py#L980)
+[Source](../src/cogs/rankrole.py#L1005)
 
 Register the rank role command and its member controls.
 
