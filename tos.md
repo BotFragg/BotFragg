@@ -1,6 +1,6 @@
 # BotFragg Terms of Service
 
-**Last updated: November 5, 2026**
+**Last updated: November 22, 2026**
 
 These Terms of Service (the “Terms”) apply when you invite, access, or interact
 with the BotFragg Discord bot (“BotFragg”). By using BotFragg, you agree to
