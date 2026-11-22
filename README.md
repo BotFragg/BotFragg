@@ -54,7 +54,7 @@ Riot credentials are encrypted at rest, and you can delete all of your stored da
 
 ## Getting Started
 
-[Add BotFragg to your server](https://botfragg.imkks.fyi/invite). The invite requests the `bot` and `applications.commands` scopes. Join the [support server](https://botfragg.imkks.fyi/support) for help and announcements.
+[Add BotFragg to your server](https://botfragg.imkks.fyi/invite). Join the [support server](https://botfragg.imkks.fyi/support) for help and announcements.
 
 ## Self-Hosting
 

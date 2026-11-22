@@ -6,7 +6,6 @@ import asyncio
 import sys
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
-from urllib.parse import parse_qs, urlparse
 
 import aiohttp
 import discord
@@ -150,8 +149,8 @@ async def test_unhandled_app_command_error_returns_ephemeral_response() -> None:
     assert sent[0][1] is True
 
 
-async def test_links_show_the_project_website_and_preserve_zero_permissions() -> None:
-    """Verify that links shows the website, honors an override, and preserves zero permissions."""
+async def test_links_show_the_fixed_invite_and_project_website() -> None:
+    """Verify that links shows the fixed invite URL and the project website."""
     sent: dict[str, object] = {}
 
     class Response:
@@ -184,9 +183,10 @@ async def test_links_show_the_project_website_and_preserve_zero_permissions() ->
 
     controls = sent["view"]
     invite = controls.children[0]
-    query = parse_qs(urlparse(invite.url).query)
-    assert query["scope"] == ["bot applications.commands"]
-    assert query["permissions"] == ["0"]
+    assert (
+        invite.url
+        == "https://discord.com/oauth2/authorize?client_id=808657534025072651"
+    )
 
     website = next(button for button in controls.children if button.label == "Website")
     assert website.url == "https://botfragg.imkks.fyi/"

@@ -206,7 +206,7 @@ General BotFragg commands for status, links, help, and shard health.
 
 **Scope:** `src/cogs/extra.py` · `module`
 
-[Source](../src/cogs/extra.py#L50)
+[Source](../src/cogs/extra.py#L51)
 
 Provide public utility commands and the persistent shard-status message.
 
@@ -214,7 +214,7 @@ Provide public utility commands and the persistent shard-status message.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L53)
+[Source](../src/cogs/extra.py#L54)
 
 Store the bot and record when this cog started for the info command.
 
@@ -222,7 +222,7 @@ Store the bot and record when this cog started for the info command.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L74)
+[Source](../src/cogs/extra.py#L75)
 
 Start shard-status updates when their destination is configured.
 
@@ -230,7 +230,7 @@ Start shard-status updates when their destination is configured.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L79)
+[Source](../src/cogs/extra.py#L80)
 
 Cancel and await the shard-status task during extension shutdown.
 
@@ -238,7 +238,7 @@ Cancel and await the shard-status task during extension shutdown.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L93)
+[Source](../src/cogs/extra.py#L94)
 
 Report Discord gateway latency and a live database probe duration.
 
@@ -246,7 +246,7 @@ Report Discord gateway latency and a live database probe duration.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L130)
+[Source](../src/cogs/extra.py#L131)
 
 Show recent public updates and BotFragg runtime information.
 
@@ -254,15 +254,15 @@ Show recent public updates and BotFragg runtime information.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L247)
+[Source](../src/cogs/extra.py#L248)
 
 Fetch and cache five public commits, formatting them per request locale.
 
-### `def _public_links(self, user: discord.ClientUser, locale: discord.Locale) -> discord.ui.View`
+### `def _public_links(self, locale: discord.Locale) -> discord.ui.View`
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L332)
+[Source](../src/cogs/extra.py#L333)
 
 Build public links, defaulting the website to the project site.
 
@@ -270,7 +270,7 @@ Build public links, defaulting the website to the project site.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L363)
+[Source](../src/cogs/extra.py#L357)
 
 Use each command's cog module to place it in a help category.
 
@@ -278,7 +278,7 @@ Use each command's cog module to place it in a help category.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L383)
+[Source](../src/cogs/extra.py#L377)
 
 Return Discord-formatted mentions for all synced commands and subcommands.
 
@@ -286,7 +286,7 @@ Return Discord-formatted mentions for all synced commands and subcommands.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L410)
+[Source](../src/cogs/extra.py#L404)
 
 List registered slash commands by category in the embed description.
 
@@ -294,7 +294,7 @@ List registered slash commands by category in the embed description.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L481)
+[Source](../src/cogs/extra.py#L475)
 
 Show the invite, project website, and any configured support or vote link.
 
@@ -302,7 +302,7 @@ Show the invite, project website, and any configured support or vote link.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L502)
+[Source](../src/cogs/extra.py#L496)
 
 Show the project's Ko-fi and GitHub Sponsors links as buttons.
 
@@ -310,7 +310,7 @@ Show the project's Ko-fi and GitHub Sponsors links as buttons.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L526)
+[Source](../src/cogs/extra.py#L520)
 
 Measure the shard-status job and preserve its existing retry behavior.
 
@@ -318,7 +318,7 @@ Measure the shard-status job and preserve its existing retry behavior.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L531)
+[Source](../src/cogs/extra.py#L525)
 
 Update or recreate the persistent embed containing per-shard health.
 
@@ -326,7 +326,7 @@ Update or recreate the persistent embed containing per-shard health.
 
 **Scope:** `src/cogs/extra.py` · `ExtraCog`
 
-[Source](../src/cogs/extra.py#L579)
+[Source](../src/cogs/extra.py#L573)
 
 Wait for Discord readiness before the first shard-status update.
 
@@ -334,7 +334,7 @@ Wait for Discord readiness before the first shard-status update.
 
 **Scope:** `src/cogs/extra.py` · `module`
 
-[Source](../src/cogs/extra.py#L584)
+[Source](../src/cogs/extra.py#L578)
 
 Register the general utility cog with the bot.
 

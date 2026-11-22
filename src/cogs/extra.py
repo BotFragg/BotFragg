@@ -34,6 +34,7 @@ log = logging.getLogger(__name__)
 GITHUB_COMMITS_URL = "https://api.github.com/repos/BotFragg/BotFragg/commits?per_page=5"
 GITHUB_REPOSITORY_URL = "https://github.com/BotFragg/BotFragg"
 GITHUB_COMMIT_URL = f"{GITHUB_REPOSITORY_URL}/commit/{{}}"
+PUBLIC_INVITE_URL = "https://discord.com/oauth2/authorize?client_id=808657534025072651"
 PUBLIC_WEBSITE_URL = "https://botfragg.imkks.fyi/"
 DONATION_URLS = (
     ("donate-kofi-button", "https://ko-fi.com/kumkashree"),
@@ -329,16 +330,9 @@ class ExtraCog(commands.Cog):
             )
         return "\n".join(lines)[:1024]
 
-    def _public_links(
-        self, user: discord.ClientUser, locale: discord.Locale
-    ) -> discord.ui.View:
+    def _public_links(self, locale: discord.Locale) -> discord.ui.View:
         """Build public links, defaulting the website to the project site."""
-        invite_url = discord.utils.oauth_url(
-            user.id,
-            permissions=discord.Permissions.none(),
-            scopes=("bot", "applications.commands"),
-        )
-        links = [("link-invite", invite_url)]
+        links = [("link-invite", PUBLIC_INVITE_URL)]
         links.extend(
             (label, url)
             for label, url in (
@@ -460,7 +454,7 @@ class ExtraCog(commands.Cog):
         for category, entries in categories.items():
             lines.extend(("", f"**{category}**", *entries))
 
-        controls = self._public_links(user, interaction.locale)
+        controls = self._public_links(interaction.locale)
         card = embed(
             "\n".join(lines),
             title=translated(interaction, "help-title"),
@@ -485,7 +479,7 @@ class ExtraCog(commands.Cog):
         if not user:
             await error(interaction, "error-bot-starting")
             return
-        controls = self._public_links(user, interaction.locale)
+        controls = self._public_links(interaction.locale)
         card = embed(
             translated(interaction, "links-description"),
             title=translated(interaction, "links-title"),
