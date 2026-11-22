@@ -125,4 +125,4 @@ to the extent permitted by applicable law. If you do not agree, stop using
 the bot.
 
 For questions about these Terms or a particular BotFragg instance, contact
-its operator through the [BotFragg support server](https://discord.gg/VjZ5N8nT4K).
+its operator through the [BotFragg support server](https://botfragg.imkks.fyi/support).

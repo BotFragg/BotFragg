@@ -5,7 +5,7 @@
 Report BotFragg security vulnerabilities only through Discord using one of
 these channels:
 
-1. The [BotFragg support server](https://discord.gg/VjZ5N8nT4K). Use its
+1. The [BotFragg support server](https://botfragg.imkks.fyi/support). Use its
    designated support channel. If the server does not offer
    a private channel, do not post sensitive technical details there; contact
    the developer directly instead.

@@ -150,8 +150,8 @@ async def test_unhandled_app_command_error_returns_ephemeral_response() -> None:
     assert sent[0][1] is True
 
 
-async def test_links_invite_preserves_zero_permissions() -> None:
-    """Verify that links invite preserves zero permissions."""
+async def test_links_show_the_project_website_and_preserve_zero_permissions() -> None:
+    """Verify that links shows the website, honors an override, and preserves zero permissions."""
     sent: dict[str, object] = {}
 
     class Response:
@@ -187,6 +187,16 @@ async def test_links_invite_preserves_zero_permissions() -> None:
     query = parse_qs(urlparse(invite.url).query)
     assert query["scope"] == ["bot applications.commands"]
     assert query["permissions"] == ["0"]
+
+    website = next(button for button in controls.children if button.label == "Website")
+    assert website.url == "https://botfragg.imkks.fyi/"
+
+    bot.config.website_url = "https://example.com/community"
+    await ExtraCog.links.callback(cog, interaction)
+    website = next(
+        button for button in sent["view"].children if button.label == "Website"
+    )
+    assert website.url == "https://example.com/community"
 
 
 async def test_donate_buttons_point_at_the_funding_pages() -> None:

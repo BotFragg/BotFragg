@@ -9,9 +9,11 @@
 </p>
 
 <p align="center">
-  <a href="https://discord.com/oauth2/authorize?client_id=808657534025072651&amp;permissions=0&amp;scope=bot%20applications.commands">Invite the bot</a>
+  <a href="https://botfragg.imkks.fyi/">Website</a>
   &nbsp;·&nbsp;
-  <a href="https://discord.gg/VjZ5N8nT4K">Support server</a>
+  <a href="https://botfragg.imkks.fyi/invite">Invite the bot</a>
+  &nbsp;·&nbsp;
+  <a href="https://botfragg.imkks.fyi/support">Support server</a>
   &nbsp;·&nbsp;
   <a href="docs/api-reference.md">Documentation</a>
   &nbsp;·&nbsp;
@@ -52,7 +54,7 @@ Riot credentials are encrypted at rest, and you can delete all of your stored da
 
 ## Getting Started
 
-[Add BotFragg to your server](https://discord.com/oauth2/authorize?client_id=808657534025072651&permissions=0&scope=bot%20applications.commands). The invite requests the `bot` and `applications.commands` scopes. Join the [support server](https://discord.gg/VjZ5N8nT4K) for help and announcements.
+[Add BotFragg to your server](https://botfragg.imkks.fyi/invite). The invite requests the `bot` and `applications.commands` scopes. Join the [support server](https://botfragg.imkks.fyi/support) for help and announcements.
 
 ## Self-Hosting
 
@@ -146,7 +148,11 @@ All supported settings are documented in [`.env.example`](.env.example). A typic
 
 Optional settings:
 
-- `SUPPORT_URL` shows your support server in the `/links` command.
+- `SUPPORT_URL` shows your support server in the `/links` command. The official
+  server is at <https://botfragg.imkks.fyi/support>.
+- `VOTE_URL` shows a voting link in the `/links` command.
+- `WEBSITE_URL` overrides the Website button in the `/links` command. It defaults
+  to <https://botfragg.imkks.fyi/>.
 
 Keep your `.env` file private and never commit it to version control.
 

@@ -34,6 +34,7 @@ log = logging.getLogger(__name__)
 GITHUB_COMMITS_URL = "https://api.github.com/repos/BotFragg/BotFragg/commits?per_page=5"
 GITHUB_REPOSITORY_URL = "https://github.com/BotFragg/BotFragg"
 GITHUB_COMMIT_URL = f"{GITHUB_REPOSITORY_URL}/commit/{{}}"
+PUBLIC_WEBSITE_URL = "https://botfragg.imkks.fyi/"
 DONATION_URLS = (
     ("donate-kofi-button", "https://ko-fi.com/kumkashree"),
     ("donate-github-button", "https://github.com/sponsors/BotFragg"),
@@ -331,7 +332,7 @@ class ExtraCog(commands.Cog):
     def _public_links(
         self, user: discord.ClientUser, locale: discord.Locale
     ) -> discord.ui.View:
-        """Build link buttons for the configured public URLs."""
+        """Build public links, defaulting the website to the project site."""
         invite_url = discord.utils.oauth_url(
             user.id,
             permissions=discord.Permissions.none(),
@@ -343,7 +344,7 @@ class ExtraCog(commands.Cog):
             for label, url in (
                 ("link-support", self.bot.config.support_url),
                 ("link-vote", self.bot.config.vote_url),
-                ("link-website", self.bot.config.website_url),
+                ("link-website", self.bot.config.website_url or PUBLIC_WEBSITE_URL),
                 ("link-github", GITHUB_REPOSITORY_URL),
             )
             if url
@@ -478,7 +479,7 @@ class ExtraCog(commands.Cog):
         ),
     )
     async def links(self, interaction: discord.Interaction) -> None:
-        """Show an invite link and any configured support, vote, and website links."""
+        """Show the invite, project website, and any configured support or vote link."""
         await interaction.response.defer(thinking=True)
         user = self.bot.user
         if not user:

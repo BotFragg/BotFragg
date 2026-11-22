@@ -109,7 +109,7 @@ Use `/settings` to control daily shop DMs, in-game-name visibility, and whether
 other users may view your shop. Use `/logout` to remove account credentials or
 `/deletedata confirm:True` to remove your BotFragg records. For a privacy
 question or a request about data that the commands do not remove, contact the
-team through the [BotFragg support server](https://discord.gg/VjZ5N8nT4K).
+team through the [BotFragg support server](https://botfragg.imkks.fyi/support).
 
 ## Security
 
