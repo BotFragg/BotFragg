@@ -50,7 +50,7 @@ Riot credentials are encrypted at rest, and you can delete all of your stored da
 | Settings  | `/settings view`, `/settings set`                                                                                       |
 | Community | `/help`, `/ping`, `/botinfo`, `/links`, `/donate`                                                                        |
 
-> `/userinfo` and `/serverinfo` are owner-only operational commands.
+> `/dev` is the owner-only operational command group.
 
 ## Getting Started
 

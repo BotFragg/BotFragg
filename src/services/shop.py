@@ -107,6 +107,15 @@ class ShopService:
             self._cache.pop(account_id, None)
             self._retry_at.pop(account_id, None)
 
+    async def clear_all_cached_storefronts(self) -> int:
+        """Clear every cached storefront under its account lock."""
+        # shortcut: an in-flight first fetch is uncached and missed; track pending fetches.
+        account_ids = set(self._cache) | set(self._retry_at)
+        await asyncio.gather(
+            *(self.clear_cached_storefront(account_id) for account_id in account_ids)
+        )
+        return len(account_ids)
+
     def prune_expired(self) -> None:
         """Release expired storefronts, including accounts no longer queried."""
         now = time.time()

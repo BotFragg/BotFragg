@@ -45,7 +45,7 @@ EXTENSIONS = (
     "src.cogs.valorant.loadout",
     "src.cogs.events",
     "src.cogs.extra",
-    "src.cogs.staff",
+    "src.cogs.dev",
     "src.cogs.tasks",
 )
 
