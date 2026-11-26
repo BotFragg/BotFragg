@@ -11,6 +11,7 @@ from tortoise.transactions import in_transaction
 from ..models import (
     Account,
     CommandInvocation,
+    DevAnnouncementRead,
     User,
 )
 from .analytics import deleting_analytics
@@ -193,6 +194,9 @@ async def delete_user_data(discord_id: int) -> bool:
             try:
                 async with in_transaction():
                     removed = await CommandInvocation.filter(
+                        user_id=discord_id
+                    ).delete()
+                    removed += await DevAnnouncementRead.filter(
                         user_id=discord_id
                     ).delete()
                     removed += await User.filter(id=discord_id).delete()

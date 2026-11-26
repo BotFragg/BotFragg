@@ -21,6 +21,9 @@ from src.models import (
     Alert,
     AlertNotification,
     CommandInvocation,
+    DevAnnouncement,
+    DevAnnouncementRead,
+    DevMaintenance,
     ShardStatusMessage,
     User,
 )
@@ -61,6 +64,15 @@ async def test_migrations_apply_write_delete_and_rollback(migration_url):
         await AlertNotification.create(
             account=account, skin_uuid=skin, expires=datetime(2026, 1, 1, tzinfo=UTC)
         )
+        await DevMaintenance.create(
+            id=1, enabled=True, reason="synthetic", updated_by=101
+        )
+        announcement = await DevAnnouncement.create(message="synthetic", created_by=101)
+        await DevAnnouncementRead.create(user_id=101, announcement_id=announcement.id)
+        with pytest.raises(IntegrityError):
+            await DevAnnouncementRead.create(
+                user_id=101, announcement_id=announcement.id
+            )
         await CommandInvocation.create(user_id=user.id, command="synthetic")
         large = await CommandInvocation.create(
             id=2**31, user_id=user.id, command="synthetic-large"
@@ -81,6 +93,14 @@ async def test_migrations_apply_write_delete_and_rollback(migration_url):
         await executor.migrate()
         await ShardStatusMessage.create(channel_id=102, message_id=202)
         assert await ShardStatusMessage.exists(channel_id=102)
+        await executor.migrate(
+            [MigrationTarget("models", "0011_add_alert_notifications")]
+        )
+        for model in (DevMaintenance, DevAnnouncement, DevAnnouncementRead):
+            with pytest.raises(OperationalError):
+                await model.all().exists()
+        await executor.migrate()
+        await DevMaintenance.create(id=1)
     finally:
         await Tortoise.close_connections()
 
@@ -346,6 +366,26 @@ def test_native_initial_migration_matches_current_models() -> None:
         ("CreateModel", "AlertNotification"),
         ("AddField", "night_market_alerts_enabled"),
     ]
+
+    dev_notices_module = importlib.import_module("src.migrations.0012_add_dev_notices")
+    assert dev_notices_module.Migration.dependencies == [
+        ("models", "0011_add_alert_notifications")
+    ]
+    assert {
+        (type(operation).__name__, operation.name)
+        for operation in dev_notices_module.Migration.operations
+    } == {
+        ("CreateModel", "DevMaintenance"),
+        ("CreateModel", "DevAnnouncement"),
+        ("CreateModel", "DevAnnouncementRead"),
+    }
+    read_model = next(
+        operation
+        for operation in dev_notices_module.Migration.operations
+        if operation.name == "DevAnnouncementRead"
+    )
+    assert read_model.options["unique_together"] == (("user_id", "announcement_id"),)
+    assert [index.fields for index in read_model.options["indexes"]] == [["user_id"]]
 
 
 async def test_connect_database_uses_passed_settings(

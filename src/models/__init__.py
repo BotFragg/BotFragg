@@ -5,6 +5,9 @@ from .entities import (
     Alert,
     AlertNotification,
     CommandInvocation,
+    DevAnnouncement,
+    DevAnnouncementRead,
+    DevMaintenance,
     ShardStatusMessage,
     User,
 )
@@ -14,6 +17,9 @@ __all__ = [
     "Alert",
     "AlertNotification",
     "CommandInvocation",
+    "DevAnnouncement",
+    "DevAnnouncementRead",
+    "DevMaintenance",
     "ShardStatusMessage",
     "User",
 ]
