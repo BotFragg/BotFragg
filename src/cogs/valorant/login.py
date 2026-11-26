@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import logging
+from typing import Any
+
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -9,6 +12,8 @@ from discord.ext import commands
 from ...bot import BotFraggBot
 from ...views import OwnedActionButton
 from ...views.ui import embed, localized_embed, translated, unexpected_error, view
+
+log = logging.getLogger(__name__)
 
 
 class LoginModal(discord.ui.Modal):
@@ -28,32 +33,42 @@ class LoginModal(discord.ui.Modal):
         )
         self.add_item(self.callback_url)
 
-    async def on_submit(self, interaction: discord.Interaction) -> None:
+    async def interaction_check(self, interaction: discord.Interaction[Any]) -> bool:
+        """Block this modal while dev maintenance is enabled."""
+        return await interaction.client.dev_notices.allow(interaction)
+
+    async def on_submit(self, interaction: discord.Interaction[Any]) -> None:
         """Redeem the submitted callback and privately report the login result."""
-        await interaction.response.defer(ephemeral=True, thinking=True)
-        result = await self.bot.auth.redeem_callback(
-            interaction.user.id, str(self.callback_url)
-        )
-        if not result.success or result.account is None:
+        try:
+            await interaction.response.defer(ephemeral=True, thinking=True)
+            result = await self.bot.auth.redeem_callback(
+                interaction.user.id, str(self.callback_url)
+            )
+            if not result.success or result.account is None:
+                await interaction.followup.send(
+                    embed=embed(
+                        translated(
+                            interaction,
+                            result.error_key or "login-failed",
+                            **result.error_arguments,
+                        )
+                    ),
+                    ephemeral=True,
+                )
+                return
             await interaction.followup.send(
-                embed=embed(
-                    translated(
-                        interaction,
-                        result.error_key or "login-failed",
-                        **result.error_arguments,
-                    )
+                embed=localized_embed(
+                    interaction,
+                    "login-success",
+                    description_args={"username": result.account.username},
                 ),
                 ephemeral=True,
             )
-            return
-        await interaction.followup.send(
-            embed=localized_embed(
-                interaction,
-                "login-success",
-                description_args={"username": result.account.username},
-            ),
-            ephemeral=True,
-        )
+        finally:
+            try:
+                await interaction.client.dev_notices.deliver(interaction)
+            except Exception:
+                log.exception("Could not deliver the dev announcement")
 
     async def on_error(
         self,

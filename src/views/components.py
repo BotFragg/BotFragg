@@ -52,6 +52,7 @@ async def _dispatch(
         await handler(interaction, payload)
     except Exception as exc:
         await unexpected_error(interaction, exc)
+    await interaction.client.dev_notices.deliver(interaction)
 
 
 class OwnedActionButton(discord.ui.DynamicItem[discord.ui.Button], template=ACTION_RE):
@@ -103,7 +104,9 @@ class OwnedActionButton(discord.ui.DynamicItem[discord.ui.Button], template=ACTI
         return instance
 
     async def interaction_check(self, interaction: discord.Interaction[Any]) -> bool:
-        """Reject interactions from users other than the button's recorded owner."""
+        """Block maintenance before rejecting users other than the owner."""
+        if not await interaction.client.dev_notices.allow(interaction):
+            return False
         return await _reject_other_owner(
             interaction, self.owner_id, "component-button-other-owner"
         )
@@ -184,7 +187,9 @@ class OwnedSelect(discord.ui.DynamicItem[discord.ui.Select], template=SELECT_RE)
         )
 
     async def interaction_check(self, interaction: discord.Interaction[Any]) -> bool:
-        """Reject interactions from users other than the menu's recorded owner."""
+        """Block maintenance before rejecting users other than the owner."""
+        if not await interaction.client.dev_notices.allow(interaction):
+            return False
         return await _reject_other_owner(
             interaction, self.owner_id, "component-select-other-owner"
         )

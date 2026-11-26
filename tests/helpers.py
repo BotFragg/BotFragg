@@ -34,6 +34,17 @@ TEST_TRANSLATOR = BotFraggTranslator()
 TEST_LOCALE = discord.Locale.american_english
 
 
+class _NoopNotices:
+    """Stand in for the dev notice service in tests that do not exercise it."""
+
+    async def allow(self, _interaction: object) -> bool:
+        """Allow every interaction."""
+        return True
+
+    async def deliver(self, _interaction: object) -> None:
+        """Deliver nothing."""
+
+
 def _localized_bot(**attributes: object) -> SimpleNamespace:
     """Build a fake bot with the runtime translator used by command cogs."""
     return SimpleNamespace(translator=TEST_TRANSLATOR, **attributes)
@@ -43,7 +54,7 @@ def _localized_interaction(**attributes: object) -> SimpleNamespace:
     """Build a fake interaction with its Discord locale and client translator."""
     locale = attributes.pop("locale", TEST_LOCALE)
     return SimpleNamespace(
-        client=SimpleNamespace(translator=TEST_TRANSLATOR),
+        client=SimpleNamespace(translator=TEST_TRANSLATOR, dev_notices=_NoopNotices()),
         locale=locale,
         **attributes,
     )
