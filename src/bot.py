@@ -18,6 +18,7 @@ from .services.auth import AuthService
 from .services.catalog import CatalogService
 from .services.crosshair import CrosshairService
 from .services.crypto import AuthVault
+from .services.dev_notices import DevNotices
 from .services.emojis import ApplicationEmojiService
 from .services.gameplay import GameplayService
 from .services.http import HTTPClient
@@ -72,20 +73,30 @@ class BotFraggCommandTree(app_commands.CommandTree["BotFraggBot"]):
             allowed_installs=app_commands.AppInstallationType(guild=True, user=True),
         )
 
+    async def interaction_check(
+        self, interaction: discord.Interaction[BotFraggBot], /
+    ) -> bool:
+        """Allow the interaction unless persisted maintenance blocks it."""
+        if interaction.type is discord.InteractionType.autocomplete:
+            return True
+        data = interaction.data
+        if isinstance(data, dict) and data.get("name") == "deletedata":
+            return True
+        return await self.client.dev_notices.allow(interaction)
+
     async def _call(self, interaction: discord.Interaction[BotFraggBot]) -> None:
-        """Record command executions while leaving autocomplete requests untracked."""
+        """Record command executions and deliver pending dev notices afterwards."""
         if interaction.type is discord.InteractionType.autocomplete:
             await super()._call(interaction)
             return
         async with command_analytics(interaction.user.id) as cancelled:
             await super()._call(interaction)
             command = interaction.command
-            if (
-                interaction.command_failed
-                or command is None
-                or command.qualified_name == "deletedata"
-            ):
+            if command is None or interaction.command_failed:
                 return
+            if command.qualified_name == "deletedata":
+                return
+            await self.client.dev_notices.deliver(interaction)
             try:
                 await record_command_invocation(
                     command=command.qualified_name,
@@ -163,6 +174,7 @@ class BotFraggBot(commands.AutoShardedBot):
         )
         self.config = config
         self.translator = BotFraggTranslator()
+        self.dev_notices = DevNotices(self)
         self.component_handlers: dict[str, ComponentHandler] = {}
         self.riot_http = HTTPClient(config)
         self.emoji_service = ApplicationEmojiService(self)
@@ -229,6 +241,7 @@ class BotFraggBot(commands.AutoShardedBot):
         await connect_database(
             self.config, generate_schemas=self.config.app_env != "production"
         )
+        await self.dev_notices.load()
         await self.riot_http.start()
         try:
             await self.auth.refresh_version()
