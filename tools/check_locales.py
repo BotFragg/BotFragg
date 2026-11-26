@@ -28,6 +28,7 @@ PREFIXES = {
     "common",
     "component",
     "deletedata",
+    "dev",
     "donate",
     "error",
     "group",
