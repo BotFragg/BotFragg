@@ -7,6 +7,7 @@ import io
 import math
 from collections.abc import Sequence
 from time import monotonic
+from typing import Any
 
 import discord
 from discord import app_commands
@@ -18,6 +19,7 @@ from ...services.accounts import account_for_user, selected_account
 from ...services.auth import AuthenticationRequired
 from ...services.crosshair import CrosshairProfile, CrosshairUnavailable
 from ...services.http import DISCORD_HTTP_ERRORS, HTTPFailure
+from ...views.notices import after_interaction
 from ...views.ui import embed, error, translated
 
 MAX_OPTIONS = 25
@@ -86,6 +88,10 @@ class CrosshairView(discord.ui.View):
             self.add_item(ShareButton(interaction))
         self.add_item(RefreshButton(interaction))
 
+    async def interaction_check(self, interaction: discord.Interaction[Any]) -> bool:
+        """Block this control while dev maintenance is enabled."""
+        return await interaction.client.dev_notices.allow(interaction)
+
     @staticmethod
     def _visible(profiles: Sequence[CrosshairProfile]) -> list[CrosshairProfile]:
         """Keep the current profile first and cap the menu at Discord's limit."""
@@ -108,6 +114,7 @@ class CrosshairView(discord.ui.View):
             return None
         return current
 
+    @after_interaction
     async def profile_selected(
         self, interaction: discord.Interaction, index: int
     ) -> None:
@@ -133,6 +140,7 @@ class CrosshairView(discord.ui.View):
             embed=card, attachments=[file], view=controls
         )
 
+    @after_interaction
     async def refresh_profiles(self, interaction: discord.Interaction) -> None:
         """Refetch the profiles from Riot, update the cache, and redraw the message."""
         current = await self._owned_account(interaction)
@@ -162,6 +170,7 @@ class CrosshairView(discord.ui.View):
             embed=card, attachments=[file], view=controls
         )
 
+    @after_interaction
     async def share_preview(self, interaction: discord.Interaction) -> None:
         """Show a private preview of the public share card."""
         if interaction.user.id != self.owner_id:
@@ -243,9 +252,14 @@ class ShareConfirmView(discord.ui.View):
         self.post.label = translated(interaction, "crosshair-share-post")
         self.cancel.label = translated(interaction, "crosshair-share-cancel")
 
+    async def interaction_check(self, interaction: discord.Interaction[Any]) -> bool:
+        """Block this control while dev maintenance is enabled."""
+        return await interaction.client.dev_notices.allow(interaction)
+
     @discord.ui.button(label="Post", style=discord.ButtonStyle.success)
+    @after_interaction
     async def post(
-        self, interaction: discord.Interaction, _button: discord.ui.Button
+        self, interaction: discord.Interaction[Any], _button: discord.ui.Button
     ) -> None:
         """Post the previewed crosshair to the current channel."""
         if interaction.user.id != self.owner_id:
@@ -289,8 +303,9 @@ class ShareConfirmView(discord.ui.View):
         )
 
     @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary)
+    @after_interaction
     async def cancel(
-        self, interaction: discord.Interaction, _button: discord.ui.Button
+        self, interaction: discord.Interaction[Any], _button: discord.ui.Button
     ) -> None:
         """Dismiss the preview without posting anything."""
         if interaction.user.id != self.owner_id:
