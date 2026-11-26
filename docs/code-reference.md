@@ -80,9 +80,9 @@ docstring. Regenerate it after application documentation changes with
 | [src/main.py](../src/main.py) | Configures process logging before starting the Discord client. |
 | [src/monitoring.py](../src/monitoring.py) | Formats plain-text log lines and strips sensitive data from console and Discord logs. |
 | [src/cogs/__init__.py](../src/cogs/__init__.py) | Defines the Discord cog package. |
+| [src/cogs/dev.py](../src/cogs/dev.py) | Implements owner-only maintenance, announcement, cache-refresh, and user/server diagnostic controls. |
 | [src/cogs/events.py](../src/cogs/events.py) | Records command analytics and reports guild lifecycle events. |
 | [src/cogs/extra.py](../src/cogs/extra.py) | Implements utility commands and persistent shard status. |
-| [src/cogs/staff.py](../src/cogs/staff.py) | Implements owner-only user, server, and command-usage diagnostics. |
 | [src/cogs/tasks.py](../src/cogs/tasks.py) | Runs scheduled alerts and refreshes and optionally forwards filtered logs to Discord. |
 | [src/cogs/valorant/__init__.py](../src/cogs/valorant/__init__.py) | Defines the VALORANT cog package. |
 | [src/cogs/valorant/accounts.py](../src/cogs/valorant/accounts.py) | Implements account switching, listing, and pagination commands. |
@@ -109,6 +109,7 @@ docstring. Regenerate it after application documentation changes with
 | [src/migrations/0009_remove_suggestions.py](../src/migrations/0009_remove_suggestions.py) | Drops the suggestion and suggestion-follower tables. |
 | [src/migrations/0010_index_analytics_created_at.py](../src/migrations/0010_index_analytics_created_at.py) | Indexes analytics creation time for retention. |
 | [src/migrations/0011_add_alert_notifications.py](../src/migrations/0011_add_alert_notifications.py) | Adds alert notification markers and the Night Market alert preference. |
+| [src/migrations/0012_add_dev_notices.py](../src/migrations/0012_add_dev_notices.py) | Adds maintenance state, announcements, and per-user read state. |
 | [src/models/__init__.py](../src/models/__init__.py) | Re-exports model classes for application code. |
 | [src/models/entities.py](../src/models/entities.py) | Defines ORM records and uniqueness constraints. |
 | [src/services/__init__.py](../src/services/__init__.py) | Defines the service package. |
@@ -120,6 +121,7 @@ docstring. Regenerate it after application documentation changes with
 | [src/services/crosshair.py](../src/services/crosshair.py) | Fetches, decodes, encodes, and caches a user's crosshair profiles. |
 | [src/services/crosshair_render.py](../src/services/crosshair_render.py) | Renders crosshair share codes to PNG locally with Pillow. |
 | [src/services/crypto.py](../src/services/crypto.py) | Encrypts and decrypts stored Riot credentials with Fernet. |
+| [src/services/dev_notices.py](../src/services/dev_notices.py) | Caches maintenance and announcement state and gates or delivers notices around interactions. |
 | [src/services/emojis.py](../src/services/emojis.py) | Caches application emojis and creates missing ones from packaged assets. |
 | [src/services/gameplay.py](../src/services/gameplay.py) | Normalizes VALORANT battlepass, mission, and matchmaking-penalty data. |
 | [src/services/matches.py](../src/services/matches.py) | Fetches recent match identifiers, reduces finished matches, and caches them by match ID. |
@@ -130,6 +132,7 @@ docstring. Regenerate it after application documentation changes with
 | [src/services/valorant_status.py](../src/services/valorant_status.py) | Fetches, parses, and briefly caches Riot's public VALORANT status feed. |
 | [src/views/__init__.py](../src/views/__init__.py) | Re-exports common timestamps and persistent interactive controls. |
 | [src/views/components.py](../src/views/components.py) | Implements restart-safe, owner-restricted buttons and select menus. |
+| [src/views/notices.py](../src/views/notices.py) | Delivers pending dev announcements after an interaction callback. |
 | [src/views/shop.py](../src/views/shop.py) | Shares shop cards, account/skin selectors, and Night Market presentation between commands and background notifications. |
 | [src/views/ui.py](../src/views/ui.py) | Shares embed, view, error, translation, skin-video, and privacy-aware account-name helpers. |
 | [src/views/video_menus.py](../src/views/video_menus.py) | Runs the two-step level/chroma video menus shared by the shop and loadout commands and holds their action and message-key configuration. |
@@ -157,6 +160,9 @@ docstring. Regenerate it after application documentation changes with
 | [tests/test_crosshair_service.py](../tests/test_crosshair_service.py) | Player-preferences decoding, profile encoding, caching, and service errors. |
 | [tests/test_crypto.py](../tests/test_crypto.py) | Authenticated encryption round trips and mismatched-key rejection. |
 | [tests/test_data_deletion.py](../tests/test_data_deletion.py) | Transactional deletion, pending-login cancellation, and analytics behavior after deletion. |
+| [tests/test_dev_commands.py](../tests/test_dev_commands.py) | Owner-only maintenance, announcement, cache-refresh, and inspect commands. |
+| [tests/test_dev_interactions.py](../tests/test_dev_interactions.py) | Maintenance gates and announcement delivery for controls, views, and modals. |
+| [tests/test_dev_notices.py](../tests/test_dev_notices.py) | Maintenance persistence, newest-only announcement delivery, and read state. |
 | [tests/test_emojis.py](../tests/test_emojis.py) | Application emoji transport failures, per-emoji cooldown, and text fallbacks. |
 | [tests/test_gameplay.py](../tests/test_gameplay.py) | Validated battlepass, mission, reward, and penalty service results. |
 | [tests/test_gameplay_commands.py](../tests/test_gameplay_commands.py) | Gameplay response rendering and progress bars. |
@@ -176,6 +182,5 @@ docstring. Regenerate it after application documentation changes with
 | [tests/test_shop_commands.py](../tests/test_shop_commands.py) | Daily/accessory/featured/Night Market rendering, selectors, and private errors. |
 | [tests/test_shop_service.py](../tests/test_shop_service.py) | Storefront and wallet validation, caching, expiry, and concurrent requests. |
 | [tests/test_recovery.py](../tests/test_recovery.py) | PostgreSQL read-only restore verification, key rejection, and migration-history checks. |
-| [tests/test_staff.py](../tests/test_staff.py) | Owner-only user and server diagnostics with incomplete member caches. |
 | [tests/test_status_commands.py](../tests/test_status_commands.py) | Region selection, rendering, and error handling for `/status`. |
 | [tests/test_valorant_status.py](../tests/test_valorant_status.py) | Status feed parsing, cache expiry, and failure handling. |
