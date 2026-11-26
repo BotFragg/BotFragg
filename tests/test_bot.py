@@ -15,9 +15,9 @@ from discord.ext import commands
 from tortoise.exceptions import DBConnectionError
 
 from src.bot import BotFraggBot, BotFraggCommandTree
+from src.cogs.dev import DevCog
 from src.cogs.events import EventsCog
 from src.cogs.extra import ExtraCog
-from src.cogs.staff import StaffCog
 from src.cogs.valorant.accounts import AccountsCog
 from src.cogs.valorant.alerts import AlertsCog
 from src.cogs.valorant.battlepass import BattlepassCog
@@ -317,7 +317,7 @@ async def test_initial_release_command_contract(
         ProfileCog(bot),
         LoadoutCog(bot),
         ExtraCog(bot),
-        StaffCog(bot),
+        DevCog(bot),
     ):
         await bot.add_cog(cog)
     assert {command.name for command in bot.tree.get_commands()} == {
@@ -346,8 +346,7 @@ async def test_initial_release_command_contract(
         "botinfo",
         "help",
         "links",
-        "userinfo",
-        "serverinfo",
+        "dev",
     }
 
 
@@ -489,17 +488,24 @@ async def test_setup_hook_passes_bot_settings_to_database(
     monkeypatch.setenv("TOKEN_ENCRYPTION_KEY", Fernet.generate_key().decode())
     bot = BotFraggBot(Settings.from_env())
     database_call: dict[str, object] = {}
+    setup_order: list[str] = []
 
     async def connect_database(settings: Settings, *, generate_schemas: bool) -> None:
         """Capture the settings passed to database initialization."""
+        setup_order.append("database")
         database_call["settings"] = settings
         database_call["generate_schemas"] = generate_schemas
+
+    async def load_notices() -> None:
+        """Record the notice-state load that follows database initialization."""
+        setup_order.append("notices")
 
     async def no_op(*args: object, **kwargs: object) -> None:
         """Provide an intentionally empty callback for this test."""
         return None
 
     monkeypatch.setattr("src.bot.connect_database", connect_database)
+    monkeypatch.setattr(bot.dev_notices, "load", load_notices)
     monkeypatch.setattr(bot.riot_http, "start", no_op)
     monkeypatch.setattr(bot.auth, "refresh_version", no_op)
     monkeypatch.setattr(bot.catalog, "load", no_op)
@@ -514,6 +520,7 @@ async def test_setup_hook_passes_bot_settings_to_database(
         "settings": bot.config,
         "generate_schemas": True,
     }
+    assert setup_order[:2] == ["database", "notices"]
 
 
 async def test_guild_log_transport_failure_does_not_escape(monkeypatch):
