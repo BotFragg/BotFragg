@@ -35,6 +35,7 @@ async def test_emoji_transport_failure_does_not_stop_startup(
         auth=SimpleNamespace(refresh_version=AsyncMock()),
         catalog=SimpleNamespace(load=AsyncMock()),
         emoji_service=service,
+        dev_notices=SimpleNamespace(load=AsyncMock()),
         add_dynamic_items=lambda *_: None,
         load_extension=AsyncMock(),
         tree=SimpleNamespace(set_translator=AsyncMock()),
