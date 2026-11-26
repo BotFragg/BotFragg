@@ -121,3 +121,37 @@ class ShardStatusMessage(Model):
 
     channel_id = fields.BigIntField(primary_key=True)
     message_id = fields.BigIntField()
+
+
+class DevMaintenance(Model):
+    """Store the singleton maintenance mode and its operator audit details."""
+
+    id = fields.BigIntField(primary_key=True, default=1)
+    enabled = fields.BooleanField(default=False)
+    reason = fields.CharField(max_length=500, null=True)
+    updated_by = fields.BigIntField(null=True)
+    updated_at = fields.DatetimeField(auto_now=True)
+
+
+class DevAnnouncement(Model):
+    """Retain an operator-published announcement for private delivery."""
+
+    id = fields.IntField(primary_key=True)
+    message = fields.TextField()
+    created_by = fields.BigIntField()
+    created_at = fields.DatetimeField(auto_now_add=True)
+
+
+class DevAnnouncementRead(Model):
+    """Record that a Discord user has read a specific announcement."""
+
+    id = fields.IntField(primary_key=True)
+    user_id = fields.BigIntField()
+    announcement_id = fields.BigIntField()
+    read_at = fields.DatetimeField(auto_now_add=True)
+
+    class Meta:
+        """Allow one read marker per user and announcement with indexed lookups."""
+
+        unique_together = (("user_id", "announcement_id"),)
+        indexes = (Index(fields=["user_id"]),)

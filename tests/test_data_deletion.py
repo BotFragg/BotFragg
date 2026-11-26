@@ -28,6 +28,9 @@ from src.models import (
     Account,
     Alert,
     CommandInvocation,
+    DevAnnouncement,
+    DevAnnouncementRead,
+    DevMaintenance,
     User,
 )
 from src.services.accounts import delete_user_data
@@ -232,6 +235,37 @@ async def test_delete_data_without_riot_profile():
 
 
 @pytest.mark.usefixtures("database")
+async def test_delete_data_removes_announcement_read_but_keeps_announcement():
+    user = await User.create(id=103)
+    announcement = await DevAnnouncement.create(message="Synthetic", created_by=104)
+    maintenance = await DevMaintenance.create(
+        id=1, enabled=True, reason="Synthetic", updated_by=104
+    )
+    read = await DevAnnouncementRead.create(
+        user_id=user.id, announcement_id=announcement.id
+    )
+
+    assert await delete_user_data(user.id)
+
+    assert not await DevAnnouncementRead.filter(id=read.id).exists()
+    assert await DevAnnouncement.filter(id=announcement.id).exists()
+    assert await DevMaintenance.filter(id=maintenance.id).exists()
+
+
+@pytest.mark.usefixtures("database")
+async def test_delete_data_returns_true_for_read_only_announcement_row():
+    announcement = await DevAnnouncement.create(message="Synthetic", created_by=104)
+    read = await DevAnnouncementRead.create(
+        user_id=105, announcement_id=announcement.id
+    )
+
+    assert await delete_user_data(105)
+
+    assert not await DevAnnouncementRead.filter(id=read.id).exists()
+    assert await DevAnnouncement.filter(id=announcement.id).exists()
+
+
+@pytest.mark.usefixtures("database")
 async def test_deletedata_completion_does_not_recreate_personal_data():
     await User.create(id=102)
     await delete_user_data(102)
@@ -266,7 +300,9 @@ async def test_command_tree_records_only_successful_commands(monkeypatch, case):
         guild_id=105,
         channel_id=106,
     )
-    await object.__new__(BotFraggCommandTree)._call(interaction)
+    tree = object.__new__(BotFraggCommandTree)
+    tree.client = NS(dev_notices=NS(deliver=AsyncMock()))
+    await tree._call(interaction)
     invoke.assert_awaited_once()
     rows = await CommandInvocation.filter(user_id=104)
     assert len(rows) == (1 if case == "success" else 0)
@@ -290,6 +326,7 @@ async def test_command_tree_suppresses_completion_after_concurrent_deletion(
 
     monkeypatch.setattr(discord.app_commands.CommandTree, "_call", invoke)
     tree = object.__new__(BotFraggCommandTree)
+    tree.client = NS(dev_notices=NS(deliver=AsyncMock()))
     interaction = NS(
         type=discord.InteractionType.application_command,
         data={"name": "shop"},
