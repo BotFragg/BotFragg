@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last updated:** November 22, 2026
+**Last updated:** November 26, 2026
 
 This policy describes data handled by BotFragg when you use its Discord bot
 features. BotFragg is an independent project and is not affiliated with Riot
@@ -94,8 +94,11 @@ operator's retention policy removes them.
 - `/logout` removes stored Riot credentials for an account. It keeps the linked
   account record, alerts, and preferences.
 - `/deletedata confirm:True` deletes your linked accounts and encrypted
-  credentials, alerts, preferences, and command analytics from BotFragg's
-  database.
+  credentials, alerts, preferences, command analytics, and announcement read
+  state from BotFragg's database.
+
+Operator IDs attached to announcements and maintenance updates are retained as
+audit history.
 
 Deleting data from BotFragg does not delete crosshair cards you shared to a
 channel, messages in configured logging channels, or telemetry already received

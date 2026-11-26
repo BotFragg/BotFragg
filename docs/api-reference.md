@@ -18,7 +18,7 @@ Discord client construction, command handling, service wiring, and shutdown.
 
 **Scope:** `src/bot.py` · `module`
 
-[Source](../src/bot.py#L52)
+[Source](../src/bot.py#L53)
 
 Build the generic, user-safe response shown after an unhandled command error.
 
@@ -26,7 +26,7 @@ Build the generic, user-safe response shown after an unhandled command error.
 
 **Scope:** `src/bot.py` · `module`
 
-[Source](../src/bot.py#L62)
+[Source](../src/bot.py#L63)
 
 Application-command tree with shared context rules and error reporting.
 
@@ -34,23 +34,31 @@ Application-command tree with shared context rules and error reporting.
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L65)
+[Source](../src/bot.py#L66)
 
 Allow commands in servers and private contexts for guild and user installs.
+
+### `async def interaction_check(self, interaction: discord.Interaction[BotFraggBot], /) -> bool`
+
+**Scope:** `src/bot.py` · `BotFraggCommandTree`
+
+[Source](../src/bot.py#L76)
+
+Allow the interaction unless persisted maintenance blocks it.
 
 ### `async def _call(self, interaction: discord.Interaction[BotFraggBot]) -> None`
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L75)
+[Source](../src/bot.py#L87)
 
-Record command executions while leaving autocomplete requests untracked.
+Record command executions and deliver pending dev notices afterwards.
 
 ### `def _command_name(data: Mapping[str, object]) -> str`
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L101)
+[Source](../src/bot.py#L112)
 
 Return the dotted parent and subcommand path from Discord's payload.
 
@@ -58,7 +66,7 @@ Return the dotted parent and subcommand path from Discord's payload.
 
 **Scope:** `src/bot.py` · `BotFraggCommandTree`
 
-[Source](../src/bot.py#L120)
+[Source](../src/bot.py#L131)
 
 Log unhandled app-command errors and send a private generic response.
 
@@ -66,7 +74,7 @@ Log unhandled app-command errors and send a private generic response.
 
 **Scope:** `src/bot.py` · `module`
 
-[Source](../src/bot.py#L146)
+[Source](../src/bot.py#L157)
 
 Own Discord lifecycle and the shared Riot, database, and presentation services.
 
@@ -74,7 +82,7 @@ Own Discord lifecycle and the shared Riot, database, and presentation services.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L149)
+[Source](../src/bot.py#L160)
 
 Configure the bot's intents and application services.
 
@@ -82,7 +90,7 @@ Configure the bot's intents and application services.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L179)
+[Source](../src/bot.py#L191)
 
 Register a persistent component action, rejecting duplicate action names.
 
@@ -90,7 +98,7 @@ Register a persistent component action, rejecting duplicate action names.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L185)
+[Source](../src/bot.py#L197)
 
 Discard only the handlers bound to the given cog instance.
 
@@ -98,7 +106,7 @@ Discard only the handlers bound to the given cog instance.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L193)
+[Source](../src/bot.py#L205)
 
 Discard a failed cog's component handlers so loading it can be retried.
 
@@ -106,7 +114,7 @@ Discard a failed cog's component handlers so loading it can be retried.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L213)
+[Source](../src/bot.py#L225)
 
 Remove a cog's component handlers along with its commands and listeners.
 
@@ -114,7 +122,7 @@ Remove a cog's component handlers along with its commands and listeners.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L227)
+[Source](../src/bot.py#L239)
 
 Initialize shared resources, load extensions, and optionally sync commands.
 
@@ -122,7 +130,7 @@ Initialize shared resources, load extensions, and optionally sync commands.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L249)
+[Source](../src/bot.py#L262)
 
 Set the online activity and log the connected shard and guild counts.
 
@@ -130,13 +138,105 @@ Set the online activity and log the connected shard and guild counts.
 
 **Scope:** `src/bot.py` · `BotFraggBot`
 
-[Source](../src/bot.py#L264)
+[Source](../src/bot.py#L277)
 
 Close Discord, Riot HTTP, and database resources in order.
 
 ## `src/cogs/__init__.py`
 
 Discord command cogs.
+
+## `src/cogs/dev.py`
+
+Owner-only operational commands for notices, cache refreshes, and diagnostics.
+
+### `class DevCog(commands.Cog)`
+
+**Scope:** `src/cogs/dev.py` · `module`
+
+[Source](../src/cogs/dev.py#L21)
+
+Owner-only maintenance, announcement, cache, and diagnostic controls.
+
+### `def __init__(self, bot: BotFraggBot) -> None`
+
+**Scope:** `src/cogs/dev.py` · `DevCog`
+
+[Source](../src/cogs/dev.py#L28)
+
+Bind the running bot and register the announcement read button.
+
+### `async def _owner_only(self, interaction: discord.Interaction) -> bool`
+
+**Scope:** `src/cogs/dev.py` · `DevCog`
+
+[Source](../src/cogs/dev.py#L33)
+
+Authorize the bot owner and privately reject all other callers.
+
+### `async def maintenance(self, interaction: discord.Interaction, enabled: bool, reason: app_commands.Range[str, 1, 500] | None = None) -> None`
+
+**Scope:** `src/cogs/dev.py` · `DevCog`
+
+[Source](../src/cogs/dev.py#L49)
+
+Persist the maintenance state and reply with the new state.
+
+### `async def announce(self, interaction: discord.Interaction, text: app_commands.Range[str, 1, 2000]) -> None`
+
+**Scope:** `src/cogs/dev.py` · `DevCog`
+
+[Source](../src/cogs/dev.py#L87)
+
+Publish an announcement and reply with its identifier.
+
+### `async def sync_cache(self, interaction: discord.Interaction) -> None`
+
+**Scope:** `src/cogs/dev.py` · `DevCog`
+
+[Source](../src/cogs/dev.py#L114)
+
+Force a catalog refresh, clear cached storefronts, and report counts.
+
+### `async def inspect(self, interaction: discord.Interaction, type: str, id: str) -> None`
+
+**Scope:** `src/cogs/dev.py` · `DevCog`
+
+[Source](../src/cogs/dev.py#L154)
+
+Render the same diagnostics the old user and server commands showed.
+
+### `async def _user_card(self, user: discord.User) -> discord.Embed`
+
+**Scope:** `src/cogs/dev.py` · `DevCog`
+
+[Source](../src/cogs/dev.py#L184)
+
+Build the retained user diagnostics shown by inspect.
+
+### `async def _server_card(self, server: discord.Guild) -> discord.Embed`
+
+**Scope:** `src/cogs/dev.py` · `DevCog`
+
+[Source](../src/cogs/dev.py#L210)
+
+Build the retained server diagnostics shown by inspect.
+
+### `async def announcement_read(self, interaction: discord.Interaction, payload: str) -> None`
+
+**Scope:** `src/cogs/dev.py` · `DevCog`
+
+[Source](../src/cogs/dev.py#L244)
+
+Record one read announcement and replace its message without the button.
+
+### `async def setup(bot: BotFraggBot) -> None`
+
+**Scope:** `src/cogs/dev.py` · `module`
+
+[Source](../src/cogs/dev.py#L263)
+
+Register the owner-only operational controls with the bot.
 
 ## `src/cogs/events.py`
 
@@ -337,58 +437,6 @@ Wait for Discord readiness before the first shard-status update.
 [Source](../src/cogs/extra.py#L578)
 
 Register the general utility cog with the bot.
-
-## `src/cogs/staff.py`
-
-Owner-only Discord diagnostics for users, servers, and command analytics.
-
-### `class StaffCog(commands.Cog)`
-
-**Scope:** `src/cogs/staff.py` · `module`
-
-[Source](../src/cogs/staff.py#L15)
-
-Owner-only operational diagnostics.
-
-### `def __init__(self, bot: BotFraggBot) -> None`
-
-**Scope:** `src/cogs/staff.py` · `StaffCog`
-
-[Source](../src/cogs/staff.py#L18)
-
-Bind the staff diagnostics to the running bot.
-
-### `async def _owner_only(self, interaction: discord.Interaction) -> bool`
-
-**Scope:** `src/cogs/staff.py` · `StaffCog`
-
-[Source](../src/cogs/staff.py#L22)
-
-Authorize the bot owner and privately reject all other callers.
-
-### `async def userinfo(self, interaction: discord.Interaction, user: discord.User) -> None`
-
-**Scope:** `src/cogs/staff.py` · `StaffCog`
-
-[Source](../src/cogs/staff.py#L35)
-
-Show the owner's stored account statistics and shared-server details.
-
-### `async def serverinfo(self, interaction: discord.Interaction, server_id: str) -> None`
-
-**Scope:** `src/cogs/staff.py` · `StaffCog`
-
-[Source](../src/cogs/staff.py#L75)
-
-Show analytics and Discord's cached membership count for a server.
-
-### `async def setup(bot: BotFraggBot) -> None`
-
-**Scope:** `src/cogs/staff.py` · `module`
-
-[Source](../src/cogs/staff.py#L126)
-
-Register the owner-only diagnostics cog with the bot.
 
 ## `src/cogs/tasks.py`
 
@@ -834,7 +882,7 @@ Commands for viewing and sharing the caller's VALORANT crosshairs.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `module`
 
-[Source](../src/cogs/valorant/crosshair.py#L29)
+[Source](../src/cogs/valorant/crosshair.py#L31)
 
 Return a channel that accepts a public card, or the matching error key.
 
@@ -842,7 +890,7 @@ Return a channel that accepts a public card, or the matching error key.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `module`
 
-[Source](../src/cogs/valorant/crosshair.py#L52)
+[Source](../src/cogs/valorant/crosshair.py#L54)
 
 Owner-scoped profile selector for one crosshair message.
 
@@ -850,15 +898,23 @@ Owner-scoped profile selector for one crosshair message.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairView`
 
-[Source](../src/cogs/valorant/crosshair.py#L55)
+[Source](../src/cogs/valorant/crosshair.py#L57)
 
 Build the selector from the caller's profiles.
+
+### `async def interaction_check(self, interaction: discord.Interaction[Any]) -> bool`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairView`
+
+[Source](../src/cogs/valorant/crosshair.py#L91)
+
+Block this control while dev maintenance is enabled.
 
 ### `def _visible(profiles: Sequence[CrosshairProfile]) -> list[CrosshairProfile]`
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairView`
 
-[Source](../src/cogs/valorant/crosshair.py#L90)
+[Source](../src/cogs/valorant/crosshair.py#L96)
 
 Keep the current profile first and cap the menu at Discord's limit.
 
@@ -866,7 +922,7 @@ Keep the current profile first and cap the menu at Discord's limit.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairView`
 
-[Source](../src/cogs/valorant/crosshair.py#L100)
+[Source](../src/cogs/valorant/crosshair.py#L106)
 
 Recheck that the caller still owns this account, or report an error.
 
@@ -874,7 +930,7 @@ Recheck that the caller still owns this account, or report an error.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairView`
 
-[Source](../src/cogs/valorant/crosshair.py#L111)
+[Source](../src/cogs/valorant/crosshair.py#L118)
 
 Recheck ownership and edit the message with the chosen profile.
 
@@ -882,7 +938,7 @@ Recheck ownership and edit the message with the chosen profile.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairView`
 
-[Source](../src/cogs/valorant/crosshair.py#L136)
+[Source](../src/cogs/valorant/crosshair.py#L144)
 
 Refetch the profiles from Riot, update the cache, and redraw the message.
 
@@ -890,7 +946,7 @@ Refetch the profiles from Riot, update the cache, and redraw the message.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairView`
 
-[Source](../src/cogs/valorant/crosshair.py#L165)
+[Source](../src/cogs/valorant/crosshair.py#L174)
 
 Show a private preview of the public share card.
 
@@ -898,7 +954,7 @@ Show a private preview of the public share card.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `module`
 
-[Source](../src/cogs/valorant/crosshair.py#L193)
+[Source](../src/cogs/valorant/crosshair.py#L202)
 
 Open the private preview for a public crosshair share.
 
@@ -906,7 +962,7 @@ Open the private preview for a public crosshair share.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `ShareButton`
 
-[Source](../src/cogs/valorant/crosshair.py#L196)
+[Source](../src/cogs/valorant/crosshair.py#L205)
 
 Label the button in the interaction's locale.
 
@@ -914,7 +970,7 @@ Label the button in the interaction's locale.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `ShareButton`
 
-[Source](../src/cogs/valorant/crosshair.py#L204)
+[Source](../src/cogs/valorant/crosshair.py#L213)
 
 Open the share preview for the selected profile.
 
@@ -922,7 +978,7 @@ Open the share preview for the selected profile.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `module`
 
-[Source](../src/cogs/valorant/crosshair.py#L211)
+[Source](../src/cogs/valorant/crosshair.py#L220)
 
 Refetch the caller's profiles and redraw the message.
 
@@ -930,7 +986,7 @@ Refetch the caller's profiles and redraw the message.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `RefreshButton`
 
-[Source](../src/cogs/valorant/crosshair.py#L214)
+[Source](../src/cogs/valorant/crosshair.py#L223)
 
 Label the button in the interaction's locale.
 
@@ -938,7 +994,7 @@ Label the button in the interaction's locale.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `RefreshButton`
 
-[Source](../src/cogs/valorant/crosshair.py#L222)
+[Source](../src/cogs/valorant/crosshair.py#L231)
 
 Refresh the owner's cached profiles from Riot.
 
@@ -946,7 +1002,7 @@ Refresh the owner's cached profiles from Riot.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `module`
 
-[Source](../src/cogs/valorant/crosshair.py#L229)
+[Source](../src/cogs/valorant/crosshair.py#L238)
 
 Confirm and post a public crosshair card.
 
@@ -954,23 +1010,31 @@ Confirm and post a public crosshair card.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `ShareConfirmView`
 
-[Source](../src/cogs/valorant/crosshair.py#L232)
+[Source](../src/cogs/valorant/crosshair.py#L241)
 
 Bind the profile to share and localize the two buttons.
 
-### `async def post(self, interaction: discord.Interaction, _button: discord.ui.Button) -> None`
+### `async def interaction_check(self, interaction: discord.Interaction[Any]) -> bool`
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `ShareConfirmView`
 
-[Source](../src/cogs/valorant/crosshair.py#L247)
+[Source](../src/cogs/valorant/crosshair.py#L255)
+
+Block this control while dev maintenance is enabled.
+
+### `async def post(self, interaction: discord.Interaction[Any], _button: discord.ui.Button) -> None`
+
+**Scope:** `src/cogs/valorant/crosshair.py` · `ShareConfirmView`
+
+[Source](../src/cogs/valorant/crosshair.py#L261)
 
 Post the previewed crosshair to the current channel.
 
-### `async def cancel(self, interaction: discord.Interaction, _button: discord.ui.Button) -> None`
+### `async def cancel(self, interaction: discord.Interaction[Any], _button: discord.ui.Button) -> None`
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `ShareConfirmView`
 
-[Source](../src/cogs/valorant/crosshair.py#L292)
+[Source](../src/cogs/valorant/crosshair.py#L307)
 
 Dismiss the preview without posting anything.
 
@@ -978,7 +1042,7 @@ Dismiss the preview without posting anything.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `module`
 
-[Source](../src/cogs/valorant/crosshair.py#L307)
+[Source](../src/cogs/valorant/crosshair.py#L322)
 
 Select one crosshair profile from the owner's saved profiles.
 
@@ -986,7 +1050,7 @@ Select one crosshair profile from the owner's saved profiles.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairSelect`
 
-[Source](../src/cogs/valorant/crosshair.py#L310)
+[Source](../src/cogs/valorant/crosshair.py#L325)
 
 Build the selector with the interaction's localized placeholder.
 
@@ -994,7 +1058,7 @@ Build the selector with the interaction's localized placeholder.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairSelect`
 
-[Source](../src/cogs/valorant/crosshair.py#L319)
+[Source](../src/cogs/valorant/crosshair.py#L334)
 
 Forward the selection to the owning view.
 
@@ -1002,7 +1066,7 @@ Forward the selection to the owning view.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `module`
 
-[Source](../src/cogs/valorant/crosshair.py#L326)
+[Source](../src/cogs/valorant/crosshair.py#L341)
 
 View and export the caller's VALORANT crosshair profiles.
 
@@ -1010,7 +1074,7 @@ View and export the caller's VALORANT crosshair profiles.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
 
-[Source](../src/cogs/valorant/crosshair.py#L337)
+[Source](../src/cogs/valorant/crosshair.py#L352)
 
 Bind the bot's crosshair service and start the share cooldown map.
 
@@ -1018,7 +1082,7 @@ Bind the bot's crosshair service and start the share cooldown map.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
 
-[Source](../src/cogs/valorant/crosshair.py#L349)
+[Source](../src/cogs/valorant/crosshair.py#L364)
 
 Show the caller's current crosshair, its code, and a profile menu.
 
@@ -1026,7 +1090,7 @@ Show the caller's current crosshair, its code, and a profile menu.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
 
-[Source](../src/cogs/valorant/crosshair.py#L378)
+[Source](../src/cogs/valorant/crosshair.py#L393)
 
 Render one profile into an embed, attachment, and selector view.
 
@@ -1034,7 +1098,7 @@ Render one profile into an embed, attachment, and selector view.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
 
-[Source](../src/cogs/valorant/crosshair.py#L399)
+[Source](../src/cogs/valorant/crosshair.py#L414)
 
 Render one profile into an embed and PNG bytes.
 
@@ -1042,7 +1106,7 @@ Render one profile into an embed and PNG bytes.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
 
-[Source](../src/cogs/valorant/crosshair.py#L425)
+[Source](../src/cogs/valorant/crosshair.py#L440)
 
 Return the English footer used on every public share card.
 
@@ -1050,7 +1114,7 @@ Return the English footer used on every public share card.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
 
-[Source](../src/cogs/valorant/crosshair.py#L433)
+[Source](../src/cogs/valorant/crosshair.py#L448)
 
 Return the seconds left before this user may share again.
 
@@ -1058,7 +1122,7 @@ Return the seconds left before this user may share again.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
 
-[Source](../src/cogs/valorant/crosshair.py#L440)
+[Source](../src/cogs/valorant/crosshair.py#L455)
 
 Reserve a user's share slot and bound the tracking map.
 
@@ -1066,7 +1130,7 @@ Reserve a user's share slot and bound the tracking map.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `CrosshairCog`
 
-[Source](../src/cogs/valorant/crosshair.py#L449)
+[Source](../src/cogs/valorant/crosshair.py#L464)
 
 Release a reserved share slot after a failed post.
 
@@ -1074,7 +1138,7 @@ Release a reserved share slot after a failed post.
 
 **Scope:** `src/cogs/valorant/crosshair.py` · `module`
 
-[Source](../src/cogs/valorant/crosshair.py#L454)
+[Source](../src/cogs/valorant/crosshair.py#L469)
 
 Register the crosshair command group.
 
@@ -1138,7 +1202,7 @@ Private Riot sign-in flow using an authorization link and callback modal.
 
 **Scope:** `src/cogs/valorant/login.py` · `module`
 
-[Source](../src/cogs/valorant/login.py#L14)
+[Source](../src/cogs/valorant/login.py#L19)
 
 Collect the redirect URL returned after a user signs in with Riot.
 
@@ -1146,15 +1210,23 @@ Collect the redirect URL returned after a user signs in with Riot.
 
 **Scope:** `src/cogs/valorant/login.py` · `LoginModal`
 
-[Source](../src/cogs/valorant/login.py#L17)
+[Source](../src/cogs/valorant/login.py#L22)
 
 Set a five-minute timeout and retain the authentication service owner.
 
-### `async def on_submit(self, interaction: discord.Interaction) -> None`
+### `async def interaction_check(self, interaction: discord.Interaction[Any]) -> bool`
 
 **Scope:** `src/cogs/valorant/login.py` · `LoginModal`
 
-[Source](../src/cogs/valorant/login.py#L31)
+[Source](../src/cogs/valorant/login.py#L36)
+
+Block this modal while dev maintenance is enabled.
+
+### `async def on_submit(self, interaction: discord.Interaction[Any]) -> None`
+
+**Scope:** `src/cogs/valorant/login.py` · `LoginModal`
+
+[Source](../src/cogs/valorant/login.py#L40)
 
 Redeem the submitted callback and privately report the login result.
 
@@ -1162,7 +1234,7 @@ Redeem the submitted callback and privately report the login result.
 
 **Scope:** `src/cogs/valorant/login.py` · `LoginModal`
 
-[Source](../src/cogs/valorant/login.py#L58)
+[Source](../src/cogs/valorant/login.py#L73)
 
 Report unexpected login-form failures without exposing their details.
 
@@ -1170,7 +1242,7 @@ Report unexpected login-form failures without exposing their details.
 
 **Scope:** `src/cogs/valorant/login.py` · `module`
 
-[Source](../src/cogs/valorant/login.py#L69)
+[Source](../src/cogs/valorant/login.py#L84)
 
 Start Riot sign-in and open the callback URL entry modal.
 
@@ -1178,7 +1250,7 @@ Start Riot sign-in and open the callback URL entry modal.
 
 **Scope:** `src/cogs/valorant/login.py` · `LoginCog`
 
-[Source](../src/cogs/valorant/login.py#L72)
+[Source](../src/cogs/valorant/login.py#L87)
 
 Bind the bot and register the persistent login-modal action.
 
@@ -1186,7 +1258,7 @@ Bind the bot and register the persistent login-modal action.
 
 **Scope:** `src/cogs/valorant/login.py` · `LoginCog`
 
-[Source](../src/cogs/valorant/login.py#L84)
+[Source](../src/cogs/valorant/login.py#L99)
 
 Start a nonce-bound login; account creation limits belong to auth.
 
@@ -1194,7 +1266,7 @@ Start a nonce-bound login; account creation limits belong to auth.
 
 **Scope:** `src/cogs/valorant/login.py` · `LoginCog`
 
-[Source](../src/cogs/valorant/login.py#L120)
+[Source](../src/cogs/valorant/login.py#L135)
 
 Open the modal where the caller pastes Riot's redirect URL.
 
@@ -1202,7 +1274,7 @@ Open the modal where the caller pastes Riot's redirect URL.
 
 **Scope:** `src/cogs/valorant/login.py` · `module`
 
-[Source](../src/cogs/valorant/login.py#L125)
+[Source](../src/cogs/valorant/login.py#L140)
 
 Register the Riot login command and modal handler.
 
@@ -2114,6 +2186,18 @@ Track alert notifications and the Night Market alert preference.
 
 Add per-account notification markers and the Night Market toggle.
 
+## `src/migrations/0012_add_dev_notices.py`
+
+Create persistent development maintenance and announcement notices.
+
+### `class Migration(migrations.Migration)`
+
+**Scope:** `src/migrations/0012_add_dev_notices.py` · `module`
+
+[Source](../src/migrations/0012_add_dev_notices.py#L8)
+
+Create the maintenance and announcement notice tables.
+
 ## `src/migrations/__init__.py`
 
 Tortoise migration package for the BotFragg database schema.
@@ -2225,6 +2309,38 @@ Index creation time so retention can prune old analytics efficiently.
 
 Map each configured Discord channel to its persistent status message.
 
+### `class DevMaintenance(Model)`
+
+**Scope:** `src/models/entities.py` · `module`
+
+[Source](../src/models/entities.py#L126)
+
+Store the singleton maintenance mode and its operator audit details.
+
+### `class DevAnnouncement(Model)`
+
+**Scope:** `src/models/entities.py` · `module`
+
+[Source](../src/models/entities.py#L136)
+
+Retain an operator-published announcement for private delivery.
+
+### `class DevAnnouncementRead(Model)`
+
+**Scope:** `src/models/entities.py` · `module`
+
+[Source](../src/models/entities.py#L145)
+
+Record that a Discord user has read a specific announcement.
+
+### `class Meta`
+
+**Scope:** `src/models/entities.py` · `DevAnnouncementRead`
+
+[Source](../src/models/entities.py#L153)
+
+Allow one read marker per user and announcement with indexed lookups.
+
 ## `src/monitoring.py`
 
 Plain-text log formatting and privacy filters for console and Discord logs.
@@ -2273,7 +2389,7 @@ Persistence operations for user preferences, Riot accounts, and personal-data de
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L29)
+[Source](../src/services/accounts.py#L30)
 
 Return the stored BotFragg user for a Discord ID, if one exists.
 
@@ -2281,7 +2397,7 @@ Return the stored BotFragg user for a Discord ID, if one exists.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L34)
+[Source](../src/services/accounts.py#L35)
 
 Count users with a stored BotFragg profile.
 
@@ -2289,7 +2405,7 @@ Count users with a stored BotFragg profile.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L39)
+[Source](../src/services/accounts.py#L40)
 
 Return Discord IDs whose saved preference enables daily shop DMs.
 
@@ -2297,7 +2413,7 @@ Return Discord IDs whose saved preference enables daily shop DMs.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L45)
+[Source](../src/services/accounts.py#L46)
 
 Return a Riot account only when it belongs to the requested Discord user.
 
@@ -2305,7 +2421,7 @@ Return a Riot account only when it belongs to the requested Discord user.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L50)
+[Source](../src/services/accounts.py#L51)
 
 Update one allowlisted Boolean preference and refresh the user's timestamp.
 
@@ -2313,7 +2429,7 @@ Update one allowlisted Boolean preference and refresh the user's timestamp.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L60)
+[Source](../src/services/accounts.py#L61)
 
 Return the active account, choosing the oldest account when none is selected.
 
@@ -2325,7 +2441,7 @@ conditional so a concurrent selection is not overwritten.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L130)
+[Source](../src/services/accounts.py#L131)
 
 Return a user's Riot accounts in creation order.
 
@@ -2333,7 +2449,7 @@ Return a user's Riot accounts in creation order.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L135)
+[Source](../src/services/accounts.py#L136)
 
 Resolve an account by PUUID, case-insensitive name, or one-based position.
 
@@ -2341,7 +2457,7 @@ Resolve an account by PUUID, case-insensitive name, or one-based position.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L162)
+[Source](../src/services/accounts.py#L163)
 
 Set a user's active account after verifying that the account is theirs.
 
@@ -2349,7 +2465,7 @@ Set a user's active account after verifying that the account is theirs.
 
 **Scope:** `src/services/accounts.py` · `module`
 
-[Source](../src/services/accounts.py#L188)
+[Source](../src/services/accounts.py#L189)
 
 Delete the user's stored BotFragg records and all linked Riot accounts.
 
@@ -3526,6 +3642,98 @@ Serialize and authenticate a credential mapping as a Fernet token.
 
 Decode a stored token, returning an empty mapping when it is absent.
 
+## `src/services/dev_notices.py`
+
+Persisted dev maintenance state and announcement delivery helpers.
+
+### `def _read_action(interaction: discord.Interaction[Any]) -> bool`
+
+**Scope:** `src/services/dev_notices.py` · `module`
+
+[Source](../src/services/dev_notices.py#L25)
+
+Return whether an interaction came from the Mark read button.
+
+### `class DevNotices`
+
+**Scope:** `src/services/dev_notices.py` · `module`
+
+[Source](../src/services/dev_notices.py#L32)
+
+Cache dev notices and gate or deliver them around interactions.
+
+### `def __init__(self, bot: BotFraggBot) -> None`
+
+**Scope:** `src/services/dev_notices.py` · `DevNotices`
+
+[Source](../src/services/dev_notices.py#L35)
+
+Bind the owning bot and start with maintenance disabled.
+
+### `async def load(self) -> None`
+
+**Scope:** `src/services/dev_notices.py` · `DevNotices`
+
+[Source](../src/services/dev_notices.py#L42)
+
+Load persisted state, failing open when it cannot be read.
+
+### `async def set_maintenance(self, *, enabled: bool, reason: str | None, updated_by: int) -> None`
+
+**Scope:** `src/services/dev_notices.py` · `DevNotices`
+
+[Source](../src/services/dev_notices.py#L57)
+
+Persist maintenance mode, clearing the reason when it is disabled.
+
+### `async def publish(self, message: str, *, created_by: int) -> DevAnnouncement`
+
+**Scope:** `src/services/dev_notices.py` · `DevNotices`
+
+[Source](../src/services/dev_notices.py#L73)
+
+Persist an announcement and make it the newest one.
+
+### `async def pending_announcement(self, user_id: int) -> DevAnnouncement | None`
+
+**Scope:** `src/services/dev_notices.py` · `DevNotices`
+
+[Source](../src/services/dev_notices.py#L81)
+
+Return the newest announcement unless this user has already read it.
+
+### `async def mark_read(self, user_id: int, announcement_id: int) -> None`
+
+**Scope:** `src/services/dev_notices.py` · `DevNotices`
+
+[Source](../src/services/dev_notices.py#L96)
+
+Record that a user read an announcement, ignoring repeated marks.
+
+### `def maintenance_embed(self, locale: discord.Locale | str | None) -> discord.Embed`
+
+**Scope:** `src/services/dev_notices.py` · `DevNotices`
+
+[Source](../src/services/dev_notices.py#L112)
+
+Build the private embed shown while maintenance blocks an interaction.
+
+### `async def allow(self, interaction: discord.Interaction[Any]) -> bool`
+
+**Scope:** `src/services/dev_notices.py` · `DevNotices`
+
+[Source](../src/services/dev_notices.py#L128)
+
+Allow an interaction unless maintenance blocks it, failing open.
+
+### `async def deliver(self, interaction: discord.Interaction[Any]) -> None`
+
+**Scope:** `src/services/dev_notices.py` · `DevNotices`
+
+[Source](../src/services/dev_notices.py#L147)
+
+Send the newest unread announcement privately, swallowing errors.
+
 ## `src/services/emojis.py`
 
 Cache Discord application emojis and create them from bundled image assets.
@@ -4216,11 +4424,19 @@ Return the shared in-process lock used for one account's shop requests.
 
 Remove an account's cached storefront after coordinating with active fetches.
 
-### `def prune_expired(self) -> None`
+### `async def clear_all_cached_storefronts(self) -> int`
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
 [Source](../src/services/shop.py#L110)
+
+Clear every cached storefront under its account lock.
+
+### `def prune_expired(self) -> None`
+
+**Scope:** `src/services/shop.py` · `ShopService`
+
+[Source](../src/services/shop.py#L119)
 
 Release expired storefronts, including accounts no longer queried.
 
@@ -4228,7 +4444,7 @@ Release expired storefronts, including accounts no longer queried.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L125)
+[Source](../src/services/shop.py#L134)
 
 Return a fresh or unexpired cached storefront for the linked account.
 
@@ -4236,7 +4452,7 @@ Return a fresh or unexpired cached storefront for the linked account.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L147)
+[Source](../src/services/shop.py#L156)
 
 Fetch, repair claims, normalize all shop offers, and cache the result.
 
@@ -4244,7 +4460,7 @@ Fetch, repair claims, normalize all shop offers, and cache the result.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L310)
+[Source](../src/services/shop.py#L319)
 
 Request one regional storefront with a shared transient failure cooldown.
 
@@ -4252,7 +4468,7 @@ Request one regional storefront with a shared transient failure cooldown.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L341)
+[Source](../src/services/shop.py#L350)
 
 Return VP, Radianite, and Kingdom Credit balances for an account.
 
@@ -4260,7 +4476,7 @@ Return VP, Radianite, and Kingdom Credit balances for an account.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L370)
+[Source](../src/services/shop.py#L379)
 
 Resolve the storefront's accessory rewards and their Kingdom Credit prices.
 
@@ -4268,7 +4484,7 @@ Resolve the storefront's accessory rewards and their Kingdom Credit prices.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L397)
+[Source](../src/services/shop.py#L406)
 
 Extract the raw single-item store offers across Riot response shapes.
 
@@ -4276,7 +4492,7 @@ Extract the raw single-item store offers across Riot response shapes.
 
 **Scope:** `src/services/shop.py` · `ShopService`
 
-[Source](../src/services/shop.py#L404)
+[Source](../src/services/shop.py#L413)
 
 Build a skin-offer-to-VP-price lookup from the storefront payload.
 
@@ -4284,7 +4500,7 @@ Build a skin-offer-to-VP-price lookup from the storefront payload.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L419)
+[Source](../src/services/shop.py#L428)
 
 Raised when Riot does not return a usable storefront or wallet.
 
@@ -4292,7 +4508,7 @@ Raised when Riot does not return a usable storefront or wallet.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L423)
+[Source](../src/services/shop.py#L432)
 
 Parse an integer only when it meets the requested minimum.
 
@@ -4300,7 +4516,7 @@ Parse an integer only when it meets the requested minimum.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L434)
+[Source](../src/services/shop.py#L443)
 
 Treat malformed optional mappings as absent.
 
@@ -4308,7 +4524,7 @@ Treat malformed optional mappings as absent.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L439)
+[Source](../src/services/shop.py#L448)
 
 Keep only mapping entries from an optional Riot list.
 
@@ -4316,7 +4532,7 @@ Keep only mapping entries from an optional Riot list.
 
 **Scope:** `src/services/shop.py` · `module`
 
-[Source](../src/services/shop.py#L448)
+[Source](../src/services/shop.py#L457)
 
 Return a price only when the source entry explicitly uses VALORANT Points.
 
@@ -4480,7 +4696,7 @@ Run the handler registered for an owned control.
 
 **Scope:** `src/views/components.py` · `module`
 
-[Source](../src/views/components.py#L57)
+[Source](../src/views/components.py#L58)
 
 Create a persistent button whose action can only be used by its owner.
 
@@ -4488,7 +4704,7 @@ Create a persistent button whose action can only be used by its owner.
 
 **Scope:** `src/views/components.py` · `OwnedActionButton`
 
-[Source](../src/views/components.py#L60)
+[Source](../src/views/components.py#L61)
 
 Build a stable custom ID containing the action, owner, and payload.
 
@@ -4496,7 +4712,7 @@ Build a stable custom ID containing the action, owner, and payload.
 
 **Scope:** `src/views/components.py` · `OwnedActionButton`
 
-[Source](../src/views/components.py#L86)
+[Source](../src/views/components.py#L87)
 
 Reconstruct a persistent button from its custom ID and visible style.
 
@@ -4504,15 +4720,15 @@ Reconstruct a persistent button from its custom ID and visible style.
 
 **Scope:** `src/views/components.py` · `OwnedActionButton`
 
-[Source](../src/views/components.py#L105)
+[Source](../src/views/components.py#L106)
 
-Reject interactions from users other than the button's recorded owner.
+Block maintenance before rejecting users other than the owner.
 
 ### `async def callback(self, interaction: discord.Interaction[Any]) -> None`
 
 **Scope:** `src/views/components.py` · `OwnedActionButton`
 
-[Source](../src/views/components.py#L111)
+[Source](../src/views/components.py#L114)
 
 Dispatch the button action to its registered handler inside a trace.
 
@@ -4520,7 +4736,7 @@ Dispatch the button action to its registered handler inside a trace.
 
 **Scope:** `src/views/components.py` · `module`
 
-[Source](../src/views/components.py#L118)
+[Source](../src/views/components.py#L121)
 
 Read the values actually offered by this message's matching select menu.
 
@@ -4528,7 +4744,7 @@ Read the values actually offered by this message's matching select menu.
 
 **Scope:** `src/views/components.py` · `module`
 
-[Source](../src/views/components.py#L132)
+[Source](../src/views/components.py#L135)
 
 Create a persistent select menu whose action is restricted to its owner.
 
@@ -4536,7 +4752,7 @@ Create a persistent select menu whose action is restricted to its owner.
 
 **Scope:** `src/views/components.py` · `OwnedSelect`
 
-[Source](../src/views/components.py#L135)
+[Source](../src/views/components.py#L138)
 
 Build a stable custom ID and a translated placeholder when options are empty.
 
@@ -4544,7 +4760,7 @@ Build a stable custom ID and a translated placeholder when options are empty.
 
 **Scope:** `src/views/components.py` · `OwnedSelect`
 
-[Source](../src/views/components.py#L167)
+[Source](../src/views/components.py#L170)
 
 Reconstruct a persistent select menu from its ID and current options.
 
@@ -4552,15 +4768,15 @@ Reconstruct a persistent select menu from its ID and current options.
 
 **Scope:** `src/views/components.py` · `OwnedSelect`
 
-[Source](../src/views/components.py#L186)
+[Source](../src/views/components.py#L189)
 
-Reject interactions from users other than the menu's recorded owner.
+Block maintenance before rejecting users other than the owner.
 
 ### `async def callback(self, interaction: discord.Interaction[Any]) -> None`
 
 **Scope:** `src/views/components.py` · `OwnedSelect`
 
-[Source](../src/views/components.py#L192)
+[Source](../src/views/components.py#L197)
 
 Dispatch the selected value with the menu payload to its registered handler.
 
@@ -4568,9 +4784,21 @@ Dispatch the selected value with the menu payload to its registered handler.
 
 **Scope:** `src/views/components.py` · `module`
 
-[Source](../src/views/components.py#L203)
+[Source](../src/views/components.py#L208)
 
 Build a compact red embed for an invalid or unavailable component action.
+
+## `src/views/notices.py`
+
+Delivery wrapper that appends pending dev notices to interaction handlers.
+
+### `def after_interaction(callback: Callable[Concatenate[Any, discord.Interaction[Any], P], Awaitable[Result]]) -> Callable[Concatenate[Any, discord.Interaction[Any], P], Coroutine[Any, Any, Result]]`
+
+**Scope:** `src/views/notices.py` · `module`
+
+[Source](../src/views/notices.py#L15)
+
+Deliver pending dev notices after a view method's interaction callback.
 
 ## `src/views/shop.py`
 
