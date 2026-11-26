@@ -143,6 +143,21 @@ link-github = GitHub repository
 
 staff-owner-only = This command is restricted to the bot owner.
 
+dev-announcement-published = Announcement **{ $id }** published.
+dev-announcement-read = Announcement marked as read.
+dev-announcement-read-button = Mark as read
+dev-announcement-title = BotFragg announcement
+dev-inspect-id-invalid = That ID is not a valid Discord ID.
+dev-inspect-server-missing = BotFragg cannot see that server.
+dev-inspect-user-missing = BotFragg cannot find that user.
+dev-maintenance-description = BotFragg is under maintenance and will be back shortly. Please try again later.
+dev-maintenance-disabled = Maintenance mode is now **disabled**.
+dev-maintenance-enabled = Maintenance mode is now **enabled**.
+dev-maintenance-reason = Reason
+dev-maintenance-title = Maintenance in progress
+dev-sync-complete = Refreshed { $skins } skins and { $bundles } bundles, cleared { $accounts } cached shop accounts in { $seconds }s.
+dev-write-failed = The change could not be saved. Please try again.
+
 alert-already-exists = **{ $skin }** is already in your alerts.
 alert-created = Alert created for **{ $skin }**.
 alert-control-invalid = This alert control is invalid.
