@@ -157,6 +157,18 @@ async def test_night_market_alerts_are_enabled_for_existing_users(migration_url)
             'SELECT night_market_alerts_enabled FROM "user" WHERE id = 101'
         )
         assert bool(rows[0]["night_market_alerts_enabled"]) is True
+        # The migrated schema itself must enforce the rank role unique pair.
+        await client.execute_script(
+            'INSERT INTO "rankrole" (guild_id, tier_group, role_id) '
+            "VALUES (7, 'gold', 10)"
+        )
+        with pytest.raises(IntegrityError):
+            await client.execute_script(
+                'INSERT INTO "rankrole" (guild_id, tier_group, role_id) '
+                "VALUES (7, 'gold', 11)"
+            )
+        panels = await client.execute_query_dict('SELECT guild_id FROM "rankrolepanel"')
+        assert panels == []
     finally:
         await Tortoise.close_connections()
 
@@ -345,6 +357,18 @@ def test_native_initial_migration_matches_current_models() -> None:
     ] == [
         ("CreateModel", "AlertNotification"),
         ("AddField", "night_market_alerts_enabled"),
+    ]
+
+    rank_module = importlib.import_module("src.migrations.0012_rank_roles")
+    assert rank_module.Migration.dependencies == [
+        ("models", "0011_add_alert_notifications")
+    ]
+    assert [
+        (type(operation).__name__, operation.name)
+        for operation in rank_module.Migration.operations
+    ] == [
+        ("CreateModel", "RankRolePanel"),
+        ("CreateModel", "RankRole"),
     ]
 
 

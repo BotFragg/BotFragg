@@ -82,6 +82,7 @@ docstring. Regenerate it after application documentation changes with
 | [src/cogs/__init__.py](../src/cogs/__init__.py) | Defines the Discord cog package. |
 | [src/cogs/events.py](../src/cogs/events.py) | Records command analytics and reports guild lifecycle events. |
 | [src/cogs/extra.py](../src/cogs/extra.py) | Implements utility commands and persistent shard status. |
+| [src/cogs/rankrole.py](../src/cogs/rankrole.py) | Implements the rank role dashboard, the member panel, and role reconciliation. |
 | [src/cogs/staff.py](../src/cogs/staff.py) | Implements owner-only user, server, and command-usage diagnostics. |
 | [src/cogs/tasks.py](../src/cogs/tasks.py) | Runs scheduled alerts and refreshes and optionally forwards filtered logs to Discord. |
 | [src/cogs/valorant/__init__.py](../src/cogs/valorant/__init__.py) | Defines the VALORANT cog package. |
@@ -129,7 +130,7 @@ docstring. Regenerate it after application documentation changes with
 | [src/services/shop.py](../src/services/shop.py) | Retrieves and normalizes account-scoped skin, bundle, accessory, Night Market, and wallet data. |
 | [src/services/valorant_status.py](../src/services/valorant_status.py) | Fetches, parses, and briefly caches Riot's public VALORANT status feed. |
 | [src/views/__init__.py](../src/views/__init__.py) | Re-exports common timestamps and persistent interactive controls. |
-| [src/views/components.py](../src/views/components.py) | Implements restart-safe, owner-restricted buttons and select menus. |
+| [src/views/components.py](../src/views/components.py) | Implements restart-safe owner-restricted controls and public panel buttons. |
 | [src/views/shop.py](../src/views/shop.py) | Shares shop cards, account/skin selectors, and Night Market presentation between commands and background notifications. |
 | [src/views/ui.py](../src/views/ui.py) | Shares embed, view, error, translation, skin-video, and privacy-aware account-name helpers. |
 | [src/views/video_menus.py](../src/views/video_menus.py) | Runs the two-step level/chroma video menus shared by the shop and loadout commands and holds their action and message-key configuration. |
@@ -163,6 +164,7 @@ docstring. Regenerate it after application documentation changes with
 | [tests/test_health.py](../tests/test_health.py) | Freshness, failed/stopped/overdue jobs, cancellation, and dependency-health recovery. |
 | [tests/test_http.py](../tests/test_http.py) | Cooldowns, concurrent rate limits, Retry-After parsing, decoding failures, and URL privacy. |
 | [tests/test_jobs.py](../tests/test_jobs.py) | Background retry behavior, delivery ordering, presence rotation, and awaited shutdown. |
+| [tests/test_rankrole.py](../tests/test_rankrole.py) | Tier mapping, mapped-role reconciliation, debounce windows, and public custom IDs. |
 | [tests/test_localization.py](../tests/test_localization.py) | Translated command/response contracts and catalog validation. |
 | [tests/test_migration.py](../tests/test_migration.py) | Migration/model parity and database initialization behavior. |
 | [tests/test_models.py](../tests/test_models.py) | ORM cascade and uniqueness constraints. |

@@ -43,6 +43,7 @@ PREFIXES = {
     "penalties",
     "ping",
     "profile",
+    "rankrole",
     "setting",
     "settings",
     "shard",

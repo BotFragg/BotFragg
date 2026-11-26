@@ -121,3 +121,25 @@ class ShardStatusMessage(Model):
 
     channel_id = fields.BigIntField(primary_key=True)
     message_id = fields.BigIntField()
+
+
+class RankRolePanel(Model):
+    """Record where one guild hosts its rank role panel and which message is live."""
+
+    guild_id = fields.BigIntField(primary_key=True)
+    channel_id = fields.BigIntField(null=True)
+    message_id = fields.BigIntField(null=True)
+    updated_at = fields.DatetimeField(auto_now=True)
+
+
+class RankRole(Model):
+    """Map one rank tier group to the role a guild awards for it."""
+
+    guild_id = fields.BigIntField()
+    tier_group = fields.CharField(max_length=12)
+    role_id = fields.BigIntField()
+
+    class Meta:
+        """Allow at most one role per tier group in each guild."""
+
+        unique_together = (("guild_id", "tier_group"),)

@@ -17,6 +17,7 @@ from tortoise.exceptions import DBConnectionError
 from src.bot import BotFraggBot, BotFraggCommandTree
 from src.cogs.events import EventsCog
 from src.cogs.extra import ExtraCog
+from src.cogs.rankrole import RankRoleCog
 from src.cogs.staff import StaffCog
 from src.cogs.valorant.accounts import AccountsCog
 from src.cogs.valorant.alerts import AlertsCog
@@ -317,6 +318,7 @@ async def test_initial_release_command_contract(
         ProfileCog(bot),
         LoadoutCog(bot),
         ExtraCog(bot),
+        RankRoleCog(bot),
         StaffCog(bot),
     ):
         await bot.add_cog(cog)
@@ -346,6 +348,7 @@ async def test_initial_release_command_contract(
         "botinfo",
         "help",
         "links",
+        "rankrole",
         "userinfo",
         "serverinfo",
     }

@@ -9,6 +9,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from ..bot import BotFraggBot
+from ..models import RankRole, RankRolePanel
 from ..services.http import DISCORD_HTTP_ERRORS
 from ..views import timestamp
 from ..views.ui import embed
@@ -43,10 +44,19 @@ class EventsCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild: discord.Guild) -> None:
-        """Send a summary to the channel configured for guild departures."""
+        """Forget the guild's stored configuration, then log the departure."""
+        await self._forget_guild(guild)
         await self._log_guild_event(
             guild, self.bot.config.guild_leave_log_channel_id, "I've left a guild!"
         )
+
+    async def _forget_guild(self, guild: discord.Guild) -> None:
+        """Delete configuration a guild can no longer reach or use."""
+        try:
+            await RankRolePanel.filter(guild_id=guild.id).delete()
+            await RankRole.filter(guild_id=guild.id).delete()
+        except Exception:
+            log.exception("Could not delete rank role rows for a departed guild")
 
     async def _log_guild_event(
         self, guild: discord.Guild, channel_id: int | None, title: str

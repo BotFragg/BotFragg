@@ -23,8 +23,11 @@ BotFragg processes the following information to provide its features:
   ID when available, and the time the command ran. These records are retained
   for 90 days by default. Command option values are not included.
 - **Operational records:** where configured, BotFragg stores the channel and
-  message IDs of its shard-status message. Optional Discord logs may include
-  guild or shard information described below.
+  message IDs of its shard-status message, and the channel, message, and role
+  IDs that a server uses for its rank role panel. Optional Discord logs may
+  include guild or shard information described below. Rank role settings are
+  deleted when BotFragg leaves the server, or when a server administrator
+  resets them with `/rankrole config`.
 
 BotFragg processes slash-command interactions and the values you submit to
 those commands, including in DMs. It does not request Discord's privileged

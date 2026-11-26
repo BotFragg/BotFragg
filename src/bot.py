@@ -25,7 +25,7 @@ from .services.matches import MatchesService
 from .services.profile import ProfileService
 from .services.shop import ShopService
 from .services.valorant_status import StatusService
-from .views import OwnedActionButton, OwnedSelect
+from .views import OwnedActionButton, OwnedSelect, PublicActionButton
 
 log = logging.getLogger(__name__)
 ComponentHandler = Callable[[discord.Interaction, str], Awaitable[None]]
@@ -44,6 +44,7 @@ EXTENSIONS = (
     "src.cogs.valorant.loadout",
     "src.cogs.events",
     "src.cogs.extra",
+    "src.cogs.rankrole",
     "src.cogs.staff",
     "src.cogs.tasks",
 )
@@ -239,7 +240,7 @@ class BotFraggBot(commands.AutoShardedBot):
         except Exception:
             log.exception("Could not initialize the VALORANT catalog")
         await self.emoji_service.warm()
-        self.add_dynamic_items(OwnedActionButton, OwnedSelect)
+        self.add_dynamic_items(OwnedActionButton, OwnedSelect, PublicActionButton)
         for extension in EXTENSIONS:
             await self.load_extension(extension)
         await self.tree.set_translator(self.translator)
