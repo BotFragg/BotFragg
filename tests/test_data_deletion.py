@@ -39,8 +39,11 @@ from src.services.auth import AuthService
 from src.services.catalog import Skin
 from src.services.crypto import AuthVault
 from tests.helpers import (
+    RecordingFollowup,
+    RecordingResponse,
     _localized_bot,
     _localized_interaction,
+    _user,
 )
 
 
@@ -126,10 +129,7 @@ async def test_pending_account_responses_reject_deleted_or_recreated_accounts(
         catalog=NS(get_skin=lambda _: skin),
     )
     interaction = _localized_interaction(
-        user=NS(id=owner.id, send=AsyncMock()),
-        response=NS(defer=AsyncMock(), is_done=lambda: True),
-        followup=NS(send=AsyncMock()),
-        edit_original_response=AsyncMock(),
+        user=_user(owner.id, send=AsyncMock()),
     )
     if mode in {"missions", "mission_bars"}:
         await BattlepassCog.missions.callback(BattlepassCog(bot), interaction)
@@ -178,9 +178,7 @@ async def test_manual_alert_rechecks_original_alert_and_current_account_name(cha
         emoji_service=NS(skin_name=lambda name, _: name),
     )
     interaction = _localized_interaction(
-        user=NS(id=owner.id, send=AsyncMock()),
-        response=NS(defer=AsyncMock(), is_done=lambda: True),
-        followup=NS(send=AsyncMock()),
+        user=_user(owner.id, send=AsyncMock()),
     )
     await AlertsCog.testalerts.callback(AlertsCog(bot), interaction)
     if change == "rename":
@@ -374,13 +372,7 @@ async def test_deletedata_invalidates_pending_login(database):
         translator=BotFraggTranslator(),
         shop=NS(clear_cached_storefront=AsyncMock()),
     )
-    interaction = NS(
-        user=NS(id=101),
-        client=bot,
-        locale=discord.Locale.american_english,
-        response=NS(defer=AsyncMock(), is_done=lambda: True),
-        followup=NS(send=AsyncMock()),
-    )
+    interaction = _localized_interaction(user=_user(101), client=bot)
     await LogoutCog.deletedata.callback(LogoutCog(bot), interaction, True)
     result = await auth.redeem_callback(101, "http://localhost/redirect?code=synthetic")
     assert not result.success and not await User.exists(id=101), (
@@ -423,13 +415,7 @@ async def test_inflight_login_cannot_recreate_deleted_data(database):
         translator=BotFraggTranslator(),
         shop=NS(clear_cached_storefront=AsyncMock()),
     )
-    interaction = NS(
-        user=NS(id=101),
-        client=bot,
-        locale=discord.Locale.american_english,
-        response=NS(defer=AsyncMock(), is_done=lambda: True),
-        followup=NS(send=AsyncMock()),
-    )
+    interaction = _localized_interaction(user=_user(101), client=bot)
     await LogoutCog.deletedata.callback(LogoutCog(bot), interaction, True)
     resume.set()
     result = await login
@@ -486,24 +472,10 @@ async def test_deletedata_clears_cached_shops_after_database_delete(
             """Record removal of the account's cached storefront."""
             events.append(("clear", account_id))
 
-    class Response:
-        """Capture whether an interaction was deferred and whether its initial response was private."""
-
-        async def defer(self, *, thinking: bool, ephemeral: bool) -> None:
-            """Record that the fake interaction response was deferred."""
-            assert thinking and ephemeral
-
-    class Followup:
-        """Capture outgoing embeds and privacy flags sent after an interaction's initial response."""
-
-        async def send(self, *, embed: discord.Embed, ephemeral: bool) -> None:
-            """Record the follow-up message sent through the fake interaction."""
-            assert ephemeral
-
     monkeypatch.setattr("src.cogs.valorant.logout.list_accounts", list_accounts)
     monkeypatch.setattr("src.cogs.valorant.logout.delete_user_data", delete_user_data)
     interaction = _localized_interaction(
-        user=SimpleNamespace(id=123), response=Response(), followup=Followup()
+        user=_user(123), response=RecordingResponse(), followup=RecordingFollowup()
     )
 
     await LogoutCog.deletedata.callback(
@@ -519,6 +491,8 @@ async def test_deletedata_clears_cached_shops_after_database_delete(
         True,
     )
 
+    assert interaction.response.deferred == [{"thinking": True, "ephemeral": True}]
+    assert [message["ephemeral"] for message in interaction.followup.sent] == [True]
     assert events == [
         ("list", 123),
         ("delete", 123),
@@ -569,13 +543,7 @@ async def test_logout_cancels_inflight_login_and_clears_cached_shop(database):
     shop = NS(clear_cached_storefront=AsyncMock())
     crosshair = NS(invalidate=Mock())
     bot = NS(auth=auth, translator=BotFraggTranslator(), shop=shop, crosshair=crosshair)
-    interaction = NS(
-        user=NS(id=101),
-        client=bot,
-        locale=discord.Locale.american_english,
-        response=NS(defer=AsyncMock(), is_done=lambda: True),
-        followup=NS(send=AsyncMock()),
-    )
+    interaction = _localized_interaction(user=_user(101), client=bot)
 
     await LogoutCog.logout.callback(LogoutCog(bot), interaction, None)
     resume.set()

@@ -38,10 +38,13 @@ from src.config import Settings
 from src.localization import BotFraggTranslator
 from src.services.http import HTTPFailure
 from tests.helpers import (
-    TEST_LOCALE,
     TEST_TRANSLATOR,
+    RecordingFollowup,
+    RecordingResponse,
     _localized_bot,
     _localized_interaction,
+    _text,
+    _user,
 )
 
 
@@ -120,20 +123,9 @@ async def test_command_extensions_unload_and_reload_without_stale_handlers(
 
 async def test_unhandled_app_command_error_returns_ephemeral_response() -> None:
     """Verify that unhandled app command error returns ephemeral response."""
-    sent: list[tuple[object, bool]] = []
-
-    class Response:
-        """Capture whether an interaction was deferred and whether its initial response was private."""
-
-        def is_done(self) -> bool:
-            """Report whether the fake interaction response has been sent."""
-            return False
-
-        async def send_message(self, *, embed, ephemeral: bool) -> None:
-            """Record the initial message sent through the fake interaction."""
-            sent.append((embed, ephemeral))
-
-    interaction = _localized_interaction(command=None, data={}, response=Response())
+    interaction = _localized_interaction(
+        command=None, data={}, response=RecordingResponse()
+    )
     await BotFraggCommandTree.on_error(
         SimpleNamespace(
             client=SimpleNamespace(translator=TEST_TRANSLATOR),
@@ -143,30 +135,14 @@ async def test_unhandled_app_command_error_returns_ephemeral_response() -> None:
         RuntimeError("unexpected"),
     )
 
-    assert sent[0][0].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "error-command-failed"
+    assert interaction.response.sent[0]["embed"].description == _text(
+        "error-command-failed"
     )
-    assert sent[0][1] is True
+    assert interaction.response.sent[0]["ephemeral"] is True
 
 
 async def test_links_show_the_fixed_invite_and_project_website() -> None:
     """Verify that links shows the fixed invite URL and the project website."""
-    sent: dict[str, object] = {}
-
-    class Response:
-        """Capture whether an interaction was deferred and whether its initial response was private."""
-
-        async def defer(self, *, thinking: bool) -> None:
-            """Record that the fake interaction response was deferred."""
-            assert thinking
-
-    class Followup:
-        """Capture outgoing embeds and privacy flags sent after an interaction's initial response."""
-
-        async def send(self, **kwargs: object) -> None:
-            """Record the follow-up message sent through the fake interaction."""
-            sent.update(kwargs)
-
     user = SimpleNamespace(
         id=123,
         name="BotFragg",
@@ -176,12 +152,14 @@ async def test_links_show_the_fixed_invite_and_project_website() -> None:
         user=user,
         config=SimpleNamespace(support_url=None, vote_url=None, website_url=None),
     )
-    interaction = _localized_interaction(response=Response(), followup=Followup())
+    interaction = _localized_interaction(
+        response=RecordingResponse(), followup=RecordingFollowup()
+    )
 
     cog = ExtraCog(bot)
     await ExtraCog.links.callback(cog, interaction)
 
-    controls = sent["view"]
+    controls = interaction.followup.sent[0]["view"]
     invite = controls.children[0]
     assert (
         invite.url
@@ -194,29 +172,16 @@ async def test_links_show_the_fixed_invite_and_project_website() -> None:
     bot.config.website_url = "https://example.com/community"
     await ExtraCog.links.callback(cog, interaction)
     website = next(
-        button for button in sent["view"].children if button.label == "Website"
+        button
+        for button in interaction.followup.sent[1]["view"].children
+        if button.label == "Website"
     )
     assert website.url == "https://example.com/community"
+    assert interaction.response.deferred == [{"thinking": True, "ephemeral": False}] * 2
 
 
 async def test_donate_buttons_point_at_the_funding_pages() -> None:
     """Verify that donate exposes Ko-fi and GitHub Sponsors as link buttons."""
-    sent: dict[str, object] = {}
-
-    class Response:
-        """Capture the deferred interaction response for the donate command."""
-
-        async def defer(self, *, thinking: bool) -> None:
-            """Record that the fake interaction response was deferred."""
-            assert thinking
-
-    class Followup:
-        """Capture the embed and view sent after the donate interaction."""
-
-        async def send(self, **kwargs: object) -> None:
-            """Record the follow-up message sent through the fake interaction."""
-            sent.update(kwargs)
-
     user = SimpleNamespace(
         id=123,
         name="BotFragg",
@@ -226,11 +191,14 @@ async def test_donate_buttons_point_at_the_funding_pages() -> None:
         user=user,
         config=SimpleNamespace(support_url=None, vote_url=None, website_url=None),
     )
-    interaction = _localized_interaction(response=Response(), followup=Followup())
+    interaction = _localized_interaction(
+        response=RecordingResponse(), followup=RecordingFollowup()
+    )
 
     await ExtraCog.donate.callback(ExtraCog(bot), interaction)
 
-    controls = sent["view"]
+    assert interaction.response.deferred == [{"thinking": True, "ephemeral": False}]
+    controls = interaction.followup.sent[0]["view"]
     assert [button.url for button in controls.children] == [
         "https://ko-fi.com/kumkashree",
         "https://github.com/sponsors/BotFragg",
@@ -354,22 +322,7 @@ async def test_ping_uses_database_probe_and_keeps_latency_embed(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Verify that ping uses database probe and keeps latency embed."""
-    sent: dict[str, object] = {}
     probed = False
-
-    class Response:
-        """Capture whether an interaction was deferred and whether its initial response was private."""
-
-        async def defer(self, *, thinking: bool) -> None:
-            """Record that the fake interaction response was deferred."""
-            sent["thinking"] = thinking
-
-    class Followup:
-        """Capture outgoing embeds and privacy flags sent after an interaction's initial response."""
-
-        async def send(self, *, embed: discord.Embed) -> None:
-            """Record the follow-up message sent through the fake interaction."""
-            sent["embed"] = embed
 
     async def ping_database() -> None:
         """Stub and record the database health check."""
@@ -381,15 +334,15 @@ async def test_ping_uses_database_probe_and_keeps_latency_embed(
         get_shard=lambda shard_id: SimpleNamespace(latency=0.041), latency=0.2
     )
     interaction = _localized_interaction(
-        response=Response(),
-        followup=Followup(),
+        response=RecordingResponse(),
+        followup=RecordingFollowup(),
         guild=SimpleNamespace(shard_id=3),
     )
 
     await ExtraCog.ping.callback(ExtraCog(bot), interaction)
 
-    card = sent["embed"]
-    assert sent["thinking"] is True
+    card = interaction.followup.sent[0]["embed"]
+    assert interaction.response.deferred == [{"thinking": True, "ephemeral": False}]
     assert probed
     assert card.title == "🏓 Pong"
     assert [field.name for field in card.fields] == [
@@ -400,82 +353,38 @@ async def test_ping_uses_database_probe_and_keeps_latency_embed(
     assert card.fields[1].value.endswith("ms")
 
 
-async def test_ping_reports_a_stalled_database_instead_of_hanging(
-    monkeypatch: pytest.MonkeyPatch,
+@pytest.mark.parametrize("failure", ["stalled", "unreachable"])
+async def test_ping_reports_an_unavailable_database(
+    monkeypatch: pytest.MonkeyPatch, failure: str
 ) -> None:
-    """A database probe that never returns must not leave /ping hanging."""
-    sent: dict[str, object] = {}
-
-    class Response:
-        """Capture whether the interaction was deferred."""
-
-        async def defer(self, *, thinking: bool) -> None:
-            """Record the deferral request."""
-
-    class Followup:
-        """Capture the embed sent after the probe."""
-
-        async def send(self, *, embed: discord.Embed) -> None:
-            """Record the follow-up embed."""
-            sent["embed"] = embed
+    """A stalled or unreachable database probe must show as unavailable."""
 
     async def stalled() -> None:
         """Never return before the probe timeout."""
         await asyncio.sleep(60)
 
-    monkeypatch.setattr("src.cogs.extra.ping_database", stalled)
-    monkeypatch.setattr("src.cogs.extra.PING_TIMEOUT_SECONDS", 0.01)
-    bot = _localized_bot(
-        get_shard=lambda _shard_id: SimpleNamespace(latency=0.041), latency=0.2
-    )
-    interaction = _localized_interaction(
-        response=Response(),
-        followup=Followup(),
-        guild=SimpleNamespace(shard_id=3),
-    )
-
-    await ExtraCog.ping.callback(ExtraCog(bot), interaction)
-
-    card = sent["embed"]
-    assert card.fields[1].value == "Unavailable"
-
-
-async def test_ping_reports_an_unreachable_database(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """A database that fails immediately must also show as unavailable."""
-    sent: dict[str, object] = {}
-
-    class Response:
-        """Capture whether the interaction was deferred."""
-
-        async def defer(self, *, thinking: bool) -> None:
-            """Record the deferral request."""
-
-    class Followup:
-        """Capture the embed sent after the probe."""
-
-        async def send(self, *, embed: discord.Embed) -> None:
-            """Record the follow-up embed."""
-            sent["embed"] = embed
-
     async def unavailable() -> None:
         """Fail the way a closed pool or refused connection does."""
         raise DBConnectionError("synthetic outage")
 
-    monkeypatch.setattr("src.cogs.extra.ping_database", unavailable)
+    if failure == "stalled":
+        monkeypatch.setattr("src.cogs.extra.ping_database", stalled)
+        monkeypatch.setattr("src.cogs.extra.PING_TIMEOUT_SECONDS", 0.01)
+    else:
+        monkeypatch.setattr("src.cogs.extra.ping_database", unavailable)
     bot = _localized_bot(
         get_shard=lambda _shard_id: SimpleNamespace(latency=0.041), latency=0.2
     )
     interaction = _localized_interaction(
-        response=Response(),
-        followup=Followup(),
+        response=RecordingResponse(),
+        followup=RecordingFollowup(),
         guild=SimpleNamespace(shard_id=3),
     )
 
     await ExtraCog.ping.callback(ExtraCog(bot), interaction)
 
-    card = sent["embed"]
+    assert interaction.response.deferred == [{"thinking": True, "ephemeral": False}]
+    card = interaction.followup.sent[0]["embed"]
     assert card.fields[1].value == "Unavailable"
 
 
@@ -606,13 +515,7 @@ async def test_help_fetches_command_mentions_once():
         config=SimpleNamespace(support_url=None, vote_url=None, website_url=None),
     )
     cog = ExtraCog(bot)
-    interaction = SimpleNamespace(
-        client=bot,
-        locale=discord.Locale.american_english,
-        user=SimpleNamespace(id=2),
-        response=SimpleNamespace(defer=AsyncMock()),
-        followup=SimpleNamespace(send=AsyncMock()),
-    )
+    interaction = _localized_interaction(client=bot, user=_user(2))
 
     await ExtraCog.help.callback(cog, interaction)
     await ExtraCog.help.callback(cog, interaction)

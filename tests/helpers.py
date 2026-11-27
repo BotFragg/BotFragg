@@ -6,6 +6,7 @@ import base64
 import json
 import time
 from types import SimpleNamespace
+from unittest.mock import AsyncMock, Mock
 
 import discord
 
@@ -45,6 +46,84 @@ class _NoopNotices:
         """Deliver nothing."""
 
 
+def _text(
+    key: str, *, locale: discord.Locale = TEST_LOCALE, **arguments: object
+) -> str:
+    """Return a localized message for a catalog key."""
+    return TEST_TRANSLATOR.text(locale, key, **arguments)
+
+
+def _user(user_id: int = 1, **attributes: object) -> SimpleNamespace:
+    """Build a fake Discord user with a stable identity."""
+    return SimpleNamespace(id=user_id, display_name="Example", **attributes)
+
+
+class RecordingResponse:
+    """Capture the interaction response paths a command may use."""
+
+    def __init__(self, *, done: bool = False) -> None:
+        """Start with no recorded calls."""
+        self.done = done
+        self.sent: list[dict[str, object]] = []
+        self.deferred: list[dict[str, object]] = []
+        self.edited: list[dict[str, object]] = []
+
+    def is_done(self) -> bool:
+        """Report whether the interaction already responded."""
+        return self.done
+
+    async def send_message(self, content: object = None, **kwargs: object) -> None:
+        """Record one initial response."""
+        self.sent.append({"content": content, **kwargs})
+        self.done = True
+
+    async def defer(self, *, thinking: bool = False, ephemeral: bool = False) -> None:
+        """Record one deferred response."""
+        self.deferred.append({"thinking": thinking, "ephemeral": ephemeral})
+        self.done = True
+
+    async def edit_message(self, **kwargs: object) -> None:
+        """Record one message edit."""
+        self.edited.append(kwargs)
+
+    async def edit_original_response(self, **kwargs: object) -> None:
+        """Record one edit of the original response."""
+        self.edited.append(kwargs)
+
+
+class RecordingFollowup:
+    """Capture follow-up messages sent after a deferred response."""
+
+    def __init__(self) -> None:
+        """Start with no recorded messages."""
+        self.sent: list[dict[str, object]] = []
+
+    async def send(self, content: object = None, **kwargs: object) -> None:
+        """Record one follow-up message."""
+        self.sent.append({"content": content, **kwargs})
+
+
+def _response(*, done: bool = False, **overrides: object) -> SimpleNamespace:
+    """Build an async-mock response with optional behavior overrides."""
+    values: dict[str, object] = {
+        "is_done": Mock(return_value=done),
+        "send_message": AsyncMock(),
+        "defer": AsyncMock(),
+        "edit_message": AsyncMock(),
+        "edit_original_response": AsyncMock(),
+        "send_modal": AsyncMock(),
+    }
+    values.update(overrides)
+    return SimpleNamespace(**values)
+
+
+def _followup(**overrides: object) -> SimpleNamespace:
+    """Build an async-mock followup with optional behavior overrides."""
+    values: dict[str, object] = {"send": AsyncMock()}
+    values.update(overrides)
+    return SimpleNamespace(**values)
+
+
 def _localized_bot(**attributes: object) -> SimpleNamespace:
     """Build a fake bot with the runtime translator used by command cogs."""
     return SimpleNamespace(translator=TEST_TRANSLATOR, **attributes)
@@ -53,8 +132,21 @@ def _localized_bot(**attributes: object) -> SimpleNamespace:
 def _localized_interaction(**attributes: object) -> SimpleNamespace:
     """Build a fake interaction with its Discord locale and client translator."""
     locale = attributes.pop("locale", TEST_LOCALE)
+    user = attributes.pop("user", None) or _user()
+    response = attributes.pop("response", None) or _response(done=True)
+    followup = attributes.pop("followup", None) or _followup()
+    client = attributes.pop("client", None) or SimpleNamespace(
+        translator=TEST_TRANSLATOR, dev_notices=_NoopNotices()
+    )
+    edit_original_response = (
+        attributes.pop("edit_original_response", None) or AsyncMock()
+    )
     return SimpleNamespace(
-        client=SimpleNamespace(translator=TEST_TRANSLATOR, dev_notices=_NoopNotices()),
+        client=client,
         locale=locale,
+        user=user,
+        response=response,
+        followup=followup,
+        edit_original_response=edit_original_response,
         **attributes,
     )

@@ -89,18 +89,23 @@ async def test_account_selection_preserves_invariant() -> None:
     assert (await selected_account(user.id)).puuid == second.puuid
 
 
+@pytest.mark.parametrize("operation", ["selected", "select"])
 @pytest.mark.usefixtures("database")
-async def test_selected_account_updates_user_timestamp() -> None:
-    """Verify that selected account updates user timestamp."""
+async def test_account_operations_update_user_timestamp(operation: str) -> None:
+    """Verify that selecting or reading the current account updates the timestamp."""
     user = await User.create(id=127)
     account = await Account.create(puuid="fallback", user=user, username="One#NA")
     old_timestamp = datetime(2000, 1, 1, tzinfo=UTC)
     await User.filter(id=user.id).update(updated_at=old_timestamp)
 
-    result = await selected_account(user.id)
-
+    if operation == "selected":
+        result = await selected_account(user.id)
+        assert result is not None and result.puuid == account.puuid
+    else:
+        await select_account(user.id, account)
+        saved = await User.get(id=user.id)
+        assert saved.current_account_id == account.puuid
     saved = await User.get(id=user.id)
-    assert result is not None and result.puuid == account.puuid
     assert saved.updated_at > old_timestamp
 
 
@@ -115,21 +120,6 @@ async def test_user_preference_updates_user_timestamp() -> None:
 
     saved = await User.get(id=user.id)
     assert saved.hide_ign
-    assert saved.updated_at > old_timestamp
-
-
-@pytest.mark.usefixtures("database")
-async def test_select_account_updates_user_timestamp() -> None:
-    """Verify that select account updates user timestamp."""
-    user = await User.create(id=129)
-    account = await Account.create(puuid="selected", user=user, username="One#NA")
-    old_timestamp = datetime(2000, 1, 1, tzinfo=UTC)
-    await User.filter(id=user.id).update(updated_at=old_timestamp)
-
-    await select_account(user.id, account)
-
-    saved = await User.get(id=user.id)
-    assert saved.current_account_id == account.puuid
     assert saved.updated_at > old_timestamp
 
 

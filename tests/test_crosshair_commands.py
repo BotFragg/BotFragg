@@ -22,8 +22,11 @@ from src.services.crosshair import CrosshairProfile, CrosshairUnavailable
 from tests.helpers import (
     TEST_LOCALE,
     TEST_TRANSLATOR,
+    RecordingFollowup,
+    RecordingResponse,
     _localized_bot,
     _localized_interaction,
+    _text,
 )
 
 CODE = "0;P;c;1;h;0;0b;0;1b;0"
@@ -47,50 +50,6 @@ def account() -> SimpleNamespace:
     )
 
 
-class Response:
-    """Record deferrals and component edits."""
-
-    def __init__(self) -> None:
-        """Start with no recorded calls."""
-        self.deferred: tuple[bool, bool] | None = None
-        self.edited: dict[str, object] | None = None
-        self.original: dict[str, object] | None = None
-        self.sent: dict[str, object] | None = None
-
-    async def send_message(self, **kwargs: object) -> None:
-        """Record a direct message response."""
-        self.sent = kwargs
-
-    async def defer(self, *, thinking: bool = False, ephemeral: bool = False) -> None:
-        """Record how the interaction was deferred."""
-        self.deferred = (thinking, ephemeral)
-
-    @staticmethod
-    def is_done() -> bool:
-        """Report that the interaction already responded."""
-        return True
-
-    async def edit_message(self, **kwargs: object) -> None:
-        """Record the edited message payload."""
-        self.edited = kwargs
-
-    async def edit_original_response(self, **kwargs: object) -> None:
-        """Record the edited original message payload."""
-        self.original = kwargs
-
-
-class Followup:
-    """Record follow-up messages."""
-
-    def __init__(self) -> None:
-        """Start with no recorded messages."""
-        self.sent: list[dict[str, object]] = []
-
-    async def send(self, **kwargs: object) -> None:
-        """Record one sent message."""
-        self.sent.append(kwargs)
-
-
 def build_bot(service_profiles: list[CrosshairProfile] | None = None):
     """Build a localized bot with a fake crosshair service."""
     service = SimpleNamespace(
@@ -106,8 +65,8 @@ async def test_view_shows_the_current_profile_code_and_selector(monkeypatch):
         crosshair_cog, "selected_account", AsyncMock(return_value=account())
     )
     bot, _service = build_bot()
-    response = Response()
-    followup = Followup()
+    response = RecordingResponse(done=True)
+    followup = RecordingFollowup()
     interaction = _localized_interaction(
         user=SimpleNamespace(id=1),
         response=response,
@@ -117,13 +76,11 @@ async def test_view_shows_the_current_profile_code_and_selector(monkeypatch):
 
     await CrosshairCog.crosshair_view.callback(CrosshairCog(bot), interaction)
 
-    assert response.deferred == (True, True)
+    assert response.deferred == [{"thinking": True, "ephemeral": True}]
     assert len(followup.sent) == 1
     sent = followup.sent[0]
     assert sent["ephemeral"] is True
-    assert sent["embed"].title == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "crosshair-title", name="two"
-    )
+    assert sent["embed"].title == _text("crosshair-title", name="two")
     assert CODE in sent["embed"].description
     assert sent["file"].filename == "crosshair.png"
     select = sent["view"].children[0]
@@ -141,8 +98,8 @@ async def test_selecting_a_profile_edits_the_message(monkeypatch):
         crosshair_cog, "account_for_user", AsyncMock(return_value=current)
     )
     bot, service = build_bot()
-    response = Response()
-    followup = Followup()
+    response = RecordingResponse(done=True)
+    followup = RecordingFollowup()
     interaction = _localized_interaction(
         user=SimpleNamespace(id=1),
         response=response,
@@ -153,18 +110,17 @@ async def test_selecting_a_profile_edits_the_message(monkeypatch):
     select = followup.sent[0]["view"].children[0]
     select._values = ["0"]
 
-    edit_response = Response()
+    edit_response = RecordingResponse(done=True)
     select_interaction = _localized_interaction(
         user=SimpleNamespace(id=1),
         response=edit_response,
-        followup=Followup(),
+        followup=RecordingFollowup(),
         locale=TEST_LOCALE,
     )
     await select.callback(select_interaction)
 
-    assert edit_response.edited is not None
-    assert edit_response.edited["embed"].title == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "crosshair-title", name="one"
+    assert edit_response.edited[-1]["embed"].title == _text(
+        "crosshair-title", name="one"
     )
     assert service.profiles.await_count == 1
 
@@ -179,10 +135,10 @@ async def test_selector_rejects_a_foreign_user(monkeypatch):
         crosshair_cog, "account_for_user", AsyncMock(return_value=current)
     )
     bot, _service = build_bot()
-    followup = Followup()
+    followup = RecordingFollowup()
     interaction = _localized_interaction(
         user=SimpleNamespace(id=1),
-        response=Response(),
+        response=RecordingResponse(done=True),
         followup=followup,
         locale=TEST_LOCALE,
     )
@@ -190,18 +146,16 @@ async def test_selector_rejects_a_foreign_user(monkeypatch):
     select = followup.sent[0]["view"].children[0]
     select._values = ["0"]
 
-    other_followup = Followup()
+    other_followup = RecordingFollowup()
     select_interaction = _localized_interaction(
         user=SimpleNamespace(id=2),
-        response=Response(),
+        response=RecordingResponse(done=True),
         followup=other_followup,
         locale=TEST_LOCALE,
     )
     await select.callback(select_interaction)
 
-    assert other_followup.sent[0]["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "error-command-failed"
-    )
+    assert other_followup.sent[0]["embed"].description == _text("error-command-failed")
 
 
 async def test_selector_rejects_a_relinked_account(monkeypatch):
@@ -211,10 +165,10 @@ async def test_selector_rejects_a_relinked_account(monkeypatch):
     )
     monkeypatch.setattr(crosshair_cog, "account_for_user", AsyncMock(return_value=None))
     bot, _service = build_bot()
-    followup = Followup()
+    followup = RecordingFollowup()
     interaction = _localized_interaction(
         user=SimpleNamespace(id=1),
-        response=Response(),
+        response=RecordingResponse(done=True),
         followup=followup,
         locale=TEST_LOCALE,
     )
@@ -222,35 +176,33 @@ async def test_selector_rejects_a_relinked_account(monkeypatch):
     select = followup.sent[0]["view"].children[0]
     select._values = ["0"]
 
-    edit_response = Response()
+    edit_response = RecordingResponse(done=True)
     select_interaction = _localized_interaction(
         user=SimpleNamespace(id=1),
         response=edit_response,
-        followup=Followup(),
+        followup=RecordingFollowup(),
         locale=TEST_LOCALE,
     )
     await select.callback(select_interaction)
 
-    assert edit_response.edited is None
+    assert edit_response.edited == []
 
 
 async def test_view_reports_not_registered(monkeypatch):
     """An unlinked caller must get the existing not-registered error."""
     monkeypatch.setattr(crosshair_cog, "selected_account", AsyncMock(return_value=None))
     bot, _service = build_bot()
-    followup = Followup()
+    followup = RecordingFollowup()
     interaction = _localized_interaction(
         user=SimpleNamespace(id=1),
-        response=Response(),
+        response=RecordingResponse(done=True),
         followup=followup,
         locale=TEST_LOCALE,
     )
 
     await CrosshairCog.crosshair_view.callback(CrosshairCog(bot), interaction)
 
-    assert followup.sent[0]["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "error-not-registered"
-    )
+    assert followup.sent[0]["embed"].description == _text("error-not-registered")
 
 
 @pytest.mark.parametrize(
@@ -267,19 +219,17 @@ async def test_view_maps_service_errors(monkeypatch, error, key):
     )
     bot, service = build_bot()
     service.profiles = AsyncMock(side_effect=error)
-    followup = Followup()
+    followup = RecordingFollowup()
     interaction = _localized_interaction(
         user=SimpleNamespace(id=1),
-        response=Response(),
+        response=RecordingResponse(done=True),
         followup=followup,
         locale=TEST_LOCALE,
     )
 
     await CrosshairCog.crosshair_view.callback(CrosshairCog(bot), interaction)
 
-    assert followup.sent[0]["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, key
-    )
+    assert followup.sent[0]["embed"].description == _text(key)
 
 
 async def test_view_reports_a_render_failure(monkeypatch):
@@ -289,19 +239,17 @@ async def test_view_reports_a_render_failure(monkeypatch):
     )
     bot, service = build_bot()
     service.render_png = lambda _profile: (_ for _ in ()).throw(ValueError("bad"))
-    followup = Followup()
+    followup = RecordingFollowup()
     interaction = _localized_interaction(
         user=SimpleNamespace(id=1),
-        response=Response(),
+        response=RecordingResponse(done=True),
         followup=followup,
         locale=TEST_LOCALE,
     )
 
     await CrosshairCog.crosshair_view.callback(CrosshairCog(bot), interaction)
 
-    assert followup.sent[0]["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "crosshair-unavailable"
-    )
+    assert followup.sent[0]["embed"].description == _text("crosshair-unavailable")
 
 
 def test_view_keeps_the_current_profile_when_profiles_exceed_the_menu_limit():
@@ -336,11 +284,11 @@ async def test_refresh_refetches_and_keeps_the_selected_profile(monkeypatch):
             CrosshairProfile(index=1, name="two", code=CODE, current=True),
         ]
     )
-    response = Response()
+    response = RecordingResponse(done=True)
     interaction = _localized_interaction(
         user=SimpleNamespace(id=1),
         response=response,
-        followup=Followup(),
+        followup=RecordingFollowup(),
         locale=TEST_LOCALE,
         edit_original_response=response.edit_original_response,
     )
@@ -352,12 +300,10 @@ async def test_refresh_refetches_and_keeps_the_selected_profile(monkeypatch):
     await button.callback(interaction)
 
     assert service.profiles.await_args.kwargs == {"refresh": True}
-    assert response.deferred == (False, False)
-    assert response.original["embed"].title == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "crosshair-title", name="one"
-    )
-    assert response.original["attachments"][0].filename == "crosshair.png"
-    refreshed = response.original["view"]
+    assert response.deferred == [{"thinking": False, "ephemeral": False}]
+    assert response.edited[-1]["embed"].title == _text("crosshair-title", name="one")
+    assert response.edited[-1]["attachments"][0].filename == "crosshair.png"
+    refreshed = response.edited[-1]["view"]
     assert isinstance(refreshed, CrosshairView)
     assert refreshed.children[0].options[0].default is True
 
@@ -379,8 +325,8 @@ async def test_refresh_reports_lookup_and_fetch_failures(monkeypatch, lookup, ke
     bot, service = build_bot()
     if isinstance(lookup, Exception):
         service.profiles = AsyncMock(side_effect=lookup)
-    response = Response()
-    followup = Followup()
+    response = RecordingResponse(done=True)
+    followup = RecordingFollowup()
     interaction = _localized_interaction(
         user=SimpleNamespace(id=1),
         response=response,
@@ -394,10 +340,8 @@ async def test_refresh_reports_lookup_and_fetch_failures(monkeypatch, lookup, ke
 
     await button.callback(interaction)
 
-    assert response.original is None
-    assert followup.sent[0]["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, key
-    )
+    assert response.edited == []
+    assert followup.sent[0]["embed"].description == _text(key)
 
 
 async def test_refresh_rejects_a_foreign_user():
@@ -405,13 +349,11 @@ async def test_refresh_rejects_a_foreign_user():
     cog = make_cog()
     view = CrosshairView(cog, guild_interaction(), account(), profiles(), profiles()[1])
     button = next(item for item in view.children if isinstance(item, RefreshButton))
-    followup = Followup()
+    followup = RecordingFollowup()
 
     await button.callback(guild_interaction(user_id=2, followup=followup))
 
-    assert followup.sent[0]["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "error-command-failed"
-    )
+    assert followup.sent[0]["embed"].description == _text("error-command-failed")
     assert cog.bot.crosshair.profiles.await_count == 0
 
 
@@ -439,16 +381,16 @@ class Channel(discord.abc.Messageable):
 def guild_interaction(
     *,
     channel: Channel | None = None,
-    response: Response | None = None,
-    followup: Followup | None = None,
+    response: RecordingResponse | None = None,
+    followup: RecordingFollowup | None = None,
     user_id: int = 1,
     locale: discord.Locale = TEST_LOCALE,
 ) -> SimpleNamespace:
     """Build a guild interaction with the fields the share flow uses."""
     return _localized_interaction(
         user=SimpleNamespace(id=user_id, display_name="Example"),
-        response=response or Response(),
-        followup=followup or Followup(),
+        response=response or RecordingResponse(done=True),
+        followup=followup or RecordingFollowup(),
         guild=SimpleNamespace(me=SimpleNamespace(id=1)),
         channel=channel or Channel(),
         locale=locale,
@@ -488,28 +430,22 @@ def test_share_button_appears_only_in_a_guild():
 async def test_share_button_shows_the_card_that_will_be_posted():
     """The preview must show the same profile, code, image, and footer."""
     cog = make_cog()
-    response = Response()
+    response = RecordingResponse(done=True)
     interaction = guild_interaction(response=response)
     view = CrosshairView(cog, interaction, account(), profiles(), profiles()[1])
     button = next(item for item in view.children if isinstance(item, discord.ui.Button))
 
     await button.callback(interaction)
 
-    assert response.sent is not None
-    assert response.sent["ephemeral"] is True
-    assert response.sent["content"] == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "crosshair-share-preview-description"
-    )
-    card = response.sent["embed"]
-    assert card.title == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "crosshair-title", name="two"
-    )
+    sent = response.sent[0]
+    assert sent["ephemeral"] is True
+    assert sent["content"] == _text("crosshair-share-preview-description")
+    card = sent["embed"]
+    assert card.title == _text("crosshair-title", name="two")
     assert CODE in card.description
-    assert card.footer.text == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "crosshair-public-footer", user="Example"
-    )
-    assert response.sent["file"].filename == "crosshair.png"
-    assert isinstance(response.sent["view"], ShareConfirmView)
+    assert card.footer.text == _text("crosshair-public-footer", user="Example")
+    assert sent["file"].filename == "crosshair.png"
+    assert isinstance(sent["view"], ShareConfirmView)
 
 
 async def test_share_post_sends_the_public_card_and_starts_cooldown(monkeypatch):
@@ -518,37 +454,33 @@ async def test_share_post_sends_the_public_card_and_starts_cooldown(monkeypatch)
     monkeypatch.setattr(crosshair_cog, "monotonic", lambda: clock[0])
     cog = make_cog()
     channel = Channel()
-    preview_response = Response()
+    preview_response = RecordingResponse(done=True)
     interaction = guild_interaction(channel=channel, response=preview_response)
     view = CrosshairView(cog, interaction, account(), profiles(), profiles()[1])
     await view.share_preview(interaction)
-    confirm = preview_response.sent["view"]
+    confirm = preview_response.sent[0]["view"]
 
-    post_response = Response()
+    post_response = RecordingResponse(done=True)
     post_interaction = guild_interaction(channel=channel, response=post_response)
     await confirm.post.callback(post_interaction)
 
     assert channel.send.await_count == 1
     sent = channel.send.await_args.kwargs
     assert sent["file"].filename == "crosshair.png"
-    assert sent["embed"].footer.text == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "crosshair-public-footer", user="Example"
-    )
+    assert sent["embed"].footer.text == _text("crosshair-public-footer", user="Example")
     assert sent["allowed_mentions"].everyone is False
-    assert post_response.edited["content"] == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "crosshair-share-success"
-    )
-    assert post_response.edited["view"] is None
+    assert post_response.edited[-1]["content"] == _text("crosshair-share-success")
+    assert post_response.edited[-1]["view"] is None
 
-    second_followup = Followup()
+    second_followup = RecordingFollowup()
     second_interaction = guild_interaction(
-        channel=channel, response=Response(), followup=second_followup
+        channel=channel, response=RecordingResponse(done=True), followup=second_followup
     )
     await confirm.post.callback(second_interaction)
 
     assert channel.send.await_count == 1
-    assert second_followup.sent[0]["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "crosshair-share-cooldown", seconds=30
+    assert second_followup.sent[0]["embed"].description == _text(
+        "crosshair-share-cooldown", seconds=30
     )
 
 
@@ -581,83 +513,74 @@ async def test_share_failure_releases_the_cooldown(monkeypatch):
     channel = Channel()
     channel.send.side_effect = aiohttp.ClientError("Synthetic outage")
     confirm = ShareConfirmView(cog, profiles()[1], guild_interaction(channel=channel))
-    followup = Followup()
+    followup = RecordingFollowup()
 
     await confirm.post.callback(guild_interaction(channel=channel, followup=followup))
 
-    assert followup.sent[0]["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "crosshair-share-failed"
-    )
+    assert followup.sent[0]["embed"].description == _text("crosshair-share-failed")
     assert cog.share_cooldown_remaining(1) == 0
 
 
 async def test_share_reports_a_missing_channel_permission():
     """A channel that cannot accept image embeds must be rejected early."""
     cog = make_cog()
-    followup = Followup()
+    followup = RecordingFollowup()
     interaction = guild_interaction(channel=Channel(allowed=False), followup=followup)
     view = CrosshairView(cog, interaction, account(), profiles(), profiles()[1])
 
     await view.share_preview(interaction)
 
-    assert followup.sent[0]["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "crosshair-share-no-permission"
+    assert followup.sent[0]["embed"].description == _text(
+        "crosshair-share-no-permission"
     )
 
 
 async def test_share_rejects_a_direct_message():
     """There is no public channel to share into from a DM."""
     cog = make_cog()
-    followup = Followup()
+    followup = RecordingFollowup()
     interaction = _localized_interaction(
         user=SimpleNamespace(id=1, display_name="Example"),
-        response=Response(),
+        response=RecordingResponse(done=True),
         followup=followup,
     )
     view = CrosshairView(cog, interaction, account(), profiles(), profiles()[1])
 
     await view.share_preview(interaction)
 
-    assert followup.sent[0]["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "crosshair-share-guild-only"
-    )
+    assert followup.sent[0]["embed"].description == _text("crosshair-share-guild-only")
 
 
 async def test_share_cancel_dismisses_the_preview():
     """Cancelling must remove the preview without posting."""
     cog = make_cog()
-    response = Response()
+    response = RecordingResponse(done=True)
     interaction = guild_interaction(response=response)
     confirm = ShareConfirmView(cog, profiles()[1], interaction)
 
     await confirm.cancel.callback(interaction)
 
-    assert response.edited["content"] == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "crosshair-share-cancelled"
-    )
-    assert response.edited["view"] is None
+    assert response.edited[-1]["content"] == _text("crosshair-share-cancelled")
+    assert response.edited[-1]["view"] is None
 
 
 async def test_public_share_card_is_english_in_a_foreign_locale():
     """Public cards must stay readable when the sharer uses another language."""
     cog = make_cog()
-    response = Response()
+    response = RecordingResponse(done=True)
     interaction = guild_interaction(response=response, locale=discord.Locale.german)
     view = CrosshairView(cog, interaction, account(), profiles(), profiles()[1])
 
     await view.share_preview(interaction)
 
-    card = response.sent["embed"]
-    assert card.title == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "crosshair-title", name="two"
+    sent = response.sent[0]
+    card = sent["embed"]
+    assert card.title == _text("crosshair-title", name="two")
+    assert card.footer.text == _text("crosshair-public-footer", user="Example")
+    assert sent["content"] == _text(
+        "crosshair-share-preview-description", locale=discord.Locale.german
     )
-    assert card.footer.text == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "crosshair-public-footer", user="Example"
-    )
-    assert response.sent["content"] == TEST_TRANSLATOR.text(
-        discord.Locale.german, "crosshair-share-preview-description"
-    )
-    confirm = response.sent["view"]
+    confirm = sent["view"]
     assert confirm.post.label == TEST_TRANSLATOR.text(
         discord.Locale.german, "crosshair-share-post"
     )

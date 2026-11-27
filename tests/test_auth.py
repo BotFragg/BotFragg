@@ -45,12 +45,13 @@ from src.services.shop import (
     ShopUnavailable,
 )
 from tests.helpers import (
-    TEST_LOCALE,
-    TEST_TRANSLATOR,
+    RecordingFollowup,
+    RecordingResponse,
     _fake_access_token,
     _fake_jwt,
     _localized_bot,
     _localized_interaction,
+    _text,
 )
 
 
@@ -1138,17 +1139,21 @@ async def test_concurrent_auth_ensure_serializes_entitlement_repair() -> None:
     assert vault.decrypt(saved.auth_blob)["ent"] == "entitlement"
 
 
+@pytest.mark.parametrize("stage", ["auth", "entitlement"])
 @pytest.mark.usefixtures("database")
-async def test_auth_refresh_transients_do_not_become_login_required() -> None:
-    """Verify that auth refresh transients do not become login required."""
+async def test_transients_do_not_become_login_required(stage: str) -> None:
+    """Verify that auth and entitlement transients do not become login required."""
     user = await User.create(id=655)
     vault = AuthVault(Fernet.generate_key().decode())
     account = await Account.create(
-        puuid="auth-refresh-transient",
+        puuid=f"{stage}-transient",
         user=user,
         username="One#NA",
         auth_blob=vault.encrypt(
-            {"rso": _fake_access_token(expires_in=-1), "refresh_token": "refresh"}
+            {
+                "rso": _fake_access_token(expires_in=-1 if stage == "auth" else 3600),
+                "refresh_token": "refresh",
+            }
         ),
     )
 
@@ -1169,91 +1174,30 @@ async def test_auth_refresh_transients_do_not_become_login_required() -> None:
         await service.auth_headers(account)
 
     saved = await Account.get(puuid=account.puuid)
-    assert vault.decrypt(saved.auth_blob).get("refresh_token")
-
-
-@pytest.mark.usefixtures("database")
-async def test_entitlement_transients_do_not_become_login_required() -> None:
-    """Verify that entitlement transients do not become login required."""
-    user = await User.create(id=657)
-    vault = AuthVault(Fernet.generate_key().decode())
-    account = await Account.create(
-        puuid="auth-entitlement-transient",
-        user=user,
-        username="One#NA",
-        auth_blob=vault.encrypt(
-            {"rso": _fake_access_token(), "refresh_token": "refresh"}
-        ),
-    )
-
-    class FailingHTTP:
-        """Return controlled Riot API failures for retry and authentication-state assertions."""
-
-        async def request(self, *args, **kwargs):
-            """Record request arguments and return the configured HTTP response."""
-            raise HTTPFailure("transport unavailable")
-
-    service = AuthService(
-        SimpleNamespace(token_refresh_buffer_minutes=5, auto_refresh_tokens=True),
-        FailingHTTP(),
-        vault,
-    )
-
-    with pytest.raises(HTTPFailure):
-        await service.auth_headers(account)
-
-    saved = await Account.get(puuid=account.puuid)
-    assert "ent" not in vault.decrypt(saved.auth_blob)
+    if stage == "auth":
+        assert vault.decrypt(saved.auth_blob).get("refresh_token")
+    else:
+        assert "ent" not in vault.decrypt(saved.auth_blob)
 
 
 @pytest.mark.parametrize("status", [408, 425, 500, 503])
+@pytest.mark.parametrize("stage", ["auth", "entitlement"])
 @pytest.mark.usefixtures("database")
-async def test_auth_refresh_transient_status_does_not_become_login_required(
-    status,
+async def test_transient_status_does_not_become_login_required(
+    status: int, stage: str
 ) -> None:
-    """Verify that auth refresh transient status does not become login required."""
+    """Verify that auth and entitlement transient statuses do not become login required."""
     user = await User.create(id=658)
     vault = AuthVault(Fernet.generate_key().decode())
     account = await Account.create(
-        puuid="auth-refresh-http-error",
+        puuid=f"{stage}-http-error",
         user=user,
         username="One#NA",
         auth_blob=vault.encrypt(
-            {"rso": _fake_access_token(expires_in=-1), "refresh_token": "refresh"}
-        ),
-    )
-
-    class FailingHTTP:
-        """Return controlled Riot API failures for retry and authentication-state assertions."""
-
-        async def request(self, *args, **kwargs):
-            """Record request arguments and return the configured HTTP response."""
-            return SimpleNamespace(status=status, data={})
-
-    service = AuthService(
-        SimpleNamespace(token_refresh_buffer_minutes=5, auto_refresh_tokens=True),
-        FailingHTTP(),
-        vault,
-    )
-
-    with pytest.raises(HTTPFailure):
-        await service.auth_headers(account)
-
-
-@pytest.mark.parametrize("status", [408, 425, 500, 503])
-@pytest.mark.usefixtures("database")
-async def test_entitlement_transient_status_does_not_become_login_required(
-    status,
-) -> None:
-    """Verify that entitlement transient status does not become login required."""
-    user = await User.create(id=659)
-    vault = AuthVault(Fernet.generate_key().decode())
-    account = await Account.create(
-        puuid="auth-entitlement-http-error",
-        user=user,
-        username="One#NA",
-        auth_blob=vault.encrypt(
-            {"rso": _fake_access_token(), "refresh_token": "refresh"}
+            {
+                "rso": _fake_access_token(expires_in=-1 if stage == "auth" else 3600),
+                "refresh_token": "refresh",
+            }
         ),
     )
 
@@ -1429,7 +1373,6 @@ async def test_testalerts_reports_temporary_auth_failure(
     """Verify that testalerts reports temporary auth failure."""
     account = SimpleNamespace(username="Player#NA")
     alert = SimpleNamespace(account=account)
-    sent: list[discord.Embed] = []
 
     async def selected_account(_user_id: int) -> SimpleNamespace:
         """Return the configured active account for the command under test."""
@@ -1438,25 +1381,6 @@ async def test_testalerts_reports_temporary_auth_failure(
     async def first_alert(_user_id: int) -> SimpleNamespace:
         """Return the alert fixture used by the command under test."""
         return alert
-
-    class Response:
-        """Capture whether an interaction was deferred and whether its initial response was private."""
-
-        async def defer(self, *, thinking: bool, ephemeral: bool) -> None:
-            """Record that the fake interaction response was deferred."""
-            assert thinking and ephemeral
-
-        def is_done(self) -> bool:
-            """Report whether the fake interaction response has been sent."""
-            return True
-
-    class Followup:
-        """Capture outgoing embeds and privacy flags sent after an interaction's initial response."""
-
-        async def send(self, *, embed: discord.Embed, ephemeral: bool) -> None:
-            """Record the follow-up message sent through the fake interaction."""
-            assert ephemeral
-            sent.append(embed)
 
     class Auth:
         """Stub authentication with controlled Riot credentials and login outcomes for service tests."""
@@ -1467,8 +1391,10 @@ async def test_testalerts_reports_temporary_auth_failure(
 
     monkeypatch.setattr("src.cogs.valorant.alerts.selected_account", selected_account)
     monkeypatch.setattr("src.cogs.valorant.alerts.first_alert", first_alert)
+    response = RecordingResponse(done=True)
+    followup = RecordingFollowup()
     interaction = _localized_interaction(
-        user=SimpleNamespace(id=123), response=Response(), followup=Followup()
+        user=SimpleNamespace(id=123), response=response, followup=followup
     )
 
     await AlertsCog.testalerts.callback(
@@ -1476,7 +1402,9 @@ async def test_testalerts_reports_temporary_auth_failure(
         interaction,
     )
 
-    assert sent[0].description == (
+    assert response.deferred == [{"thinking": True, "ephemeral": True}]
+    assert followup.sent[0]["ephemeral"] is True
+    assert followup.sent[0]["embed"].description == (
         "Riot authentication is currently unavailable. Please try again later."
     )
 
@@ -1744,23 +1672,6 @@ async def test_testalerts_reports_a_dropped_dm_connection(monkeypatch):
     alert = await Alert.create(
         account=account, skin_uuid=UUID("11111111-1111-4111-8111-111111111111")
     )
-    sent: list[object] = []
-
-    class Response:
-        """Record the deferred acknowledgement."""
-
-        async def defer(self, *, thinking: bool, ephemeral: bool) -> None:
-            assert thinking and ephemeral
-
-        def is_done(self) -> bool:
-            return True
-
-    class Followup:
-        """Capture the private follow-up embeds."""
-
-        async def send(self, *, embed: discord.Embed, ephemeral: bool) -> None:
-            assert ephemeral
-            sent.append(embed)
 
     class Target:
         """Fail the DM the way a dropped connection does."""
@@ -1782,10 +1693,12 @@ async def test_testalerts_reports_a_dropped_dm_connection(monkeypatch):
 
     monkeypatch.setattr("src.cogs.valorant.alerts.selected_account", selected_account)
     monkeypatch.setattr("src.cogs.valorant.alerts.first_alert", first_alert)
+    response = RecordingResponse(done=True)
+    followup = RecordingFollowup()
     interaction = _localized_interaction(
         user=SimpleNamespace(id=123, send=Target().send),
-        response=Response(),
-        followup=Followup(),
+        response=response,
+        followup=followup,
     )
     bot = _localized_bot(
         auth=Auth(),
@@ -1801,6 +1714,6 @@ async def test_testalerts_reports_a_dropped_dm_connection(monkeypatch):
 
     await AlertsCog.testalerts.callback(AlertsCog(bot), interaction)
 
-    assert sent[0].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "test-alerts-dm-failed"
-    )
+    assert response.deferred == [{"thinking": True, "ephemeral": True}]
+    assert followup.sent[0]["ephemeral"] is True
+    assert followup.sent[0]["embed"].description == _text("test-alerts-dm-failed")

@@ -23,10 +23,11 @@ from src.services.profile import EquippedSkin, PlayerProfile, ProfileUnavailable
 from src.views import select_custom_id
 from src.views.ui import RED
 from tests.helpers import (
-    TEST_LOCALE,
-    TEST_TRANSLATOR,
+    RecordingFollowup,
+    RecordingResponse,
     _localized_bot,
     _localized_interaction,
+    _text,
 )
 
 ACCOUNT = SimpleNamespace(puuid="puuid-1", region="eu", user=SimpleNamespace())
@@ -92,47 +93,11 @@ WEAPONS = {
 SKINS = {"skin-prime": PRIME, "skin-plain": PLAIN}
 
 
-class Response:
-    """Record deferrals and ephemeral replies."""
-
-    def __init__(self) -> None:
-        """Start with no recorded responses."""
-        self.deferred: bool | None = None
-        self.sent: list[dict[str, object]] = []
-
-    async def defer(self, *, thinking: bool = False) -> None:
-        """Record whether the command deferred with a thinking state."""
-        self.deferred = thinking
-
-    async def send_message(self, content: object = None, **kwargs: object) -> None:
-        """Record one private response."""
-        self.sent.append({"content": content, **kwargs})
-
-    @staticmethod
-    def is_done() -> bool:
-        """Report that the interaction already responded."""
-        return True
-
-
-class Followup:
-    """Record follow-up messages."""
-
-    def __init__(self) -> None:
-        """Start with no recorded messages."""
-        self.sent: list[dict[str, object]] = []
-
-    async def send(self, **kwargs: object) -> None:
-        """Record one sent message."""
-        self.sent.append(kwargs)
-
-
-def interaction(*, followup: Followup | None = None) -> SimpleNamespace:
+def interaction(*, followup: RecordingFollowup | None = None) -> SimpleNamespace:
     """Build a fake interaction for the loadout command."""
     return _localized_interaction(
-        user=SimpleNamespace(id=1),
-        response=Response(),
-        followup=followup or Followup(),
-        locale=TEST_LOCALE,
+        response=RecordingResponse(done=True),
+        followup=followup or RecordingFollowup(),
     )
 
 
@@ -143,10 +108,8 @@ def menu_interaction(*, custom_id: str, values: list[str]) -> SimpleNamespace:
         options=[SimpleNamespace(value=value) for value in values],
     )
     return _localized_interaction(
-        user=SimpleNamespace(id=1),
-        response=Response(),
+        response=RecordingResponse(done=True),
         message=SimpleNamespace(components=[SimpleNamespace(children=[select])]),
-        locale=TEST_LOCALE,
     )
 
 
@@ -214,7 +177,7 @@ def build_bot(*, profile_data: PlayerProfile | None = None) -> SimpleNamespace:
 
 async def run(
     monkeypatch: pytest.MonkeyPatch, bot: SimpleNamespace, *, viewer=None
-) -> Followup:
+) -> RecordingFollowup:
     """Run the loadout command with an authenticated account."""
     monkeypatch.setattr(
         loadout_cog, "selected_account", AsyncMock(return_value=ACCOUNT)
@@ -224,7 +187,7 @@ async def run(
         "account_viewer",
         AsyncMock(return_value=viewer or (ACCOUNT, False, "KumKaShree#Shree")),
     )
-    followup = Followup()
+    followup = RecordingFollowup()
     cog = LoadoutCog(bot)
     await cog.loadout.callback(cog, interaction(followup=followup))
     return followup
@@ -238,9 +201,7 @@ async def test_loadout_lists_themed_skins_and_hides_defaults(monkeypatch):
     assert card.colour == discord.Colour(RED)
     assert card.description == "**KumKaShree#Shree**\n-# V1.0"
     assert len(card.fields) == 1
-    assert card.fields[0].name == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "loadout-group-rifles"
-    )
+    assert card.fields[0].name == _text("loadout-group-rifles")
     assert card.fields[0].value == (
         "<premium> **Prime//2.0 Vandal** *(Variant 2 Blue)* · `Beckoner Buddy`"
     )
@@ -260,7 +221,7 @@ async def test_loadout_states_when_nothing_themed_is_equipped(monkeypatch):
 
     card = followup.sent[0]["embed"]
     assert card.fields == []
-    assert TEST_TRANSLATOR.text(TEST_LOCALE, "loadout-empty") in card.description
+    assert _text("loadout-empty") in card.description
     assert "view" not in followup.sent[0]
 
 
@@ -276,15 +237,13 @@ async def test_loadout_offers_a_menu_for_skins_with_videos(monkeypatch):
 async def test_missing_account_asks_for_login(monkeypatch):
     """An unlinked caller must be told to log in."""
     monkeypatch.setattr(loadout_cog, "selected_account", AsyncMock(return_value=None))
-    followup = Followup()
+    followup = RecordingFollowup()
 
     await LoadoutCog(build_bot()).loadout.callback(
         LoadoutCog(build_bot()), interaction(followup=followup)
     )
 
-    assert followup.sent[0]["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "error-not-registered"
-    )
+    assert followup.sent[0]["embed"].description == _text("error-not-registered")
 
 
 async def test_unavailable_profile_uses_the_riot_error(monkeypatch):
@@ -294,8 +253,8 @@ async def test_unavailable_profile_uses_the_riot_error(monkeypatch):
 
     followup = await run(monkeypatch, bot)
 
-    assert followup.sent[0]["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "error-riot-services-unavailable"
+    assert followup.sent[0]["embed"].description == _text(
+        "error-riot-services-unavailable"
     )
 
 
@@ -333,7 +292,7 @@ async def test_a_forged_or_expired_skin_selection_is_refused():
     await cog.loadout_video(forged, f"{expires}|skin-prime")
     await cog.loadout_video(expired, f"{expired_at}|skin-prime")
 
-    expected = TEST_TRANSLATOR.text(TEST_LOCALE, "loadout-video-selection-invalid")
+    expected = _text("loadout-video-selection-invalid")
     assert forged.response.sent[0]["content"] == expected
     assert expired.response.sent[0]["content"] == expected
 
@@ -357,20 +316,24 @@ async def test_selecting_a_variant_returns_the_private_video():
     assert interaction.response.sent[0]["ephemeral"] is True
 
 
-async def test_a_forged_variant_is_refused():
-    """Levels and chromas not offered by the menu are rejected."""
-    expires = int(time.time()) + 60
+@pytest.mark.parametrize(
+    ("offset", "values"),
+    [(60, ["level-prime"]), (-10, ["level-prime", "chroma-blue"])],
+)
+async def test_a_forged_or_expired_variant_is_refused(offset, values):
+    """Levels and chromas not offered by the menu, or past expiry, are rejected."""
+    expires = int(time.time()) + offset
     interaction = menu_interaction(
         custom_id=select_custom_id("loadout_variant", 1, f"{expires}|skin-prime"),
-        values=["level-prime"],
+        values=values,
     )
 
     await LoadoutCog(build_bot()).loadout_variant(
         interaction, f"{expires}|skin-prime|chroma-blue"
     )
 
-    assert interaction.response.sent[0]["content"] == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "loadout-video-selection-invalid"
+    assert interaction.response.sent[0]["content"] == _text(
+        "loadout-video-selection-invalid"
     )
 
 
@@ -384,9 +347,7 @@ async def test_skins_without_videos_are_not_offered(monkeypatch):
     )
 
     card = followup.sent[0]["embed"]
-    assert card.fields[0].name == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "loadout-group-snipers-heavy"
-    )
+    assert card.fields[0].name == _text("loadout-group-snipers-heavy")
     assert "view" not in followup.sent[0]
 
 
@@ -400,23 +361,4 @@ async def test_a_missing_skin_reports_unavailable():
 
     await LoadoutCog(build_bot()).loadout_video(interaction, f"{expires}|skin-gone")
 
-    assert interaction.response.sent[0]["content"] == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "skin-video-unavailable"
-    )
-
-
-async def test_an_expired_variant_selection_is_refused():
-    """A variant menu selection must not outlive its expiry."""
-    expires = int(time.time()) - 10
-    interaction = menu_interaction(
-        custom_id=select_custom_id("loadout_variant", 1, f"{expires}|skin-prime"),
-        values=["level-prime", "chroma-blue"],
-    )
-
-    await LoadoutCog(build_bot()).loadout_variant(
-        interaction, f"{expires}|skin-prime|chroma-blue"
-    )
-
-    assert interaction.response.sent[0]["content"] == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "loadout-video-selection-invalid"
-    )
+    assert interaction.response.sent[0]["content"] == _text("skin-video-unavailable")

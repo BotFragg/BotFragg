@@ -14,8 +14,11 @@ from src.models import Account, User
 from tests.helpers import (
     TEST_LOCALE,
     TEST_TRANSLATOR,
+    RecordingFollowup,
+    RecordingResponse,
     _localized_bot,
     _localized_interaction,
+    _user,
 )
 
 
@@ -38,25 +41,10 @@ async def test_battlepass_hides_name_when_preference_enabled(
         "end": datetime.now(UTC),
         "next_reward": {"name": "Reward", "type": "Reward", "icon": None},
     }
-    sent: list[discord.Embed] = []
 
     async def selected_account(_user_id: int) -> SimpleNamespace:
         """Return the configured active account for the command under test."""
         return account
-
-    class Response:
-        """Capture whether an interaction was deferred and whether its initial response was private."""
-
-        async def defer(self, *, thinking: bool) -> None:
-            """Record that the fake interaction response was deferred."""
-            assert thinking
-
-    class Followup:
-        """Capture outgoing embeds and privacy flags sent after an interaction's initial response."""
-
-        async def send(self, *, embed: discord.Embed) -> None:
-            """Record the follow-up message sent through the fake interaction."""
-            sent.append(embed)
 
     class Gameplay:
         """Return controlled battlepass or mission data without making Riot requests."""
@@ -78,7 +66,7 @@ async def test_battlepass_hides_name_when_preference_enabled(
         "src.cogs.valorant.battlepass.selected_account", selected_account
     )
     interaction = _localized_interaction(
-        user=SimpleNamespace(id=123), response=Response(), followup=Followup()
+        user=_user(123), response=RecordingResponse(), followup=RecordingFollowup()
     )
 
     await BattlepassCog.battlepass.callback(
@@ -88,8 +76,10 @@ async def test_battlepass_hides_name_when_preference_enabled(
         interaction,
     )
 
-    assert sent[0].title == "Account"
-    assert "SecretName" not in sent[0].title
+    assert interaction.response.deferred == [{"thinking": True, "ephemeral": False}]
+    card = interaction.followup.sent[0]["embed"]
+    assert card.title == "Account"
+    assert "SecretName" not in card.title
 
 
 @pytest.mark.usefixtures("database")
@@ -99,25 +89,10 @@ async def test_missions_command_shows_weekly_progress_privately(
     """Verify that missions command shows weekly progress privately."""
     owner = await User.create(id=123)
     account = await Account.create(puuid="player", user=owner, username="Player#NA")
-    sent: list[tuple[discord.Embed, bool]] = []
 
     async def selected_account(_user_id: int) -> Account:
         """Return the configured active account for the command under test."""
         return account
-
-    class Response:
-        """Capture whether an interaction was deferred and whether its initial response was private."""
-
-        async def defer(self, *, thinking: bool, ephemeral: bool) -> None:
-            """Record that the fake interaction response was deferred."""
-            assert thinking and ephemeral
-
-    class Followup:
-        """Capture outgoing embeds and privacy flags sent after an interaction's initial response."""
-
-        async def send(self, *, embed: discord.Embed, ephemeral: bool) -> None:
-            """Record the follow-up message sent through the fake interaction."""
-            sent.append((embed, ephemeral))
 
     class Gameplay:
         """Return controlled battlepass or mission data without making Riot requests."""
@@ -191,7 +166,7 @@ async def test_missions_command_shows_weekly_progress_privately(
         "src.cogs.valorant.battlepass.selected_account", selected_account
     )
     interaction = _localized_interaction(
-        user=SimpleNamespace(id=123), response=Response(), followup=Followup()
+        user=_user(123), response=RecordingResponse(), followup=RecordingFollowup()
     )
 
     await BattlepassCog.missions.callback(
@@ -201,9 +176,11 @@ async def test_missions_command_shows_weekly_progress_privately(
         interaction,
     )
 
-    card, ephemeral = sent[0]
+    assert interaction.response.deferred == [{"thinking": True, "ephemeral": True}]
+    message = interaction.followup.sent[0]
+    card = message["embed"]
+    assert message["ephemeral"] is True
     assert card.title == "Your Missions"
-    assert ephemeral is True
     assert len(card.fields) == 1
     assert card.fields[0].name.startswith("Weekly missions · Expires <t:")
     assert card.fields[0].name.count("Expires") == 1

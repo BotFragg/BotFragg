@@ -40,13 +40,28 @@ from src.views.shop import add_skin_selector, offer_cards
 from tests.helpers import (
     TEST_LOCALE,
     TEST_TRANSLATOR,
+    RecordingFollowup,
+    RecordingResponse,
     _localized_bot,
     _localized_interaction,
+    _text,
 )
 
 
-@pytest.mark.parametrize("mode", ["command", "night", "nightmarket"])
-async def test_incomplete_night_market_reports_unavailable(monkeypatch, mode):
+@pytest.mark.parametrize(
+    ("mode", "incomplete", "key"),
+    [
+        ("command", True, "error-riot-services-unavailable"),
+        ("night", True, "error-riot-services-unavailable"),
+        ("nightmarket", True, "error-riot-services-unavailable"),
+        ("night", False, "shop-night-market-none"),
+        ("nightmarket", False, "shop-night-market-none"),
+    ],
+)
+async def test_night_market_without_offers_reports_unavailable(
+    monkeypatch, mode, incomplete, key
+):
+    """A missing, incomplete, or offerless Night Market must not render an empty card."""
     account = NS(puuid="synthetic")
     monkeypatch.setattr(
         shop_module, "selected_account", AsyncMock(return_value=account)
@@ -54,7 +69,7 @@ async def test_incomplete_night_market_reports_unavailable(monkeypatch, mode):
     monkeypatch.setattr(
         shop_module, "account_for_user", AsyncMock(return_value=account)
     )
-    data = ShopData([], [], [], 4_000_000_000, None, night_market_incomplete=True)
+    data = ShopData([], [], [], 4_000_000_000, None, night_market_incomplete=incomplete)
     bot = _localized_bot(
         shop=NS(storefront=AsyncMock(return_value=data)),
         register_component=lambda *_args: None,
@@ -71,9 +86,7 @@ async def test_incomplete_night_market_reports_unavailable(monkeypatch, mode):
         await ShopCog(bot).shop_mode(interaction, f"{mode},synthetic")
     sent = interaction.followup.send.call_args.kwargs
     assert sent["ephemeral"] is True
-    assert sent["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "error-riot-services-unavailable"
-    )
+    assert sent["embed"].description == _text(key)
 
 
 async def test_empty_shared_shop_sends_a_view(monkeypatch):
@@ -251,17 +264,6 @@ async def test_shop_skin_menu_selects_tiered_skin_and_returns_private_video() ->
             """Prefix the fixture's tier emoji to a displayed name."""
             return f"<:tier_deluxe:123456> {name}"
 
-    class Response:
-        """Capture private interaction replies for response assertions."""
-
-        def __init__(self) -> None:
-            """Initialize the captured response list."""
-            self.messages: list[dict[str, object]] = []
-
-        async def send_message(self, content: str, **kwargs: object) -> None:
-            """Record a response's content and keyword arguments."""
-            self.messages.append({"content": content, **kwargs})
-
     bot = _localized_bot(
         register_component=lambda *_args: None,
         catalog=SimpleNamespace(get_skin=lambda uuid: skin if uuid == "skin" else None),
@@ -286,11 +288,11 @@ async def test_shop_skin_menu_selects_tiered_skin_and_returns_private_video() ->
     interaction = _localized_interaction(
         user=SimpleNamespace(id=123),
         message=SimpleNamespace(components=[SimpleNamespace(children=[selector.item])]),
-        response=Response(),
+        response=RecordingResponse(done=True),
     )
     await cog.shop_skin(interaction, "4000000000|skin")
 
-    detail_view = interaction.response.messages[-1]["view"]
+    detail_view = interaction.response.sent[-1]["view"]
     detail_selector = detail_view.children[0]
     assert [option.label for option in detail_selector.item.options] == [
         "Level: Prime Vandal Level 2",
@@ -302,14 +304,14 @@ async def test_shop_skin_menu_selects_tiered_skin_and_returns_private_video() ->
     )
     await cog.shop_variant(interaction, "4000000000|skin|level")
 
-    assert interaction.response.messages[-1] == {
+    assert interaction.response.sent[-1] == {
         "content": "[<:tier_deluxe:123456> Prime Vandal](https://example.com/level.mp4)",
         "ephemeral": True,
     }
 
     await cog.shop_variant(interaction, "4000000000|skin|chroma")
 
-    assert interaction.response.messages[-1] == {
+    assert interaction.response.sent[-1] == {
         "content": "[<:tier_deluxe:123456> Prime Vandal Green](https://example.com/chroma.mp4)",
         "ephemeral": True,
     }
@@ -442,24 +444,6 @@ async def test_bundles_command_renders_live_prices_and_tiered_skin_names(
             """Return the fixture's one featured bundle."""
             return data
 
-    class Response:
-        """Require the bundle command to defer before fetching the shop."""
-
-        async def defer(self, *, thinking: bool) -> None:
-            """Require the command to defer while loading the storefront."""
-            assert thinking
-
-    class Followup:
-        """Record the bundle command response."""
-
-        def __init__(self) -> None:
-            """Initialize the captured command response."""
-            self.message: dict[str, object] = {}
-
-        async def send(self, **kwargs: object) -> None:
-            """Capture the command's embeds and controls."""
-            self.message = kwargs
-
     catalog = SimpleNamespace(
         get_bundle=lambda uuid: bundle if uuid == bundle.uuid else None,
         get_skin=lambda uuid: skin if uuid == skin.uuid else None,
@@ -471,21 +455,23 @@ async def test_bundles_command_renders_live_prices_and_tiered_skin_names(
         emoji_service=EmojiService(),
         shop=Shop(),
     )
+    response = RecordingResponse()
     interaction = _localized_interaction(
-        user=SimpleNamespace(id=123), response=Response(), followup=Followup()
+        user=SimpleNamespace(id=123), response=response, followup=RecordingFollowup()
     )
 
     cog = ShopCog(bot)
     await cog.bundles.callback(cog, interaction)
 
-    card = interaction.followup.message["embeds"][0]
+    assert response.deferred == [{"thinking": True, "ephemeral": False}]
+    card = interaction.followup.sent[-1]["embeds"][0]
     assert card.title == "Prime Collection"
     assert "Bundle price: VP **1,200** ~~2,000~~ (-40%)" in card.description
-    assert len(interaction.followup.message["embeds"]) == 2
-    item_card = interaction.followup.message["embeds"][1]
+    assert len(interaction.followup.sent[-1]["embeds"]) == 2
+    item_card = interaction.followup.sent[-1]["embeds"][1]
     assert item_card.title == "<:tier:1> Prime Phantom x2"
     assert item_card.description == "VP **600** ~~1,000~~ (-40%)"
-    controls = interaction.followup.message["view"]
+    controls = interaction.followup.sent[-1]["view"]
     assert controls.children == []
 
 
@@ -494,34 +480,8 @@ async def test_bundles_reports_missing_account_and_empty_featured_list(
 ) -> None:
     """Verify `/bundles` reports unlinked accounts and accounts with no active offers."""
 
-    class Response:
-        """Capture command errors and support the normal defer path."""
-
-        def __init__(self) -> None:
-            """Initialize the captured response history."""
-            self.messages: list[dict[str, object]] = []
-
-        async def defer(self, *, thinking: bool) -> None:
-            """Require the command to defer before account lookup."""
-            assert thinking
-
-        def is_done(self) -> bool:
-            """Report that the initial interaction was already deferred."""
-            return True
-
-    class Followup:
-        """Capture the command's follow-up response."""
-
-        def __init__(self) -> None:
-            """Initialize the captured follow-up payload."""
-            self.message: dict[str, object] = {}
-
-        async def send(self, **kwargs: object) -> None:
-            """Capture the command's success or error response."""
-            self.message = kwargs
-
-    response = Response()
-    followup = Followup()
+    response = RecordingResponse(done=True)
+    followup = RecordingFollowup()
 
     async def selected_account(_owner_id: int):
         """Report that the caller has no linked account for the first request."""
@@ -533,8 +493,9 @@ async def test_bundles_reports_missing_account_and_empty_featured_list(
     )
     cog = ShopCog(_localized_bot(register_component=lambda *_args: None))
     await cog.bundles.callback(cog, unregistered)
-    assert "`/login`" in followup.message["embed"].description
-    assert followup.message["ephemeral"] is True
+    assert response.deferred == [{"thinking": True, "ephemeral": False}]
+    assert "`/login`" in followup.sent[-1]["embed"].description
+    assert followup.sent[-1]["ephemeral"] is True
 
     account = SimpleNamespace(
         puuid="account", persisted_row=lambda: NS(exists=AsyncMock(return_value=True))
@@ -553,9 +514,12 @@ async def test_bundles_reports_missing_account_and_empty_featured_list(
             """Return a storefront with no active featured bundles."""
             return ShopData([], [], [], 4_000_000_000, None)
 
-    empty_followup = Followup()
+    empty_followup = RecordingFollowup()
+    empty_response = RecordingResponse(done=True)
     empty_interaction = _localized_interaction(
-        user=SimpleNamespace(id=123), response=Response(), followup=empty_followup
+        user=SimpleNamespace(id=123),
+        response=empty_response,
+        followup=empty_followup,
     )
     empty_cog = ShopCog(
         _localized_bot(
@@ -564,8 +528,9 @@ async def test_bundles_reports_missing_account_and_empty_featured_list(
         )
     )
     await empty_cog.bundles.callback(empty_cog, empty_interaction)
+    assert empty_response.deferred == [{"thinking": True, "ephemeral": False}]
     assert (
-        empty_followup.message["embeds"][0].description
+        empty_followup.sent[-1]["embeds"][0].description
         == "No bundles are currently featured."
     )
 
@@ -623,31 +588,20 @@ async def test_featured_bundle_view_has_no_account_selector_and_rejects_forged_i
     ]
     assert shop_controls.children[1].item.label == "Skin shop"
 
-    class Response:
-        """Capture private rejections for invalid bundle choices."""
-
-        def __init__(self) -> None:
-            """Initialize the captured messages."""
-            self.messages: list[dict[str, object]] = []
-
-        async def send_message(self, content: str, **kwargs: object) -> None:
-            """Record a private validation response."""
-            self.messages.append({"content": content, **kwargs})
-
     selector = OwnedSelect(
         "shop_bundle",
         123,
         "account|command",
         options=[discord.SelectOption(label="Bundle One", value="offer-1")],
     )
-    response = Response()
+    response = RecordingResponse(done=True)
     interaction = _localized_interaction(
         user=SimpleNamespace(id=123),
         message=SimpleNamespace(components=[SimpleNamespace(children=[selector.item])]),
         response=response,
     )
     await cog.shop_bundle(interaction, "account|command|forged")
-    assert response.messages[-1]["ephemeral"] is True
+    assert response.sent[-1]["ephemeral"] is True
 
 
 async def test_shop_video_selector_rejects_forged_and_mismatched_values() -> None:
@@ -668,17 +622,6 @@ async def test_shop_video_selector_rejects_forged_and_mismatched_values() -> Non
         ],
     )
     empty = Skin("empty", "empty-offer", "Empty Skin", None, None)
-
-    class Response:
-        """Capture invalid selector messages for assertions."""
-
-        def __init__(self) -> None:
-            """Initialize the response history."""
-            self.messages: list[dict[str, object]] = []
-
-        async def send_message(self, content: str, **kwargs: object) -> None:
-            """Record a message and its response options."""
-            self.messages.append({"content": content, **kwargs})
 
     bot = _localized_bot(
         register_component=lambda *_args: None,
@@ -705,22 +648,20 @@ async def test_shop_video_selector_rejects_forged_and_mismatched_values() -> Non
     interaction = _localized_interaction(
         user=SimpleNamespace(id=123),
         message=SimpleNamespace(components=[SimpleNamespace(children=[selector.item])]),
-        response=Response(),
+        response=RecordingResponse(done=True),
     )
 
     await cog.shop_skin(interaction, "1|skin")
-    assert interaction.response.messages[-1]["ephemeral"] is True
-    assert "no longer available" in str(interaction.response.messages[-1]["content"])
+    assert interaction.response.sent[-1]["ephemeral"] is True
+    assert "no longer available" in str(interaction.response.sent[-1]["content"])
 
     await cog.shop_skin(interaction, "4000000000|other")
-    assert interaction.response.messages[-1]["ephemeral"] is True
-    assert "no longer available" in str(interaction.response.messages[-1]["content"])
+    assert interaction.response.sent[-1]["ephemeral"] is True
+    assert "no longer available" in str(interaction.response.sent[-1]["content"])
 
     await cog.shop_skin(interaction, "4000000000|empty")
-    assert interaction.response.messages[-1]["ephemeral"] is True
-    assert "No level or chroma videos" in str(
-        interaction.response.messages[-1]["content"]
-    )
+    assert interaction.response.sent[-1]["ephemeral"] is True
+    assert "No level or chroma videos" in str(interaction.response.sent[-1]["content"])
 
     forged_variant_menu = OwnedSelect(
         "shop_variant",
@@ -733,8 +674,8 @@ async def test_shop_video_selector_rejects_forged_and_mismatched_values() -> Non
     )
     await cog.shop_variant(interaction, "4000000000|skin|foreign-level")
 
-    assert interaction.response.messages[-1]["ephemeral"] is True
-    assert "no longer available" in str(interaction.response.messages[-1]["content"])
+    assert interaction.response.sent[-1]["ephemeral"] is True
+    assert "no longer available" in str(interaction.response.sent[-1]["content"])
 
 
 async def test_nightmarket_command_includes_skin_and_account_menus(
@@ -788,41 +729,25 @@ async def test_nightmarket_command_includes_skin_and_account_menus(
             """Return the configured Night Market data."""
             return data
 
-    class Response:
-        """Verify the command defers before sending its follow-up."""
-
-        async def defer(self, *, thinking: bool) -> None:
-            """Assert that the command uses a thinking response."""
-            assert thinking
-
-    class Followup:
-        """Capture the Night Market message and its controls."""
-
-        def __init__(self) -> None:
-            """Initialize the captured follow-up payload."""
-            self.message: dict[str, object] = {}
-
-        async def send(self, **kwargs: object) -> None:
-            """Store the follow-up message arguments."""
-            self.message.update(kwargs)
-
     bot = _localized_bot(
         shop=Shop(),
         emoji_service=EmojiService(),
         config=SimpleNamespace(link_item_image=True),
         register_component=lambda *_args: None,
     )
+    response = RecordingResponse()
     interaction = _localized_interaction(
         user=SimpleNamespace(id=123),
-        response=Response(),
-        followup=Followup(),
+        response=response,
+        followup=RecordingFollowup(),
     )
 
     await NightMarketCog.nightmarket.callback(NightMarketCog(bot), interaction)
 
-    embeds = interaction.followup.message["embeds"]
+    assert response.deferred == [{"thinking": True, "ephemeral": False}]
+    embeds = interaction.followup.sent[-1]["embeds"]
     assert embeds[1].url == "https://example.com/prime.png"
-    controls = interaction.followup.message["view"]
+    controls = interaction.followup.sent[-1]["view"]
     assert [child.item.custom_id.split(":")[1] for child in controls.children] == [
         "shop_skin",
         "shop_account",
@@ -836,12 +761,6 @@ async def test_nightmarket_command_includes_skin_and_account_menus(
     ]
     assert account_selector.options[0].default
 
-    class SwitchResponse:
-        """Accept the defer used while switching to another account."""
-
-        async def defer(self) -> None:
-            """Record the component interaction defer."""
-
     switched: dict[str, object] = {}
 
     async def edit_original_response(**kwargs: object) -> None:
@@ -850,7 +769,7 @@ async def test_nightmarket_command_includes_skin_and_account_menus(
 
     switch_interaction = _localized_interaction(
         user=SimpleNamespace(id=123),
-        response=SwitchResponse(),
+        response=RecordingResponse(done=True),
         edit_original_response=edit_original_response,
     )
     await ShopCog(bot).shop_account(switch_interaction, "nightmarket|other")
@@ -965,20 +884,6 @@ async def test_shop_hides_full_in_game_name_when_preference_enabled(
         """Return the configured active account for the command under test."""
         return account
 
-    class Response:
-        """Capture whether an interaction was deferred and whether its initial response was private."""
-
-        async def defer(self, *, thinking: bool) -> None:
-            """Record that the fake interaction response was deferred."""
-            assert thinking
-
-    class Followup:
-        """Capture outgoing embeds and privacy flags sent after an interaction's initial response."""
-
-        async def send(self, *, embeds: list[discord.Embed], view: object) -> None:
-            """Record the follow-up message sent through the fake interaction."""
-            pass
-
     class Shop:
         """Return deterministic storefront data and record account lookups for alert and command assertions."""
 
@@ -1008,14 +913,16 @@ async def test_shop_hides_full_in_game_name_when_preference_enabled(
         return [], None
 
     cog.shop_view = shop_view
+    response = RecordingResponse()
     interaction = _localized_interaction(
         user=SimpleNamespace(id=123),
-        response=Response(),
-        followup=Followup(),
+        response=response,
+        followup=RecordingFollowup(),
     )
 
     await ShopCog.shop.callback(cog, interaction, None)
 
+    assert response.deferred == [{"thinking": True, "ephemeral": False}]
     assert rendered == {"username": "Account", "hide_ign": True}
 
 
@@ -1111,13 +1018,6 @@ async def test_accessory_shop_renders_catalog_item_and_own_expiry(
             assert key == "kc"
             return "KC"
 
-    class Response:
-        """Capture whether an interaction was deferred and whether its initial response was private."""
-
-        async def defer(self) -> None:
-            """Record that the fake interaction response was deferred."""
-            return None
-
     async def account_for_user(_owner_id: int, _puuid: str):
         """Return the test account only for the matching user and PUUID."""
         return account
@@ -1141,7 +1041,7 @@ async def test_accessory_shop_renders_catalog_item_and_own_expiry(
     )
     interaction = _localized_interaction(
         user=SimpleNamespace(id=123),
-        response=Response(),
+        response=RecordingResponse(done=True),
         edit_original_response=edit_original_response,
         locale=locale,
     )
@@ -1226,33 +1126,6 @@ async def test_accessory_shop_metadata_failure_returns_a_localized_error(
     assert request.await_count == 1
 
 
-@pytest.mark.parametrize("mode", ["night", "nightmarket"])
-async def test_empty_night_market_reports_unavailable(monkeypatch, mode):
-    """A Night Market with no offers must not render an empty header and timer."""
-    account = NS(puuid="synthetic")
-    monkeypatch.setattr(
-        shop_module, "account_for_user", AsyncMock(return_value=account)
-    )
-    data = ShopData([], [], [], 4_000_000_000, None)
-    bot = _localized_bot(
-        shop=NS(storefront=AsyncMock(return_value=data)),
-        register_component=lambda *_args: None,
-    )
-    interaction = _localized_interaction(
-        user=NS(id=1),
-        response=NS(defer=AsyncMock(), is_done=lambda: True),
-        followup=NS(send=AsyncMock()),
-    )
-
-    await ShopCog(bot).shop_mode(interaction, f"{mode},synthetic")
-
-    sent = interaction.followup.send.call_args.kwargs
-    assert sent["ephemeral"] is True
-    assert sent["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "shop-night-market-none"
-    )
-
-
 async def test_bundle_click_acknowledges_before_the_database_lookup(monkeypatch):
     """The bundle handler must defer before its account query starts."""
     order: list[str] = []
@@ -1284,20 +1157,6 @@ async def test_bundle_click_acknowledges_before_the_database_lookup(monkeypatch)
 
 async def test_balance_uses_the_interaction_locale(monkeypatch):
     """Wallet balances must use the locale's number grouping."""
-    sent: dict[str, object] = {}
-
-    class Response:
-        """Capture whether the interaction was deferred."""
-
-        async def defer(self, *, thinking: bool) -> None:
-            """Record the deferral request."""
-
-    class Followup:
-        """Capture the embed sent after the wallet lookup."""
-
-        async def send(self, *, embed: discord.Embed) -> None:
-            """Record the follow-up embed."""
-            sent["embed"] = embed
 
     account = SimpleNamespace(puuid="account", username="One#NA")
 
@@ -1328,14 +1187,14 @@ async def test_balance_uses_the_interaction_locale(monkeypatch):
     bot = _localized_bot(shop=Shop(), emoji_service=EmojiService())
     interaction = _localized_interaction(
         user=SimpleNamespace(id=123),
-        response=Response(),
-        followup=Followup(),
+        response=RecordingResponse(done=True),
+        followup=RecordingFollowup(),
         locale=discord.Locale.german,
     )
 
     await BalanceCog(bot).balance.callback(BalanceCog(bot), interaction)
 
-    card = sent["embed"]
+    card = interaction.followup.sent[0]["embed"]
     assert [field.value for field in card.fields] == [
         "VP **1.500**",
         "VP **0**",
@@ -1346,7 +1205,6 @@ async def test_balance_uses_the_interaction_locale(monkeypatch):
 async def test_offer_prices_use_the_interaction_locale():
     """Prices must use the locale's number grouping, not Python's."""
     skin = Skin("offer", "Prime Vandal", "Prime Vandal", None, None)
-
     cards = offer_cards(
         "Tagesangebot",
         [Offer(skin, 1775, 1)],

@@ -16,7 +16,14 @@ from src.localization import BotFraggTranslator
 from src.models import DevAnnouncement, DevAnnouncementRead, DevMaintenance
 from src.services.dev_notices import DevNotices
 from src.services.shop import ShopService
-from tests.helpers import TEST_LOCALE, TEST_TRANSLATOR
+from tests.helpers import (
+    TEST_TRANSLATOR,
+    RecordingFollowup,
+    RecordingResponse,
+    _localized_interaction,
+    _text,
+    _user,
+)
 
 
 class _Recorder(BotFraggTranslator):
@@ -33,47 +40,6 @@ class _Recorder(BotFraggTranslator):
         """Record one formatting request and keep the real fallback text."""
         self.calls.append((key, arguments))
         return super().text(locale, key, **arguments)
-
-
-class _Response:
-    """Capture the response paths a dev command may use."""
-
-    def __init__(self, *, done: bool = False) -> None:
-        """Record whether the initial response was already used."""
-        self.done = done
-        self.sent: list[dict[str, object]] = []
-        self.deferred: list[tuple[bool, bool]] = []
-        self.edited: list[dict[str, object]] = []
-
-    def is_done(self) -> bool:
-        """Report whether the interaction already responded."""
-        return self.done
-
-    async def send_message(self, **kwargs: object) -> None:
-        """Record one initial ephemeral response."""
-        self.sent.append(kwargs)
-        self.done = True
-
-    async def defer(self, *, thinking: bool, ephemeral: bool) -> None:
-        """Record a private deferred response."""
-        self.deferred.append((thinking, ephemeral))
-        self.done = True
-
-    async def edit_message(self, **kwargs: object) -> None:
-        """Record one message edit."""
-        self.edited.append(kwargs)
-
-
-class _Followup:
-    """Capture follow-up messages sent after a deferred response."""
-
-    def __init__(self) -> None:
-        """Start with no recorded follow-ups."""
-        self.sent: list[dict[str, object]] = []
-
-    async def send(self, **kwargs: object) -> None:
-        """Record one follow-up message."""
-        self.sent.append(kwargs)
 
 
 def _bot(**attributes: object) -> SimpleNamespace:
@@ -94,16 +60,15 @@ def _bot(**attributes: object) -> SimpleNamespace:
 
 def _interaction(
     *, user_id: int = 1, translator: BotFraggTranslator = TEST_TRANSLATOR
-) -> tuple[SimpleNamespace, _Response, _Followup]:
+) -> tuple[SimpleNamespace, RecordingResponse, RecordingFollowup]:
     """Build a fake interaction with recording response paths."""
-    response = _Response()
-    followup = _Followup()
-    interaction = SimpleNamespace(
-        user=SimpleNamespace(id=user_id),
+    response = RecordingResponse()
+    followup = RecordingFollowup()
+    interaction = _localized_interaction(
+        user=_user(user_id),
         response=response,
         followup=followup,
         client=SimpleNamespace(translator=translator),
-        locale=TEST_LOCALE,
     )
     return interaction, response, followup
 
@@ -152,9 +117,7 @@ async def test_dev_commands_reject_non_owners(
 
     sent = response.sent[0]
     assert sent["ephemeral"] is True
-    assert sent["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "staff-owner-only"
-    )
+    assert sent["embed"].description == _text("staff-owner-only")
     assert response.deferred == []
     assert followup.sent == []
 
@@ -176,15 +139,11 @@ async def test_maintenance_writes_and_reports_the_enabled_state() -> None:
     )
     sent = response.sent[0]
     assert sent["ephemeral"] is True
-    assert sent["embed"].title == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "dev-maintenance-title"
-    )
-    assert sent["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "dev-maintenance-enabled"
-    )
+    assert sent["embed"].title == _text("dev-maintenance-title")
+    assert sent["embed"].description == _text("dev-maintenance-enabled")
     assert [(field.name, field.value) for field in sent["embed"].fields] == [
         (
-            TEST_TRANSLATOR.text(TEST_LOCALE, "dev-maintenance-reason"),
+            _text("dev-maintenance-reason"),
             "Upgrading services",
         )
     ]
@@ -203,9 +162,7 @@ async def test_maintenance_disable_reports_the_disabled_state() -> None:
     row = await DevMaintenance.get(id=1)
     assert (row.enabled, row.reason) == (False, None)
     sent = response.sent[0]
-    assert sent["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "dev-maintenance-disabled"
-    )
+    assert sent["embed"].description == _text("dev-maintenance-disabled")
     assert sent["embed"].fields == []
 
 
@@ -225,9 +182,7 @@ async def test_maintenance_write_failure_replies_with_a_private_error() -> None:
 
     sent = response.sent[0]
     assert sent["ephemeral"] is True
-    assert sent["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "dev-write-failed"
-    )
+    assert sent["embed"].description == _text("dev-write-failed")
     assert await DevMaintenance.filter().count() == 0
 
 
@@ -271,9 +226,7 @@ async def test_announce_write_failure_replies_with_a_private_error(
 
     await DevCog.announce.callback(cog, interaction, "notice")
 
-    assert response.sent[0]["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "dev-write-failed"
-    )
+    assert response.sent[0]["embed"].description == _text("dev-write-failed")
     assert await DevAnnouncement.filter().count() == 0
 
 
@@ -297,7 +250,7 @@ async def test_sync_cache_refreshes_the_catalog_and_reports_counts(
 
     catalog.refresh.assert_awaited_once_with()
     shop.clear_all_cached_storefronts.assert_awaited_once_with()
-    assert response.deferred == [(True, True)]
+    assert response.deferred == [{"thinking": True, "ephemeral": True}]
     assert followup.sent[0]["ephemeral"] is True
     assert (
         "dev-sync-complete",
@@ -321,9 +274,7 @@ async def test_sync_cache_failure_reports_a_private_error() -> None:
     shop.clear_all_cached_storefronts.assert_not_awaited()
     sent = followup.sent[0]
     assert sent["ephemeral"] is True
-    assert sent["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "error-command-failed"
-    )
+    assert sent["embed"].description == _text("error-command-failed")
 
 
 async def test_inspect_user_uses_cached_guild_membership(
@@ -446,41 +397,29 @@ async def test_inspect_server_labels_discord_members_as_cached(
     assert followup.sent[0]["ephemeral"] is True
 
 
-@pytest.mark.parametrize("target", ["user", "server"])
-async def test_inspect_rejects_non_decimal_ids(target: str) -> None:
-    """Verify an unparseable ID is rejected before any lookup."""
+@pytest.mark.parametrize(
+    ("target", "value"),
+    [
+        ("user", "not-a-number"),
+        ("server", "not-a-number"),
+        ("user", "1" * 21),
+        ("server", "1" * 21),
+    ],
+)
+async def test_inspect_rejects_invalid_ids(target: str, value: str) -> None:
+    """Verify unparseable and absurdly long IDs are rejected before any lookup."""
     bot = _bot(get_user=Mock(), get_guild=Mock())
     cog = DevCog(bot)
     interaction, response, _ = _interaction()
 
-    await DevCog.inspect.callback(cog, interaction, target, "not-a-number")
-
-    bot.get_user.assert_not_called()
-    bot.get_guild.assert_not_called()
-    sent = response.sent[0]
-    assert sent["ephemeral"] is True
-    assert sent["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "dev-inspect-id-invalid"
-    )
-
-
-@pytest.mark.parametrize("target", ["user", "server"])
-async def test_inspect_rejects_ids_over_twenty_digits(target: str) -> None:
-    """Verify absurdly long digit strings are rejected before conversion and lookup."""
-    bot = _bot(get_user=Mock(), get_guild=Mock())
-    cog = DevCog(bot)
-    interaction, response, _ = _interaction()
-
-    await DevCog.inspect.callback(cog, interaction, target, "1" * 21)
+    await DevCog.inspect.callback(cog, interaction, target, value)
 
     bot.get_user.assert_not_called()
     bot.get_guild.assert_not_called()
     assert response.deferred == []
     sent = response.sent[0]
     assert sent["ephemeral"] is True
-    assert sent["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "dev-inspect-id-invalid"
-    )
+    assert sent["embed"].description == _text("dev-inspect-id-invalid")
 
 
 async def test_inspect_user_defers_before_fetching(
@@ -528,7 +467,7 @@ async def test_inspect_user_defers_before_fetching(
     await DevCog.inspect.callback(cog, interaction, "user", "321")
 
     assert order == ["defer", "fetch"]
-    assert response.deferred == [(True, True)]
+    assert response.deferred == [{"thinking": True, "ephemeral": True}]
     assert "**ID:** 321" in followup.sent[0]["embed"].description
 
 
@@ -543,12 +482,10 @@ async def test_inspect_reports_a_missing_user() -> None:
 
     await DevCog.inspect.callback(cog, interaction, "user", "404")
 
-    assert response.deferred == [(True, True)]
+    assert response.deferred == [{"thinking": True, "ephemeral": True}]
     sent = followup.sent[0]
     assert sent["ephemeral"] is True
-    assert sent["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "dev-inspect-user-missing"
-    )
+    assert sent["embed"].description == _text("dev-inspect-user-missing")
 
 
 async def test_inspect_reports_a_missing_server() -> None:
@@ -559,12 +496,10 @@ async def test_inspect_reports_a_missing_server() -> None:
 
     await DevCog.inspect.callback(cog, interaction, "server", "404")
 
-    assert response.deferred == [(True, True)]
+    assert response.deferred == [{"thinking": True, "ephemeral": True}]
     sent = followup.sent[0]
     assert sent["ephemeral"] is True
-    assert sent["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "dev-inspect-server-missing"
-    )
+    assert sent["embed"].description == _text("dev-inspect-server-missing")
 
 
 async def test_announcement_read_marks_the_row_and_removes_the_button() -> None:
@@ -580,9 +515,7 @@ async def test_announcement_read_marks_the_row_and_removes_the_button() -> None:
     notices.mark_read.assert_awaited_once_with(9, 7)
     edited = response.edited[0]
     assert edited["view"] is None
-    assert edited["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "dev-announcement-read"
-    )
+    assert edited["embed"].description == _text("dev-announcement-read")
 
 
 async def test_announcement_read_failure_keeps_the_button() -> None:
@@ -599,9 +532,7 @@ async def test_announcement_read_failure_keeps_the_button() -> None:
     assert response.edited == []
     sent = response.sent[0]
     assert sent["ephemeral"] is True
-    assert sent["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "dev-write-failed"
-    )
+    assert sent["embed"].description == _text("dev-write-failed")
 
 
 @pytest.mark.usefixtures("database")

@@ -19,8 +19,11 @@ from src.services.accounts import delete_user_data, select_account
 from tests.helpers import (
     TEST_LOCALE,
     TEST_TRANSLATOR,
+    RecordingFollowup,
+    RecordingResponse,
     _localized_bot,
     _localized_interaction,
+    _text,
 )
 
 
@@ -181,7 +184,7 @@ async def test_account_lists_reject_profile_changes_during_preparation(
     interaction.edit_original_response.assert_not_awaited()
     sent = interaction.followup.send.await_args.kwargs
     key = "error-not-registered" if route == "list" else "accounts-none-left"
-    assert sent["embed"].description == TEST_TRANSLATOR.text(TEST_LOCALE, key)
+    assert sent["embed"].description == _text(key)
     assert "view" not in sent
     assert not await Account.exists(puuid="target")
     if relink:
@@ -310,7 +313,6 @@ async def test_account_switch_hides_name_when_preference_enabled(
     target.persisted_row = lambda: NS(
         select_related=lambda *args: NS(get_or_none=AsyncMock(return_value=target))
     )
-    sent: list[discord.Embed] = []
 
     async def list_accounts(_user_id: int) -> list[SimpleNamespace]:
         """Return the configured accounts for the requested Discord user."""
@@ -331,33 +333,23 @@ async def test_account_switch_hides_name_when_preference_enabled(
         """Record the account selected by the command under test."""
         return None
 
-    class Response:
-        """Capture whether an interaction was deferred and whether its initial response was private."""
-
-        async def defer(self, *, thinking: bool) -> None:
-            """Record that the fake interaction response was deferred."""
-            assert thinking
-
-    class Followup:
-        """Capture outgoing embeds and privacy flags sent after an interaction's initial response."""
-
-        async def send(self, *, embed: discord.Embed) -> None:
-            """Record the follow-up message sent through the fake interaction."""
-            sent.append(embed)
-
     monkeypatch.setattr("src.cogs.valorant.accounts.list_accounts", list_accounts)
     monkeypatch.setattr("src.cogs.valorant.accounts.resolve_account", resolve_account)
     monkeypatch.setattr("src.cogs.valorant.accounts.get_user", get_user)
     monkeypatch.setattr("src.cogs.valorant.accounts.select_account", select_account)
+    response = RecordingResponse()
+    followup = RecordingFollowup()
     interaction = _localized_interaction(
-        user=SimpleNamespace(id=123), response=Response(), followup=Followup()
+        user=SimpleNamespace(id=123), response=response, followup=followup
     )
 
     cog = AccountsCog(_localized_bot(register_component=lambda *_args: None))
     await AccountsCog.account.callback(cog, interaction, "target")
 
-    assert "SecretName" not in sent[0].description
-    assert "Account" in sent[0].description
+    assert response.deferred == [{"thinking": True, "ephemeral": False}]
+    sent = followup.sent[0]["embed"]
+    assert "SecretName" not in sent.description
+    assert "Account" in sent.description
 
 
 def test_accounts_layout_marks_selected_account() -> None:

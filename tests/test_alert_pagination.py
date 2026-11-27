@@ -14,7 +14,7 @@ from src.localization import BotFraggTranslator
 from src.models import Account, Alert, User
 from src.services.catalog import Skin
 from src.views.components import ACTION_RE
-from tests.helpers import TEST_LOCALE, TEST_TRANSLATOR, _localized_interaction
+from tests.helpers import _localized_interaction, _text
 
 
 @pytest.mark.usefixtures("database")
@@ -230,9 +230,9 @@ async def test_alert_page_handler_pages_by_anchor_and_accepts_legacy_payloads():
     assert "**21.** **Skin 21**" in edit.await_args.kwargs["embed"].description
 
     await cog.alert_page(interaction, "bogus")
-    assert interaction.followup.send.await_args.kwargs[
-        "embed"
-    ].description == TEST_TRANSLATOR.text(TEST_LOCALE, "alert-page-invalid")
+    assert interaction.followup.send.await_args.kwargs["embed"].description == _text(
+        "alert-page-invalid"
+    )
 
 
 @pytest.mark.usefixtures("database")

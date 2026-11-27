@@ -22,8 +22,11 @@ from src.views.ui import RED
 from tests.helpers import (
     TEST_LOCALE,
     TEST_TRANSLATOR,
+    RecordingFollowup,
+    RecordingResponse,
     _localized_bot,
     _localized_interaction,
+    _text,
 )
 
 ACCOUNT = SimpleNamespace(
@@ -33,42 +36,11 @@ ACCOUNT = SimpleNamespace(
 )
 
 
-class Response:
-    """Record the deferral of the interaction response."""
-
-    def __init__(self) -> None:
-        """Start with no recorded deferral."""
-        self.deferred: bool | None = None
-
-    async def defer(self, *, thinking: bool = False) -> None:
-        """Record whether the command deferred with a thinking state."""
-        self.deferred = thinking
-
-    @staticmethod
-    def is_done() -> bool:
-        """Report that the interaction already responded."""
-        return True
-
-
-class Followup:
-    """Record follow-up messages."""
-
-    def __init__(self) -> None:
-        """Start with no recorded messages."""
-        self.sent: list[dict[str, object]] = []
-
-    async def send(self, **kwargs: object) -> None:
-        """Record one sent message."""
-        self.sent.append(kwargs)
-
-
-def interaction(*, followup: Followup | None = None) -> SimpleNamespace:
+def interaction(*, followup: RecordingFollowup | None = None) -> SimpleNamespace:
     """Build a fake interaction for the profile command."""
     return _localized_interaction(
-        user=SimpleNamespace(id=1),
-        response=Response(),
-        followup=followup or Followup(),
-        locale=TEST_LOCALE,
+        response=RecordingResponse(done=True),
+        followup=followup or RecordingFollowup(),
     )
 
 
@@ -200,7 +172,7 @@ async def run(
         AsyncMock(return_value=viewer or (ACCOUNT, False, "KumKaShree#Shree")),
     )
     monkeypatch.setattr(profile_cog, "get_user", AsyncMock(return_value=settings))
-    followup = followup or Followup()
+    followup = followup or RecordingFollowup()
     cog = ProfileCog(bot)
     await cog.profile.callback(cog, interaction(followup=followup), user=user)
     return followup
@@ -221,7 +193,7 @@ async def test_profile_card_shows_rank_level_and_matches(monkeypatch):
     assert f"Level 214 · 2,500 / {LEVEL_XP_TARGET:,} XP" in card.description
     assert "█████░░░░░" in card.description
     field = card.fields[0]
-    assert field.name == TEST_TRANSLATOR.text(TEST_LOCALE, "profile-last-matches")
+    assert field.name == _text("profile-last-matches")
     assert "🟢 <queue:competitive> Competitive · **Ascent** 13-9" in field.value
     assert "<agent> 21/14/5 · 30% HS · 291 ACS" in field.value
     assert "🔴" in field.value
@@ -236,10 +208,10 @@ async def test_hidden_name_still_renders_the_card(monkeypatch):
     followup = await run(
         monkeypatch,
         bot,
-        viewer=(ACCOUNT, True, TEST_TRANSLATOR.text(TEST_LOCALE, "account-hidden")),
+        viewer=(ACCOUNT, True, _text("account-hidden")),
     )
 
-    hidden = TEST_TRANSLATOR.text(TEST_LOCALE, "account-hidden")
+    hidden = _text("account-hidden")
     assert followup.sent[0]["embed"].description.startswith(f"**{hidden}**")
 
 
@@ -253,7 +225,7 @@ async def test_unranked_account_renders_without_a_rating(monkeypatch):
 
     card = followup.sent[0]["embed"]
     assert card.description.startswith("**KumKaShree#Shree**\n\n")
-    unranked = TEST_TRANSLATOR.text(TEST_LOCALE, "profile-unranked")
+    unranked = _text("profile-unranked")
     assert f"**{unranked}**" in card.description
     assert "RR" not in card.description
     assert "WR" not in card.description
@@ -262,15 +234,13 @@ async def test_unranked_account_renders_without_a_rating(monkeypatch):
 async def test_missing_account_asks_for_login(monkeypatch):
     """An unlinked caller must be told to log in."""
     monkeypatch.setattr(profile_cog, "selected_account", AsyncMock(return_value=None))
-    followup = Followup()
+    followup = RecordingFollowup()
 
     await ProfileCog(build_bot()).profile.callback(
         ProfileCog(build_bot()), interaction(followup=followup)
     )
 
-    assert followup.sent[0]["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "error-not-registered"
-    )
+    assert followup.sent[0]["embed"].description == _text("error-not-registered")
     assert followup.sent[0]["ephemeral"] is True
 
 
@@ -281,8 +251,8 @@ async def test_unavailable_profile_uses_the_riot_error(monkeypatch):
 
     followup = await run(monkeypatch, bot)
 
-    assert followup.sent[0]["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "error-riot-services-unavailable"
+    assert followup.sent[0]["embed"].description == _text(
+        "error-riot-services-unavailable"
     )
 
 
@@ -293,9 +263,7 @@ async def test_failed_matches_still_render_the_card(monkeypatch):
     followup = await run(monkeypatch, bot)
 
     card = followup.sent[0]["embed"]
-    assert card.fields[0].value == (
-        f"-# {TEST_TRANSLATOR.text(TEST_LOCALE, 'profile-no-matches')}"
-    )
+    assert card.fields[0].value == (f"-# {_text('profile-no-matches')}")
 
 
 async def test_equipped_title_sits_under_the_name(monkeypatch):
@@ -308,22 +276,17 @@ async def test_equipped_title_sits_under_the_name(monkeypatch):
     assert description.startswith("**KumKaShree#Shree**\n-# V1.0\n\n<rank19>")
 
 
-async def test_ranked_matches_show_the_rr_change(monkeypatch):
+@pytest.mark.parametrize(
+    ("won", "rr", "expected"),
+    [(True, 17, "+17 RR"), (False, -12, "-12 RR")],
+)
+async def test_ranked_matches_show_the_rr_change(monkeypatch, won, rr, expected):
     """A competitive match must show the RR it gained or lost."""
-    bot = build_bot(matches=[summary()], ranked={"m1": 17})
+    bot = build_bot(matches=[summary(won=won)], ranked={"m1": rr})
 
     followup = await run(monkeypatch, bot)
 
-    assert "**Ascent** 13-9 · +17 RR" in followup.sent[0]["embed"].fields[0].value
-
-
-async def test_ranked_matches_lose_rr_with_a_minus(monkeypatch):
-    """A loss must render its RR change with a minus sign."""
-    bot = build_bot(matches=[summary(won=False)], ranked={"m1": -12})
-
-    followup = await run(monkeypatch, bot)
-
-    assert "13-9 · -12 RR" in followup.sent[0]["embed"].fields[0].value
+    assert f"13-9 · {expected}" in followup.sent[0]["embed"].fields[0].value
 
 
 def test_match_block_omits_unavailable_stats():
@@ -397,9 +360,7 @@ async def test_a_private_foreign_profile_is_refused(monkeypatch):
 
     followup = await run(monkeypatch, bot, user=FOREIGN, settings=sharing(False))
 
-    assert followup.sent[0]["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "profile-user-not-sharing"
-    )
+    assert followup.sent[0]["embed"].description == _text("profile-user-not-sharing")
     bot.profiles.profile.assert_not_awaited()
 
 
@@ -420,9 +381,7 @@ async def test_sharing_is_rechecked_after_reloading_the_account(monkeypatch):
         viewer=(private, False, "KumKaShree#Shree"),
     )
 
-    assert followup.sent[0]["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "profile-user-not-sharing"
-    )
+    assert followup.sent[0]["embed"].description == _text("profile-user-not-sharing")
     bot.profiles.profile.assert_not_awaited()
 
 
@@ -431,14 +390,12 @@ async def test_a_foreign_user_without_an_account_is_reported(monkeypatch):
     bot = build_bot()
     monkeypatch.setattr(profile_cog, "selected_account", AsyncMock(return_value=None))
     monkeypatch.setattr(profile_cog, "get_user", AsyncMock(return_value=sharing(True)))
-    followup = Followup()
+    followup = RecordingFollowup()
     cog = ProfileCog(bot)
 
     await cog.profile.callback(cog, interaction(followup=followup), user=FOREIGN)
 
-    assert followup.sent[0]["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "profile-user-not-registered"
-    )
+    assert followup.sent[0]["embed"].description == _text("profile-user-not-registered")
 
 
 async def test_own_profile_ignores_the_sharing_setting(monkeypatch):
@@ -453,7 +410,7 @@ async def test_own_profile_ignores_the_sharing_setting(monkeypatch):
 async def test_a_foreign_profile_uses_the_targets_hide_name_setting(monkeypatch):
     """The target's own privacy settings, not the viewer's, decide the label."""
     bot = build_bot()
-    hidden = TEST_TRANSLATOR.text(TEST_LOCALE, "account-hidden")
+    hidden = _text("account-hidden")
 
     followup = await run(
         monkeypatch,
@@ -480,8 +437,10 @@ async def test_foreign_views_are_rate_limited(monkeypatch):
     monkeypatch.setattr(profile_cog, "get_user", AsyncMock(return_value=sharing(True)))
     cog = ProfileCog(bot)
 
-    await cog.profile.callback(cog, interaction(followup=Followup()), user=FOREIGN)
-    second = Followup()
+    await cog.profile.callback(
+        cog, interaction(followup=RecordingFollowup()), user=FOREIGN
+    )
+    second = RecordingFollowup()
     await cog.profile.callback(cog, interaction(followup=second), user=FOREIGN)
 
     description = second.sent[0]["embed"].description
@@ -505,9 +464,11 @@ async def test_the_cooldown_expires(monkeypatch):
     monkeypatch.setattr(profile_cog, "get_user", AsyncMock(return_value=sharing(True)))
     cog = ProfileCog(bot)
 
-    await cog.profile.callback(cog, interaction(followup=Followup()), user=FOREIGN)
+    await cog.profile.callback(
+        cog, interaction(followup=RecordingFollowup()), user=FOREIGN
+    )
     clock[0] += profile_cog.FOREIGN_VIEW_COOLDOWN_SECONDS + 1
-    again = Followup()
+    again = RecordingFollowup()
     await cog.profile.callback(cog, interaction(followup=again), user=FOREIGN)
 
     assert again.sent[0]["embed"].description.startswith("**KumKaShree#Shree**")
@@ -527,8 +488,8 @@ async def test_own_profile_is_not_rate_limited(monkeypatch):
     )
     cog = ProfileCog(bot)
 
-    await cog.profile.callback(cog, interaction(followup=Followup()))
-    second = Followup()
+    await cog.profile.callback(cog, interaction(followup=RecordingFollowup()))
+    second = RecordingFollowup()
     await cog.profile.callback(cog, interaction(followup=second))
 
     assert second.sent[0]["embed"].description.startswith("**KumKaShree#Shree**")
@@ -549,12 +510,12 @@ async def test_a_failed_foreign_fetch_releases_the_slot(monkeypatch):
     monkeypatch.setattr(profile_cog, "get_user", AsyncMock(return_value=sharing(True)))
     cog = ProfileCog(bot)
 
-    first = Followup()
+    first = RecordingFollowup()
     await cog.profile.callback(cog, interaction(followup=first), user=FOREIGN)
-    second = Followup()
+    second = RecordingFollowup()
     await cog.profile.callback(cog, interaction(followup=second), user=FOREIGN)
 
-    expected = TEST_TRANSLATOR.text(TEST_LOCALE, "error-riot-services-unavailable")
+    expected = _text("error-riot-services-unavailable")
     assert first.sent[0]["embed"].description == expected
     assert second.sent[0]["embed"].description == expected
     assert bot.profiles.profile.await_count == 2
@@ -569,12 +530,12 @@ async def test_a_refused_foreign_view_releases_the_slot(monkeypatch):
     monkeypatch.setattr(profile_cog, "get_user", AsyncMock(return_value=sharing(False)))
     cog = ProfileCog(bot)
 
-    first = Followup()
+    first = RecordingFollowup()
     await cog.profile.callback(cog, interaction(followup=first), user=FOREIGN)
-    second = Followup()
+    second = RecordingFollowup()
     await cog.profile.callback(cog, interaction(followup=second), user=FOREIGN)
 
-    expected = TEST_TRANSLATOR.text(TEST_LOCALE, "profile-user-not-sharing")
+    expected = _text("profile-user-not-sharing")
     assert first.sent[0]["embed"].description == expected
     assert second.sent[0]["embed"].description == expected
 
@@ -598,6 +559,4 @@ async def test_an_expired_login_names_who_needs_to_sign_in(monkeypatch, foreign,
         settings=sharing(True),
     )
 
-    assert followup.sent[0]["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, key
-    )
+    assert followup.sent[0]["embed"].description == _text(key)

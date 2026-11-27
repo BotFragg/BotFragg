@@ -2,68 +2,29 @@
 
 from types import SimpleNamespace
 
-import discord
 import pytest
 
 from src.cogs.valorant.penalties import PenaltiesCog
-from src.localization import BotFraggTranslator
 from src.models import Account, User
-
-TEST_TRANSLATOR = BotFraggTranslator()
+from tests.helpers import (
+    RecordingFollowup,
+    RecordingResponse,
+    _localized_bot,
+    _localized_interaction,
+    _user,
+)
 
 
 def _interaction(user_id: int = 123) -> tuple[SimpleNamespace, list[dict[str, object]]]:
     """Build an interaction double that records embeds, views, and privacy."""
-    messages: list[dict[str, object]] = []
-    edits: list[dict[str, object]] = []
-
-    class Response:
-        """Capture whether an interaction response was deferred."""
-
-        done = False
-
-        async def defer(
-            self, *, thinking: bool = False, ephemeral: bool = False
-        ) -> None:
-            """Accept private command defers and component update defers."""
-            if thinking:
-                assert ephemeral
-            self.done = True
-
-        def is_done(self) -> bool:
-            """Return whether the response has already been acknowledged."""
-            return self.done
-
-    class Followup:
-        """Capture private response messages."""
-
-        async def send(self, **kwargs: object) -> None:
-            """Record private messages and mirror Discord's view validation."""
-            if "view" in kwargs and kwargs["view"] is None:
-                raise TypeError("expected a View when the view argument is supplied")
-            messages.append(kwargs)
-
-    async def edit_original_response(
-        *,
-        embed: discord.Embed,
-        view: discord.ui.View | None,
-        allowed_mentions: discord.AllowedMentions | None = None,
-    ) -> None:
-        """Record the updated page for a button interaction."""
-        edits.append(
-            {"embed": embed, "view": view, "allowed_mentions": allowed_mentions}
-        )
-
-    interaction = SimpleNamespace(
-        user=SimpleNamespace(id=user_id),
-        response=Response(),
-        followup=Followup(),
-        edits=edits,
-        edit_original_response=edit_original_response,
-        client=SimpleNamespace(translator=TEST_TRANSLATOR),
-        locale=discord.Locale.american_english,
+    response = RecordingResponse()
+    interaction = _localized_interaction(
+        user=_user(user_id),
+        response=response,
+        followup=RecordingFollowup(),
+        edit_original_response=response.edit_original_response,
     )
-    return interaction, messages
+    return interaction, interaction.followup.sent
 
 
 def _penalties(count: int = 6) -> list[dict[str, object]]:
@@ -110,15 +71,12 @@ async def test_penalties_command_shows_five_private_rows_and_hides_ign(
     )
     interaction, messages = _interaction()
     cog = PenaltiesCog(
-        SimpleNamespace(
-            gameplay=Gameplay(),
-            translator=TEST_TRANSLATOR,
-            register_component=lambda *_args: None,
-        )
+        _localized_bot(gameplay=Gameplay(), register_component=lambda *_args: None)
     )
 
     await PenaltiesCog.penalties.callback(cog, interaction)
 
+    assert interaction.response.deferred == [{"thinking": True, "ephemeral": True}]
     assert selected == [123]
     assert fetched == [account]
     assert len(messages) == 1 and messages[0]["ephemeral"] is True
@@ -160,15 +118,12 @@ async def test_penalties_command_prompts_unregistered_user_to_log_in(
 
     await PenaltiesCog.penalties.callback(
         PenaltiesCog(
-            SimpleNamespace(
-                gameplay=None,
-                translator=TEST_TRANSLATOR,
-                register_component=lambda *_args: None,
-            )
+            _localized_bot(gameplay=None, register_component=lambda *_args: None)
         ),
         interaction,
     )
 
+    assert interaction.response.deferred == [{"thinking": True, "ephemeral": True}]
     assert len(messages) == 1 and messages[0]["ephemeral"] is True
     assert "/login" in messages[0]["embed"].description
 
@@ -199,15 +154,12 @@ async def test_penalties_command_reports_empty_results_without_pagination(
 
     await PenaltiesCog.penalties.callback(
         PenaltiesCog(
-            SimpleNamespace(
-                gameplay=Gameplay(),
-                translator=TEST_TRANSLATOR,
-                register_component=lambda *_args: None,
-            )
+            _localized_bot(gameplay=Gameplay(), register_component=lambda *_args: None)
         ),
         interaction,
     )
 
+    assert interaction.response.deferred == [{"thinking": True, "ephemeral": True}]
     assert len(messages) == 1 and messages[0]["ephemeral"] is True
     assert (
         messages[0]["embed"].description == "No penalties were found for **Player#NA**."
@@ -239,15 +191,12 @@ async def test_penalties_command_omits_view_for_a_single_page(monkeypatch) -> No
 
     await PenaltiesCog.penalties.callback(
         PenaltiesCog(
-            SimpleNamespace(
-                gameplay=Gameplay(),
-                translator=TEST_TRANSLATOR,
-                register_component=lambda *_args: None,
-            )
+            _localized_bot(gameplay=Gameplay(), register_component=lambda *_args: None)
         ),
         interaction,
     )
 
+    assert interaction.response.deferred == [{"thinking": True, "ephemeral": True}]
     assert len(messages) == 1
     assert len(messages[0]["embed"].fields) == 1
     assert "view" not in messages[0]
@@ -281,11 +230,7 @@ async def test_penalties_page_refetches_original_owned_account_and_edits_message
     )
     interaction, messages = _interaction()
     cog = PenaltiesCog(
-        SimpleNamespace(
-            gameplay=Gameplay(),
-            translator=TEST_TRANSLATOR,
-            register_component=lambda *_args: None,
-        )
+        _localized_bot(gameplay=Gameplay(), register_component=lambda *_args: None)
     )
 
     await cog.penalties_page(interaction, "player,1")
@@ -293,11 +238,13 @@ async def test_penalties_page_refetches_original_owned_account_and_edits_message
     assert resolved == [(123, "player")]
     assert fetched == [account]
     assert messages == []
-    assert len(interaction.edits) == 1
-    card = interaction.edits[0]["embed"]
+    assert len(interaction.response.edited) == 1
+    card = interaction.response.edited[0]["embed"]
     assert [field.name for field in card.fields] == ["Infraction 5"]
     assert card.footer.text == "Page 2 of 2"
-    assert [button.payload for button in interaction.edits[0]["view"].children] == [
+    assert [
+        button.payload for button in interaction.response.edited[0]["view"].children
+    ] == [
         "player,0",
         "player,2",
     ]
@@ -317,15 +264,11 @@ async def test_penalties_page_rejects_an_account_owned_by_someone_else(
     )
     interaction, messages = _interaction()
     cog = PenaltiesCog(
-        SimpleNamespace(
-            gameplay=None,
-            translator=TEST_TRANSLATOR,
-            register_component=lambda *_args: None,
-        )
+        _localized_bot(gameplay=None, register_component=lambda *_args: None)
     )
 
     await cog.penalties_page(interaction, "other-player,1")
 
     assert len(messages) == 1 and messages[0]["ephemeral"] is True
     assert "account is no longer available" in messages[0]["embed"].description
-    assert interaction.edits == []
+    assert interaction.response.edited == []

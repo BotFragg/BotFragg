@@ -6,6 +6,8 @@ from datetime import UTC, datetime
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
+import pytest
+
 from src.cogs.valorant import status as status_cog
 from src.cogs.valorant.status import MAX_ENTRIES, StatusCog, _entry_field
 from src.services.valorant_status import (
@@ -14,51 +16,23 @@ from src.services.valorant_status import (
     StatusUnavailable,
 )
 from tests.helpers import (
-    TEST_LOCALE,
-    TEST_TRANSLATOR,
+    RecordingFollowup,
+    RecordingResponse,
     _localized_bot,
     _localized_interaction,
+    _text,
 )
 
 
-class Response:
-    """Record the deferral of the interaction response."""
-
-    def __init__(self) -> None:
-        """Start with no recorded deferral."""
-        self.deferred: bool | None = None
-
-    async def defer(self, *, thinking: bool = False) -> None:
-        """Record whether the command deferred with a thinking state."""
-        self.deferred = thinking
-
-    @staticmethod
-    def is_done() -> bool:
-        """Report that the interaction already responded."""
-        return True
-
-
-class Followup:
-    """Record follow-up messages."""
-
-    def __init__(self) -> None:
-        """Start with no recorded messages."""
-        self.sent: list[dict[str, object]] = []
-
-    async def send(self, **kwargs: object) -> None:
-        """Record one sent message."""
-        self.sent.append(kwargs)
-
-
 def interaction(
-    *, response: Response | None = None, followup: Followup | None = None
+    *,
+    response: RecordingResponse | None = None,
+    followup: RecordingFollowup | None = None,
 ) -> SimpleNamespace:
     """Build a fake interaction for the status command."""
     return _localized_interaction(
-        user=SimpleNamespace(id=1),
-        response=response or Response(),
-        followup=followup or Followup(),
-        locale=TEST_LOCALE,
+        response=response or RecordingResponse(done=True),
+        followup=followup or RecordingFollowup(),
     )
 
 
@@ -95,18 +69,16 @@ async def test_status_uses_the_account_region_by_default(monkeypatch):
         status_cog, "selected_account", AsyncMock(return_value=account("eu"))
     )
     bot, service = build_bot(RegionStatus(region="eu", entries=()))
-    response = Response()
-    followup = Followup()
+    response = RecordingResponse()
+    followup = RecordingFollowup()
 
     await StatusCog.status.callback(
         StatusCog(bot), interaction(response=response, followup=followup)
     )
 
-    assert response.deferred is True
+    assert response.deferred == [{"thinking": True, "ephemeral": False}]
     assert service.status.await_args.args[0] == "eu"
-    assert followup.sent[0]["embed"].title == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "status-title", region="EU"
-    )
+    assert followup.sent[0]["embed"].title == _text("status-title", region="EU")
 
 
 async def test_status_prefers_an_explicit_region(monkeypatch):
@@ -131,44 +103,36 @@ async def test_status_without_an_account_uses_no_region(monkeypatch):
     assert service.status.await_args.args[0] is None
 
 
-async def test_status_reports_no_active_entries(monkeypatch):
-    """An empty region must render the all-clear message."""
-    monkeypatch.setattr(status_cog, "selected_account", AsyncMock(return_value=None))
-    bot, _service = build_bot(RegionStatus(region="na", entries=()))
-    followup = Followup()
-
-    await StatusCog.status.callback(StatusCog(bot), interaction(followup=followup))
-
-    assert followup.sent[0]["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "status-all-clear"
-    )
-
-
 async def test_status_caps_the_number_of_entries(monkeypatch):
     """The embed must stay inside Discord's field limit and say what it hid."""
     monkeypatch.setattr(status_cog, "selected_account", AsyncMock(return_value=None))
     entries = tuple(entry() for _ in range(MAX_ENTRIES + 2))
     bot, _service = build_bot(RegionStatus(region="eu", entries=entries))
-    followup = Followup()
+    followup = RecordingFollowup()
 
     await StatusCog.status.callback(StatusCog(bot), interaction(followup=followup))
 
     card = followup.sent[0]["embed"]
     assert len(card.fields) == MAX_ENTRIES
-    assert card.description == TEST_TRANSLATOR.text(TEST_LOCALE, "status-more", count=2)
+    assert card.description == _text("status-more", count=2)
 
 
-async def test_status_reports_an_unavailable_feed(monkeypatch):
-    """A failed fetch must use the existing Riot-unavailable message."""
+@pytest.mark.parametrize(
+    ("data", "key"),
+    [
+        (RegionStatus(region="na", entries=()), "status-all-clear"),
+        (StatusUnavailable("down"), "error-riot-services-unavailable"),
+    ],
+)
+async def test_status_reports_empty_or_unavailable_feeds(monkeypatch, data, key):
+    """An empty region and a failed fetch must each use the right message."""
     monkeypatch.setattr(status_cog, "selected_account", AsyncMock(return_value=None))
-    bot, _service = build_bot(StatusUnavailable("down"))
-    followup = Followup()
+    bot, _service = build_bot(data)
+    followup = RecordingFollowup()
 
     await StatusCog.status.callback(StatusCog(bot), interaction(followup=followup))
 
-    assert followup.sent[0]["embed"].description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "error-riot-services-unavailable"
-    )
+    assert followup.sent[0]["embed"].description == _text(key)
 
 
 def test_entry_field_formats_icon_body_and_platforms():

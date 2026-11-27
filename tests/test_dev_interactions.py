@@ -172,24 +172,11 @@ async def test_views_and_modal_refuse_when_allow_is_false(surface: str) -> None:
     notices.allow.assert_awaited_once_with(interaction)
 
 
-async def test_profile_select_delivers_once(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Selecting a profile must deliver one announcement after editing."""
-    monkeypatch.setattr(
-        crosshair_cog, "account_for_user", AsyncMock(return_value=_account())
-    )
-    notices = _notices()
-    interaction = _interaction(notices=notices)
-    cog = _cog(build_card=AsyncMock(return_value=_card()))
-    view = CrosshairView(cog, interaction, _account(), _profiles(), _profiles()[0])
-
-    await view.profile_selected(interaction, 1)
-
-    interaction.response.edit_message.assert_awaited_once()
-    notices.deliver.assert_awaited_once_with(interaction)
-
-
-async def test_refresh_delivers_once(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Refreshing the profiles must deliver one announcement after redrawing."""
+@pytest.mark.parametrize("method", ["profile_selected", "refresh_profiles"])
+async def test_control_handlers_deliver_once(
+    monkeypatch: pytest.MonkeyPatch, method: str
+) -> None:
+    """Selecting or refreshing must deliver one announcement after redrawing."""
     monkeypatch.setattr(
         crosshair_cog, "account_for_user", AsyncMock(return_value=_account())
     )
@@ -199,9 +186,12 @@ async def test_refresh_delivers_once(monkeypatch: pytest.MonkeyPatch) -> None:
     cog.bot.crosshair.profiles = AsyncMock(return_value=_profiles())
     view = CrosshairView(cog, interaction, _account(), _profiles(), _profiles()[0])
 
-    await view.refresh_profiles(interaction)
-
-    interaction.edit_original_response.assert_awaited_once()
+    if method == "profile_selected":
+        await view.profile_selected(interaction, 1)
+        interaction.response.edit_message.assert_awaited_once()
+    else:
+        await view.refresh_profiles(interaction)
+        interaction.edit_original_response.assert_awaited_once()
     notices.deliver.assert_awaited_once_with(interaction)
 
 

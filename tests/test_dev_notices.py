@@ -19,36 +19,15 @@ from src.models import (
 )
 from src.services.analytics import command_analytics
 from src.services.dev_notices import DevNotices
-from tests.helpers import TEST_LOCALE, TEST_TRANSLATOR, _localized_interaction
-
-
-class _Response:
-    """Capture messages sent through an interaction's initial response."""
-
-    def __init__(self, *, done: bool = False) -> None:
-        """Record whether the response was already used."""
-        self.done = done
-        self.sent: list[dict[str, object]] = []
-
-    def is_done(self) -> bool:
-        """Report whether the interaction already responded."""
-        return self.done
-
-    async def send_message(self, **kwargs: object) -> None:
-        """Record one initial response."""
-        self.sent.append(kwargs)
-
-
-class _Followup:
-    """Capture messages sent after an interaction's initial response."""
-
-    def __init__(self) -> None:
-        """Start with no recorded follow-ups."""
-        self.sent: list[dict[str, object]] = []
-
-    async def send(self, **kwargs: object) -> None:
-        """Record one follow-up message."""
-        self.sent.append(kwargs)
+from tests.helpers import (
+    TEST_LOCALE,
+    TEST_TRANSLATOR,
+    RecordingFollowup,
+    RecordingResponse,
+    _localized_interaction,
+    _text,
+    _user,
+)
 
 
 def _bot(*, owner: bool = False) -> SimpleNamespace:
@@ -70,13 +49,13 @@ def _interaction(
     kind: discord.InteractionType = discord.InteractionType.application_command,
     data: dict[str, object] | None = None,
     done: bool = False,
-) -> tuple[SimpleNamespace, _Response, _Followup]:
+) -> tuple[SimpleNamespace, RecordingResponse, RecordingFollowup]:
     """Build a fake interaction with recording responses."""
-    response = _Response(done=done)
-    followup = _Followup()
+    response = RecordingResponse(done=done)
+    followup = RecordingFollowup()
     interaction = _localized_interaction(
         type=kind,
-        user=SimpleNamespace(id=user_id),
+        user=_user(user_id),
         data=data or {},
         response=response,
         followup=followup,
@@ -207,37 +186,27 @@ async def test_publish_write_failure_keeps_the_cached_announcement(
     assert await DevAnnouncement.filter().count() == 1
 
 
-@pytest.mark.usefixtures("database")
-async def test_mark_read_reraises_an_integrity_error_without_a_row(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """Verify an integrity failure is only ignored for a duplicate row."""
-    service = _service()
-    newest = await service.publish("notice", created_by=1)
-
-    async def fail(**kwargs: object) -> None:
-        raise IntegrityError("synthetic integrity failure")
-
-    monkeypatch.setattr(DevAnnouncementRead, "get_or_create", fail)
-
-    with pytest.raises(IntegrityError):
-        await service.mark_read(5, newest.id)
-
-
+@pytest.mark.parametrize(
+    "error",
+    [
+        IntegrityError("synthetic integrity failure"),
+        DBConnectionError("synthetic database failure"),
+    ],
+)
 @pytest.mark.usefixtures("database")
 async def test_mark_read_write_failure_raises(
-    monkeypatch: pytest.MonkeyPatch,
+    monkeypatch: pytest.MonkeyPatch, error: Exception
 ) -> None:
-    """Verify that a failed read marker is not swallowed."""
+    """Verify that read-marker failures are not swallowed."""
     service = _service()
     newest = await service.publish("notice", created_by=1)
 
     async def fail(**kwargs: object) -> None:
-        raise DBConnectionError("synthetic database failure")
+        raise error
 
     monkeypatch.setattr(DevAnnouncementRead, "get_or_create", fail)
 
-    with pytest.raises(DBConnectionError):
+    with pytest.raises(type(error)):
         await service.mark_read(5, newest.id)
 
 
@@ -307,13 +276,11 @@ async def test_allow_blocks_with_one_private_maintenance_embed() -> None:
     sent = response.sent[0]
     assert sent["ephemeral"] is True
     card = sent["embed"]
-    assert card.title == TEST_TRANSLATOR.text(TEST_LOCALE, "dev-maintenance-title")
-    assert card.description == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "dev-maintenance-description"
-    )
+    assert card.title == _text("dev-maintenance-title")
+    assert card.description == _text("dev-maintenance-description")
     assert [(field.name, field.value) for field in card.fields] == [
         (
-            TEST_TRANSLATOR.text(TEST_LOCALE, "dev-maintenance-reason"),
+            _text("dev-maintenance-reason"),
             "Upgrading services",
         )
     ]
@@ -366,7 +333,7 @@ def test_maintenance_embed_omits_the_reason_when_none() -> None:
     service._maintenance_reason = "Scheduled work"
     card = service.maintenance_embed(TEST_LOCALE)
     assert [(field.name, field.value) for field in card.fields] == [
-        (TEST_TRANSLATOR.text(TEST_LOCALE, "dev-maintenance-reason"), "Scheduled work")
+        (_text("dev-maintenance-reason"), "Scheduled work")
     ]
 
 
@@ -382,15 +349,11 @@ async def test_deliver_sends_the_announcement_with_a_read_button() -> None:
     assert len(response.sent) == 1
     sent = response.sent[0]
     assert sent["ephemeral"] is True
-    assert sent["embed"].title == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "dev-announcement-title"
-    )
+    assert sent["embed"].title == _text("dev-announcement-title")
     assert sent["embed"].description == "Patch incoming"
     button = sent["view"].children[0]
     assert button.item.custom_id == f"botfragg:dev_announce_read:42:{newest.id}"
-    assert button.item.label == TEST_TRANSLATOR.text(
-        TEST_LOCALE, "dev-announcement-read-button"
-    )
+    assert button.item.label == _text("dev-announcement-read-button")
     assert not followup.sent
 
 
@@ -470,17 +433,17 @@ def _tree_interaction(
     kind: discord.InteractionType = discord.InteractionType.application_command,
     data: dict[str, object] | None = None,
     done: bool = False,
-) -> tuple[SimpleNamespace, _Response]:
+) -> tuple[SimpleNamespace, RecordingResponse]:
     """Build an unanswered fake interaction for tree dispatch."""
-    response = _Response(done=done)
+    response = RecordingResponse(done=done)
     interaction = _localized_interaction(
         type=kind,
-        user=SimpleNamespace(id=42),
+        user=_user(42),
         guild_id=None,
         channel_id=None,
         data=data or {"name": "ping", "type": 1},
         response=response,
-        followup=_Followup(),
+        followup=RecordingFollowup(),
         command_failed=False,
         command=None,
     )

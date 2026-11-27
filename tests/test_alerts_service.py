@@ -520,43 +520,25 @@ async def test_alert_matching_prefers_the_cheaper_offer(daily_price, expected) -
     assert matches[0][1] is (night if expected == "night" else daily)
 
 
+@pytest.mark.parametrize("mode", ["missing-expiry", "opted-out"])
 @pytest.mark.usefixtures("database")
-async def test_night_market_alert_requires_an_event_expiry() -> None:
-    """A Night Market without a duration is skipped so dedupe cannot expire daily."""
-    user = await User.create(id=331)
-    account = await Account.create(puuid="no-expiry", user=user, username="No#NA")
+async def test_night_market_alerts_skip_unusable_offers(mode: str) -> None:
+    """A Night Market without an expiry, or opted out of, must not match."""
+    user = await User.create(id=331, night_market_alerts_enabled=mode != "opted-out")
+    account = await Account.create(puuid=mode, user=user, username="No#NA")
     skin_uuid = UUID(int=6)
     await Alert.create(account=account, skin_uuid=skin_uuid)
     skin = SimpleNamespace(uuid=str(skin_uuid), name="Skin", icon=None)
     night = Offer(skin, 1775, 4_000_000_000, 1000, 44)
     delivery = AsyncMock(return_value=0)
-
-    summary = await run_daily_alerts(
-        NS(storefront=AsyncMock(return_value=ShopData([], [], [night], 100, None))),
-        alert_concurrency=1,
-        delay_between_alerts_seconds=0,
-        dry_run=False,
-        on_shop=delivery,
-        on_credentials_expired=AsyncMock(return_value=0),
+    storefront = (
+        ShopData([], [], [night], 100, None)
+        if mode == "missing-expiry"
+        else shop_data(night_market=[night])
     )
 
-    assert summary["alerts"] == 0
-    delivery.assert_not_awaited()
-
-
-@pytest.mark.usefixtures("database")
-async def test_night_market_setting_disables_night_market_matching() -> None:
-    """The per-user preference removes Night Market offers from alert matching."""
-    user = await User.create(id=332, night_market_alerts_enabled=False)
-    account = await Account.create(puuid="opt-out", user=user, username="Opted#NA")
-    skin_uuid = UUID(int=7)
-    await Alert.create(account=account, skin_uuid=skin_uuid)
-    skin = SimpleNamespace(uuid=str(skin_uuid), name="Skin", icon=None)
-    night = Offer(skin, 1775, 4_000_000_000, 1000, 44)
-    delivery = AsyncMock(return_value=0)
-
     summary = await run_daily_alerts(
-        NS(storefront=AsyncMock(return_value=shop_data(night_market=[night]))),
+        NS(storefront=AsyncMock(return_value=storefront)),
         alert_concurrency=1,
         delay_between_alerts_seconds=0,
         dry_run=False,
