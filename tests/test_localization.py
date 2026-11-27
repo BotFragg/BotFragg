@@ -44,6 +44,20 @@ def test_locale_checker_rejects_sibling_command_name_collisions(tmp_path):
     assert len(command_name_errors(path, scopes)) == 1
 
 
+def test_missing_locale_catalog_falls_back_to_english(tmp_path):
+    """A locale without a catalog must fall back to the English catalog."""
+    from pathlib import Path
+
+    source = Path("locales/en-US/messages.ftl").read_text(encoding="utf-8")
+    english = tmp_path / "en-US"
+    english.mkdir()
+    (english / "messages.ftl").write_text(source, encoding="utf-8")
+
+    translator = BotFraggTranslator(tmp_path)
+
+    assert translator.text("de", "command-alert-name") == "alert"
+
+
 @pytest.mark.parametrize("field", ["access_token", "id_token", "refresh_token"])
 async def test_malformed_callback_tokens_return_localized_error(field):
     vault = AuthVault(Fernet.generate_key().decode())

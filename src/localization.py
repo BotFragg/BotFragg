@@ -3,15 +3,43 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Generator
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import discord
 from discord import app_commands
-from fluent.runtime import FluentLocalization, FluentResourceLoader
+from fluent.runtime import AbstractResourceLoader, FluentLocalization, FluentResource
+
+if TYPE_CHECKING:
+    from fluent.syntax.ast import Resource
 
 log = logging.getLogger(__name__)
 DEFAULT_LOCALE = "en-US"
 LOCALES_DIR = Path(__file__).resolve().parents[1] / "locales"
+
+
+class _FluentFileLoader(AbstractResourceLoader):
+    """Read Fluent resources without fluent.runtime's deprecated codec loader."""
+
+    # shortcut: fluent.runtime 0.4.0 is the latest release; remove this loader
+    # once it stops using codecs.open().
+
+    def __init__(self, root: Path) -> None:
+        """Store the directory containing one subdirectory per locale."""
+        self.root = root
+
+    def resources(
+        self, locale: str, resource_ids: list[str]
+    ) -> Generator[list[Resource]]:
+        """Yield parsed resources for one locale, skipping missing files."""
+        resources: list[Resource] = []
+        for resource_id in resource_ids:
+            path = self.root / locale / resource_id
+            if path.is_file():
+                resources.append(FluentResource(path.read_text(encoding="utf-8")))
+        if resources:
+            yield resources
 
 
 class BotFraggTranslator(app_commands.Translator):
@@ -19,8 +47,7 @@ class BotFraggTranslator(app_commands.Translator):
 
     def __init__(self, locales_dir: Path = LOCALES_DIR) -> None:
         """Load catalog files lazily and keep one fallback bundle per locale."""
-        self.locales_dir = locales_dir
-        self._loader = FluentResourceLoader(str(locales_dir / "{locale}"))
+        self._loader = _FluentFileLoader(locales_dir)
         self._catalogs: dict[str, FluentLocalization] = {}
 
     def _catalog(self, locale: str) -> FluentLocalization:

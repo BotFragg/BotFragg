@@ -1938,11 +1938,35 @@ Require a fresh successful heartbeat; malformed or missing files fail closed.
 
 Fluent catalogs for Discord command metadata and BotFragg messages.
 
+### `class _FluentFileLoader(AbstractResourceLoader)`
+
+**Scope:** `src/localization.py` · `module`
+
+[Source](../src/localization.py#L22)
+
+Read Fluent resources without fluent.runtime's deprecated codec loader.
+
+### `def __init__(self, root: Path) -> None`
+
+**Scope:** `src/localization.py` · `_FluentFileLoader`
+
+[Source](../src/localization.py#L28)
+
+Store the directory containing one subdirectory per locale.
+
+### `def resources(self, locale: str, resource_ids: list[str]) -> Generator[list[Resource]]`
+
+**Scope:** `src/localization.py` · `_FluentFileLoader`
+
+[Source](../src/localization.py#L32)
+
+Yield parsed resources for one locale, skipping missing files.
+
 ### `class BotFraggTranslator(app_commands.Translator)`
 
 **Scope:** `src/localization.py` · `module`
 
-[Source](../src/localization.py#L17)
+[Source](../src/localization.py#L45)
 
 Translate Discord command metadata and runtime messages from Fluent files.
 
@@ -1950,7 +1974,7 @@ Translate Discord command metadata and runtime messages from Fluent files.
 
 **Scope:** `src/localization.py` · `BotFraggTranslator`
 
-[Source](../src/localization.py#L20)
+[Source](../src/localization.py#L48)
 
 Load catalog files lazily and keep one fallback bundle per locale.
 
@@ -1958,7 +1982,7 @@ Load catalog files lazily and keep one fallback bundle per locale.
 
 **Scope:** `src/localization.py` · `BotFraggTranslator`
 
-[Source](../src/localization.py#L26)
+[Source](../src/localization.py#L53)
 
 Create and cache a locale bundle with English as a fallback.
 
@@ -1966,7 +1990,7 @@ Create and cache a locale bundle with English as a fallback.
 
 **Scope:** `src/localization.py` · `BotFraggTranslator`
 
-[Source](../src/localization.py#L37)
+[Source](../src/localization.py#L64)
 
 Format a message, falling back to the English catalog when needed.
 
@@ -1974,7 +1998,7 @@ Format a message, falling back to the English catalog when needed.
 
 **Scope:** `src/localization.py` · `BotFraggTranslator`
 
-[Source](../src/localization.py#L61)
+[Source](../src/localization.py#L88)
 
 Return a translated command string or defer to Discord's English source.
 
