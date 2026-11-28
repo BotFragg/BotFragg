@@ -1,5 +1,23 @@
 # Changelog
 
+## [2.2.0](https://github.com/BotFragg/BotFragg/compare/v2.1.0...v2.2.0) (2026-11-28)
+
+
+### Added
+
+* **dev:** add dev notice persistence ([3d091e5](https://github.com/BotFragg/BotFragg/commit/3d091e55b883d6d76e2bacea83d3e4b49b52bfae))
+* **dev:** add owner-only dev commands ([a472b49](https://github.com/BotFragg/BotFragg/commit/a472b49a9219ef3736bc4976f7f64253b78c0b56))
+* **dev:** add the dev notices service and command gate ([6be9bab](https://github.com/BotFragg/BotFragg/commit/6be9bab48ad038a822c99831d957d00a4685e442))
+* **dev:** gate components, views, and modals ([a331bb6](https://github.com/BotFragg/BotFragg/commit/a331bb6da669bff5eccee57c27c5053ff6d151b0))
+* **dev:** localize dev notice messages ([84e45a6](https://github.com/BotFragg/BotFragg/commit/84e45a6d7fc6e1fd102e83683c3eabf26bcfec0e))
+* **links:** add the project website button ([882c662](https://github.com/BotFragg/BotFragg/commit/882c6629c2e8f80ab68aa6ab18ff3b17fd9d32e0))
+* **links:** use the fixed bot invite URL ([decf4c5](https://github.com/BotFragg/BotFragg/commit/decf4c5035cce7cb414afc2b39c9345fc5162699))
+
+
+### Fixed
+
+* **localization:** avoid deprecated Fluent resource loader ([104cbc4](https://github.com/BotFragg/BotFragg/commit/104cbc4d28c57160ece6dc9639a93576f5d89b8f))
+
 ## [2.1.0](https://github.com/BotFragg/BotFragg/compare/v2.0.0...v2.1.0) (2026-11-16)
 
 
